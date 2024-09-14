@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ .title }}</title>
+    <link rel="stylesheet" href="/styles/theme.css" />
+    <style>
+      main {
+        max-width: 1200px;
+        margin: 2rem auto;
+        padding: 0 1rem;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 2rem;
+      }
+      aside {
+        flex: 1;
+        min-width: 200px;
+      }
+      aside h2 {
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+        color: #003366;
+        border-bottom: 2px solid #003366;
+        padding-bottom: 0.5rem;
+      }
+      aside ul {
+        list-style-type: none;
+        padding: 0;
+      }
+      aside li {
+        margin-bottom: 0.5rem;
+      }
+      aside a {
+        color: #333;
+        text-decoration: none;
+        font-size: 1rem;
+        transition: color 0.3s ease;
+      }
+      aside a:hover {
+        color: #003366;
+      }
+      section {
+        flex: 3;
+        min-width: 300px;
+      }
+      .card {
+        background-color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+      .card h2 {
+        color: #003366;
+        margin-top: 0;
+        font-size: 1.8rem;
+        font-weight: 700;
+      }
+      form {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+      }
+      input,
+      button {
+        font-family: "Roboto", Arial, sans-serif;
+        padding: 0.75rem;
+        font-size: 1rem;
+        background-color: #fff;
+        color: #333;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        transition: border-color 0.3s ease, box-shadow 0.3s ease;
+      }
+      input:focus {
+        outline: none;
+        border-color: #003366;
+        box-shadow: 0 0 0 2px rgba(0, 51, 102, 0.2);
+      }
+      button {
+        background-color: #003366;
+        color: #fff;
+        border: none;
+        cursor: pointer;
+        font-weight: 700;
+        transition: background-color 0.3s ease;
+      }
+      button:hover {
+        background-color: #004080;
+      }
+      .featured-tool {
+        display: flex;
+        gap: 2rem;
+        align-items: center;
+      }
+      .featured-tool img {
+        width: 150px;
+        height: 150px;
+        object-fit: cover;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      .featured-tool h3 {
+        color: #003366;
+        margin-top: 0;
+        font-size: 1.5rem;
+        font-weight: 700;
+      }
+      .featured-tool a {
+        color: #003366;
+        text-decoration: none;
+        font-weight: 700;
+        transition: color 0.3s ease;
+      }
+      .featured-tool a:hover {
+        color: #004080;
+      }
+      footer {
+        background-color: #003366;
+        color: #fff;
+        text-align: center;
+        padding: 1.5rem;
+        margin-top: 2rem;
+        font-size: 0.9rem;
+      }
+      footer a {
+        color: #ffd700;
+        text-decoration: none;
+        transition: color 0.3s ease;
+      }
+      footer a:hover {
+        color: #fff;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <nav>
+        <h1>ZCauldron</h1>
+        <div>
+          <a href="/login">Login</a>
+          <a href="/sign-up">Register</a>
+        </div>
+      </nav>
+    </header>
+
+    <main>
+      <aside>
+        <h2>Security Tools</h2>
+        <ul>
+          <li><a href="#">Vulnerability Scanner</a></li>
+          <li><a href="#">Dependency Checker</a></li>
+          <li><a href="#">Code Auditor</a></li>
+        </ul>
+      </aside>
+
+      <section>
+        <div class="card">
+          <h2>Scan Your Package</h2>
+          <form action="/scan" method="post">
+            <input
+              type="text"
+              name="packageName"
+              placeholder="npm Package Name"
+              required
+            />
+            <input
+              type="text"
+              name="version"
+              placeholder="Version (optional)"
+            />
+            <button type="submit">Scan Now</button>
+          </form>
+        </div>
+
+        <div class="card">
+          <h2>Featured Tool</h2>
+          <div class="featured-tool">
+            <img
+              src="/placeholder.svg?height=150&width=150"
+              alt="Vulnerability Scanner"
+            />
+            <div>
+              <h3>npm Vulnerability Scanner</h3>
+              <p>
+                Detect security vulnerabilities in your npm packages before they
+                become a threat. Our advanced scanning technology ensures your
+                projects remain secure and compliant.
+              </p>
+              <a href="#">Learn More</a>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <p>
+        &copy; 2024 ZCauldron | <a href="#">Cybersecurity Tools</a> |
+        <a href="#">Privacy Policy</a> | <a href="#">Terms of Service</a>
+      </p>
+    </footer>
+  </body>
+</html>
