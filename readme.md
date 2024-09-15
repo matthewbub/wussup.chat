@@ -1,5 +1,7 @@
 # zcauldron
 
-Vulnerability Scanner for npm Packages
-
 "z cauldron"
+
+```sh
+go run *.go
+```
