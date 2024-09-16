@@ -194,6 +194,41 @@ func viewDatabase(name string) tea.Cmd {
 	}
 }
 
+func seedDatabase() tea.Cmd {
+	return func() tea.Msg {
+		users := []struct {
+			username string
+			password string
+			email    string
+		}{
+			{"admin", "p@ss12345", "admin@zcauldron.com"},
+			{"john_doe", "p@ss12345", "john@zcauldron.com"},
+			{"jane_smith", "p@ss12345", "jane@zcauldron.com"},
+			{"bob_johnson", "p@ss12345", "bob@zcauldron.com"},
+			{"alice_williams", "p@ss12345", "alice@zcauldron.com"},
+			{"charlie_brown", "p@ss12345", "charlie@zcauldron.com"},
+			{"emma_davis", "p@ss12345", "emma@zcauldron.com"},
+			{"david_miller", "p@ss12345", "david@zcauldron.com"},
+			{"olivia_taylor", "p@ss12345", "olivia@zcauldron.com"},
+			{"michael_wilson", "p@ss12345", "michael@zcauldron.com"},
+		}
+
+		for _, user := range users {
+			hashedPassword, err := hashPassword(user.password)
+			if err != nil {
+				return dbActionMsg{err: fmt.Errorf("error hashing password for user %s: %w", user.username, err)}
+			}
+
+			err = insertUserIntoDatabase(user.username, hashedPassword, user.email)
+			if err != nil {
+				return dbActionMsg{err: fmt.Errorf("error inserting user %s: %w", user.username, err)}
+			}
+		}
+
+		return dbActionMsg{err: nil}
+	}
+}
+
 type tableModel struct {
 	table table.Model
 }
@@ -234,6 +269,7 @@ func main() {
 					huh.NewOption("Drop development database", "drop_dev"),
 					huh.NewOption("View development database", "view_dev"),
 					huh.NewOption("View production database", "view_prod"),
+					huh.NewOption("Seed development database", "seed_dev"),
 				).
 				Value(&choice),
 		),
@@ -267,6 +303,9 @@ func main() {
 	case "view_prod":
 		fmt.Println("Viewing prod database...")
 		cmd = viewDatabase("prod.db")
+	case "seed_dev":
+		fmt.Println("Seeding dev database...")
+		cmd = seedDatabase()
 	}
 
 	m.choice = choice
