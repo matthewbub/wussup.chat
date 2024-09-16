@@ -186,6 +186,9 @@
   </header>
 
   <main>
+    {{ if .message }}
+    <div class="message">{{ .message }}</div>
+    {{ end }}
     <aside>
       <h2>Security Tools</h2>
       <ul>
