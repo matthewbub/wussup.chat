@@ -12,6 +12,9 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+// TODO: Add a check to see if the user has agreed to the terms of service and privacy policy
+// TODO: Add the user_id / password to the password table
+
 func SignUpHandler(c *gin.Context) {
 	// Extract form data
 	userData := extractUserData(c)
