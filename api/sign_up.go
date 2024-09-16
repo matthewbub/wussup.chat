@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"time"
 
 	"bus.zcauldron.com/utils"
 	"github.com/gin-gonic/gin"
@@ -99,8 +100,8 @@ func insertUserIntoDatabase(username, hashedPassword, email string) error {
 	db := utils.Db()
 	defer db.Close()
 
-	_, err := db.Exec("INSERT INTO users (username, password, email) VALUES (?, ?, ?)",
-		username, hashedPassword, email)
+	_, err := db.Exec("INSERT INTO users (username, password, email, created_at, updated_at) VALUES (?, ?, ?, ?, ?)",
+		username, hashedPassword, email, time.Now(), time.Now())
 	return err
 }
 

@@ -9,6 +9,9 @@ import (
 func main() {
 	r := gin.Default()
 
+	// Set trusted proxies
+	r.SetTrustedProxies(nil)
+
 	r.Static("/styles", "./styles")
 
 	// Load all templates
@@ -21,8 +24,6 @@ func main() {
 	registerAuthRoutes(r)
 
 	r.POST("/vulnerability-scanner", func(c *gin.Context) {
-		// url := c.PostForm("name")
-
 		c.HTML(200, "landing.html", gin.H{
 			"title":   "Landing",
 			"message": "Scan started",
