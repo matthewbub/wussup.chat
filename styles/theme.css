@@ -41,3 +41,130 @@ nav a {
 nav a:hover {
   color: #ffd700;
 }
+
+/* main */
+.card {
+  background-color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+.card h2 {
+  text-align: center;
+  color: #003366;
+  margin-top: 0;
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+/* form */
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+input,
+button {
+  font-family: "Roboto", Arial, sans-serif;
+  padding: 0.75rem;
+  font-size: 1rem;
+  background-color: #fff;
+  color: #333;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+input:focus {
+  outline: none;
+  border-color: #003366;
+  box-shadow: 0 0 0 2px rgba(0, 51, 102, 0.2);
+}
+button {
+  background-color: #003366;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  font-weight: 700;
+  transition: background-color 0.3s ease;
+  width: auto;
+  padding: 0.75rem 1.5rem;
+}
+button:hover {
+  background-color: #004080;
+}
+.form-group {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9rem;
+}
+.form-description {
+  text-align: center;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  color: #666;
+}
+form a {
+  color: #003366;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+form a:hover {
+  color: #004080;
+}
+.checkbox-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.checkbox-group input[type="checkbox"] {
+  width: auto;
+  margin: 0;
+}
+
+/* content */
+.content {
+  margin-top: 2rem;
+}
+.content h3 {
+  color: #003366;
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+.content p {
+  margin-bottom: 1rem;
+}
+.content ul {
+  margin-bottom: 1rem;
+  padding-left: 1.5rem;
+}
+.content li {
+  margin-bottom: 0.5rem;
+}
+.last-updated {
+  font-style: italic;
+  color: #666;
+  text-align: center;
+  margin-top: 2rem;
+}
+
+/* footer */
+footer {
+  background-color: #003366;
+  color: #fff;
+  text-align: center;
+  padding: 1.5rem;
+  margin-top: 2rem;
+  font-size: 0.9rem;
+}
+footer a {
+  color: #ffd700;
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+footer a:hover {
+  color: #fff;
+}

@@ -2,6 +2,7 @@ package main
 
 import (
 	"html/template"
+	"log"
 
 	"github.com/gin-gonic/gin"
 )
@@ -30,5 +31,6 @@ func main() {
 		})
 	})
 
+	log.Println("Server is running on port 8080")
 	r.Run(":8080")
 }
