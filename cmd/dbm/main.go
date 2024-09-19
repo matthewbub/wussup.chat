@@ -1,7 +1,9 @@
 package main
 
 import (
+	"crypto/rand"
 	"database/sql"
+	"encoding/base64"
 	"fmt"
 	"os"
 
@@ -256,6 +258,23 @@ var baseStyle = lipgloss.NewStyle().
 	BorderStyle(lipgloss.NormalBorder()).
 	BorderForeground(lipgloss.Color("240"))
 
+func generateSecureKey(length int) string {
+	key := make([]byte, length)
+	_, err := rand.Read(key)
+	if err != nil {
+		panic(err)
+	}
+	return base64.StdEncoding.EncodeToString(key)
+}
+
+func getKey() tea.Cmd {
+	return func() tea.Msg {
+		key := generateSecureKey(32)
+		fmt.Println("Generated secure key:", key)
+		return dbActionMsg{err: nil}
+	}
+}
+
 func main() {
 	var choice string
 
@@ -270,6 +289,7 @@ func main() {
 					huh.NewOption("View development database", "view_dev"),
 					huh.NewOption("View production database", "view_prod"),
 					huh.NewOption("Seed development database", "seed_dev"),
+					huh.NewOption("Generate Secure Key", "generate_key"),
 				).
 				Value(&choice),
 		),
@@ -306,6 +326,9 @@ func main() {
 	case "seed_dev":
 		fmt.Println("Seeding dev database...")
 		cmd = seedDatabase()
+	case "generate_key":
+		fmt.Println("Generating secure key...")
+		cmd = getKey()
 	}
 
 	m.choice = choice

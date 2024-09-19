@@ -4,6 +4,9 @@ import (
 	"html/template"
 	"log"
 
+	"bus.zcauldron.com/utils"
+	"github.com/gin-contrib/sessions"
+	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
 )
 
@@ -13,8 +16,15 @@ func main() {
 	// Set trusted proxies
 	r.SetTrustedProxies(nil)
 
-	r.Static("/styles", "./styles")
+	// Get secret key from environment variable
+	secretKey := utils.GetSecretKeyFromEnv()
+	// Create a new cookie store with the secret key
+	store := cookie.NewStore([]byte(secretKey))
+	// Use the cookie store for session management
+	r.Use(sessions.Sessions("session", store))
 
+	// Load styles as static files
+	r.Static("/styles", "./styles")
 	// Load all templates
 	r.SetHTMLTemplate(template.Must(template.ParseGlob("templates/*.tmpl")))
 
