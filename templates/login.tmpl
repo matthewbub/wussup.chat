@@ -42,6 +42,10 @@
             <a href="/forgot-password">Forgot password?</a>
           </div>
           <button type="submit">Login</button>
+
+          {{ if .message }}
+            <div class="error">{{ .message }}</div>
+          {{ end }}
         </form>
       </div>
     </main>

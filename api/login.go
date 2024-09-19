@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 
 	"bus.zcauldron.com/utils"
@@ -70,7 +71,12 @@ func getUserFromDatabase(username string) (*User, error) {
 
 func handleLoginError(c *gin.Context, err error) {
 	fmt.Println("Error during login:", err)
-	renderLoginErrorPage(c, "An error occurred during login")
+	if err.Error() == "user not found" {
+		renderLoginErrorPage(c, "Invalid username or password")
+	} else {
+		log.Println("Error during login:", err)
+		renderLoginErrorPage(c, "An error occurred during login")
+	}
 }
 
 func renderLoginErrorPage(c *gin.Context, message string) {
