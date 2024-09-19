@@ -14,16 +14,7 @@
     </style>
   </head>
   <body>
-    <header>
-      <nav>
-        <h1>ZCauldron</h1>
-        <div>
-          <a href="/login">Login</a>
-          <a href="/signup">Sign Up</a>
-          <a href="/">Home</a>
-        </div>
-      </nav>
-    </header>
+    {{ template "header.tmpl" . }}
 
     <main>
       <div class="card">
@@ -109,11 +100,6 @@
       </div>
     </main>
 
-    <footer>
-      <p>
-        &copy; 2024 ZCauldron | <a href="#">Cybersecurity Tools</a> |
-        <a href="/privacy-policy">Privacy Policy</a> | <a href="/terms-of-service">Terms of Service</a>
-      </p>
-    </footer>
+    {{ template "footer.tmpl" . }}
   </body>
 </html>

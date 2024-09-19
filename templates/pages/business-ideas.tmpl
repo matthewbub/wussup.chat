@@ -14,6 +14,8 @@
     </style>
   </head>
   <body>
+    {{ template "header.tmpl" . }}
+
     <main>
       <div class="card">
         <h2>Ideas</h2>
@@ -134,9 +136,7 @@
       </div>
     </main>
 
-    <footer>
-      <p>&copy; 2024 Cybersecurity Solutions | <a href="#">Privacy Policy</a> | <a href="/terms-of-service">Terms of Service</a></p>
-    </footer>
+    {{ template "footer.tmpl" . }}
   </body>
 </html>
 

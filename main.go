@@ -26,7 +26,7 @@ func main() {
 	// Load styles as static files
 	r.Static("/styles", "./styles")
 	// Load all templates
-	r.SetHTMLTemplate(template.Must(template.ParseGlob("templates/*.tmpl")))
+	r.SetHTMLTemplate(template.Must(template.ParseGlob("templates/**/*.tmpl")))
 
 	// Register all views
 	registerViews(r)
