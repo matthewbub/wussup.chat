@@ -61,8 +61,8 @@ func getUserFromDatabase(username string) (*User, error) {
 	defer db.Close()
 
 	user := &User{}
-	err := db.QueryRow("SELECT id, username, password, email FROM users WHERE username = ?", username).
-		Scan(&user.ID, &user.Username, &user.Password, &user.Email)
+	err := db.QueryRow("SELECT id, username, password FROM users WHERE username = ?", username).
+		Scan(&user.ID, &user.Username, &user.Password)
 	if err != nil {
 		return nil, err
 	}
