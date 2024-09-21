@@ -17,7 +17,7 @@ func registerViews(r *gin.Engine) {
 }
 
 func landingViewHandler(c *gin.Context) {
-	c.HTML(http.StatusOK, "landing.tmpl", gin.H{
+	c.HTML(http.StatusOK, "landing.go.tmpl", gin.H{
 		"title": "ZCauldron Landing",
 	})
 }

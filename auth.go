@@ -12,6 +12,7 @@ func registerAuthRoutes(r *gin.Engine) {
 	r.POST("/login", api.LoginHandler)
 	r.POST("/sign-up", api.SignUpHandler)
 	r.POST("/forgot-password", forgotPasswordHandler)
+	r.POST("/upload", api.UploadHandler)
 }
 
 func forgotPasswordHandler(c *gin.Context) {

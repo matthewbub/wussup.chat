@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ .title }}</title>
+    <link rel="stylesheet" href="/styles/theme.css" />
+  <script src="https://unpkg.com/htmx.org@2.0.2"></script>
+
+  </head>
+  <body>
+    {{ template "header.tmpl" . }}
+
+    <main>
+      {{ if .message }}
+      <div class="message">
+        <pre>{{ .message }}</pre>
+      </div>
+      {{ end }}
+
+
+      <!-- Image upload form -->
+      <form id="imageUploadForm" enctype="multipart/form-data">
+        <label for="image">Upload Image:</label>
+        <input type="file" id="image" name="image" accept="image/*" required>
+        <button type="submit">Upload</button>
+      </form>
+
+      <div id="result"></div>
+
+      <script>
+        document.getElementById('imageUploadForm').addEventListener('submit', function(event) {
+          event.preventDefault(); // Prevent the default form submission
+
+          var formData = new FormData(this);
+
+          fetch('/upload', {
+            method: 'POST',
+            body: formData
+          })
+          .then(response => response.json())
+          .then(data => {
+            console.log('Success:', data);
+            document.getElementById('result').innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+          })
+          .catch(error => {
+            console.error('Error:', error);
+            // Handle error (e.g., display an error message to the user)
+          });
+        });
+      </script>
+    </main>
+
+    {{ template "footer.tmpl" . }}
+  </body>
+</html>
