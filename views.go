@@ -3,8 +3,23 @@ package main
 import (
 	"net/http"
 
+	"bus.zcauldron.com/utils"
 	"github.com/gin-gonic/gin"
 )
+
+type UserInViews struct {
+	ID       int
+	Username string
+	Email    string
+}
+
+type PageData struct {
+	Title        string
+	IsLoggedIn   bool
+	CurrentUser  *UserInViews
+	CurrentEmail string
+	Message      string
+}
 
 func registerPublicViews(r *gin.Engine) {
 	r.GET("/", landingViewHandler)
@@ -20,50 +35,66 @@ func registerPrivateViews(auth *gin.RouterGroup) {
 	auth.GET("/dashboard", dashboardViewHandler)
 }
 
-func landingViewHandler(c *gin.Context) {
-	c.HTML(http.StatusOK, "landing.go.tmpl", gin.H{
-		"title": "ZCauldron Landing",
+func renderView(c *gin.Context, template string, title string) {
+	var isLoggedIn bool
+	user, err := utils.GetUserFromSession(c)
+	if err != nil {
+		isLoggedIn = false
+	} else {
+		isLoggedIn = true
+	}
+
+	c.HTML(http.StatusOK, template, PageData{
+		Title:      title,
+		IsLoggedIn: isLoggedIn,
+		CurrentUser: func() *UserInViews {
+			if user != nil {
+				return &UserInViews{
+					ID:       user.ID,
+					Username: user.Username,
+					Email:    user.Email,
+				}
+			}
+			return nil
+		}(),
+		CurrentEmail: func() string {
+			if user != nil {
+				return user.Email
+			}
+			return ""
+		}(),
+		Message: "",
 	})
+}
+
+func landingViewHandler(c *gin.Context) {
+	renderView(c, "landing.go.tmpl", "ZCauldron Landing")
 }
 
 func loginViewHandler(c *gin.Context) {
-	c.HTML(http.StatusOK, "login.tmpl", gin.H{
-		"title": "ZCauldron Login",
-	})
+	renderView(c, "login.tmpl", "ZCauldron Login")
 }
 
 func signUpViewHandler(c *gin.Context) {
-	c.HTML(http.StatusOK, "sign-up.tmpl", gin.H{
-		"title": "ZCauldron Sign up",
-	})
+	renderView(c, "sign-up.tmpl", "ZCauldron Sign up")
 }
 
 func forgotPasswordViewHandler(c *gin.Context) {
-	c.HTML(http.StatusOK, "forgot-password.tmpl", gin.H{
-		"title": "ZCauldron Forgot Password",
-	})
+	renderView(c, "forgot-password.tmpl", "ZCauldron Forgot Password")
 }
 
 func privacyPolicyViewHandler(c *gin.Context) {
-	c.HTML(http.StatusOK, "privacy-policy.tmpl", gin.H{
-		"title": "ZCauldron Privacy Policy",
-	})
+	renderView(c, "privacy-policy.tmpl", "ZCauldron Privacy Policy")
 }
 
 func termsOfServiceViewHandler(c *gin.Context) {
-	c.HTML(http.StatusOK, "terms-of-service.tmpl", gin.H{
-		"title": "ZCauldron Terms of Service",
-	})
+	renderView(c, "terms-of-service.tmpl", "ZCauldron Terms of Service")
 }
 
 func businessIdeasViewHandler(c *gin.Context) {
-	c.HTML(http.StatusOK, "business-ideas.tmpl", gin.H{
-		"title": "ZCauldron Business Ideas",
-	})
+	renderView(c, "business-ideas.tmpl", "ZCauldron Business Ideas")
 }
 
 func dashboardViewHandler(c *gin.Context) {
-	c.HTML(http.StatusOK, "dashboard.go.tmpl", gin.H{
-		"title": "ZCauldron Dashboard",
-	})
+	renderView(c, "dashboard.go.tmpl", "ZCauldron Dashboard")
 }

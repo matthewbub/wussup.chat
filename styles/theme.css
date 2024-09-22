@@ -30,6 +30,12 @@ nav h1 {
   font-size: 2rem;
   font-weight: 700;
 }
+
+.nav-links {
+  display: flex;
+  gap: 1rem;
+}
+
 nav a {
   color: #fff;
   text-decoration: none;
