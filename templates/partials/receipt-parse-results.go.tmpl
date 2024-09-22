@@ -4,7 +4,12 @@
 
   <img src="data:image/png;base64,{{.Image}}" alt="Receipt Image" />
 
-  <form action="/upload/confirm" method="post">
+  <form 
+    method="post" 
+    hx-post="/upload/confirm" 
+    hx-target="#results" 
+    hx-swap="outerHTML"
+  >
     <label for="merchant">Merchant</label>
     <input type="text" value="{{.Merchant}}" name="merchant" />
     <label for="date" >Date</label>
@@ -15,8 +20,8 @@
     <ul class="receipt-items">
       {{ range .Items }}
         <li class="receipt-item" >
-          <input type="text" value="{{.Name}}" name="name_{{index .}}" />
-          <input type="text" value="{{.Price}}" name="price_{{index .}}" />
+          <input type="text" value="{{.Name}}" name="name_{{.Name}}" />
+          <input type="text" value="{{.Price}}" name="price_{{.Price}}" />
         </li>
       {{ end }}
     </ul>  

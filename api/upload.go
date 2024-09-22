@@ -211,5 +211,21 @@ func UploadHandler(c *gin.Context) {
 }
 
 func UploadConfirmHandler(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{"message": "Receipt confirmed"})
+	// Load the template file
+	tmpl, err := template.ParseFiles("templates/partials/table-view.go.tmpl")
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to load template"})
+		return
+	}
+
+	// Render the template with the response data
+	var renderedHTML strings.Builder
+	if err := tmpl.Execute(&renderedHTML, nil); err != nil {
+		log.Printf("Error rendering template: %v\n", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to render template"})
+		return
+	}
+
+	c.Header("Content-Type", "text/html")
+	c.String(http.StatusOK, renderedHTML.String())
 }
