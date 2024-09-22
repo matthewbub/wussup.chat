@@ -4,6 +4,7 @@ import (
 	"html/template"
 	"log"
 
+	"bus.zcauldron.com/middleware"
 	"bus.zcauldron.com/utils"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
@@ -29,17 +30,16 @@ func main() {
 	r.SetHTMLTemplate(template.Must(template.ParseGlob("templates/**/*.tmpl")))
 
 	// Register all views
-	registerViews(r)
+	registerPublicViews(r)
+
+	auth := r.Group("/")
+	auth.Use(middleware.AuthRequired())
+	{
+		registerPrivateViews(auth)
+	}
 
 	// Register all auth API routes
 	registerAuthRoutes(r)
-
-	r.POST("/vulnerability-scanner", func(c *gin.Context) {
-		c.HTML(200, "landing.html", gin.H{
-			"title":   "Landing",
-			"message": "Scan started",
-		})
-	})
 
 	log.Println("Server is running on port 8080")
 	r.Run(":8080")
