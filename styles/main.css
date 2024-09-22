@@ -24,6 +24,9 @@
 .receipt-items {
   margin-left: 0;
   padding-left: 0;
+  gap: 10px;
+  display: flex;
+  flex-direction: column;
 }
 
 .receipt-item {

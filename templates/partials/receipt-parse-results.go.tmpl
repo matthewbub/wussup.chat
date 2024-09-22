@@ -23,10 +23,11 @@
     <ul class="receipt-items">
       {{ range .Items }}
         <li class="receipt-item" >
-          <input type="text" value="{{.Name}}" name="name_{{index .}}" /> - <input type="text" value="{{.Price}}" name="price_{{index .}}" />
+          <input type="text" value="{{.Name}}" name="name_{{index .}}" />
+          <input type="text" value="{{.Price}}" name="price_{{index .}}" />
         </li>
       {{ end }}
     </ul>  
-    <button type="submit">Submit</button>
+    <button type="submit">Next</button>
   </form>
 </div>
