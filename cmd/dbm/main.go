@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/base64"
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/charmbracelet/bubbles/spinner"
@@ -110,6 +111,9 @@ func viewDatabase(name string) tea.Cmd {
 						huh.NewOption("users", "users"),
 						huh.NewOption("passwords", "passwords"),
 						huh.NewOption("sessions", "sessions"),
+						huh.NewOption("merchants", "merchants"),
+						huh.NewOption("purchased_items", "purchased_items"),
+						huh.NewOption("receipts", "receipts"),
 					).
 					Value(&tableChoice),
 			),
@@ -196,37 +200,112 @@ func viewDatabase(name string) tea.Cmd {
 	}
 }
 
+func seedUsers() {
+	users := []struct {
+		username string
+		password string
+		email    string
+	}{
+		{"admin", "p@ss12345", "admin@zcauldron.com"},
+		{"john_doe", "p@ss12345", "john@zcauldron.com"},
+		{"jane_smith", "p@ss12345", "jane@zcauldron.com"},
+		{"bob_johnson", "p@ss12345", "bob@zcauldron.com"},
+	}
+
+	for _, user := range users {
+		hashedPassword, err := hashPassword(user.password)
+		if err != nil {
+			return
+		}
+
+		err = insertUserIntoDatabase(user.username, hashedPassword, user.email)
+		if err != nil {
+			return
+		}
+	}
+}
+
+func seedMerchants() {
+	merchants := []struct {
+		userId int
+		name   string
+	}{
+		{1, "Starbucks"},
+		{1, "McDonald's"},
+		{1, "Subway"},
+	}
+
+	for _, merchant := range merchants {
+		err := insertMerchantIntoDatabase(merchant.userId, merchant.name)
+		if err != nil {
+			return
+		}
+	}
+}
+
+func seedReceipts() {
+	receipts := []struct {
+		userId     int
+		merchantId int
+		total      float64
+		date       string
+	}{
+		{1, 1, 5.99, "2024-09-21"},
+		{1, 2, 3.49, "2024-09-21"},
+		{1, 3, 2.99, "2024-09-21"},
+		{2, 1, 4.99, "2024-09-21"},
+		{2, 2, 2.49, "2024-09-21"},
+		{2, 3, 1.99, "2024-09-21"},
+		{3, 1, 3.99, "2024-09-21"},
+		{3, 2, 1.49, "2024-09-21"},
+		{3, 3, 0.99, "2024-09-21"},
+	}
+
+	for _, receipt := range receipts {
+		err := insertReceiptIntoDatabase(receipt.userId, receipt.merchantId, receipt.total, receipt.date)
+		if err != nil {
+			log.Println("Error inserting receipt into database:", err)
+			return
+		}
+	}
+}
+
+func seedPurchasedItems() {
+	purchasedItems := []struct {
+		userId     int
+		merchantId int
+		receiptId  int
+		name       string
+		price      float64
+		confidence float64
+	}{
+		{1, 1, 1, "Coffee", 5.99, 0.95},
+		{1, 2, 1, "Big Mac", 3.49, 0.90},
+		{1, 3, 1, "Turkey Sub", 2.99, 0.85},
+		{2, 1, 2, "Coffee", 4.99, 0.92},
+		{2, 2, 2, "Cheeseburger", 2.49, 0.88},
+		{2, 3, 2, "Chicken Sub", 1.99, 0.80},
+		{3, 1, 3, "Coffee", 3.99, 0.93},
+		{3, 2, 3, "French Fries", 1.49, 0.87},
+		{3, 3, 3, "Chicken Sub", 0.99, 0.75},
+	}
+
+	for _, purchasedItem := range purchasedItems {
+		err := insertPurchasedItemIntoDatabase(purchasedItem.userId, purchasedItem.merchantId, purchasedItem.receiptId, purchasedItem.name, purchasedItem.price, purchasedItem.confidence)
+		if err != nil {
+			log.Println("Error inserting purchased item into database:", err)
+			return
+		}
+	}
+}
+
 func seedDatabase() tea.Cmd {
+	seedUsers()
+	seedMerchants()
+	seedReceipts()
+	seedPurchasedItems()
+
 	return func() tea.Msg {
-		users := []struct {
-			username string
-			password string
-			email    string
-		}{
-			{"admin", "p@ss12345", "admin@zcauldron.com"},
-			{"john_doe", "p@ss12345", "john@zcauldron.com"},
-			{"jane_smith", "p@ss12345", "jane@zcauldron.com"},
-			{"bob_johnson", "p@ss12345", "bob@zcauldron.com"},
-			{"alice_williams", "p@ss12345", "alice@zcauldron.com"},
-			{"charlie_brown", "p@ss12345", "charlie@zcauldron.com"},
-			{"emma_davis", "p@ss12345", "emma@zcauldron.com"},
-			{"david_miller", "p@ss12345", "david@zcauldron.com"},
-			{"olivia_taylor", "p@ss12345", "olivia@zcauldron.com"},
-			{"michael_wilson", "p@ss12345", "michael@zcauldron.com"},
-		}
-
-		for _, user := range users {
-			hashedPassword, err := hashPassword(user.password)
-			if err != nil {
-				return dbActionMsg{err: fmt.Errorf("error hashing password for user %s: %w", user.username, err)}
-			}
-
-			err = insertUserIntoDatabase(user.username, hashedPassword, user.email)
-			if err != nil {
-				return dbActionMsg{err: fmt.Errorf("error inserting user %s: %w", user.username, err)}
-			}
-		}
-
 		return dbActionMsg{err: nil}
 	}
 }

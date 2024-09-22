@@ -24,3 +24,41 @@ CREATE TABLE IF NOT EXISTS passwords (
     FOREIGN KEY (user_id) REFERENCES users (id)
 );
 
+CREATE TABLE IF NOT EXISTS merchants (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    name TEXT NOT NULL UNIQUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    notes TEXT,
+    FOREIGN KEY (user_id) REFERENCES users (id)
+);
+
+CREATE TABLE IF NOT EXISTS purchased_items (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    merchant_id INTEGER NOT NULL,
+    receipt_id INTEGER NOT NULL,
+    name TEXT NOT NULL,
+    price TEXT NOT NULL,
+    confidence FLOAT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    notes TEXT,
+    FOREIGN KEY (user_id) REFERENCES users (id),
+    FOREIGN KEY (merchant_id) REFERENCES merchants (id),
+    FOREIGN KEY (receipt_id) REFERENCES receipts (id)
+);
+
+CREATE TABLE IF NOT EXISTS receipts (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    merchant_id INTEGER NOT NULL,
+    total TEXT NOT NULL,
+    date TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    notes TEXT,
+    FOREIGN KEY (user_id) REFERENCES users (id),
+    FOREIGN KEY (merchant_id) REFERENCES merchants (id)
+);
