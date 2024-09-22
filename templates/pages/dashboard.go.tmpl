@@ -6,21 +6,12 @@
     <title>{{ .Title }}</title>
     <link rel="stylesheet" href="/styles/theme.css" />
     <link rel="stylesheet" href="/styles/main.css" />
-  <script src="https://unpkg.com/htmx.org@2.0.2"></script>
-
+    <script src="https://unpkg.com/htmx.org@2.0.2"></script>
   </head>
   <body>
-    {{ template "header.tmpl" . }}
+    {{ template "header.go.tmpl" . }}
 
     <main>
-      {{ if .Message }}
-      <div class="message">
-        <pre>{{ .Message }}</pre>
-      </div>
-      {{ end }}
-
-
-      <!-- Image upload form -->
       <form 
         id="imageUploadForm" 
         enctype="multipart/form-data" 
@@ -34,30 +25,8 @@
         <button type="submit">Upload</button>
       </form>
       <div id="result"></div>
-
-      <script>
-        document.getElementById('imageUploadForm').addEventListener('submit', function(event) {
-          event.preventDefault(); // Prevent the default form submission
-
-          var formData = new FormData(this);
-
-          fetch('/upload', {
-            method: 'POST',
-            body: formData
-          })
-          .then(response => response.json())
-          .then(data => {
-            console.log('Success:', data);
-            document.getElementById('result').innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
-          })
-          .catch(error => {
-            console.error('Error:', error);
-            // Handle error (e.g., display an error message to the user)
-          });
-        });
-      </script>
     </main>
 
-    {{ template "footer.tmpl" . }}
+    {{ template "footer.go.tmpl" . }}
   </body>
 </html>

@@ -81,7 +81,7 @@ func handleLoginError(c *gin.Context, err error) {
 }
 
 func renderLoginErrorPage(c *gin.Context, message string) {
-	c.HTML(http.StatusUnauthorized, "login.tmpl", gin.H{
+	c.HTML(http.StatusUnauthorized, "login.go.tmpl", gin.H{
 		"title":   "Login",
 		"message": message,
 	})

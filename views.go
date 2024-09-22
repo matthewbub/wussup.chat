@@ -72,23 +72,23 @@ func landingViewHandler(c *gin.Context) {
 }
 
 func loginViewHandler(c *gin.Context) {
-	renderView(c, "login.tmpl", "ZCauldron Login")
+	renderView(c, "login.go.tmpl", "ZCauldron Login")
 }
 
 func signUpViewHandler(c *gin.Context) {
-	renderView(c, "sign-up.tmpl", "ZCauldron Sign up")
+	renderView(c, "sign-up.go.tmpl", "ZCauldron Sign up")
 }
 
 func forgotPasswordViewHandler(c *gin.Context) {
-	renderView(c, "forgot-password.tmpl", "ZCauldron Forgot Password")
+	renderView(c, "forgot-password.go.tmpl", "ZCauldron Forgot Password")
 }
 
 func privacyPolicyViewHandler(c *gin.Context) {
-	renderView(c, "privacy-policy.tmpl", "ZCauldron Privacy Policy")
+	renderView(c, "privacy-policy.go.tmpl", "ZCauldron Privacy Policy")
 }
 
 func termsOfServiceViewHandler(c *gin.Context) {
-	renderView(c, "terms-of-service.tmpl", "ZCauldron Terms of Service")
+	renderView(c, "terms-of-service.go.tmpl", "ZCauldron Terms of Service")
 }
 
 func businessIdeasViewHandler(c *gin.Context) {

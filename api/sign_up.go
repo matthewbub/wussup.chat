@@ -93,7 +93,7 @@ func passwordsMatch(password, confirmPassword string) bool {
 }
 
 func renderErrorPage(c *gin.Context, status int, message string) {
-	c.HTML(status, "sign-up.tmpl", gin.H{
+	c.HTML(status, "sign-up.go.tmpl", gin.H{
 		"title":   "Sign Up",
 		"message": message,
 	})
