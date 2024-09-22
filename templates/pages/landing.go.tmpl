@@ -20,12 +20,18 @@
 
 
       <!-- Image upload form -->
-      <form id="imageUploadForm" enctype="multipart/form-data">
+      <form 
+        id="imageUploadForm" 
+        enctype="multipart/form-data" 
+        hx-post="/upload" 
+        hx-target="#result" 
+        hx-swap="outerHTML"
+        hx-trigger="submit"
+      >
         <label for="image">Upload Image:</label>
         <input type="file" id="image" name="image" accept="image/*" required>
         <button type="submit">Upload</button>
       </form>
-
       <div id="result"></div>
 
       <script>

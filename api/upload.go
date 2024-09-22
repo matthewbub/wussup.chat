@@ -4,10 +4,12 @@ import (
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
+	"html/template"
 	"io"
 	"log"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -18,8 +20,9 @@ type Receipt struct {
 	Date     string `json:"date"`
 	Total    string `json:"total"`
 	Items    []struct {
-		Name  string `json:"name"`
-		Price string `json:"price"`
+		Name       string  `json:"name"`
+		Price      string  `json:"price"`
+		Confidence float64 `json:"confidence"`
 	} `json:"items"`
 }
 
@@ -96,7 +99,7 @@ func UploadHandler(c *gin.Context) {
 				"content": []map[string]interface{}{
 					{
 						"type": "text",
-						"text": "Please extract the merchant name, date, total amount, and list of items with their names and prices from this receipt image. Consider the list of items may not always have prices listed. Do not guess any information. If you cannot extract certain fields or if the image is not a receipt, return the same JSON format with those fields left empty. Please assess the confidence in your results by providing a score between 0 and 1 for each item's name and price. If there is doubt, return a confidence score of less than 0.7.",
+						"text": "Please extract the merchant name, date, total amount, and list of items with their names and prices from this receipt image. Consider the list of items may not always have prices listed, such as napkins or condiments. Do not guess any information. If you cannot extract certain fields or if the image is not a receipt, return the same JSON format with those fields left empty. Please assess the confidence in your results by providing a score between 0 and 1 for each item's name and price. If there is doubt, return a confidence score of less than 0.7.",
 					},
 					{
 						"type": "image_url",
@@ -153,8 +156,7 @@ func UploadHandler(c *gin.Context) {
 	var openAIResp struct {
 		Choices []struct {
 			Message struct {
-				Content string `json:"content"`
-				Refusal string `json:"refusal"`
+				Content string `json:"content"` // Content is a JSON string
 			} `json:"message"`
 		} `json:"choices"`
 	}
@@ -170,11 +172,30 @@ func UploadHandler(c *gin.Context) {
 		return
 	}
 
-	// Respond with the OpenAI API response
-	c.JSON(http.StatusOK, gin.H{
-		"response": json.RawMessage(openAIResp.Choices[0].Message.Content),
-		// "refusal":  json.RawMessage(openAIResp.Choices[0].Message.Refusal),
-		// "response": json.RawMessage(respBody),
-	})
+	// Unmarshal the content field separately
+	var receipt Receipt
+	if err := json.Unmarshal([]byte(openAIResp.Choices[0].Message.Content), &receipt); err != nil {
+		log.Printf("Error parsing receipt content: %v\n", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to parse receipt content"})
+		return
+	}
+
+	// Load the template file
+	tmpl, err := template.ParseFiles("templates/partials/receipt-parse-results.go.tmpl")
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to load template"})
+		return
+	}
+
+	// Render the template with the response data
+	var renderedHTML strings.Builder
+	if err := tmpl.Execute(&renderedHTML, receipt); err != nil {
+		log.Printf("Error rendering template: %v\n", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to render template"})
+		return
+	}
+
+	c.Header("Content-Type", "text/html")
+	c.String(http.StatusOK, renderedHTML.String())
 
 }

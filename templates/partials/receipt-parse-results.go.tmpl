@@ -1,0 +1,32 @@
+<style>
+    .receipt-parse-results {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    .item {
+        display: flex;
+        gap: 10px;
+    }
+</style>
+<div id="results" class="receipt-parse-results">
+  <h2>Receipt</h2>
+  <p>Automated receipt parsing is not 100% accurate. Please confirm the receipt details below.</p>
+  <form action="/upload/confirm" method="post">
+    <label for="merchant">Merchant</label>
+    <input type="text" value="{{.Merchant}}" name="merchant" />
+    <label for="date" >Date</label>
+    <input type="text" value="{{.Date}}" name="date" />
+    <label for="total">Total</label>
+    <input type="text" value="{{.Total}}" name="total" />
+    <h3>Items</h3>
+    <div class="items">
+      {{ range .Items }}
+        <div class="item" >
+          <input type="text" value="{{.Name}}" name="name_{{index .}}" /> - <input type="text" value="{{.Price}}" name="price_{{index .}}" />
+        </div>
+      {{ end }}
+    </div>  
+    <button type="submit">Submit</button>
+  </form>
+</div>
