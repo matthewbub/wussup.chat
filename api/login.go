@@ -40,6 +40,7 @@ func LoginHandler(c *gin.Context) {
 	session := utils.GetSession(c)
 	session.Set("user_id", user.ID)
 	session.Set("username", user.Username)
+	session.Set("email", user.Email)
 
 	if rememberMe {
 		session.Options(sessions.Options{
@@ -61,8 +62,8 @@ func getUserFromDatabase(username string) (*User, error) {
 	defer db.Close()
 
 	user := &User{}
-	err := db.QueryRow("SELECT id, username, password FROM users WHERE username = ?", username).
-		Scan(&user.ID, &user.Username, &user.Password)
+	err := db.QueryRow("SELECT id, username, password, email FROM users WHERE username = ?", username).
+		Scan(&user.ID, &user.Username, &user.Password, &user.Email)
 	if err != nil {
 		return nil, err
 	}

@@ -6,56 +6,12 @@
     <title>{{ .title }}</title>
     <link rel="stylesheet" href="/styles/theme.css" />
     <link rel="stylesheet" href="/styles/main.css" />
-  <script src="https://unpkg.com/htmx.org@2.0.2"></script>
-
   </head>
   <body>
     {{ template "header.tmpl" . }}
 
     <main>
-      {{ if .message }}
-      <div class="message">
-        <pre>{{ .message }}</pre>
-      </div>
-      {{ end }}
-
-
-      <!-- Image upload form -->
-      <form 
-        id="imageUploadForm" 
-        enctype="multipart/form-data" 
-        hx-post="/upload" 
-        hx-target="#result" 
-        hx-swap="outerHTML"
-        hx-trigger="submit"
-      >
-        <label for="image">Upload Image:</label>
-        <input type="file" id="image" name="image" accept="image/*" required>
-        <button type="submit">Upload</button>
-      </form>
-      <div id="result"></div>
-
-      <script>
-        document.getElementById('imageUploadForm').addEventListener('submit', function(event) {
-          event.preventDefault(); // Prevent the default form submission
-
-          var formData = new FormData(this);
-
-          fetch('/upload', {
-            method: 'POST',
-            body: formData
-          })
-          .then(response => response.json())
-          .then(data => {
-            console.log('Success:', data);
-            document.getElementById('result').innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
-          })
-          .catch(error => {
-            console.error('Error:', error);
-            // Handle error (e.g., display an error message to the user)
-          });
-        });
-      </script>
+      <h1>Landing page</h1>
     </main>
 
     {{ template "footer.tmpl" . }}

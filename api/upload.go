@@ -25,6 +25,11 @@ type Receipt struct {
 	} `json:"items"`
 }
 
+type ImageWithReceipt struct {
+	Receipt
+	Image string `json:"image"`
+}
+
 // UploadHandler handles the receipt upload and parsing
 // It takes an image file, sends it to OpenAI for parsing, and returns the results
 func UploadHandler(c *gin.Context) {
@@ -34,8 +39,6 @@ func UploadHandler(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "No image file provided"})
 		return
 	}
-
-	log.Println(imgFile.Filename)
 
 	// Open the uploaded file
 	file, err := imgFile.Open()
@@ -182,6 +185,11 @@ func UploadHandler(c *gin.Context) {
 		return
 	}
 
+	imageWithReceipt := ImageWithReceipt{
+		Image:   base64Image,
+		Receipt: receipt,
+	}
+
 	// Load the template file
 	tmpl, err := template.ParseFiles("templates/partials/receipt-parse-results.go.tmpl")
 	if err != nil {
@@ -191,7 +199,7 @@ func UploadHandler(c *gin.Context) {
 
 	// Render the template with the response data
 	var renderedHTML strings.Builder
-	if err := tmpl.Execute(&renderedHTML, receipt); err != nil {
+	if err := tmpl.Execute(&renderedHTML, imageWithReceipt); err != nil {
 		log.Printf("Error rendering template: %v\n", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to render template"})
 		return
@@ -200,4 +208,8 @@ func UploadHandler(c *gin.Context) {
 	c.Header("Content-Type", "text/html")
 	c.String(http.StatusOK, renderedHTML.String())
 
+}
+
+func UploadConfirmHandler(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{"message": "Receipt confirmed"})
 }

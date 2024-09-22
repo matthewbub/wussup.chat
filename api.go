@@ -8,11 +8,16 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func registerAuthRoutes(r *gin.Engine) {
+func registerPublicApiRoutes(r *gin.Engine) {
 	r.POST("/login", api.LoginHandler)
 	r.POST("/sign-up", api.SignUpHandler)
 	r.POST("/forgot-password", forgotPasswordHandler)
-	r.POST("/upload", api.UploadHandler)
+}
+
+func registerPrivateApiRoutes(auth *gin.RouterGroup) {
+	auth.POST("/upload", api.UploadHandler)
+	auth.POST("/upload/confirm", api.UploadConfirmHandler)
+	auth.POST("/logout", api.LogoutHandler)
 }
 
 func forgotPasswordHandler(c *gin.Context) {

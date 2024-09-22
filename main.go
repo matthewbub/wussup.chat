@@ -17,30 +17,26 @@ func main() {
 	// Set trusted proxies
 	r.SetTrustedProxies(nil)
 
-	// Get secret key from environment variable
+	// session management
 	secretKey := utils.GetSecretKeyFromEnv()
-	// Create a new cookie store with the secret key
 	store := cookie.NewStore([]byte(secretKey))
-	// Use the cookie store for session management
 	r.Use(sessions.Sessions("session", store))
 
-	// Load styles as static files
+	// static files
 	r.Static("/styles", "./styles")
-	// Load all templates
 	r.SetHTMLTemplate(template.Must(template.ParseGlob("templates/**/*.tmpl")))
 
-	// Register all views
+	// alllll routes
 	registerPublicViews(r)
+	registerPublicApiRoutes(r)
 
 	auth := r.Group("/")
 	auth.Use(middleware.AuthRequired())
 	{
 		registerPrivateViews(auth)
+		registerPrivateApiRoutes(auth)
 	}
 
-	// Register all auth API routes
-	registerAuthRoutes(r)
-
-	log.Println("Server is running on port 8080")
+	log.Println("Server is running on port http://localhost:8080")
 	r.Run(":8080")
 }
