@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func registerViews(r *gin.Engine) {
+func registerPublicViews(r *gin.Engine) {
 	r.GET("/", landingViewHandler)
 	r.GET("/login", loginViewHandler)
 	r.GET("/sign-up", signUpViewHandler)
@@ -14,6 +14,10 @@ func registerViews(r *gin.Engine) {
 	r.GET("/privacy-policy", privacyPolicyViewHandler)
 	r.GET("/terms-of-service", termsOfServiceViewHandler)
 	r.GET("/business-ideas", businessIdeasViewHandler)
+}
+
+func registerPrivateViews(auth *gin.RouterGroup) {
+	auth.GET("/dashboard", dashboardViewHandler)
 }
 
 func landingViewHandler(c *gin.Context) {
@@ -55,5 +59,11 @@ func termsOfServiceViewHandler(c *gin.Context) {
 func businessIdeasViewHandler(c *gin.Context) {
 	c.HTML(http.StatusOK, "business-ideas.tmpl", gin.H{
 		"title": "ZCauldron Business Ideas",
+	})
+}
+
+func dashboardViewHandler(c *gin.Context) {
+	c.HTML(http.StatusOK, "dashboard.go.tmpl", gin.H{
+		"title": "ZCauldron Dashboard",
 	})
 }
