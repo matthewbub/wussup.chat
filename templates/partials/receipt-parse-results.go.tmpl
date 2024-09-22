@@ -20,13 +20,13 @@
     <label for="total">Total</label>
     <input type="text" value="{{.Total}}" name="total" />
     <h3>Items</h3>
-    <div class="items">
+    <ul class="receipt-items">
       {{ range .Items }}
-        <div class="item" >
+        <li class="receipt-item" >
           <input type="text" value="{{.Name}}" name="name_{{index .}}" /> - <input type="text" value="{{.Price}}" name="price_{{index .}}" />
-        </div>
+        </li>
       {{ end }}
-    </div>  
+    </ul>  
     <button type="submit">Submit</button>
   </form>
 </div>

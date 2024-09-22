@@ -14,7 +14,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// Define the expected JSON structure
 type Receipt struct {
 	Merchant string `json:"merchant"`
 	Date     string `json:"date"`
@@ -26,6 +25,8 @@ type Receipt struct {
 	} `json:"items"`
 }
 
+// UploadHandler handles the receipt upload and parsing
+// It takes an image file, sends it to OpenAI for parsing, and returns the results
 func UploadHandler(c *gin.Context) {
 	// get the img file from the form
 	imgFile, err := c.FormFile("image")
@@ -110,7 +111,7 @@ func UploadHandler(c *gin.Context) {
 				},
 			},
 		},
-		"max_tokens": 300,
+		"max_tokens": 3000,
 		"response_format": map[string]interface{}{
 			"type": "json_schema",
 			"json_schema": map[string]interface{}{
@@ -156,7 +157,7 @@ func UploadHandler(c *gin.Context) {
 	var openAIResp struct {
 		Choices []struct {
 			Message struct {
-				Content string `json:"content"` // Content is a JSON string
+				Content string `json:"content"`
 			} `json:"message"`
 		} `json:"choices"`
 	}
@@ -176,6 +177,7 @@ func UploadHandler(c *gin.Context) {
 	var receipt Receipt
 	if err := json.Unmarshal([]byte(openAIResp.Choices[0].Message.Content), &receipt); err != nil {
 		log.Printf("Error parsing receipt content: %v\n", err)
+		log.Print("Last time this happened we weren't using enough tokens to get a full response and therefore were getting 50 percent of a JSON object.")
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to parse receipt content"})
 		return
 	}
