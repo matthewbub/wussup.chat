@@ -109,19 +109,6 @@ input:focus {
   border-color: #003366;
   box-shadow: 0 0 0 2px rgba(0, 51, 102, 0.2);
 }
-button {
-  background-color: #003366;
-  color: #fff;
-  border: none;
-  cursor: pointer;
-  font-weight: 700;
-  transition: background-color 0.3s ease;
-  width: auto;
-  padding: 0.75rem 1.5rem;
-}
-button:hover {
-  background-color: #004080;
-}
 
 .remove-item {
   border: 1px solid #ff0000;
@@ -238,4 +225,36 @@ footer a:hover {
   display: flex;
   justify-content: space-between;
   margin-top: 10px;
+}
+
+.primary-button {
+  background-color: #003366;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  font-weight: 700;
+  transition: background-color 0.3s ease;
+  width: auto;
+  padding: 0.75rem 1.5rem;
+}
+
+.primary-button:hover {
+  background-color: #004080;
+}
+
+.secondary-button {
+  background-color: #fff;
+  color: #003366;
+  border: 1px solid #003366;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 700;
+  transition: background-color 0.3s ease;
+  width: auto;
+  padding: 0.75rem 1.5rem;
+}
+
+.secondary-button:hover {
+  background-color: #003366;
+  color: #fff;
 }
