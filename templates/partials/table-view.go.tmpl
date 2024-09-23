@@ -10,9 +10,9 @@
       </thead>
       <tbody>
         <tr>
-          <td>{{ .Merchant }}</td>
-          <td>{{ .Date }}</td>
-          <td>{{ .Total }}</td>
+          <td id="merchant">{{ .Merchant }}</td>
+          <td id="date">{{ .Date }}</td>
+          <td id="total">{{ .Total }}</td>
         </tr>
       </tbody>
     </table>
@@ -27,17 +27,47 @@
       </thead>
       <tbody>
         {{ range .Items }}
-          <tr>
-            <td>{{ .Name }}</td>
-            <td>{{ .Price }}</td>
+          <tr class="item">
+            <td id="name">{{ .Name }}</td>
+            <td id="price">{{ .Price }}</td>
           </tr>
         {{ end }}
       </tbody>
     </table>
 
     <div class="button-container">
-      <button hx-post="/upload/confirm" hx-target="#results" hx-swap="outerHTML">Save</button>
-      <button hx-get="/upload" hx-target="#results" hx-swap="outerHTML">Back</button>
+      <button class="secondary-button">Back</button>
+      <button class="primary-button" onclick="handleSubmit()">Save</button>
     </div>
   </div>
+
+  <script>
+    const handleSubmit = () => {
+      const data = {
+        merchant: document.querySelector('#merchant').innerHTML,
+        date: document.querySelector('#date').innerHTML,
+        total: document.querySelector('#total').innerHTML,
+        items: [],
+      };
+
+      const items = document.querySelectorAll('.item');
+      items.forEach((item) => {
+        const itemData = {
+          name: item.querySelector('#name').innerHTML,
+          price: item.querySelector('#price').innerHTML,
+        };
+        data.items.push(itemData);
+      });
+
+      /* const response = await fetch('/upload/confirm/save', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      }); */
+
+      console.log(data);
+    };
+  </script>
 </div>
