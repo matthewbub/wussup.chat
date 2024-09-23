@@ -4,11 +4,13 @@ import (
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"html/template"
 	"io"
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -103,7 +105,7 @@ func UploadHandler(c *gin.Context) {
 				"content": []map[string]interface{}{
 					{
 						"type": "text",
-						"text": "Please extract the merchant name, date, total amount, and list of items with their names and prices from this receipt image. Consider the list of items may not always have prices listed, such as napkins or condiments. Do not guess any information. If you cannot extract certain fields or if the image is not a receipt, return the same JSON format with those fields left empty. Please assess the confidence in your results by providing a score between 0 and 1 for each item's name and price. If there is doubt, return a confidence score of less than 0.7.",
+						"text": "Please extract the merchant name, date, total amount, and list of items with their names and prices from this receipt image. Consider quantities and prices per unit. Consider the list of items may not always have prices listed, such as napkins or condiments. Do not guess any information. If you cannot extract certain fields or if the image is not a receipt, return the same JSON format with those fields left empty. Please assess the confidence in your results by providing a score between 0 and 1 for each item's name and price.",
 					},
 					{
 						"type": "image_url",
@@ -211,6 +213,68 @@ func UploadHandler(c *gin.Context) {
 }
 
 func UploadConfirmHandler(c *gin.Context) {
+	// dump the form data
+	// Parse the form data
+	if err := c.Request.ParseForm(); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to parse form data"})
+		return
+	}
+
+	// Extract form data into a structured format
+	receipt := Receipt{
+		Merchant: c.PostForm("zcauldron_c_merchant"),
+		Date:     c.PostForm("zcauldron_c_date"),
+		Total:    c.PostForm("zcauldron_c_total"),
+	}
+
+	// Helper function to convert price to a float
+	convertPrice := func(price string) (float64, error) {
+		log.Printf("Original price: %s", price)
+		if price == "" {
+			return 0, nil
+		}
+		price = strings.TrimPrefix(price, "$")
+		convertedPrice, err := strconv.ParseFloat(price, 64)
+		if err != nil {
+			log.Printf("Error parsing price: %v", err)
+			return 0, err
+		}
+		log.Printf("Converted price: %f", convertedPrice)
+		return convertedPrice, nil
+	}
+
+	// Create a map to store the item names by index
+	itemNames := make(map[string]string)
+
+	// First pass: collect item names
+	for key := range c.Request.Form {
+		if strings.HasPrefix(key, "name___") {
+			index := strings.TrimPrefix(key, "name___")
+			itemNames[index] = c.PostForm(key)
+		}
+	}
+
+	// Second pass: process items with prices
+	for key := range c.Request.Form {
+		if strings.HasPrefix(key, "price___") {
+			index := strings.TrimPrefix(key, "price___")
+			itemPrice := c.PostForm(key)
+			price, err := convertPrice(itemPrice)
+			if err != nil {
+				log.Printf("Error converting price for item %s: %v", itemNames[index], err)
+				continue
+			}
+			receipt.Items = append(receipt.Items, struct {
+				Name       string  `json:"name"`
+				Price      string  `json:"price"`
+				Confidence float64 `json:"confidence"`
+			}{
+				Name:  itemNames[index],
+				Price: fmt.Sprintf("%.2f", price),
+			})
+		}
+	}
+
 	// Load the template file
 	tmpl, err := template.ParseFiles("templates/partials/table-view.go.tmpl")
 	if err != nil {
@@ -220,7 +284,7 @@ func UploadConfirmHandler(c *gin.Context) {
 
 	// Render the template with the response data
 	var renderedHTML strings.Builder
-	if err := tmpl.Execute(&renderedHTML, nil); err != nil {
+	if err := tmpl.Execute(&renderedHTML, receipt); err != nil {
 		log.Printf("Error rendering template: %v\n", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to render template"})
 		return

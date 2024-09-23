@@ -24,6 +24,7 @@ func main() {
 
 	// static files
 	r.Static("/styles", "./styles")
+	r.Static("/scripts", "./public/scripts")
 	r.SetHTMLTemplate(template.Must(template.ParseGlob("templates/**/*.tmpl")))
 
 	// alllll routes

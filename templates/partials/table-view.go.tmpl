@@ -1,11 +1,43 @@
-<div class="table-view">
-  <table>
-    <thead>
-      <tr>
-        <th>Merchant</th>
-        <th>Date</th>
-        <th>Total</th>
-      </tr>
-    </thead>
-  </table>
+<div id="results">
+  <div class="table-view">
+    <table>
+      <thead>
+        <tr>
+          <th>Merchant</th>
+          <th>Date</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>{{ .Merchant }}</td>
+          <td>{{ .Date }}</td>
+          <td>{{ .Total }}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h3>Items</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Item Name</th>
+          <th>Price</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{ range .Items }}
+          <tr>
+            <td>{{ .Name }}</td>
+            <td>{{ .Price }}</td>
+          </tr>
+        {{ end }}
+      </tbody>
+    </table>
+
+    <div class="button-container">
+      <button hx-post="/upload/confirm" hx-target="#results" hx-swap="outerHTML">Save</button>
+      <button hx-get="/upload" hx-target="#results" hx-swap="outerHTML">Back</button>
+    </div>
+  </div>
 </div>

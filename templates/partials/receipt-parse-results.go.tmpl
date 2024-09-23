@@ -10,21 +10,36 @@
     hx-target="#results" 
     hx-swap="outerHTML"
   >
-    <label for="merchant">Merchant</label>
-    <input type="text" value="{{.Merchant}}" name="merchant" />
-    <label for="date" >Date</label>
-    <input type="text" value="{{.Date}}" name="date" />
-    <label for="total">Total</label>
-    <input type="text" value="{{.Total}}" name="total" />
+    <label for="zcauldron_c_merchant">Merchant</label>
+    <input type="text" value="{{.Merchant}}" name="zcauldron_c_merchant" />
+    <label for="zcauldron_c_date" >Date</label>
+    <input type="text" value="{{.Date}}" name="zcauldron_c_date" />
+    <label for="zcauldron_c_total">Total</label>
+    <input type="text" value="{{.Total}}" name="zcauldron_c_total" />
     <h3>Items</h3>
     <ul class="receipt-items">
-      {{ range .Items }}
-        <li class="receipt-item" >
-          <input type="text" value="{{.Name}}" name="name_{{.Name}}" />
-          <input type="text" value="{{.Price}}" name="price_{{.Price}}" />
+      {{ range $index, $item := .Items }}
+        <li class="receipt-item receipt-item-{{ $index }}" >
+          <input 
+            type="text"
+            value="{{ $item.Name }}"
+            name="name___{{ $index }}"
+            id="name___{{ $index }}"
+          />
+          <input 
+            type="number"
+            value="{{ $item.Price }}"
+            name="price___{{ $index }}"
+            id="price___{{ $index }}"
+            step="0.01"
+            min="0"
+            pattern="^\d+(\.\d{1,2})?$"
+          />
+          <button type="button" class="remove-item">X</button>
         </li>
       {{ end }}
     </ul>  
+    <button type="button" class="add-item">Add Item</button>
     <button type="submit">Next</button>
   </form>
 </div>
