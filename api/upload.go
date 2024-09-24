@@ -2,29 +2,31 @@ package api
 
 import (
 	"bytes"
+	"database/sql"
 	"encoding/base64"
 	"encoding/json"
-	"fmt"
 	"html/template"
 	"io"
 	"log"
 	"net/http"
 	"os"
-	"strconv"
 	"strings"
+	"time"
 
+	"bus.zcauldron.com/utils"
 	"github.com/gin-gonic/gin"
 )
 
 type Receipt struct {
-	Merchant string `json:"merchant"`
-	Date     string `json:"date"`
-	Total    string `json:"total"`
-	Items    []struct {
-		Name       string  `json:"name"`
-		Price      string  `json:"price"`
-		Confidence float64 `json:"confidence"`
-	} `json:"items"`
+	Merchant string          `json:"merchant"`
+	Date     string          `json:"date"`
+	Total    string          `json:"total"`
+	Items    []PurchasedItem `json:"items"`
+}
+
+type PurchasedItem struct {
+	Name  string `json:"name"`
+	Price string `json:"price"`
 }
 
 type ImageWithReceipt struct {
@@ -83,11 +85,8 @@ func UploadHandler(c *gin.Context) {
 						"price": map[string]interface{}{
 							"type": "string",
 						},
-						"confidence": map[string]interface{}{
-							"type": "number",
-						},
 					},
-					"required":             []string{"name", "price", "confidence"},
+					"required":             []string{"name", "price"},
 					"additionalProperties": false,
 				},
 			},
@@ -105,7 +104,9 @@ func UploadHandler(c *gin.Context) {
 				"content": []map[string]interface{}{
 					{
 						"type": "text",
-						"text": "Please extract the merchant name, date, total amount, and list of items with their names and prices from this receipt image. Consider quantities and prices per unit. Consider the list of items may not always have prices listed, such as napkins or condiments. Do not guess any information. If you cannot extract certain fields or if the image is not a receipt, return the same JSON format with those fields left empty. Please assess the confidence in your results by providing a score between 0 and 1 for each item's name and price.",
+						"text": "Please extract the merchant name, date, total amount, and list of items with their names and prices from this receipt image. " +
+							"Consider quantities and prices per unit. Consider the list of items may not always have prices listed, such as napkins or condiments. " +
+							"Do not guess any information. If you cannot extract certain fields or if the image is not a receipt, return the same JSON format with those fields left empty.",
 					},
 					{
 						"type": "image_url",
@@ -227,22 +228,6 @@ func UploadConfirmHandler(c *gin.Context) {
 		Total:    c.PostForm("zcauldron_c_total"),
 	}
 
-	// Helper function to convert price to a float
-	convertPrice := func(price string) (float64, error) {
-		log.Printf("Original price: %s", price)
-		if price == "" {
-			return 0, nil
-		}
-		price = strings.TrimPrefix(price, "$")
-		convertedPrice, err := strconv.ParseFloat(price, 64)
-		if err != nil {
-			log.Printf("Error parsing price: %v", err)
-			return 0, err
-		}
-		log.Printf("Converted price: %f", convertedPrice)
-		return convertedPrice, nil
-	}
-
 	// Create a map to store the item names by index
 	itemNames := make(map[string]string)
 
@@ -259,18 +244,9 @@ func UploadConfirmHandler(c *gin.Context) {
 		if strings.HasPrefix(key, "price___") {
 			index := strings.TrimPrefix(key, "price___")
 			itemPrice := c.PostForm(key)
-			price, err := convertPrice(itemPrice)
-			if err != nil {
-				log.Printf("Error converting price for item %s: %v", itemNames[index], err)
-				continue
-			}
-			receipt.Items = append(receipt.Items, struct {
-				Name       string  `json:"name"`
-				Price      string  `json:"price"`
-				Confidence float64 `json:"confidence"`
-			}{
+			receipt.Items = append(receipt.Items, PurchasedItem{
 				Name:  itemNames[index],
-				Price: fmt.Sprintf("%.2f", price),
+				Price: itemPrice,
 			})
 		}
 	}
@@ -292,4 +268,145 @@ func UploadConfirmHandler(c *gin.Context) {
 
 	c.Header("Content-Type", "text/html")
 	c.String(http.StatusOK, renderedHTML.String())
+}
+
+func SaveReceiptHandler(c *gin.Context) {
+	// TODO sanitize the receipt data
+	// TODO assume all prices are one of the following formats: $1.00, 1.00, 1, "invalid" and parse accordingly
+	var receipt Receipt
+
+	// Parse the JSON payload
+	if err := c.ShouldBindJSON(&receipt); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON payload"})
+		return
+	}
+
+	// get the user id from the session
+	session := utils.GetSession(c)
+
+	userID := session.Get("user_id")
+	userEmail := session.Get("email")
+
+	// When a user adds a receipt we need to create a merchant if it doesn't exist,
+	// we need to create a new receipt,
+	// and then use the ID from both of those to add the receipt items
+	merchantId, err := insertMerchant(receipt.Merchant)
+	if err != nil || merchantId == 0 {
+		log.Printf("Error inserting merchant: %v\n", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to insert merchant"})
+		return
+	}
+
+	receiptId, err := insertReceipt(c, receipt, merchantId)
+	if err != nil || receiptId == 0 {
+		log.Printf("Error inserting receipt: %v\n", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to insert receipt"})
+		return
+	}
+
+	for _, item := range receipt.Items {
+		purchasedItem := PurchasedItem{
+			Name:  item.Name,
+			Price: item.Price,
+		}
+		_, err := insertPurchasedItem(c, purchasedItem, merchantId, receiptId)
+		if err != nil {
+			log.Printf("Error inserting purchased item: %v\n", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to insert purchased item"})
+			return
+		}
+	}
+
+	// For now, we'll just log the receipt and return a success message
+	log.Printf("Received receipt: %+v for user: %d and the email: %s. Merchant id: %d Receipt id: %d\n", receipt, userID, userEmail, merchantId, receiptId)
+
+	c.JSON(http.StatusOK, gin.H{"message": "Receipt saved successfully"})
+}
+
+func insertMerchant(merchant string) (int, error) {
+	db := utils.Db()
+
+	// First, check if the merchant already exists
+	var id int
+	err := db.QueryRow("SELECT id FROM merchants WHERE name = ?", merchant).Scan(&id)
+	if err == nil {
+		// Merchant exists, update the updated_at field
+		_, err = db.Exec("UPDATE merchants SET updated_at = ? WHERE id = ?", time.Now(), id)
+		if err != nil {
+			return 0, err
+		}
+		return id, nil
+	} else if err != sql.ErrNoRows {
+		// An error occurred other than "no rows found"
+		return 0, err
+	}
+
+	// Merchant doesn't exist, insert a new one
+	stmt, err := db.Prepare("INSERT INTO merchants (name, created_at, updated_at) VALUES (?, ?, ?)")
+	if err != nil {
+		return 0, err
+	}
+	defer stmt.Close()
+
+	res, err := stmt.Exec(merchant, time.Now(), time.Now())
+	if err != nil {
+		return 0, err
+	}
+
+	id64, err := res.LastInsertId()
+	if err != nil {
+		return 0, err
+	}
+
+	return int(id64), nil
+}
+
+func insertReceipt(c *gin.Context, receipt Receipt, merchantId int) (int, error) {
+	db := utils.Db()
+
+	session := utils.GetSession(c)
+	userID := session.Get("user_id")
+
+	stmt, err := db.Prepare("INSERT INTO receipts (user_id, merchant_id, total, date, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)")
+	if err != nil {
+		return 0, err
+	}
+	defer stmt.Close()
+
+	res, err := stmt.Exec(userID, merchantId, receipt.Total, receipt.Date, time.Now(), time.Now())
+	if err != nil {
+		return 0, err
+	}
+
+	id64, err := res.LastInsertId()
+	if err != nil {
+		return 0, err
+	}
+
+	return int(id64), nil
+}
+
+func insertPurchasedItem(c *gin.Context, purchasedItem PurchasedItem, merchantId int, receiptId int) (int, error) {
+	db := utils.Db()
+
+	session := utils.GetSession(c)
+	userID := session.Get("user_id")
+
+	stmt, err := db.Prepare("INSERT INTO purchased_items (user_id, merchant_id, receipt_id, name, price, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)")
+	if err != nil {
+		return 0, err
+	}
+	defer stmt.Close()
+
+	res, err := stmt.Exec(userID, merchantId, receiptId, purchasedItem.Name, purchasedItem.Price, time.Now(), time.Now())
+	if err != nil {
+		return 0, err
+	}
+
+	id64, err := res.LastInsertId()
+	if err != nil {
+		return 0, err
+	}
+
+	return int(id64), nil
 }

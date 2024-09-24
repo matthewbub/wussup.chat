@@ -37,37 +37,7 @@
 
     <div class="button-container">
       <button class="secondary-button">Back</button>
-      <button class="primary-button" onclick="handleSubmit()">Save</button>
+      <button class="primary-button" id="save-button">Save</button>
     </div>
   </div>
-
-  <script>
-    const handleSubmit = () => {
-      const data = {
-        merchant: document.querySelector('#merchant').innerHTML,
-        date: document.querySelector('#date').innerHTML,
-        total: document.querySelector('#total').innerHTML,
-        items: [],
-      };
-
-      const items = document.querySelectorAll('.item');
-      items.forEach((item) => {
-        const itemData = {
-          name: item.querySelector('#name').innerHTML,
-          price: item.querySelector('#price').innerHTML,
-        };
-        data.items.push(itemData);
-      });
-
-      /* const response = await fetch('/upload/confirm/save', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      }); */
-
-      console.log(data);
-    };
-  </script>
 </div>

@@ -17,6 +17,7 @@ func registerPublicApiRoutes(r *gin.Engine) {
 func registerPrivateApiRoutes(auth *gin.RouterGroup) {
 	auth.POST("/upload", api.UploadHandler)
 	auth.POST("/upload/confirm", api.UploadConfirmHandler)
+	auth.POST("/upload/confirm/save", api.SaveReceiptHandler)
 	auth.GET("/logout", api.LogoutHandler)
 }
 
@@ -25,7 +26,7 @@ func forgotPasswordHandler(c *gin.Context) {
 
 	fmt.Printf("Email: %s\n", email)
 
-	c.HTML(http.StatusOK, "landing.tmpl", gin.H{
+	c.HTML(http.StatusOK, "landing.go.tmpl", gin.H{
 		"title":   "Landing",
 		"message": "Reset link sent to " + email,
 	})

@@ -277,21 +277,20 @@ func seedPurchasedItems() {
 		receiptId  int
 		name       string
 		price      float64
-		confidence float64
 	}{
-		{1, 1, 1, "Coffee", 5.99, 0.95},
-		{1, 2, 1, "Big Mac", 3.49, 0.90},
-		{1, 3, 1, "Turkey Sub", 2.99, 0.85},
-		{2, 1, 2, "Coffee", 4.99, 0.92},
-		{2, 2, 2, "Cheeseburger", 2.49, 0.88},
-		{2, 3, 2, "Chicken Sub", 1.99, 0.80},
-		{3, 1, 3, "Coffee", 3.99, 0.93},
-		{3, 2, 3, "French Fries", 1.49, 0.87},
-		{3, 3, 3, "Chicken Sub", 0.99, 0.75},
+		{1, 1, 1, "Coffee", 5.99},
+		{1, 2, 1, "Big Mac", 3.49},
+		{1, 3, 1, "Turkey Sub", 2.99},
+		{2, 1, 2, "Coffee", 4.99},
+		{2, 2, 2, "Cheeseburger", 2.49},
+		{2, 3, 2, "Chicken Sub", 1.99},
+		{3, 1, 3, "Coffee", 3.99},
+		{3, 2, 3, "French Fries", 1.49},
+		{3, 3, 3, "Chicken Sub", 0.99},
 	}
 
 	for _, purchasedItem := range purchasedItems {
-		err := insertPurchasedItemIntoDatabase(purchasedItem.userId, purchasedItem.merchantId, purchasedItem.receiptId, purchasedItem.name, purchasedItem.price, purchasedItem.confidence)
+		err := insertPurchasedItemIntoDatabase(purchasedItem.userId, purchasedItem.merchantId, purchasedItem.receiptId, purchasedItem.name, purchasedItem.price)
 		if err != nil {
 			log.Println("Error inserting purchased item into database:", err)
 			return

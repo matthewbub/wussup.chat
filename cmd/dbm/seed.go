@@ -53,11 +53,11 @@ func insertReceiptIntoDatabase(userId int, merchantId int, total float64, date s
 	return err
 }
 
-func insertPurchasedItemIntoDatabase(userId int, merchantId int, receiptId int, name string, price float64, confidence float64) error {
+func insertPurchasedItemIntoDatabase(userId int, merchantId int, receiptId int, name string, price float64) error {
 	db := db()
 	defer db.Close()
 
-	_, err := db.Exec("INSERT INTO purchased_items (user_id, merchant_id, receipt_id, name, price, confidence, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-		userId, merchantId, receiptId, name, price, confidence, time.Now(), time.Now())
+	_, err := db.Exec("INSERT INTO purchased_items (user_id, merchant_id, receipt_id, name, price, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+		userId, merchantId, receiptId, name, price, time.Now(), time.Now())
 	return err
 }

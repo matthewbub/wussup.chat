@@ -39,7 +39,6 @@ CREATE TABLE IF NOT EXISTS purchased_items (
     receipt_id INTEGER NOT NULL,
     name TEXT NOT NULL,
     price TEXT NOT NULL,
-    confidence FLOAT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     notes TEXT,
