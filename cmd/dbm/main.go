@@ -206,10 +206,10 @@ func seedUsers() {
 		password string
 		email    string
 	}{
-		{"admin", "p@ss12345", "admin@zcauldron.com"},
-		{"john_doe", "p@ss12345", "john@zcauldron.com"},
-		{"jane_smith", "p@ss12345", "jane@zcauldron.com"},
-		{"bob_johnson", "p@ss12345", "bob@zcauldron.com"},
+		{"admin", "P@ss12345", "admin@zcauldron.com"},
+		{"john_doe", "P@ss12345", "john@zcauldron.com"},
+		{"jane_smith", "P@ss12345", "jane@zcauldron.com"},
+		{"bob_johnson", "P@ss12345", "bob@zcauldron.com"},
 	}
 
 	for _, user := range users {
