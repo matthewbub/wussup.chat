@@ -281,12 +281,6 @@ func SaveReceiptHandler(c *gin.Context) {
 		return
 	}
 
-	// get the user id from the session
-	session := utils.GetSession(c)
-
-	userID := session.Get("user_id")
-	userEmail := session.Get("email")
-
 	// When a user adds a receipt we need to create a merchant if it doesn't exist,
 	// we need to create a new receipt,
 	// and then use the ID from both of those to add the receipt items
@@ -317,10 +311,7 @@ func SaveReceiptHandler(c *gin.Context) {
 		}
 	}
 
-	// For now, we'll just log the receipt and return a success message
-	log.Printf("Received receipt: %+v for user: %d and the email: %s. Merchant id: %d Receipt id: %d\n", receipt, userID, userEmail, merchantId, receiptId)
-
-	c.JSON(http.StatusOK, gin.H{"message": "Receipt saved successfully"})
+	c.JSON(http.StatusOK, gin.H{"message": "Receipt saved successfully", "success": true})
 }
 
 func insertMerchant(merchant string) (int, error) {

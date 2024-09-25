@@ -25,6 +25,28 @@
         <button type="submit" class="primary-button">Upload</button>
       </form>
       <div id="result"></div>
+
+      <div class="table-view">
+        <h2>Receipts</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Merchant</th>
+              <th>Date</th>
+              <th>Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{ range .Receipts }}
+            <tr class="receipt">
+              <td>{{ .Merchant }}</td>
+              <td>{{ .Date }}</td>
+              <td>{{ .Total }}</td>
+            </tr>
+            {{ end }}
+          </tbody>
+        </table>
+      </div>
     </main>
 
     {{ template "footer.go.tmpl" . }}

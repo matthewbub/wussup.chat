@@ -2,3 +2,4 @@
 - [ ] Sever side sign up validation / error handling
 - [ ] Client side login validation / error handling
 - [ ] Sever side login validation / error handling
+- [ ] handle $ -> int (shld probably be a util)

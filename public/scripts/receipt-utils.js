@@ -66,7 +66,11 @@ const handleSubmit = async () => {
   });
 
   const response = await request.json();
-  console.log(response);
+
+  if (response.success) {
+    // TODO: make this less hacky
+    window.location.reload();
+  }
 };
 
 waitForElement("#save-button").then(() => {

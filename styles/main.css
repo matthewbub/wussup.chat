@@ -45,3 +45,18 @@
   margin: 0 auto;
   padding: 40px 10px;
 }
+
+.receipt-container {
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 40px 10px;
+}
+
+.receipt h3 {
+  margin-top: 0;
+  color: #003366;
+}
+
+.receipt p {
+  margin: 0.5rem 0;
+}
