@@ -11,8 +11,9 @@
   <body>
     {{ template "header.go.tmpl" . }}
 
-    <main>
+    <main>      
       <form 
+        class="receipt-upload-container"
         id="imageUploadForm" 
         enctype="multipart/form-data" 
         hx-post="/upload" 
@@ -20,13 +21,15 @@
         hx-swap="outerHTML"
         hx-trigger="submit"
       >
-        <label for="image">Upload Image:</label>
+        <h2>Upload Receipt</h2>
+        <label for="image">Drag and drop your receipt image here, or click to select a file</label>
         <input type="file" id="image" name="image" accept="image/*" required>
+        <span class="info-text">Supported file types: .png, .jpeg, .jpg, .webp, .gif</span>
         <button type="submit" class="primary-button">Upload</button>
       </form>
       <div id="result"></div>
 
-      <div class="table-view">
+      <div class="table-view receipt-collection-container">
         <h2>Receipts</h2>
         <table>
           <thead>
@@ -38,11 +41,11 @@
           </thead>
           <tbody>
             {{ range .Receipts }}
-            <tr class="receipt">
-              <td>{{ .Merchant }}</td>
-              <td>{{ .Date }}</td>
-              <td>{{ .Total }}</td>
-            </tr>
+              <tr class="receipt">
+                <td>{{ .Merchant }}</td>
+                <td>{{ .Date }}</td>
+                <td>{{ .Total }}</td>
+              </tr>
             {{ end }}
           </tbody>
         </table>

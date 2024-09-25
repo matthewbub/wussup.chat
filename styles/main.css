@@ -1,24 +1,35 @@
-#imageUploadForm {
+.receipt-upload-container,
+.receipt-collection-container,
+.receipt-modify-container,
+.receipt-confirmation-container {
   max-width: 400px;
-  margin: 0 auto;
-  padding: 40px 10px;
-}
-
-.receipt-parse-results {
-  max-width: 400px;
-  margin: 0 auto;
-  padding: 40px 10px;
+  margin-top: 0;
+  margin-right: auto;
+  margin-bottom: 20px;
+  margin-left: auto;
+  padding: 10px;
+  background-color: #f0f0f0;
+  border-radius: 10px;
+  border: 1px solid #5c6b73;
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
 
-  h2 {
-    margin-bottom: 0;
-  }
+.receipt-upload-container {
+  margin-top: 20px;
+  border: 2px dashed #5c6b73; /* Add dashed border for drop zone */
+  text-align: center; /* Center text */
+  transition: background-color 0.3s ease; /* Smooth transition for background color */
+}
 
-  h3 {
-    margin-bottom: 0;
-  }
+.receipt-upload-container.dragover {
+  background-color: #e0e0e0; /* Change background color on drag over */
+}
+
+.info-text {
+  color: #5c6b73;
+  font-size: 14px;
 }
 
 .receipt-items {
@@ -37,13 +48,6 @@
   input {
     width: 100%;
   }
-}
-
-/* table */
-.table-view {
-  max-width: 400px;
-  margin: 0 auto;
-  padding: 40px 10px;
 }
 
 .receipt-container {

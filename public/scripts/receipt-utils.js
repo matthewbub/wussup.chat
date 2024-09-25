@@ -40,41 +40,58 @@ waitForElement(".receipt-items").then((receiptItems) => {
   });
 });
 
-const handleSubmit = async () => {
-  const data = {
-    merchant: document.querySelector("#merchant").innerHTML,
-    date: document.querySelector("#date").innerHTML,
-    total: document.querySelector("#total").innerHTML,
-    items: [],
-  };
-
-  const items = document.querySelectorAll(".item");
-  items.forEach((item) => {
-    const itemData = {
-      name: item.querySelector("#name").innerHTML,
-      price: item.querySelector("#price").innerHTML,
-    };
-    data.items.push(itemData);
-  });
-
-  const request = await fetch("/upload/confirm/save", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(data),
-  });
-
-  const response = await request.json();
-
-  if (response.success) {
-    // TODO: make this less hacky
-    window.location.reload();
-  }
-};
-
 waitForElement("#save-button").then(() => {
-  console.log("save button");
   const saveButton = document.querySelector("#save-button");
-  saveButton.addEventListener("click", handleSubmit);
+  saveButton.addEventListener("click", async () => {
+    const data = {
+      merchant: document.querySelector("#merchant").innerHTML,
+      date: document.querySelector("#date").innerHTML,
+      total: document.querySelector("#total").innerHTML,
+      items: [],
+    };
+
+    const items = document.querySelectorAll(".item");
+    items.forEach((item) => {
+      const itemData = {
+        name: item.querySelector("#name").innerHTML,
+        price: item.querySelector("#price").innerHTML,
+      };
+      data.items.push(itemData);
+    });
+
+    const request = await fetch("/upload/confirm/save", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+
+    const response = await request.json();
+
+    if (response.success) {
+      // TODO: make this less hacky
+      window.location.reload();
+    }
+  });
+});
+
+waitForElement(".receipt-upload-container").then(() => {
+  const uploadContainer = document.querySelector(".receipt-upload-container");
+
+  uploadContainer.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    uploadContainer.classList.add("dragover");
+  });
+
+  uploadContainer.addEventListener("dragleave", () => {
+    uploadContainer.classList.remove("dragover");
+  });
+
+  uploadContainer.addEventListener("drop", (e) => {
+    e.preventDefault();
+    uploadContainer.classList.remove("dragover");
+    const files = e.dataTransfer.files;
+    document.getElementById("image").files = files;
+  });
 });
