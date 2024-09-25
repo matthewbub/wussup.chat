@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"html/template"
 	"io"
 	"log"
@@ -159,8 +160,16 @@ func UploadHandler(c *gin.Context) {
 		return
 	}
 
+	fmt.Printf("Response: %s\n", respBody)
+
 	// Unmarshal the OpenAI API response
 	var openAIResp struct {
+		Model string `json:"model"`
+		Usage struct {
+			PromptTokens     int `json:"prompt_tokens"`
+			CompletionTokens int `json:"completion_tokens"`
+			TotalTokens      int `json:"total_tokens"`
+		} `json:"usage"`
 		Choices []struct {
 			Message struct {
 				Content string `json:"content"`
@@ -176,6 +185,13 @@ func UploadHandler(c *gin.Context) {
 	// Check if the response contains the expected data
 	if len(openAIResp.Choices) == 0 || openAIResp.Choices[0].Message.Content == "" {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid response from OpenAI"})
+		return
+	}
+
+	_, err = insertTokenUsage(c, openAIResp.Model, openAIResp.Usage.PromptTokens, openAIResp.Usage.CompletionTokens, openAIResp.Usage.TotalTokens)
+	if err != nil {
+		log.Printf("Error inserting token usage: %v\n", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to insert token usage"})
 		return
 	}
 
@@ -261,7 +277,7 @@ func UploadConfirmHandler(c *gin.Context) {
 	// Render the template with the response data
 	var renderedHTML strings.Builder
 	if err := tmpl.Execute(&renderedHTML, receipt); err != nil {
-		log.Printf("Error rendering template: %v\n", err)
+		log.Printf("Error rendering template: %v\n %+v\n", err, receipt)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to render template"})
 		return
 	}
@@ -390,6 +406,31 @@ func insertPurchasedItem(c *gin.Context, purchasedItem PurchasedItem, merchantId
 	defer stmt.Close()
 
 	res, err := stmt.Exec(userID, merchantId, receiptId, purchasedItem.Name, purchasedItem.Price, time.Now(), time.Now())
+	if err != nil {
+		return 0, err
+	}
+
+	id64, err := res.LastInsertId()
+	if err != nil {
+		return 0, err
+	}
+
+	return int(id64), nil
+}
+
+func insertTokenUsage(c *gin.Context, model string, promptTokens int, completionTokens int, totalTokens int) (int, error) {
+	db := utils.Db()
+
+	session := utils.GetSession(c)
+	userID := session.Get("user_id")
+
+	stmt, err := db.Prepare("INSERT INTO token_usage (user_id, model, prompt_tokens, completion_tokens, total_tokens, created_at) VALUES (?, ?, ?, ?, ?, ?)")
+	if err != nil {
+		return 0, err
+	}
+	defer stmt.Close()
+
+	res, err := stmt.Exec(userID, model, promptTokens, completionTokens, totalTokens, time.Now())
 	if err != nil {
 		return 0, err
 	}

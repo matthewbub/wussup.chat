@@ -59,3 +59,14 @@ CREATE TABLE IF NOT EXISTS receipts (
     FOREIGN KEY (user_id) REFERENCES users (id),
     FOREIGN KEY (merchant_id) REFERENCES merchants (id)
 );
+
+CREATE TABLE IF NOT EXISTS token_usage (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    model TEXT NOT NULL,
+    prompt_tokens INTEGER NOT NULL,
+    completion_tokens INTEGER NOT NULL,
+    total_tokens INTEGER NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users (id)
+);
