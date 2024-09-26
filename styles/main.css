@@ -32,10 +32,19 @@
   font-size: 14px;
 }
 
+.receipt-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  width: 100%;
+}
+
 .receipt-items {
+  margin-top: 0;
+  margin-right: 0;
+  margin-bottom: 0;
   margin-left: 0;
   padding-left: 0;
-  gap: 10px;
   display: flex;
   flex-direction: column;
 }
@@ -44,6 +53,7 @@
   display: flex;
   width: 100%;
   gap: 10px;
+  margin-bottom: 10px;
 
   input {
     width: 100%;

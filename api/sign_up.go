@@ -127,9 +127,16 @@ func getUniqueConstraintErrorMessage(err sqlite3.Error) string {
 	return "Error creating account"
 }
 
+type successPageData struct {
+	Title   string
+	Message string
+}
+
 func renderSuccessPage(c *gin.Context) {
-	c.HTML(http.StatusOK, "landing.go.tmpl", gin.H{
-		"title":   "Landing",
-		"message": "Account created successfully, please login",
-	})
+	data := successPageData{
+		// Title:   "Landing",
+		Message: "Account created successfully, please login to continue",
+	}
+	c.Redirect(http.StatusSeeOther, "/")
+	c.Set("Message", data.Message)
 }

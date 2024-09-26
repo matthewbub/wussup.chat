@@ -95,3 +95,35 @@ waitForElement(".receipt-upload-container").then(() => {
     document.getElementById("image").files = files;
   });
 });
+
+Promise.all([
+  waitForElement(".receipt-items"),
+  waitForElement(".no-items-message"),
+]).then(([receiptItems, emptyState]) => {
+  const receiptItemsElement = receiptItems;
+  const emptyStateElement = emptyState;
+
+  const updateEmptyState = () => {
+    if (
+      receiptItemsElement?.children?.length === 0 ||
+      receiptItemsElement?.children === null ||
+      receiptItemsElement?.children === undefined
+    ) {
+      emptyStateElement.style.display = "block";
+    } else {
+      emptyStateElement.style.display = "none";
+    }
+  };
+
+  // Initial check
+  updateEmptyState();
+
+  // Create a MutationObserver to watch for changes in the receiptItems
+  const observer = new MutationObserver(updateEmptyState);
+
+  // Configure the observer to watch for childList changes
+  observer.observe(receiptItems, { childList: true });
+
+  // Optionally, you can stop observing when it's no longer needed
+  // observer.disconnect();
+});
