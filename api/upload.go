@@ -204,6 +204,19 @@ func UploadHandler(c *gin.Context) {
 		return
 	}
 
+	// format the total and each item's price to two decimal places
+	if receipt.Total != "" {
+		receipt.Total = fmt.Sprintf("%.2f", float64(utils.FormatCurrency(receipt.Total))/100)
+	}
+
+	if len(receipt.Items) > 0 {
+		for i := range receipt.Items {
+			receipt.Items[i].Price = fmt.Sprintf("%.2f", float64(utils.FormatCurrency(receipt.Items[i].Price))/100)
+		}
+	}
+
+	log.Printf("Receipt: %+v\n", receipt)
+
 	imageWithReceipt := ImageWithReceipt{
 		Image:   base64Image,
 		Receipt: receipt,
@@ -262,7 +275,7 @@ func UploadConfirmHandler(c *gin.Context) {
 			itemPrice := c.PostForm(key)
 			receipt.Items = append(receipt.Items, PurchasedItem{
 				Name:  itemNames[index],
-				Price: itemPrice,
+				Price: fmt.Sprintf("%.2f", float64(utils.FormatCurrency(itemPrice))/100),
 			})
 		}
 	}
@@ -317,7 +330,7 @@ func SaveReceiptHandler(c *gin.Context) {
 	for _, item := range receipt.Items {
 		purchasedItem := PurchasedItem{
 			Name:  item.Name,
-			Price: item.Price,
+			Price: fmt.Sprintf("%.2f", float64(utils.FormatCurrency(item.Price))/100),
 		}
 		_, err := insertPurchasedItem(c, purchasedItem, merchantId, receiptId)
 		if err != nil {

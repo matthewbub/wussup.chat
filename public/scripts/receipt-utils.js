@@ -26,8 +26,10 @@ waitForElement(".receipt-items").then((receiptItems) => {
     const newItem = document.createElement("li");
     newItem.classList.add("receipt-item");
     newItem.innerHTML = `
-      <input type="text" name="name___${length + 1}" />
-      <input type="text" name="price___${length + 1}" />
+      <input type="text" name="name___${length + 1}" placeholder="Item Name" />
+      <input type="text" name="price___${
+        length + 1
+      }" placeholder="Item Price" />
       <button type="button" class="remove-item">X</button>
     `;
     receiptItems.appendChild(newItem);
@@ -123,7 +125,4 @@ Promise.all([
 
   // Configure the observer to watch for childList changes
   observer.observe(receiptItems, { childList: true });
-
-  // Optionally, you can stop observing when it's no longer needed
-  // observer.disconnect();
 });
