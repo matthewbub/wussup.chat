@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"time"
 
+	"bus.zcauldron.com/models"
 	"bus.zcauldron.com/utils"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
@@ -34,17 +35,6 @@ type AuthPageData struct {
 	Receipts     []Receipt
 }
 
-// id INTEGER PRIMARY KEY AUTOINCREMENT,
-//
-//	user_id INTEGER NOT NULL,
-//	merchant_id INTEGER NOT NULL,
-//	total TEXT NOT NULL,
-//	date TEXT NOT NULL,
-//	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-//	updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-//	notes TEXT,
-//	FOREIGN KEY (user_id) REFERENCES users (id),
-//	FOREIGN KEY (merchant_id) REFERENCES merchants (id)
 type Receipt struct {
 	Date       string          `json:"date"`
 	Total      string          `json:"total"`
@@ -75,6 +65,7 @@ func registerPublicViews(r *gin.Engine) {
 
 func registerPrivateViews(auth *gin.RouterGroup) {
 	auth.GET("/dashboard", dashboardViewHandler)
+	auth.GET("/dashboard/receipt", receiptViewHandler)
 }
 
 func renderView(c *gin.Context, template string, title string) {
@@ -227,4 +218,54 @@ func getReceiptsForUser(userID interface{}) ([]Receipt, error) {
 	}
 	log.Println(receipts)
 	return receipts, nil
+}
+
+type ReceiptPageData struct {
+	Title      string
+	IsLoggedIn bool
+	User       *UserInViews
+	Email      string
+	Message    string
+	Receipt    models.Receipt
+}
+
+func receiptViewHandler(c *gin.Context) {
+	var isLoggedIn bool
+	user, err := utils.GetUserFromSession(c)
+	if err != nil {
+		isLoggedIn = false
+	} else {
+		isLoggedIn = true
+	}
+
+	if err != nil {
+		log.Println(err)
+		c.Redirect(http.StatusSeeOther, "/login")
+		return
+	}
+
+	receiptID := c.Query("id")
+	if receiptID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Receipt ID is required"})
+		return
+	}
+
+	receipt, err := models.GetReceiptById(receiptID)
+
+	if err != nil {
+		log.Println(err)
+		// c.Redirect(http.StatusSeeOther, "/dashboard")
+		return
+	}
+
+	template := "receipt.go.tmpl"
+
+	c.HTML(http.StatusOK, template, ReceiptPageData{
+		Title:      "ZCauldron Receipt",
+		IsLoggedIn: isLoggedIn,
+		User:       &UserInViews{ID: user.ID, Username: user.Username, Email: user.Email},
+		Email:      user.Email,
+		Message:    "Welcome to the receipt",
+		Receipt:    *receipt,
+	})
 }

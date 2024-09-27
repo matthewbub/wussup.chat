@@ -45,7 +45,7 @@
           <tbody>
             {{ range .Receipts }}
               <tr class="receipt">
-                <td>{{ .Merchant }}</td>
+                <td><a href="/dashboard/receipt?id={{ .ID }}">{{ .Merchant }}</a></td>
                 <td>{{ .Date }}</td>
                 <td>{{ .Total }}</td>
               </tr>
