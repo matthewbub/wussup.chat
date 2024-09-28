@@ -17,6 +17,7 @@ func GetUserFromSession(c *gin.Context) (*User, error) {
 	session := GetSession(c)
 	userID, ok := session.Get("user_id").(int)
 	if !ok {
+		// TODO redirect to login page
 		return nil, errors.New("user not found in session")
 	}
 	username, ok := session.Get("username").(string)

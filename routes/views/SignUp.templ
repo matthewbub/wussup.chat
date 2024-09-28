@@ -1,0 +1,58 @@
+package views
+
+import "bus.zcauldron.com/routes/views/partialsv2"
+
+type SignUpData struct {
+	Title string
+	Name string
+	IsLoggedIn bool
+	Message string
+}
+
+templ SignUp(data SignUpData) {
+	<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			@partialsv2.GlobalHead(data.Title)
+		</head>
+		<body>
+			@partialsv2.GlobalHeader(data.IsLoggedIn)
+			<main>
+				<div class="card">
+					<h2>Sign Up</h2>
+					<form action="/sign-up" method="post">
+						<input type="text" name="username" placeholder="Username" required />
+						<input type="email" name="email" placeholder="Email" required />
+						<input
+							type="password"
+							name="password"
+							placeholder="Password"
+							required
+						/>
+						<input
+							type="password"
+							name="confirm_password"
+							placeholder="Confirm Password"
+							required
+						/>
+						<div class="terms-group">
+							<div class="checkbox-group">
+								<input type="checkbox" id="terms" name="terms" required />
+								<label for="terms">I agree to the <a href="/terms-of-service">Terms of Service</a> and
+									<a href="/privacy-policy">Privacy Policy</a></label>
+							</div>
+						</div>
+						<button type="submit" class="primary-button">Sign Up</button>
+						if data.Message != "" {
+							<div class="message">{ data.Message }</div>
+						} 
+					</form>
+					<div class="login-link">
+						Already have an account? <a href="/login">Log in</a>
+					</div>
+				</div>
+			</main>
+			@partialsv2.GlobalFooter()
+		</body>
+	</html>
+}

@@ -59,6 +59,7 @@ func registerPublicViews(r *gin.Engine) {
 	r.GET("/", landingViewHandler)
 	r.GET("/login", func(c *gin.Context) {
 		// TODO improve user auth behavior
+		// If logged in, redirect to dashboard
 		templ.Handler(views.LogIn(views.LogInData{
 			Title:      "Login",
 			Name:       "World",
@@ -66,11 +67,17 @@ func registerPublicViews(r *gin.Engine) {
 			Message:    "Welcome to the login page",
 		})).ServeHTTP(c.Writer, c.Request)
 	})
-	r.GET("/sign-up", signUpViewHandler)
+	r.GET("/sign-up", func(c *gin.Context) {
+		// TODO improve user auth behavior
+		// If logged in, redirect to dashboard
+		templ.Handler(views.SignUp(views.SignUpData{
+			Title:      "Sign Up",
+			Name:       "World",
+			IsLoggedIn: false,
+			Message:    "Welcome to the sign up page",
+		})).ServeHTTP(c.Writer, c.Request)
+	})
 	r.GET("/forgot-password", forgotPasswordViewHandler)
-	r.GET("/privacy-policy", privacyPolicyViewHandler)
-	r.GET("/terms-of-service", termsOfServiceViewHandler)
-	r.GET("/business-ideas", businessIdeasViewHandler)
 	r.GET("/test", func(c *gin.Context) {
 		user, err := utils.GetUserFromSession(c)
 		if err != nil {
