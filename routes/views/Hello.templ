@@ -1,0 +1,25 @@
+package views
+
+import "bus.zcauldron.com/routes/views/partialsv2"
+
+type HelloData struct {
+	Title string
+	Name string
+	IsLoggedIn bool
+}
+
+templ Hello(data HelloData) {
+	<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			@partialsv2.GlobalHead(data.Title)
+		</head>
+		<body>
+			@partialsv2.GlobalHeader(data.IsLoggedIn)
+			<main>
+				<h1>Hello, { data.Name } !</h1>
+			</main>
+			@partialsv2.GlobalFooter()
+		</body>
+	</html>
+}

@@ -1,0 +1,54 @@
+package views
+
+import "bus.zcauldron.com/routes/views/partialsv2"
+
+type LogInData struct {
+	Title string
+	Name string
+	IsLoggedIn bool
+	Message string
+}
+
+templ LogIn(data LogInData) {
+	<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			@partialsv2.GlobalHead(data.Title)
+		</head>
+		<body>
+			@partialsv2.GlobalHeader(data.IsLoggedIn)
+			<main>
+      <div class="card">
+        <h2>Login</h2>
+        <form action="/login" method="post">
+          <input 
+						type="text" 
+						name="username" 
+						placeholder="Username" 
+						required 
+					/>
+          <input
+            type="password"
+            name="password"
+            placeholder="Password"
+            required
+          /> 
+          <div class="form-group">
+            <div class="checkbox-group">
+              <input type="checkbox" id="remember" name="remember" />
+              <label for="remember">Remember me for 30 days</label>
+            </div>
+            <a href="/forgot-password">Forgot password?</a>
+          </div>
+          <button type="submit" class="primary-button">Login</button>
+
+          if data.Message != "" {
+            <div class="error">{ data.Message }</div>
+					}
+					</form>
+				</div>
+			</main>
+			@partialsv2.GlobalFooter()
+		</body>
+	</html>
+}

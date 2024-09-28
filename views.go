@@ -7,7 +7,9 @@ import (
 	"time"
 
 	"bus.zcauldron.com/models"
+	"bus.zcauldron.com/routes/views"
 	"bus.zcauldron.com/utils"
+	"github.com/a-h/templ"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 )
@@ -55,12 +57,32 @@ type PurchasedItem struct {
 
 func registerPublicViews(r *gin.Engine) {
 	r.GET("/", landingViewHandler)
-	r.GET("/login", loginViewHandler)
+	r.GET("/login", func(c *gin.Context) {
+		// TODO improve user auth behavior
+		templ.Handler(views.LogIn(views.LogInData{
+			Title:      "Login",
+			Name:       "World",
+			IsLoggedIn: false,
+			Message:    "Welcome to the login page",
+		})).ServeHTTP(c.Writer, c.Request)
+	})
 	r.GET("/sign-up", signUpViewHandler)
 	r.GET("/forgot-password", forgotPasswordViewHandler)
 	r.GET("/privacy-policy", privacyPolicyViewHandler)
 	r.GET("/terms-of-service", termsOfServiceViewHandler)
 	r.GET("/business-ideas", businessIdeasViewHandler)
+	r.GET("/test", func(c *gin.Context) {
+		user, err := utils.GetUserFromSession(c)
+		if err != nil {
+			log.Println(err)
+		}
+
+		templ.Handler(views.Hello(views.HelloData{
+			Title:      "World",
+			Name:       user.Username,
+			IsLoggedIn: err == nil,
+		})).ServeHTTP(c.Writer, c.Request)
+	})
 }
 
 func registerPrivateViews(auth *gin.RouterGroup) {

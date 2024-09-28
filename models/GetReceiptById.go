@@ -2,7 +2,6 @@ package models
 
 import (
 	"database/sql"
-	"log"
 
 	"bus.zcauldron.com/utils"
 )
@@ -61,6 +60,6 @@ func GetReceiptById(id string) (*Receipt, error) {
 		}
 		receipt.Items = append(receipt.Items, item)
 	}
-	log.Println(receipt)
+
 	return &receipt, nil
 }

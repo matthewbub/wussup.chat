@@ -15,3 +15,19 @@ Shimmy ya way on into the /cmd/dbm directory and run `go run *.go` to hit the TU
 3. Generate a secure key and add the key to the `../../.env` file as `SESSION_SECRET_KEY = #...`
 
 now you can run the application in development mode from the root dir. (`cd ../../`)
+
+## arch
+
+```sh
+main.go # <--- entry its right here this is the entry
+/routes
+  /api
+  /views
+/src
+  /middleware
+  /utils
+  /models
+/public
+  /styles
+  /javascript
+```
