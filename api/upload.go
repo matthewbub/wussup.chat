@@ -15,7 +15,7 @@ import (
 	"time"
 
 	"bus.zcauldron.com/models"
-	"bus.zcauldron.com/routes/views/partialsv2"
+	"bus.zcauldron.com/routes/views/partials"
 	"bus.zcauldron.com/utils"
 	"github.com/gin-gonic/gin"
 )
@@ -223,7 +223,7 @@ func UploadHandler(c *gin.Context) {
 	}
 
 	// Load the template file
-	component := partialsv2.ReceiptManualEdit(imageWithReceipt)
+	component := partials.ReceiptManualEdit(imageWithReceipt)
 	component.Render(context.Background(), c.Writer)
 }
 
@@ -265,7 +265,7 @@ func UploadConfirmHandler(c *gin.Context) {
 		}
 	}
 
-	component := partialsv2.ReceiptConfirmation(receipt)
+	component := partials.ReceiptConfirmation(receipt)
 	component.Render(context.Background(), c.Writer)
 }
 

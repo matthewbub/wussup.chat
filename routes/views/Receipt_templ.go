@@ -10,7 +10,7 @@ import templruntime "github.com/a-h/templ/runtime"
 
 import (
 	"bus.zcauldron.com/models"
-	"bus.zcauldron.com/routes/views/partialsv2"
+	"bus.zcauldron.com/routes/views/partials"
 	"bus.zcauldron.com/utils"
 )
 
@@ -50,7 +50,7 @@ func ReceiptView(data ReceiptViewData) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = partialsv2.GlobalHead(data.Title).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = partials.GlobalHead(data.Title).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -58,7 +58,7 @@ func ReceiptView(data ReceiptViewData) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = partialsv2.GlobalHeader(data.IsLoggedIn).Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = partials.GlobalHeader(data.IsLoggedIn).Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -154,7 +154,7 @@ func ReceiptView(data ReceiptViewData) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = partialsv2.GlobalFooter().Render(ctx, templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = partials.GlobalFooter().Render(ctx, templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

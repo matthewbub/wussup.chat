@@ -1,7 +1,7 @@
 
 package views
 
-import "bus.zcauldron.com/routes/views/partialsv2"
+import "bus.zcauldron.com/routes/views/partials"
 
 type DashboardData struct {
 	Title string
@@ -14,10 +14,10 @@ templ Dashboard(data DashboardData) {
 	<!DOCTYPE html>
 	<html lang="en">
 		<head>
-			@partialsv2.GlobalHead(data.Title)
+			@partials.GlobalHead(data.Title)
 		</head>
 		<body>
-			@partialsv2.GlobalHeader(data.IsLoggedIn)
+			@partials.GlobalHeader(data.IsLoggedIn)
 			<main>
 				<div class="card">
 					<h2>Dashboard</h2>
@@ -26,7 +26,7 @@ templ Dashboard(data DashboardData) {
           <a href="/dashboard/receipts">View Receipts</a>
 				</div>
 			</main>
-			@partialsv2.GlobalFooter()      
+			@partials.GlobalFooter()      
 		</body>
 	</html>
 }

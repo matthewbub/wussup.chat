@@ -1,6 +1,6 @@
 package views
 
-import "bus.zcauldron.com/routes/views/partialsv2"
+import "bus.zcauldron.com/routes/views/partials"
 
 type HelloData struct {
 	Title string
@@ -12,14 +12,14 @@ templ Hello(data HelloData) {
 	<!DOCTYPE html>
 	<html lang="en">
 		<head>
-			@partialsv2.GlobalHead(data.Title)
+			@partials.GlobalHead(data.Title)
 		</head>
 		<body>
-			@partialsv2.GlobalHeader(data.IsLoggedIn)
+			@partials.GlobalHeader(data.IsLoggedIn)
 			<main>
 				<h1>Hello, { data.Name } !</h1>
 			</main>
-			@partialsv2.GlobalFooter()
+			@partials.GlobalFooter()
 		</body>
 	</html>
 }

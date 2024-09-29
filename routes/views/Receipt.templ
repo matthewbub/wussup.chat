@@ -2,7 +2,7 @@ package views
 
 import (
 	"bus.zcauldron.com/models"
-	"bus.zcauldron.com/routes/views/partialsv2"
+	"bus.zcauldron.com/routes/views/partials"
 	"bus.zcauldron.com/utils"
 )
 
@@ -21,10 +21,10 @@ templ ReceiptView(data ReceiptViewData) {
 	<!DOCTYPE html>
 	<html lang="en">
 		<head>
-			@partialsv2.GlobalHead(data.Title)
+			@partials.GlobalHead(data.Title)
 		</head>
 		<body>
-			@partialsv2.GlobalHeader(data.IsLoggedIn)			
+			@partials.GlobalHeader(data.IsLoggedIn)			
       <main>
         <p class="message">{ data.Message }</p>
         <div class="receipt-collection-container">
@@ -67,7 +67,7 @@ templ ReceiptView(data ReceiptViewData) {
         </div>
       </div>
     </main>
-			@partialsv2.GlobalFooter()
+			@partials.GlobalFooter()
 		</body>
 	</html>
 }

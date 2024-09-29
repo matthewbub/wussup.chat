@@ -3,7 +3,7 @@ package views
 import (
   "fmt"
 	"bus.zcauldron.com/models"
-	"bus.zcauldron.com/routes/views/partialsv2"
+	"bus.zcauldron.com/routes/views/partials"
 )
 
 type ReceiptsData struct {
@@ -18,10 +18,10 @@ templ Receipts(data ReceiptsData) {
 	<!DOCTYPE html>
 	<html lang="en">
 		<head>
-			@partialsv2.GlobalHead(data.Title)
+			@partials.GlobalHead(data.Title)
 		</head>
 		<body>
-			@partialsv2.GlobalHeader(data.IsLoggedIn)			
+			@partials.GlobalHeader(data.IsLoggedIn)			
       <main>      
         <form 
           class="receipt-upload-container"
@@ -64,7 +64,7 @@ templ Receipts(data ReceiptsData) {
           </table>
         </div>
       </main>
-      @partialsv2.GlobalFooter()
+      @partials.GlobalFooter()
       <script src="/js/receipt-utils.js"></script>
 		</body>
 	</html>
