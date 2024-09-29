@@ -24,7 +24,7 @@ func main() {
 
 	// static files
 	r.Static("/styles", "./styles")
-	r.Static("/scripts", "./public/scripts")
+	// r.Static("/scripts", "./public/scripts")
 	r.Static("/js", "./public/js")
 	r.SetHTMLTemplate(template.Must(template.ParseGlob("templates/**/*.tmpl")))
 

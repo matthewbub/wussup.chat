@@ -2,6 +2,7 @@ package models
 
 import (
 	"database/sql"
+	"log"
 
 	"bus.zcauldron.com/utils"
 )
@@ -62,4 +63,34 @@ func GetReceiptById(id string) (*Receipt, error) {
 	}
 
 	return &receipt, nil
+}
+
+func GetReceipts(userID interface{}) ([]Receipt, error) {
+	db := utils.Db()
+
+	query := `
+		SELECT receipts.id, receipts.total, receipts.date, receipts.created_at, receipts.updated_at, receipts.notes, merchants.name FROM receipts
+		JOIN merchants ON receipts.merchant_id = merchants.id
+		WHERE receipts.user_id = ?
+	`
+
+	rows, err := db.Query(query, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	receipts := []Receipt{}
+
+	for rows.Next() {
+		var receipt Receipt
+		err := rows.Scan(&receipt.ID, &receipt.Total, &receipt.Date, &receipt.CreatedAt, &receipt.UpdatedAt, &receipt.Notes, &receipt.Merchant)
+		if err != nil {
+			return nil, err
+		}
+		receipts = append(receipts, receipt)
+	}
+	log.Println(receipts)
+	return receipts, nil
 }

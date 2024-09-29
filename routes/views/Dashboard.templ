@@ -1,0 +1,32 @@
+
+package views
+
+import "bus.zcauldron.com/routes/views/partialsv2"
+
+type DashboardData struct {
+	Title string
+	Name string
+	IsLoggedIn bool
+	Message string
+}
+
+templ Dashboard(data DashboardData) {
+	<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			@partialsv2.GlobalHead(data.Title)
+		</head>
+		<body>
+			@partialsv2.GlobalHeader(data.IsLoggedIn)
+			<main>
+				<div class="card">
+					<h2>Dashboard</h2>
+					<p>Welcome, { data.Name }!</p>
+
+          <a href="/dashboard/receipts">View Receipts</a>
+				</div>
+			</main>
+			@partialsv2.GlobalFooter()      
+		</body>
+	</html>
+}
