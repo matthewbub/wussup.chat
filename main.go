@@ -23,7 +23,7 @@ func main() {
 	r.Use(sessions.Sessions("session", store))
 
 	// static files
-	r.Static("/styles", "./styles")
+	r.Static("/styles", "./public/styles")
 	// r.Static("/scripts", "./public/scripts")
 	r.Static("/js", "./public/js")
 	r.SetHTMLTemplate(template.Must(template.ParseGlob("templates/**/*.tmpl")))
