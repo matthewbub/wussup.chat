@@ -14,7 +14,7 @@ templ ReceiptManualEdit(ReceiptWithImage utils.ReceiptWithImage) {
         details below.
       </p>
     </div>
-    <img src="data:image/png;base64,{ReceiptWithImage.Image}" alt="Receipt Image" />
+    <img src={"data:image/png;base64," + ReceiptWithImage.Image} alt="Receipt Image" />
 
     <form
       method="post"
@@ -24,15 +24,15 @@ templ ReceiptManualEdit(ReceiptWithImage utils.ReceiptWithImage) {
     >
       <div class="receipt-field">
         <label for="zcauldron_c_merchant">Merchant</label>
-        <input type="text" value="{ReceiptWithImage.Merchant}" name="zcauldron_c_merchant" />
+        <input type="text" value={ReceiptWithImage.Receipt.Merchant} name="zcauldron_c_merchant" />
       </div>
       <div class="receipt-field">
         <label for="zcauldron_c_date">Date</label>
-        <input type="text" value="{ReceiptWithImage.Date}" name="zcauldron_c_date" />
+        <input type="text" value={ReceiptWithImage.Receipt.Date} name="zcauldron_c_date" />
       </div>
       <div class="receipt-field">
         <label for="zcauldron_c_total">Total</label>
-        <input type="text" value="{ReceiptWithImage.Total}" name="zcauldron_c_total" />
+        <input type="text" value={ReceiptWithImage.Receipt.Total} name="zcauldron_c_total" />
       </div>
 
       <div class="receipt-field-items">
