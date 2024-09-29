@@ -1,0 +1,70 @@
+package partialsv2
+
+import (
+  "bus.zcauldron.com/utils"
+  "strconv"
+)
+
+templ ReceiptManualEdit(ReceiptWithImage utils.ReceiptWithImage) {	
+  <div id="results" class="receipt-modify-container">
+    <div>
+      <h2>Receipt</h2>
+      <p>
+        Automated receipt parsing is not 100% accurate. Please confirm the receipt
+        details below.
+      </p>
+    </div>
+    <img src="data:image/png;base64,{ReceiptWithImage.Image}" alt="Receipt Image" />
+
+    <form
+      method="post"
+      hx-post="/upload/confirm"
+      hx-target="#results"
+      hx-swap="outerHTML"
+    >
+      <div class="receipt-field">
+        <label for="zcauldron_c_merchant">Merchant</label>
+        <input type="text" value="{ReceiptWithImage.Merchant}" name="zcauldron_c_merchant" />
+      </div>
+      <div class="receipt-field">
+        <label for="zcauldron_c_date">Date</label>
+        <input type="text" value="{ReceiptWithImage.Date}" name="zcauldron_c_date" />
+      </div>
+      <div class="receipt-field">
+        <label for="zcauldron_c_total">Total</label>
+        <input type="text" value="{ReceiptWithImage.Total}" name="zcauldron_c_total" />
+      </div>
+
+      <div class="receipt-field-items">
+        <h3>Items</h3>
+        <ul class="receipt-items">
+          for index, item := range ReceiptWithImage.Receipt.Items { 
+            <li class="receipt-item receipt-item-{index}">
+              <input
+                type="text"
+                value={item.Name}
+                name={"name___" + strconv.Itoa(index)}
+                id={"name___" + strconv.Itoa(index)}
+              />
+              <input
+                type="text"
+                value={item.Price}
+                name={"price___" + strconv.Itoa(index)}
+                id={"price___" + strconv.Itoa(index)}
+              />
+              <button type="button" class="remove-item">X</button>
+            </li>
+          }
+        </ul>
+        <div class="no-items-message" style="display: none">
+          No items here. Please add items manually or click "Next" to proceed.
+        </div>
+      </div>
+      <div class="button-container">
+        <button type="button" class="add-item secondary-button">Add Item</button>
+        <button type="submit" class="primary-button">Next</button>
+      </div>
+    </form>
+  </div>
+
+}

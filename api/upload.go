@@ -2,11 +2,11 @@ package api
 
 import (
 	"bytes"
+	"context"
 	"database/sql"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"html/template"
 	"io"
 	"log"
 	"net/http"
@@ -14,6 +14,8 @@ import (
 	"strings"
 	"time"
 
+	"bus.zcauldron.com/models"
+	"bus.zcauldron.com/routes/views/partialsv2"
 	"bus.zcauldron.com/utils"
 	"github.com/gin-gonic/gin"
 )
@@ -160,8 +162,6 @@ func UploadHandler(c *gin.Context) {
 		return
 	}
 
-	fmt.Printf("Response: %s\n", respBody)
-
 	// Unmarshal the OpenAI API response
 	var openAIResp struct {
 		Model string `json:"model"`
@@ -196,7 +196,7 @@ func UploadHandler(c *gin.Context) {
 	}
 
 	// Unmarshal the content field separately
-	var receipt Receipt
+	var receipt utils.ReceiptParseResult
 	if err := json.Unmarshal([]byte(openAIResp.Choices[0].Message.Content), &receipt); err != nil {
 		log.Printf("Error parsing receipt content: %v\n", err)
 		log.Print("Last time this happened we weren't using enough tokens to get a full response and therefore were getting 50 percent of a JSON object.")
@@ -217,29 +217,14 @@ func UploadHandler(c *gin.Context) {
 
 	log.Printf("Receipt: %+v\n", receipt)
 
-	imageWithReceipt := ImageWithReceipt{
+	imageWithReceipt := utils.ReceiptWithImage{
 		Image:   base64Image,
 		Receipt: receipt,
 	}
 
 	// Load the template file
-	tmpl, err := template.ParseFiles("templates/partials/receipt-parse-results.go.tmpl")
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to load template"})
-		return
-	}
-
-	// Render the template with the response data
-	var renderedHTML strings.Builder
-	if err := tmpl.Execute(&renderedHTML, imageWithReceipt); err != nil {
-		log.Printf("Error rendering template: %v\n", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to render template"})
-		return
-	}
-
-	c.Header("Content-Type", "text/html")
-	c.String(http.StatusOK, renderedHTML.String())
-
+	component := partialsv2.ReceiptManualEdit(imageWithReceipt)
+	component.Render(context.Background(), c.Writer)
 }
 
 func UploadConfirmHandler(c *gin.Context) {
@@ -251,7 +236,7 @@ func UploadConfirmHandler(c *gin.Context) {
 	}
 
 	// Extract form data into a structured format
-	receipt := Receipt{
+	receipt := models.Receipt{
 		Merchant: c.PostForm("zcauldron_c_merchant"),
 		Date:     c.PostForm("zcauldron_c_date"),
 		Total:    c.PostForm("zcauldron_c_total"),
@@ -273,30 +258,15 @@ func UploadConfirmHandler(c *gin.Context) {
 		if strings.HasPrefix(key, "price___") {
 			index := strings.TrimPrefix(key, "price___")
 			itemPrice := c.PostForm(key)
-			receipt.Items = append(receipt.Items, PurchasedItem{
+			receipt.Items = append(receipt.Items, models.Item{
 				Name:  itemNames[index],
 				Price: fmt.Sprintf("%.2f", float64(utils.FormatCurrency(itemPrice))/100),
 			})
 		}
 	}
 
-	// Load the template file
-	tmpl, err := template.ParseFiles("templates/partials/table-view.go.tmpl")
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to load template"})
-		return
-	}
-
-	// Render the template with the response data
-	var renderedHTML strings.Builder
-	if err := tmpl.Execute(&renderedHTML, receipt); err != nil {
-		log.Printf("Error rendering template: %v\n %+v\n", err, receipt)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to render template"})
-		return
-	}
-
-	c.Header("Content-Type", "text/html")
-	c.String(http.StatusOK, renderedHTML.String())
+	component := partialsv2.ReceiptConfirmation(receipt)
+	component.Render(context.Background(), c.Writer)
 }
 
 func SaveReceiptHandler(c *gin.Context) {
