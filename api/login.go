@@ -88,7 +88,7 @@ func renderLoginErrorPage(c *gin.Context, message string) {
 }
 
 type User struct {
-	ID       int
+	ID       string
 	Username string
 	Password string
 	Email    string

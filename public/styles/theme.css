@@ -75,9 +75,14 @@ nav a:hover {
   border: none;
   border-radius: 8px;
   padding: 2rem;
-  margin-bottom: 2rem;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  max-width: 400px;
+  margin-top: 2rem;
+  margin-right: auto;
+  margin-bottom: 2rem;
+  margin-left: auto;
 }
+
 .card h2 {
   text-align: center;
   color: #003366;

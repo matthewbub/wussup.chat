@@ -6,8 +6,11 @@ import (
 	"strings"
 	"time"
 
+	"bus.zcauldron.com/routes/views"
 	"bus.zcauldron.com/utils"
+	"github.com/a-h/templ"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/mattn/go-sqlite3"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -59,6 +62,7 @@ func SignUpHandler(c *gin.Context) {
 	// Insert user into database
 	err = insertUserIntoDatabase(userData.username, hashedPassword, userData.email)
 	if err != nil {
+		fmt.Printf("line 65 err %v\n", err)
 		handleDatabaseError(c, err)
 		return
 	}
@@ -92,19 +96,21 @@ func passwordsMatch(password, confirmPassword string) bool {
 	return password == confirmPassword
 }
 
-func renderErrorPage(c *gin.Context, status int, message string) {
-	c.HTML(status, "sign-up.go.tmpl", gin.H{
-		"title":   "Sign Up",
-		"message": message,
-	})
+func renderErrorPage(c *gin.Context, _ int, message string) {
+	templ.Handler(views.SignUp(views.SignUpData{
+		Title:      "Sign Up",
+		IsLoggedIn: false,
+		Message:    message,
+	})).ServeHTTP(c.Writer, c.Request)
 }
 
 func insertUserIntoDatabase(username, hashedPassword, email string) error {
 	db := utils.Db()
 	defer db.Close()
 
-	_, err := db.Exec("INSERT INTO users (username, password, email, created_at, updated_at) VALUES (?, ?, ?, ?, ?)",
-		username, hashedPassword, email, time.Now(), time.Now())
+	var uuid string = uuid.New().String()
+	_, err := db.Exec("INSERT INTO users (id, username, password, email, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)",
+		uuid, username, hashedPassword, email, time.Now(), time.Now())
 	return err
 }
 

@@ -1,7 +1,7 @@
 package utils
 
 type UserObject struct {
-	ID       interface{}
+	ID       string
 	Username string
 	Email    string
 }

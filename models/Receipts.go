@@ -20,7 +20,7 @@ type Receipt struct {
 
 type Item struct {
 	ID         int            `db:"id"`
-	UserID     int            `db:"user_id"`
+	UserID     string         `db:"user_id"`
 	MerchantID int            `db:"merchant_id"`
 	ReceiptID  int            `db:"receipt_id"`
 	Name       string         `db:"name"`
