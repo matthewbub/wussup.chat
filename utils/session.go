@@ -1,8 +1,8 @@
 package utils
 
 import (
+	"fmt"
 	"log"
-	"net/http"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
@@ -19,17 +19,17 @@ func GetUserFromSession(c *gin.Context) (*UserObject, error) {
 	userID, ok := session.Get("user_id").(string)
 	if !ok {
 		log.Println("user_id not found in session")
-		c.Redirect(http.StatusSeeOther, "/login")
+		return nil, fmt.Errorf("user_id not found in session")
 	}
 	username, ok := session.Get("username").(string)
 	if !ok {
 		log.Println("username not found in session")
-		c.Redirect(http.StatusSeeOther, "/login")
+		return nil, fmt.Errorf("username not found in session")
 	}
 	email, ok := session.Get("email").(string)
 	if !ok {
 		log.Println("email not found in session")
-		c.Redirect(http.StatusSeeOther, "/login")
+		return nil, fmt.Errorf("email not found in session")
 	}
 
 	// confirm all fields match what is in the database
@@ -37,15 +37,16 @@ func GetUserFromSession(c *gin.Context) (*UserObject, error) {
 	defer db.Close()
 
 	var user UserObject
-	err := db.QueryRow("SELECT * FROM users WHERE id = ?", userID).Scan(&user.ID, &user.Username, &user.Email)
+	err := db.QueryRow("SELECT id, username, email FROM users WHERE id = ?", userID).Scan(&user.ID, &user.Username, &user.Email)
 	if err != nil {
 		log.Println("user not found in database")
-		c.Redirect(http.StatusSeeOther, "/login")
+		return nil, fmt.Errorf("user not found in database")
 	}
 
+	fmt.Printf("user: %v\n", user)
 	if user.Username != username || user.Email != email || user.ID != userID {
-		log.Println("ur hella suspicious")
-		c.Redirect(http.StatusSeeOther, "/login")
+		log.Println("session data does not match database")
+		return nil, fmt.Errorf("session data does not match database")
 	}
 
 	return &UserObject{ID: userID, Username: username, Email: email}, nil

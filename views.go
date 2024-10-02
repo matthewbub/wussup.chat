@@ -20,7 +20,16 @@ type PageData struct {
 }
 
 func registerPublicViews(router *gin.Engine) {
-	router.GET("/", landingViewHandler)
+	router.GET("/", func(c *gin.Context) {
+		// TODO improve user auth behavior
+		// If logged in, redirect to dashboard
+		templ.Handler(views.Landing(views.LandingData{
+			Title:      "Landing",
+			Name:       "World",
+			IsLoggedIn: false,
+			Message:    "Welcome to the login page",
+		})).ServeHTTP(c.Writer, c.Request)
+	})
 	router.GET("/login", func(c *gin.Context) {
 		// TODO improve user auth behavior
 		// If logged in, redirect to dashboard
@@ -39,6 +48,12 @@ func registerPublicViews(router *gin.Engine) {
 			Name:       "World",
 			IsLoggedIn: false,
 			Message:    "Welcome to the sign up page",
+		})).ServeHTTP(c.Writer, c.Request)
+	})
+	router.GET("/sign-up/security-questions", func(c *gin.Context) {
+		templ.Handler(views.SecurityQuestions(views.SecurityQuestionsData{
+			Title:   "Security Questions",
+			Message: "Please answer the following security questions",
 		})).ServeHTTP(c.Writer, c.Request)
 	})
 	router.GET("/forgot-password", forgotPasswordViewHandler)
@@ -151,5 +166,10 @@ func landingViewHandler(c *gin.Context) {
 }
 
 func forgotPasswordViewHandler(c *gin.Context) {
-	renderView(c, "forgot-password.go.tmpl", "ZCauldron Forgot Password")
+	templ.Handler(views.ForgotPassword(views.ForgotPasswordData{
+		Title:      "Forgot Password",
+		Name:       "World",
+		IsLoggedIn: false,
+		Message:    "Welcome to the forgot password page",
+	})).ServeHTTP(c.Writer, c.Request)
 }

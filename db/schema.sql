@@ -7,6 +7,19 @@ CREATE TABLE IF NOT EXISTS users (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE IF NOT EXISTS security_questions (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    question_1 TEXT NOT NULL,
+    answer_1 TEXT NOT NULL,
+    question_2 TEXT NOT NULL,
+    answer_2 TEXT NOT NULL,
+    question_3 TEXT NOT NULL,
+    answer_3 TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users (id)
+);
+
 CREATE TABLE IF NOT EXISTS sessions (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
@@ -16,7 +29,7 @@ CREATE TABLE IF NOT EXISTS sessions (
     FOREIGN KEY (user_id) REFERENCES users (id)
 );
 
-CREATE TABLE IF NOT EXISTS passwords (
+CREATE TABLE IF NOT EXISTS password_history (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
     password TEXT NOT NULL,

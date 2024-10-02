@@ -4,3 +4,9 @@ Tested with complex receipts and was thrilled with the outcome
 
 09/24/2024
 Tracking token usage and can see that images are going to be the largest drawl of tokens. averaging 25-30k for prompts and under 100 for completion (aka this is expensive and probably not a sustainable business)
+
+09/29/2024
+Thinking that extracting text from the image is going to be the route i need to take here. It's the only way to make it feasible at a scale.
+
+10/01/2024
+I'm working on a bunch of complex projects at work. It's been a challenge to maintain an understanding of this codebase due to context switching and needing to implement pretty big features such as a proper sign up flow

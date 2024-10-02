@@ -11,6 +11,7 @@ import (
 func registerPublicApiRoutes(r *gin.Engine) {
 	r.POST("/login", api.LoginHandler)
 	r.POST("/sign-up", api.SignUpHandler)
+	r.POST("/api/sign-up/security-questions", api.SecurityQuestionsHandler)
 	r.POST("/forgot-password", forgotPasswordHandler)
 }
 

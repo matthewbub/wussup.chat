@@ -25,6 +25,7 @@ func LoginHandler(c *gin.Context) {
 
 	// Check user credentials
 	user, err := getUserFromDatabase(username)
+	fmt.Printf("user at login: %v\n", user)
 	if err != nil {
 		handleLoginError(c, err)
 		return

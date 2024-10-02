@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -20,7 +21,11 @@ import (
 
 func SignUpHandler(c *gin.Context) {
 	// Extract form data
-	userData := extractUserData(c)
+	userData, err := extractUserData(c)
+	if err != nil {
+		log.Printf("Error extracting user data: %v", err)
+		return
+	}
 
 	// Validate passwords
 	if !passwordsMatch(userData.password, userData.confirmPassword) {
@@ -29,26 +34,32 @@ func SignUpHandler(c *gin.Context) {
 	}
 
 	// password must be at least 8 characters
-	if len(userData.password) < 8 {
+	if !utils.MustBe8Characters(userData.password) {
 		renderErrorPage(c, http.StatusBadRequest, "Password must be at least 8 characters")
 		return
 	}
 
 	// password must contain at least one uppercase letter
-	if !strings.ContainsAny(userData.password, "ABCDEFGHIJKLMNOPQRSTUVWXYZ") {
+	if !utils.MustContainUppercase(userData.password) {
 		renderErrorPage(c, http.StatusBadRequest, "Password must contain at least one uppercase letter")
 		return
 	}
 
 	// password must contain at least one lowercase letter
-	if !strings.ContainsAny(userData.password, "abcdefghijklmnopqrstuvwxyz") {
+	if !utils.MustContainLowercase(userData.password) {
 		renderErrorPage(c, http.StatusBadRequest, "Password must contain at least one lowercase letter")
 		return
 	}
 
 	// password must contain at least one number
-	if !strings.ContainsAny(userData.password, "0123456789") {
+	if !utils.MustContainNumber(userData.password) {
 		renderErrorPage(c, http.StatusBadRequest, "Password must contain at least one number")
+		return
+	}
+
+	// password must contain at least one special character
+	if !utils.MustContainSpecialCharacter(userData.password) {
+		renderErrorPage(c, http.StatusBadRequest, "Password must contain at least one special character")
 		return
 	}
 
@@ -68,7 +79,7 @@ func SignUpHandler(c *gin.Context) {
 	}
 
 	// Render success page
-	renderSuccessPage(c)
+	renderSecurityQuestionsPage(c)
 }
 
 func hashPassword(password string) (string, error) {
@@ -79,17 +90,37 @@ func hashPassword(password string) (string, error) {
 	return string(hashedPassword), nil
 }
 
-func extractUserData(c *gin.Context) struct {
+func extractUserData(c *gin.Context) (struct {
 	username, password, confirmPassword, email string
-} {
+}, error) {
+
+	username := utils.SanitizeInput(c.PostForm("username"))
+	password := utils.SanitizeInput(c.PostForm("password"))
+	confirmPassword := utils.SanitizeInput(c.PostForm("confirm_password"))
+	email := utils.SanitizeInput(c.PostForm("email"))
+
+	if !utils.IsValidUsername(username) {
+		renderErrorPage(c, http.StatusBadRequest, "Invalid username")
+		return struct {
+			username, password, confirmPassword, email string
+		}{}, fmt.Errorf("invalid username")
+	}
+
+	if !utils.IsValidEmail(email) {
+		renderErrorPage(c, http.StatusBadRequest, "Invalid email")
+		return struct {
+			username, password, confirmPassword, email string
+		}{}, fmt.Errorf("invalid email")
+	}
+
 	return struct {
 		username, password, confirmPassword, email string
 	}{
-		username:        c.PostForm("username"),
-		password:        c.PostForm("password"),
-		confirmPassword: c.PostForm("confirm_password"),
-		email:           c.PostForm("email"),
-	}
+		username:        username,
+		password:        password,
+		confirmPassword: confirmPassword,
+		email:           email,
+	}, nil
 }
 
 func passwordsMatch(password, confirmPassword string) bool {
@@ -108,10 +139,20 @@ func insertUserIntoDatabase(username, hashedPassword, email string) error {
 	db := utils.Db()
 	defer db.Close()
 
+	// Use a prepared statement to prevent SQL injection
+	stmt, err := db.Prepare("INSERT INTO users (id, username, password, email, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)")
+	if err != nil {
+		return fmt.Errorf("failed to prepare statement: %w", err)
+	}
+	defer stmt.Close()
+
 	var uuid string = uuid.New().String()
-	_, err := db.Exec("INSERT INTO users (id, username, password, email, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)",
-		uuid, username, hashedPassword, email, time.Now(), time.Now())
-	return err
+	_, err = stmt.Exec(uuid, username, hashedPassword, email, time.Now(), time.Now())
+	if err != nil {
+		return fmt.Errorf("failed to execute statement: %w", err)
+	}
+
+	return nil
 }
 
 func handleDatabaseError(c *gin.Context, err error) {
@@ -133,16 +174,6 @@ func getUniqueConstraintErrorMessage(err sqlite3.Error) string {
 	return "Error creating account"
 }
 
-type successPageData struct {
-	Title   string
-	Message string
-}
-
-func renderSuccessPage(c *gin.Context) {
-	data := successPageData{
-		// Title:   "Landing",
-		Message: "Account created successfully, please login to continue",
-	}
-	c.Redirect(http.StatusSeeOther, "/")
-	c.Set("Message", data.Message)
+func renderSecurityQuestionsPage(c *gin.Context) {
+	c.Redirect(http.StatusSeeOther, "/sign-up/security-questions")
 }

@@ -3,7 +3,6 @@
 - [ ] Client side login validation / error handling
 - [ ] Sever side login validation / error handling
 - [ ] handle $ -> int (should probably be a util)
-- [ ] create a cli command to back up the db
 - [ ] pseudo code a release plan
 - [x] track token usage by user
 - [ ] make sure logged in user exists in the database
