@@ -1,7 +1,6 @@
 package main
 
 import (
-	"html/template"
 	"log"
 
 	"bus.zcauldron.com/middleware"
@@ -24,9 +23,7 @@ func main() {
 
 	// static files
 	r.Static("/styles", "./public/styles")
-	// r.Static("/scripts", "./public/scripts")
 	r.Static("/js", "./public/js")
-	r.SetHTMLTemplate(template.Must(template.ParseGlob("templates/**/*.tmpl")))
 
 	// alllll routes
 	registerPublicViews(r)
