@@ -25,6 +25,7 @@ func LoginHandler(c *gin.Context) {
 
 	// Check user credentials
 	user, err := getUserFromDatabase(username)
+	fmt.Printf("user at login: %v\n", user)
 	if err != nil {
 		handleLoginError(c, err)
 		return
@@ -40,6 +41,7 @@ func LoginHandler(c *gin.Context) {
 	session := utils.GetSession(c)
 	session.Set("user_id", user.ID)
 	session.Set("username", user.Username)
+	session.Set("email", user.Email)
 
 	if rememberMe {
 		session.Options(sessions.Options{
@@ -61,8 +63,8 @@ func getUserFromDatabase(username string) (*User, error) {
 	defer db.Close()
 
 	user := &User{}
-	err := db.QueryRow("SELECT id, username, password FROM users WHERE username = ?", username).
-		Scan(&user.ID, &user.Username, &user.Password)
+	err := db.QueryRow("SELECT id, username, password, email FROM users WHERE username = ?", username).
+		Scan(&user.ID, &user.Username, &user.Password, &user.Email)
 	if err != nil {
 		return nil, err
 	}
@@ -80,14 +82,14 @@ func handleLoginError(c *gin.Context, err error) {
 }
 
 func renderLoginErrorPage(c *gin.Context, message string) {
-	c.HTML(http.StatusUnauthorized, "login.tmpl", gin.H{
+	c.HTML(http.StatusUnauthorized, "login.go.tmpl", gin.H{
 		"title":   "Login",
 		"message": message,
 	})
 }
 
 type User struct {
-	ID       int
+	ID       string
 	Username string
 	Password string
 	Email    string

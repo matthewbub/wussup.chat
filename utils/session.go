@@ -1,7 +1,8 @@
 package utils
 
 import (
-	"errors"
+	"fmt"
+	"log"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
@@ -13,25 +14,40 @@ func GetSession(c *gin.Context) sessions.Session {
 	return session
 }
 
-func GetUserFromSession(c *gin.Context) (*User, error) {
+func GetUserFromSession(c *gin.Context) (*UserObject, error) {
 	session := GetSession(c)
-	userID, ok := session.Get("user_id").(int)
+	userID, ok := session.Get("user_id").(string)
 	if !ok {
-		return nil, errors.New("user not found in session")
+		log.Println("user_id not found in session")
+		return nil, fmt.Errorf("user_id not found in session")
 	}
 	username, ok := session.Get("username").(string)
 	if !ok {
-		return nil, errors.New("username not found in session")
+		log.Println("username not found in session")
+		return nil, fmt.Errorf("username not found in session")
 	}
 	email, ok := session.Get("email").(string)
 	if !ok {
-		return nil, errors.New("email not found in session")
+		log.Println("email not found in session")
+		return nil, fmt.Errorf("email not found in session")
 	}
-	return &User{ID: userID, Username: username, Email: email}, nil
-}
 
-type User struct {
-	ID       int
-	Username string
-	Email    string
+	// confirm all fields match what is in the database
+	db := Db()
+	defer db.Close()
+
+	var user UserObject
+	err := db.QueryRow("SELECT id, username, email FROM users WHERE id = ?", userID).Scan(&user.ID, &user.Username, &user.Email)
+	if err != nil {
+		log.Println("user not found in database")
+		return nil, fmt.Errorf("user not found in database")
+	}
+
+	fmt.Printf("user: %v\n", user)
+	if user.Username != username || user.Email != email || user.ID != userID {
+		log.Println("session data does not match database")
+		return nil, fmt.Errorf("session data does not match database")
+	}
+
+	return &UserObject{ID: userID, Username: username, Email: email}, nil
 }

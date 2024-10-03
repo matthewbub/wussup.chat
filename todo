@@ -1,0 +1,8 @@
+- [ ] Client side sign up validation / error handling
+- [ ] Sever side sign up validation / error handling
+- [ ] Client side login validation / error handling
+- [ ] Sever side login validation / error handling
+- [ ] handle $ -> int (should probably be a util)
+- [ ] pseudo code a release plan
+- [x] track token usage by user
+- [ ] make sure logged in user exists in the database

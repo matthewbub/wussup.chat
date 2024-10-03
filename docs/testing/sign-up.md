@@ -1,4 +1,6 @@
-Here are concise STR (Steps to Reproduce) for QA testing the user registration process:
+# Sign up flow
+
+testing the user registration process:
 
 1. **Navigate to the sign-up page.**
 2. **Enter the following details:**

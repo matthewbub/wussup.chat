@@ -2,54 +2,35 @@
 
 "z cauldron"
 
+During development it's typically easier to run this command:
+
 ```sh
-go run *.go
+templ generate && go run *.go
 ```
 
-## Routes
+We're using Templ for markup. It's a JSX-like template library that requires an additional build command. As long as the Golang binary is in your environment path, you should have access to templ in this project.
 
-### Sign Up API
+If you're changing a `*.templ` file, you're going to need to run the `templ generate` command to rebuild the templates. Otherwise, you only need to restart the go server. Since were working with HTMX it's pretty common to need to modify both a template and server side code, hence the suggestion to "just run both".
 
-Handles user registration.
+## Initial setup
 
-#### Endpoint
+1. Cd in the repo and run `go mod tidy`
+2. Create development database: Run `sqlite3 ./db/dev.db < ./db/schema.sql` from the terminal
+3. Duplicate the `.env.example` -> `.env` Generate a secure key and add the key to the .env file as `SESSION_SECRET_KEY = #...`
+4. Add your Open AI api key for intelligent parsing as `OPENAI_API_KEY=#...`
 
-`POST /signup`
+## arch
 
-#### Request
-
-##### Form Parameters
-
-| Parameter        | Type   | Required | Description                     |
-| ---------------- | ------ | -------- | ------------------------------- |
-| username         | string | Yes      | User's desired username         |
-| password         | string | Yes      | User's password                 |
-| confirm_password | string | Yes      | Confirmation of user's password |
-| email            | string | Yes      | User's email address            |
-
-#### Response
-
-##### Success
-
-- **Status Code**: 200 OK
-- **Content-Type**: text/html
-- **Body**: HTML page with success message
-
-##### Error
-
-- **Status Code**: 400 Bad Request, 409 Conflict, or 500 Internal Server Error
-- **Content-Type**: text/html
-- **Body**: HTML page with error message
-
-#### Password Requirements
-
-- Minimum 8 characters
-- At least one uppercase letter
-- At least one lowercase letter
-- At least one number
-
-#### Notes
-
-- Passwords must match
-- Username and email must be unique
-- Passwords are hashed before storage
+```sh
+main.go # <--- entry its right here this is the entry
+/routes
+  /api
+  /views
+/src
+  /middleware
+  /utils
+  /models
+/public
+  /styles
+  /javascript
+```

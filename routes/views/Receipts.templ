@@ -1,0 +1,71 @@
+package views
+
+import (
+  "fmt"
+	"bus.zcauldron.com/models"
+	"bus.zcauldron.com/routes/views/partials"
+)
+
+type ReceiptsData struct {
+	Title string
+	Name string
+	IsLoggedIn bool
+	Message string
+	Receipts []models.Receipt
+}
+
+templ Receipts(data ReceiptsData) {
+	<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			@partials.GlobalHead(data.Title)
+		</head>
+		<body>
+			@partials.GlobalHeader(data.IsLoggedIn)			
+      <main>      
+        <form 
+          class="receipt-upload-container"
+          id="imageUploadForm" 
+          enctype="multipart/form-data" 
+          hx-post="/upload" 
+          hx-target="#result" 
+          hx-swap="outerHTML"
+          hx-trigger="submit"
+          hx-indicator="#loading-spinner"
+        >
+          <h2>Upload Receipt</h2>
+          <label for="image">Drag and drop your receipt image here, or click to select a file</label>
+          <input type="file" id="image" name="image" accept="image/*" required>
+          <span class="info-text">Supported file types: .png, .jpeg, .jpg, .webp, .gif</span>
+          <button type="submit" class="primary-button">Upload</button>        
+          <div id="loading-spinner" class="htmx-indicator pulse-indicator">Processing your request. This may take a few moments...</div>
+        </form>
+        <div id="result"></div>
+
+        <div class="receipt-collection-container">
+          <h2>Receipts</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Merchant</th>
+                <th>Date</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              for _, item := range data.Receipts {
+                <tr class="receipt">
+                  <td><a href={ templ.SafeURL(fmt.Sprintf("/dashboard/receipts/%s", item.ID)) }>{ item.Merchant }</a></td>
+                  <td>{ item.Date }</td>
+                  <td>{ item.Total }</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </main>
+      @partials.GlobalFooter()
+      <script src="/js/receipt-utils.js"></script>
+		</body>
+	</html>
+}

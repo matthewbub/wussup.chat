@@ -18,9 +18,10 @@ func Db() *sql.DB {
 	}
 
 	// Construct the database path
-	dbPath := filepath.Join(cwd, "cmd", "dbm", "dev.db")
-
+	dbPath := filepath.Join(cwd, "db", "dev.db")
+	fmt.Printf("line path %s\n", dbPath)
 	db, err := sql.Open("sqlite3", dbPath)
+	// fmt.Printf("line 22 db %v\n", db)
 	if err != nil {
 		fmt.Println("Error opening database. Are you sure it exists?")
 		log.Fatal(err)

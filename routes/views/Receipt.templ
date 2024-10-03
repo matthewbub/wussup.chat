@@ -1,0 +1,73 @@
+package views
+
+import (
+	"bus.zcauldron.com/models"
+	"bus.zcauldron.com/routes/views/partials"
+	"bus.zcauldron.com/utils"
+)
+
+// I THINK THIS NEEDS TO BE MOVED TO A NEW FILE
+type ReceiptViewData struct {
+	Title string
+	Name string
+	IsLoggedIn bool
+	Message string
+	Receipt models.Receipt
+  Email string
+  User *utils.UserObject
+}
+
+templ ReceiptView(data ReceiptViewData) {
+	<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			@partials.GlobalHead(data.Title)
+		</head>
+		<body>
+			@partials.GlobalHeader(data.IsLoggedIn)			
+      <main>
+        <p class="message">{ data.Message }</p>
+        <div class="receipt-collection-container">
+        <h2>Receipts</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Merchant</th>
+              <th>Date</th>
+              <th>Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="receipt">
+              <td>{ data.Receipt.Merchant }</td>
+              <td>{ data.Receipt.Date }</td>
+              <td>{ data.Receipt.Total }</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="receipt-items">
+          <h2>Items</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Price</th>
+              </tr>
+            </thead>
+            <tbody>
+              for _, item := range data.Receipt.Items {
+                <tr>
+                  <td>{ item.Name }</td>
+                  <td>{ item.Price }</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+			@partials.GlobalFooter()
+		</body>
+	</html>
+}
