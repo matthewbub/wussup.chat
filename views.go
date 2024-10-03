@@ -20,149 +20,53 @@ type PageData struct {
 }
 
 func registerPublicViews(router *gin.Engine) {
-	router.GET("/", func(c *gin.Context) {
-		// TODO improve user auth behavior
-		// If logged in, redirect to dashboard
-		templ.Handler(views.Landing(views.LandingData{
-			Title:      "Landing",
-			Name:       "World",
-			IsLoggedIn: false,
-			Message:    "Welcome to the login page",
-		})).ServeHTTP(c.Writer, c.Request)
-	})
-	router.GET("/login", func(c *gin.Context) {
-		// TODO improve user auth behavior
-		// If logged in, redirect to dashboard
-		templ.Handler(views.LogIn(views.LogInData{
-			Title:      "Login",
-			Name:       "World",
-			IsLoggedIn: false,
-			Message:    "Welcome to the login page",
-		})).ServeHTTP(c.Writer, c.Request)
-	})
-	router.GET("/sign-up", func(c *gin.Context) {
-		// TODO improve user auth behavior
-		// If logged in, redirect to dashboard
-		templ.Handler(views.SignUp(views.SignUpData{
-			Title:      "Sign Up",
-			Name:       "World",
-			IsLoggedIn: false,
-			Message:    "Welcome to the sign up page",
-		})).ServeHTTP(c.Writer, c.Request)
-	})
-	router.GET("/sign-up/security-questions", func(c *gin.Context) {
-		templ.Handler(views.SecurityQuestions(views.SecurityQuestionsData{
-			Title:   "Security Questions",
-			Message: "Please answer the following security questions",
-		})).ServeHTTP(c.Writer, c.Request)
-	})
+	router.GET("/", handleLandingView)
+	router.GET("/login", handleLoginView)
+	router.GET("/sign-up", handleSignUpView)
+	router.GET("/sign-up/security-questions", handleSignUpSecurityQuestionsView)
 	router.GET("/forgot-password", forgotPasswordViewHandler)
 }
 
 func registerPrivateViews(auth *gin.RouterGroup) {
-	auth.GET("/dashboard", func(c *gin.Context) {
-		user, err := utils.GetUserFromSession(c)
-		if err != nil {
-			log.Println(err)
-			c.Redirect(http.StatusSeeOther, "/login")
-			return
-		}
-
-		templ.Handler(views.Dashboard(views.DashboardData{
-			Title:      "Dashboard",
-			Name:       user.Username,
-			IsLoggedIn: true,
-			Message:    "Welcome to the dashboard",
-		})).ServeHTTP(c.Writer, c.Request)
-	})
-	auth.GET("/dashboard/receipts", func(c *gin.Context) {
-		user, err := utils.GetUserFromSession(c)
-		if err != nil {
-			log.Println(err)
-			c.Redirect(http.StatusSeeOther, "/login")
-			return
-		}
-
-		receipts, err := models.GetReceipts(user.ID)
-		if err != nil {
-			log.Println(err)
-			// TODO improve error handling
-			c.Redirect(http.StatusSeeOther, "/dashboard")
-			return
-		}
-
-		templ.Handler(views.Receipts(views.ReceiptsData{
-			Title:      "Receipts",
-			IsLoggedIn: true,
-			Receipts:   receipts,
-		})).ServeHTTP(c.Writer, c.Request)
-	})
-	auth.GET("/dashboard/receipts/:id", func(c *gin.Context) {
-		user, err := utils.GetUserFromSession(c)
-		if err != nil {
-			log.Println(err)
-			c.Redirect(http.StatusSeeOther, "/login")
-			return
-		}
-
-		receiptID := c.Param("id")
-		if receiptID == "" {
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Receipt ID is required"})
-			return
-		}
-
-		receipt, err := models.GetReceiptById(receiptID)
-
-		if err != nil {
-			log.Println(err)
-			return
-		}
-
-		templ.Handler(views.ReceiptView(views.ReceiptViewData{
-			Title:      "ZCauldron Receipt",
-			IsLoggedIn: true,
-			User:       &utils.UserObject{ID: user.ID, Username: user.Username, Email: user.Email},
-			Email:      user.Email,
-			Message:    "Welcome to the receipt",
-			Receipt:    *receipt,
-		})).ServeHTTP(c.Writer, c.Request)
-	})
+	auth.GET("/dashboard", handleDashboardView)
+	auth.GET("/dashboard/receipts", handleReceiptsView)
+	auth.GET("/dashboard/receipts/:id", handleReceiptView)
 }
 
-func renderView(c *gin.Context, template string, title string) {
-	var isLoggedIn bool
-	user, err := utils.GetUserFromSession(c)
-	if err != nil {
-		isLoggedIn = false
-	} else {
-		isLoggedIn = true
-	}
-
-	c.HTML(http.StatusOK, template, PageData{
-		Title:      title,
-		IsLoggedIn: isLoggedIn,
-		CurrentUser: func() *utils.UserObject {
-			if user != nil {
-				return &utils.UserObject{
-					ID:       user.ID,
-					Username: user.Username,
-					Email:    user.Email,
-				}
-			}
-			return nil
-		}(),
-		CurrentEmail: func() string {
-			if user != nil {
-				return user.Email
-			}
-			return ""
-		}(),
-		Message: "",
-	})
+// HANDLERS
+func handleLandingView(c *gin.Context) {
+	// TODO improve user auth behavior
+	// If logged in, redirect to dashboard
+	templ.Handler(views.Landing(views.LandingData{
+		Title: "Landing",
+		// TODO why is this here
+		Name:       "World",
+		IsLoggedIn: false,
+		// TODO this was a test message
+		Message: "Welcome to the login page",
+	})).ServeHTTP(c.Writer, c.Request)
 }
 
-func landingViewHandler(c *gin.Context) {
-	renderView(c, "landing.go.tmpl", "ZCauldron Landing")
+func handleLoginView(c *gin.Context) {
+	// TODO improve user auth behavior
+	// If logged in, redirect to dashboard
+	templ.Handler(views.LogIn(views.LogInData{
+		Title:      "Login",
+		Name:       "World",
+		IsLoggedIn: false,
+		Message:    "Welcome to the login page",
+	})).ServeHTTP(c.Writer, c.Request)
+}
+
+func handleSignUpView(c *gin.Context) {
+	// TODO improve user auth behavior
+	// If logged in, redirect to dashboard
+	templ.Handler(views.SignUp(views.SignUpData{
+		Title:      "Sign Up",
+		Name:       "World",
+		IsLoggedIn: false,
+		Message:    "Welcome to the sign up page",
+	})).ServeHTTP(c.Writer, c.Request)
 }
 
 func forgotPasswordViewHandler(c *gin.Context) {
@@ -171,5 +75,82 @@ func forgotPasswordViewHandler(c *gin.Context) {
 		Name:       "World",
 		IsLoggedIn: false,
 		Message:    "Welcome to the forgot password page",
+	})).ServeHTTP(c.Writer, c.Request)
+}
+
+func handleSignUpSecurityQuestionsView(c *gin.Context) {
+	templ.Handler(views.SecurityQuestions(views.SecurityQuestionsData{
+		Title:   "Security Questions",
+		Message: "Please answer the following security questions",
+	})).ServeHTTP(c.Writer, c.Request)
+}
+
+func handleDashboardView(c *gin.Context) {
+	user, err := utils.GetUserFromSession(c)
+	if err != nil {
+		log.Println(err)
+		c.Redirect(http.StatusSeeOther, "/login")
+		return
+	}
+
+	templ.Handler(views.Dashboard(views.DashboardData{
+		Title:      "Dashboard",
+		Name:       user.Username,
+		IsLoggedIn: true,
+		Message:    "Welcome to the dashboard",
+	})).ServeHTTP(c.Writer, c.Request)
+}
+
+func handleReceiptsView(c *gin.Context) {
+	user, err := utils.GetUserFromSession(c)
+	if err != nil {
+		log.Println(err)
+		c.Redirect(http.StatusSeeOther, "/login")
+		return
+	}
+
+	receipts, err := models.GetReceipts(user.ID)
+	if err != nil {
+		log.Println(err)
+		// TODO improve error handling
+		c.Redirect(http.StatusSeeOther, "/dashboard")
+		return
+	}
+
+	templ.Handler(views.Receipts(views.ReceiptsData{
+		Title:      "Receipts",
+		IsLoggedIn: true,
+		Receipts:   receipts,
+	})).ServeHTTP(c.Writer, c.Request)
+}
+
+func handleReceiptView(c *gin.Context) {
+	user, err := utils.GetUserFromSession(c)
+	if err != nil {
+		log.Println(err)
+		c.Redirect(http.StatusSeeOther, "/login")
+		return
+	}
+
+	receiptID := c.Param("id")
+	if receiptID == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Receipt ID is required"})
+		return
+	}
+
+	receipt, err := models.GetReceiptById(receiptID)
+
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	templ.Handler(views.ReceiptView(views.ReceiptViewData{
+		Title:      "ZCauldron Receipt",
+		IsLoggedIn: true,
+		User:       &utils.UserObject{ID: user.ID, Username: user.Username, Email: user.Email},
+		Email:      user.Email,
+		Message:    "Welcome to the receipt",
+		Receipt:    *receipt,
 	})).ServeHTTP(c.Writer, c.Request)
 }

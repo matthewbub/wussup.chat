@@ -28,7 +28,7 @@ func main() {
 	r.Static("/js", "./public/js")
 	r.SetHTMLTemplate(template.Must(template.ParseGlob("templates/**/*.tmpl")))
 
-	// alllll groutes
+	// alllll routes
 	registerPublicViews(r)
 	registerPublicApiRoutes(r)
 
