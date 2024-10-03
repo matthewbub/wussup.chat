@@ -6,7 +6,7 @@ type SignUpData struct {
 	Title string
 	Name string
 	IsLoggedIn bool
-	Message string
+	ErrorMessage string
 }
 
 templ SignUp(data SignUpData) {
@@ -43,8 +43,8 @@ templ SignUp(data SignUpData) {
 							</div>
 						</div>
 						<button type="submit" class="primary-button">Sign Up</button>
-						if data.Message != "" {
-							<div class="message">{ data.Message }</div>
+						if data.ErrorMessage != "" {
+							<p class="message error">{ data.ErrorMessage }</p>
 						} 
 					</form>
 					<div class="login-link">

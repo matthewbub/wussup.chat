@@ -299,3 +299,9 @@ footer a:hover {
   border-color: #003366;
   box-shadow: 0 0 0 2px rgba(0, 51, 102, 0.2);
 }
+
+.message.error {
+  color: #ff0000;
+  font-weight: 700;
+  text-align: center;
+}

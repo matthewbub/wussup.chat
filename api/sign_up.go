@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"strings"
 	"time"
 
 	"bus.zcauldron.com/routes/views"
@@ -12,7 +11,6 @@ import (
 	"github.com/a-h/templ"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/mattn/go-sqlite3"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -129,9 +127,9 @@ func passwordsMatch(password, confirmPassword string) bool {
 
 func renderErrorPage(c *gin.Context, _ int, message string) {
 	templ.Handler(views.SignUp(views.SignUpData{
-		Title:      "Sign Up",
-		IsLoggedIn: false,
-		Message:    message,
+		Title:        "Sign Up",
+		IsLoggedIn:   false,
+		ErrorMessage: message,
 	})).ServeHTTP(c.Writer, c.Request)
 }
 
@@ -156,22 +154,18 @@ func insertUserIntoDatabase(username, hashedPassword, email string) error {
 }
 
 func handleDatabaseError(c *gin.Context, err error) {
-	if sqliteErr, ok := err.(sqlite3.Error); ok && sqliteErr.ExtendedCode == sqlite3.ErrConstraintUnique {
-		errorMessage := getUniqueConstraintErrorMessage(sqliteErr)
-		renderErrorPage(c, http.StatusConflict, errorMessage)
-	} else {
-		renderErrorPage(c, http.StatusInternalServerError, "Error creating account")
+	if err.Error() == "failed to execute statement: UNIQUE constraint failed: users.email" {
+		renderErrorPage(c, http.StatusConflict, "Email address already in use")
+		return
 	}
-	fmt.Println("Error creating account:", err)
-}
 
-func getUniqueConstraintErrorMessage(err sqlite3.Error) string {
-	if strings.Contains(err.Error(), "username") {
-		return "Username already in use"
-	} else if strings.Contains(err.Error(), "email") {
-		return "Email address already in use"
+	if err.Error() == "failed to execute statement: UNIQUE constraint failed: users.username" {
+		renderErrorPage(c, http.StatusConflict, "Username already in use")
+		return
 	}
-	return "Error creating account"
+
+	renderErrorPage(c, http.StatusInternalServerError, "Error creating account")
+	fmt.Println("Error creating account:", err)
 }
 
 func renderSecurityQuestionsPage(c *gin.Context) {

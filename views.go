@@ -62,10 +62,10 @@ func handleSignUpView(c *gin.Context) {
 	// TODO improve user auth behavior
 	// If logged in, redirect to dashboard
 	templ.Handler(views.SignUp(views.SignUpData{
-		Title:      "Sign Up",
-		Name:       "World",
-		IsLoggedIn: false,
-		Message:    "Welcome to the sign up page",
+		Title:        "Sign Up",
+		Name:         "World",
+		IsLoggedIn:   false,
+		ErrorMessage: "",
 	})).ServeHTTP(c.Writer, c.Request)
 }
 
