@@ -1,0 +1,35 @@
+package views
+
+import "bus.zcauldron.com/routes/views/partials"
+
+type ErrorPageData struct {
+	Title string
+	IsLoggedIn bool
+}
+
+templ ErrorPage(data ErrorPageData) {
+	<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			@partials.GlobalHead(data.Title)
+		</head>
+		<body>
+			@partials.GlobalHeader(data.IsLoggedIn)
+			<main>
+				<div class="card">
+					<h1>404</h1>
+					<p>Page not found</p>
+
+          <div class="error-container">
+            <p>The page you are looking for does not exist.</p>
+            <p>Please check the URL and try again.</p>
+          </div>
+
+          <a href="/">Go back to the homepage</a>
+				</div>
+			</main>
+			@partials.GlobalFooter()     
+		</body>
+	</html>
+}
+

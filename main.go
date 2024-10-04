@@ -31,6 +31,7 @@ func main() {
 
 	auth := r.Group("/")
 	auth.Use(middleware.AuthRequired())
+	auth.Use(middleware.SecurityQuestionsRequired())
 	{
 		registerPrivateViews(auth)
 		registerPrivateApiRoutes(auth)

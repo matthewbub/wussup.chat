@@ -4,13 +4,12 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"time"
 
+	"bus.zcauldron.com/models"
 	"bus.zcauldron.com/routes/views"
 	"bus.zcauldron.com/utils"
 	"github.com/a-h/templ"
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -22,41 +21,48 @@ func SignUpHandler(c *gin.Context) {
 	userData, err := extractUserData(c)
 	if err != nil {
 		log.Printf("Error extracting user data: %v", err)
+		renderErrorPage(c, http.StatusBadRequest, "Error extracting user data")
 		return
 	}
 
 	// Validate passwords
 	if !passwordsMatch(userData.password, userData.confirmPassword) {
+		log.Println("Passwords do not match")
 		renderErrorPage(c, http.StatusBadRequest, "Passwords do not match")
 		return
 	}
 
 	// password must be at least 8 characters
 	if !utils.MustBe8Characters(userData.password) {
+		log.Println("Password must be at least 8 characters")
 		renderErrorPage(c, http.StatusBadRequest, "Password must be at least 8 characters")
 		return
 	}
 
 	// password must contain at least one uppercase letter
 	if !utils.MustContainUppercase(userData.password) {
+		log.Println("Password must contain at least one uppercase letter")
 		renderErrorPage(c, http.StatusBadRequest, "Password must contain at least one uppercase letter")
 		return
 	}
 
 	// password must contain at least one lowercase letter
 	if !utils.MustContainLowercase(userData.password) {
+		log.Println("Password must contain at least one lowercase letter")
 		renderErrorPage(c, http.StatusBadRequest, "Password must contain at least one lowercase letter")
 		return
 	}
 
 	// password must contain at least one number
 	if !utils.MustContainNumber(userData.password) {
+		log.Println("Password must contain at least one number")
 		renderErrorPage(c, http.StatusBadRequest, "Password must contain at least one number")
 		return
 	}
 
 	// password must contain at least one special character
 	if !utils.MustContainSpecialCharacter(userData.password) {
+		log.Println("Password must contain at least one special character")
 		renderErrorPage(c, http.StatusBadRequest, "Password must contain at least one special character")
 		return
 	}
@@ -64,15 +70,35 @@ func SignUpHandler(c *gin.Context) {
 	// Hash password
 	hashedPassword, err := hashPassword(userData.password)
 	if err != nil {
+		log.Printf("Error hashing password: %v", err)
 		renderErrorPage(c, http.StatusInternalServerError, "Error processing your request")
 		return
 	}
 
 	// Insert user into database
-	err = insertUserIntoDatabase(userData.username, hashedPassword, userData.email)
+	err = models.InsertUserIntoDatabase(userData.username, hashedPassword, userData.email)
 	if err != nil {
-		fmt.Printf("line 65 err %v\n", err)
+		log.Printf("Error inserting user into database: %v", err)
 		handleDatabaseError(c, err)
+		return
+	}
+
+	user, err := models.GetUserFromDatabase(userData.username)
+	if err != nil {
+		log.Printf("Error getting user from database: %v", err)
+		renderErrorPage(c, http.StatusInternalServerError, "Error processing your request")
+		return
+	}
+
+	// Set session
+	session := utils.GetSession(c)
+	session.Set("user_id", user.ID)
+	session.Set("username", user.Username)
+	session.Set("email", user.Email)
+
+	if err := session.Save(); err != nil {
+		log.Printf("Error creating session: %v", err)
+		renderLoginErrorPage(c, "Error creating session")
 		return
 	}
 
@@ -131,26 +157,6 @@ func renderErrorPage(c *gin.Context, _ int, message string) {
 		IsLoggedIn:   false,
 		ErrorMessage: message,
 	})).ServeHTTP(c.Writer, c.Request)
-}
-
-func insertUserIntoDatabase(username, hashedPassword, email string) error {
-	db := utils.Db()
-	defer db.Close()
-
-	// Use a prepared statement to prevent SQL injection
-	stmt, err := db.Prepare("INSERT INTO users (id, username, password, email, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)")
-	if err != nil {
-		return fmt.Errorf("failed to prepare statement: %w", err)
-	}
-	defer stmt.Close()
-
-	var uuid string = uuid.New().String()
-	_, err = stmt.Exec(uuid, username, hashedPassword, email, time.Now(), time.Now())
-	if err != nil {
-		return fmt.Errorf("failed to execute statement: %w", err)
-	}
-
-	return nil
 }
 
 func handleDatabaseError(c *gin.Context, err error) {

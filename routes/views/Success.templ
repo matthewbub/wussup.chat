@@ -1,0 +1,48 @@
+package views
+
+import "bus.zcauldron.com/routes/views/partials"
+
+type SuccessData struct {
+	Title string
+	Message string
+	IsLoggedIn bool
+	RedirectButtonText string
+	Redirect string
+}
+
+templ Success(data SuccessData) {
+	<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			@partials.GlobalHead(data.Title)
+		</head>
+		<body>
+			@partials.GlobalHeader(data.IsLoggedIn)
+			<main>
+				<div class="card">
+					<h1>{ data.Title }</h1>
+					<p>{ data.Message }</p>
+					<a data-redirect={ templ.JSONString(data.Redirect) }>{ data.RedirectButtonText }</a>
+				</div>
+			</main>
+			@partials.GlobalFooter()
+      <script>
+        document.addEventListener('DOMContentLoaded', function() {
+          const redirectElement = document.querySelector('[data-redirect]');
+          const redirect = redirectElement.getAttribute('data-redirect');
+          // Trim the leading and trailing slashes
+          const trimmedRedirect = redirect.slice(2).slice(0, -1);
+          // Prepend '../' to navigate back one directory
+          const newRedirect = '../' + trimmedRedirect;
+
+          redirectElement.setAttribute('href', newRedirect);
+
+          setTimeout(function() {
+            window.location.href = newRedirect;
+          }, 5000);
+        });
+      </script>
+		</body>
+	</html>
+}
+

@@ -24,6 +24,7 @@ func registerPublicViews(router *gin.Engine) {
 	router.GET("/login", handleLoginView)
 	router.GET("/sign-up", handleSignUpView)
 	router.GET("/sign-up/security-questions", handleSignUpSecurityQuestionsView)
+	router.GET("/sign-up/success", handleSignUpSuccessView)
 	router.GET("/forgot-password", forgotPasswordViewHandler)
 }
 
@@ -63,7 +64,7 @@ func handleSignUpView(c *gin.Context) {
 	// If logged in, redirect to dashboard
 	templ.Handler(views.SignUp(views.SignUpData{
 		Title:        "Sign Up",
-		Name:         "World",
+		Name:         "",
 		IsLoggedIn:   false,
 		ErrorMessage: "",
 	})).ServeHTTP(c.Writer, c.Request)
@@ -79,9 +80,38 @@ func forgotPasswordViewHandler(c *gin.Context) {
 }
 
 func handleSignUpSecurityQuestionsView(c *gin.Context) {
+	// if user already has security questions answered, dont show this page
+	user, err := utils.GetUserFromSession(c)
+	if err != nil {
+		log.Println(err)
+		templ.Handler(views.ErrorPage(views.ErrorPageData{
+			Title:      "Error",
+			IsLoggedIn: false,
+		})).ServeHTTP(c.Writer, c.Request)
+		return
+	}
+
+	if user.SecurityQuestionsAnswered {
+		log.Println("User already has security questions answered")
+		templ.Handler(views.ErrorPage(views.ErrorPageData{
+			Title:      "Error",
+			IsLoggedIn: false,
+		})).ServeHTTP(c.Writer, c.Request)
+		return
+	}
+
 	templ.Handler(views.SecurityQuestions(views.SecurityQuestionsData{
 		Title:   "Security Questions",
 		Message: "Please answer the following security questions",
+	})).ServeHTTP(c.Writer, c.Request)
+}
+
+func handleSignUpSuccessView(c *gin.Context) {
+	templ.Handler(views.Success(views.SuccessData{
+		Title:              "Success",
+		Message:            "You have successfully signed up. You'll be redirected to your dashboard soon.",
+		RedirectButtonText: "Or click here to go to your dashboard now.",
+		Redirect:           "/dashboard",
 	})).ServeHTTP(c.Writer, c.Request)
 }
 

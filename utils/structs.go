@@ -1,9 +1,10 @@
 package utils
 
 type UserObject struct {
-	ID       string
-	Username string
-	Email    string
+	ID                        string
+	Username                  string
+	Email                     string
+	SecurityQuestionsAnswered bool
 }
 
 type ReceiptParseResult struct {

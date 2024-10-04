@@ -37,7 +37,7 @@ func GetUserFromSession(c *gin.Context) (*UserObject, error) {
 	defer db.Close()
 
 	var user UserObject
-	err := db.QueryRow("SELECT id, username, email FROM users WHERE id = ?", userID).Scan(&user.ID, &user.Username, &user.Email)
+	err := db.QueryRow("SELECT id, username, email, security_questions_answered FROM users WHERE id = ?", userID).Scan(&user.ID, &user.Username, &user.Email, &user.SecurityQuestionsAnswered)
 	if err != nil {
 		log.Println("user not found in database")
 		return nil, fmt.Errorf("user not found in database")
@@ -49,5 +49,5 @@ func GetUserFromSession(c *gin.Context) (*UserObject, error) {
 		return nil, fmt.Errorf("session data does not match database")
 	}
 
-	return &UserObject{ID: userID, Username: username, Email: email}, nil
+	return &UserObject{ID: userID, Username: username, Email: email, SecurityQuestionsAnswered: user.SecurityQuestionsAnswered}, nil
 }
