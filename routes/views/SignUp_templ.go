@@ -46,7 +46,7 @@ func SignUp(data SignUpData) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</head><body>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<script src=\"/js/zxcvbn.js\"></script><link rel=\"stylesheet\" href=\"/styles/sign-up.css\"></head><body>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -54,7 +54,7 @@ func SignUp(data SignUpData) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<main><div class=\"card\"><h2>Sign Up</h2><form action=\"/sign-up\" method=\"post\"><input type=\"text\" name=\"username\" placeholder=\"Username\" required> <input type=\"email\" name=\"email\" placeholder=\"Email\" required> <input type=\"password\" name=\"password\" placeholder=\"Password\" required> <input type=\"password\" name=\"confirm_password\" placeholder=\"Confirm Password\" required><div class=\"terms-group\"><div class=\"checkbox-group\"><input type=\"checkbox\" id=\"terms\" name=\"terms\" required> <label for=\"terms\">I agree to the <a href=\"/terms-of-service\">Terms of Service</a> and <a href=\"/privacy-policy\">Privacy Policy</a></label></div></div><button type=\"submit\" class=\"primary-button\">Sign Up</button> ")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<main><div class=\"card\"><h2>Sign Up</h2><form action=\"/sign-up\" method=\"post\"><div class=\"form-group-col\"><label for=\"username\">Username</label> <input type=\"text\" name=\"username\" placeholder=\"Username\" required></div><div class=\"form-group-col\"><label for=\"email\">Email</label> <input type=\"email\" name=\"email\" placeholder=\"Email\" required></div><div class=\"form-group-col\"><label for=\"password\">Password</label> <input type=\"password\" name=\"password\" id=\"passwordInput\" placeholder=\"Password\" required><div id=\"strengthInfo\" class=\"strength-info\"></div><div class=\"strength-meter\"><div id=\"strengthMeterFill\" class=\"strength-meter-fill\"></div></div></div><div class=\"form-group-col\"><label for=\"confirm_password\">Confirm Password</label> <input type=\"password\" name=\"confirm_password\" placeholder=\"Confirm Password\" required></div><div class=\"terms-group\"><div class=\"checkbox-group\"><input type=\"checkbox\" id=\"terms\" name=\"terms\" required> <label for=\"terms\">I agree to the <a href=\"/terms-of-service\">Terms of Service</a> and <a href=\"/privacy-policy\">Privacy Policy</a></label></div></div><button type=\"submit\" class=\"primary-button\">Sign Up</button> ")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -66,7 +66,7 @@ func SignUp(data SignUpData) templ.Component {
 			var templ_7745c5c3_Var2 string
 			templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(data.ErrorMessage)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `routes/views/SignUp.templ`, Line: 47, Col: 51}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `routes/views/SignUp.templ`, Line: 66, Col: 51}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 			if templ_7745c5c3_Err != nil {
@@ -85,7 +85,7 @@ func SignUp(data SignUpData) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</body></html>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<script src=\"/js/password-checker.js\"></script></body></html>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

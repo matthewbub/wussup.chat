@@ -305,3 +305,9 @@ footer a:hover {
   font-weight: 700;
   text-align: center;
 }
+
+.form-group-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}

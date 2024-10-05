@@ -14,6 +14,8 @@ templ SignUp(data SignUpData) {
 	<html lang="en">
 		<head>
 			@partials.GlobalHead(data.Title)
+			<script src="/js/zxcvbn.js"></script>			
+			<link rel="stylesheet" href="/styles/sign-up.css">
 		</head>
 		<body>
 			@partials.GlobalHeader(data.IsLoggedIn)
@@ -21,20 +23,37 @@ templ SignUp(data SignUpData) {
 				<div class="card">
 					<h2>Sign Up</h2>
 					<form action="/sign-up" method="post">
-						<input type="text" name="username" placeholder="Username" required />
-						<input type="email" name="email" placeholder="Email" required />
-						<input
-							type="password"
-							name="password"
-							placeholder="Password"
-							required
-						/>
-						<input
-							type="password"
-							name="confirm_password"
-							placeholder="Confirm Password"
-							required
-						/>
+						<div class="form-group-col">
+							<label for="username">Username</label>
+							<input type="text" name="username" placeholder="Username" required />
+						</div>
+						<div class="form-group-col">
+							<label for="email">Email</label>
+							<input type="email" name="email" placeholder="Email" required />
+						</div>
+						<div class="form-group-col">
+							<label for="password">Password</label>
+							<input
+								type="password"
+								name="password"
+								id="passwordInput"
+								placeholder="Password"
+								required
+							/>
+							<div id="strengthInfo" class="strength-info"></div>
+							<div class="strength-meter">
+								<div id="strengthMeterFill" class="strength-meter-fill"></div>
+							</div>
+						</div>
+						<div class="form-group-col">
+							<label for="confirm_password">Confirm Password</label>
+							<input
+								type="password"
+								name="confirm_password"
+								placeholder="Confirm Password"
+								required
+							/>
+						</div>		
 						<div class="terms-group">
 							<div class="checkbox-group">
 								<input type="checkbox" id="terms" name="terms" required />
@@ -53,6 +72,7 @@ templ SignUp(data SignUpData) {
 				</div>
 			</main>
 			@partials.GlobalFooter()
+			<script src="/js/password-checker.js"></script>
 		</body>
 	</html>
 }
