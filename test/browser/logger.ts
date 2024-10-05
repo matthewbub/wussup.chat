@@ -3,7 +3,7 @@ class TestLogger {
   private failedTests: number = 0;
 
   log(message: string): void {
-    console.log(`    ${message}`);
+    console.log(`  ${message}`);
   }
 
   logError(message: string): void {
