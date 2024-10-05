@@ -1,3 +1,4 @@
+import { getTestResults } from "./logger";
 import { runSignUpTest } from "./signUp/signUpTest";
 
 (async () => {
@@ -8,4 +9,5 @@ import { runSignUpTest } from "./signUp/signUpTest";
 
   const end = performance.now();
   console.log(`Test suites completed in ${end - start} milliseconds`);
+  console.log(getTestResults());
 })();

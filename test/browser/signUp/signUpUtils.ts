@@ -16,6 +16,44 @@ export async function fillSignUpForm(page: Page) {
   await page.click('input[name="terms"]');
   await page.click('button[type="submit"]');
   await page.waitForNavigation();
+
+  return randomUsername;
+}
+
+export async function fillDuplicateUsernameForm(
+  page: Page,
+  errors: string[],
+  username: string
+) {
+  const randomEmail = randomBytes(8).toString("hex");
+
+  await page.type('input[name="username"]', username);
+  await page.type('input[name="email"]', `${randomEmail}@example.com`);
+  await page.type('input[name="password"]', "Test@Password123");
+  await page.type('input[name="confirm_password"]', "Test@Password123");
+  await page.click('input[name="terms"]');
+  await page.click('button[type="submit"]');
+
+  // Wait for the error message to appear
+  await page.waitForSelector("#error-message", { visible: true });
+
+  const errorMessage = await page.$("#error-message");
+  let errorMessageText: string | null = null;
+
+  if (errorMessage) {
+    errorMessageText = await page.evaluate(
+      (el) => el.textContent,
+      errorMessage
+    );
+
+    if (errorMessageText === "Username already in use") {
+      logSuccess("Error message found");
+    } else {
+      errors.push("Error message not found");
+    }
+  } else {
+    errors.push("No error message found");
+  }
 }
 
 export async function verifySecurityQuestionsPage(
@@ -24,7 +62,7 @@ export async function verifySecurityQuestionsPage(
 ) {
   const securityQuestionsForm = await page.$("#security-questions-form");
   if (securityQuestionsForm) {
-    logSuccess("Security questions form found");
+    logSuccess("User successfully filled sign up form");
   } else {
     errors.push("No security questions form found");
   }
@@ -44,7 +82,8 @@ export async function fillSecurityQuestionsForm(page: Page) {
 export async function verifySuccessPage(page: Page, errors: string[]) {
   const successPage = await page.$("#registration-success");
   if (successPage) {
-    logSuccess("Success page found");
+    logSuccess("User registration successful");
+    logSuccess("User successfully filled security questions form");
   } else {
     errors.push("No success page found");
   }
@@ -54,7 +93,7 @@ export async function verifyDashboardPage(page: Page, errors: string[]) {
   await page.waitForNavigation();
   const dashboardPage = await page.$("#dashboard");
   if (dashboardPage) {
-    logSuccess("Dashboard page found");
+    logSuccess("User successfully landed on the dashboard page");
   } else {
     errors.push("No dashboard page found");
   }

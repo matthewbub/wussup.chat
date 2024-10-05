@@ -6,8 +6,10 @@ import {
   fillSecurityQuestionsForm,
   verifySuccessPage,
   verifyDashboardPage,
+  fillDuplicateUsernameForm,
 } from "./signUpUtils";
-import { logError, logSuccess } from "../logger";
+import { log, logError, logSuccess } from "../logger";
+import { signOut } from "../common/signOut";
 
 export async function runSignUpTest() {
   console.log("Running sign up test");
@@ -16,12 +18,19 @@ export async function runSignUpTest() {
   const page = await browser.newPage();
 
   try {
+    log("[Series]: sign up");
     await navigateToSignUpPage(page);
-    await fillSignUpForm(page);
+    const username = await fillSignUpForm(page);
     await verifySecurityQuestionsPage(page, errors);
     await fillSecurityQuestionsForm(page);
     await verifySuccessPage(page, errors);
     await verifyDashboardPage(page, errors);
+
+    await signOut(page, errors);
+
+    log("[Series]: duplicate username");
+    await navigateToSignUpPage(page);
+    await fillDuplicateUsernameForm(page, errors, username);
   } catch (error: any) {
     console.error("An error occurred:", error);
     errors.push(error?.message || "Unknown error");

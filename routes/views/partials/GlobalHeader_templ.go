@@ -34,12 +34,12 @@ func GlobalHeader(isLoggedin bool) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		if isLoggedin {
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<a href=\"/dashboard\">Dashboard</a> <a href=\"/logout\">Logout</a>")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<a href=\"/dashboard\" id=\"dashboard-link\">Dashboard</a> <a href=\"/logout\" id=\"logout-link\">Logout</a>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		} else {
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<a href=\"/login\">Login</a> <a href=\"/sign-up\">Register</a>")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<a href=\"/login\" id=\"login-link\">Login</a> <a href=\"/sign-up\" id=\"sign-up-link\">Register</a>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

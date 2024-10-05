@@ -63,7 +63,7 @@ templ SignUp(data SignUpData) {
 						</div>
 						<button type="submit" class="primary-button">Sign Up</button>
 						if data.ErrorMessage != "" {
-							<p class="message error">{ data.ErrorMessage }</p>
+							<p class="message error" id="error-message">{ data.ErrorMessage }</p>
 						} 
 					</form>
 					<div class="login-link">

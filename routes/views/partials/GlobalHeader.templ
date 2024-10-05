@@ -10,11 +10,11 @@ templ GlobalHeader(isLoggedin bool) {
 
       <div class="nav-links">
         if isLoggedin {
-          <a href="/dashboard">Dashboard</a>
-          <a href="/logout">Logout</a>
+          <a href="/dashboard" id="dashboard-link">Dashboard</a>
+          <a href="/logout" id="logout-link">Logout</a>
         } else {
-          <a href="/login">Login</a>
-          <a href="/sign-up">Register</a>
+          <a href="/login" id="login-link">Login</a>
+          <a href="/sign-up" id="sign-up-link">Register</a>
         }
       </div>
     </nav>
