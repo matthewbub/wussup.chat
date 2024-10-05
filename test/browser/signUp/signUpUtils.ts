@@ -58,11 +58,12 @@ export async function fillDuplicateUsernameForm(
 
 export async function verifySecurityQuestionsPage(
   page: Page,
-  errors: string[]
+  errors: string[],
+  message?: string
 ) {
   const securityQuestionsForm = await page.$("#security-questions-form");
   if (securityQuestionsForm) {
-    logSuccess("User successfully filled sign up form");
+    logSuccess(message || "User successfully filled sign up form");
   } else {
     errors.push("No security questions form found");
   }

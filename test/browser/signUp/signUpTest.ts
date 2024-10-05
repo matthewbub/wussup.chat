@@ -31,20 +31,20 @@ export async function runSignUpTest() {
 
     await signOut(page, errors);
 
-    log("[Series]: username criteria");
+    log("[Series]: sign up - username criteria");
     await navigateToSignUpPage(page);
     await fillDuplicateUsernameForm(page, errors, username);
 
     await reloadPage(page);
 
-    log("[Series]: email criteria");
+    log("[Series]: sign up - email criteria");
     await navigateToSignUpPage(page);
     await fillDuplicateEmailForm(page, errors, username);
 
     await reloadPage(page);
 
     // New series for password criteria
-    log("[Series]: password criteria");
+    log("[Series]: sign up - password criteria");
     await navigateToSignUpPage(page);
     // Test short password
     await fillInvalidPasswordForm(page, errors, username, "short");
@@ -68,6 +68,49 @@ export async function runSignUpTest() {
     await navigateToSignUpPage(page);
 
     await reloadPage(page);
+
+    // Test when a user doesn't complete the security questions
+    // For this case; we'll assume the user has completely left the app
+    // and not they are trying to log in at the login page.
+    // If they went to the sign up page, they would hit the duplicate email
+    // or username test suite above
+    // STRs
+    // 1. Navigate to the sign up page
+    // 2. Fill out the form fields (username, email, password, confirm password, terms)
+    // 3. Click the sign up button
+    // 4. Verify that the user is redirected to the security questions page
+    // 5. Leave the security questions page blank and navigate to a different page ('/')
+    // 6. The user should not be redirected when accessing a public page
+    // 7. Attempt to visit the dashboard page
+    // 7. The user should be redirected to the security questions
+    // 8. Fill out the security questions
+    // 9. Submit the form
+    // 10. Verify that the user is redirected to the dashboard page
+    // Test when a user doesn't complete the security questions
+    log("[Series]: incomplete security questions");
+    await navigateToSignUpPage(page);
+    await fillSignUpForm(page);
+    await verifySecurityQuestionsPage(
+      page,
+      errors,
+      "User landed on the security questions page"
+    );
+
+    // Navigate away from the security questions page
+    await page.goto("http://localhost:8080/");
+    logSuccess("User left the sign up flow");
+
+    // Attempt to access the dashboard
+    await page.goto("http://localhost:8080/dashboard");
+    await verifySecurityQuestionsPage(
+      page,
+      errors,
+      "User landed on the security questions page"
+    );
+
+    // Complete the security questions
+    await fillSecurityQuestionsForm(page);
+    await verifyDashboardPage(page, errors);
   } catch (error: any) {
     console.error("An error occurred:", error);
     errors.push(error?.message || "Unknown error");
