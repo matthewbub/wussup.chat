@@ -23,7 +23,7 @@ templ SecurityQuestions(data SecurityQuestionsData) {
           if data.Message != "" {
             <div class="message">{ data.Message }</div>
           }
-					<form action="/api/sign-up/security-questions" method="post">
+					<form action="/api/sign-up/security-questions" method="post" id="security-questions-form">
 						<div class="question-group">
 							<label for="question1">Question 1:</label>
 							<select name="question1" id="question1" required>

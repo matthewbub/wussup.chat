@@ -55,7 +55,7 @@ func Success(data SuccessData) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<main><div class=\"card\"><h1>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<main><div class=\"card\" id=\"registration-success\"><h1>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -115,7 +115,7 @@ func Success(data SuccessData) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<script>\n        document.addEventListener('DOMContentLoaded', function() {\n          const redirectElement = document.querySelector('[data-redirect]');\n          const redirect = redirectElement.getAttribute('data-redirect');\n          // Trim the leading and trailing slashes\n          const trimmedRedirect = redirect.slice(2).slice(0, -1);\n          // Prepend '../' to navigate back one directory\n          const newRedirect = '../' + trimmedRedirect;\n\n          redirectElement.setAttribute('href', newRedirect);\n\n          setTimeout(function() {\n            window.location.href = newRedirect;\n          }, 5000);\n        });\n      </script></body></html>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<script>\n        // this is pretty hacky tbh; templ doesn't really have a better solution https://github.com/a-h/templ/discussions/764#discussioncomment-9923732\n        document.addEventListener('DOMContentLoaded', function() {\n          const redirectElement = document.querySelector('[data-redirect]');\n          const redirect = redirectElement.getAttribute('data-redirect');\n          // Trim the leading and trailing slashes\n          const trimmedRedirect = redirect.slice(2).slice(0, -1);\n          // Prepend '../' to navigate back one directory\n          const newRedirect = '../' + trimmedRedirect;\n\n          redirectElement.setAttribute('href', newRedirect);\n\n          setTimeout(function() {\n            window.location.href = newRedirect;\n          }, 5000);\n        });\n      </script></body></html>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
