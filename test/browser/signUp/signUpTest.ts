@@ -1,3 +1,4 @@
+// TODO: the terms and conditions checkbox should be tested
 import puppeteer from "puppeteer";
 import {
   navigateToSignUpPage,
