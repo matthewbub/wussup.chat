@@ -20,7 +20,7 @@ function updateStrengthMeter(score) {
 
 function updateStrengthInfo() {
   strengthInfo.innerHTML = `
-    <p>Strength Score: ${strengthData.score} / 4</p>    
+    <p>Strength Score</p>    
   `;
   updateStrengthMeter(strengthData.score);
 }
