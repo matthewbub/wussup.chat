@@ -9,7 +9,7 @@ import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
 import (
-	"bus.zcauldron.com/models"
+	"bus.zcauldron.com/pkg/models"
 	"bus.zcauldron.com/pkg/views/partials"
 	"fmt"
 )

@@ -84,3 +84,18 @@ CREATE TABLE IF NOT EXISTS token_usage (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users (id)
 );
+
+CREATE TABLE IF NOT EXISTS tenants (
+    id TEXT PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL UNIQUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+);
+
+CREATE TABLE IF NOT EXISTS tenant_features (
+    tenant_id TEXT NOT NULL,
+    feature_name TEXT NOT NULL,
+    is_enabled BOOLEAN DEFAULT FALSE,
+    PRIMARY KEY (tenant_id, feature_name)
+    FOREIGN KEY (tenant_id) REFERENCES tenants (id)
+);

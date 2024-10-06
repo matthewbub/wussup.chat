@@ -3,7 +3,7 @@ package api
 import (
 	"net/http"
 
-	"bus.zcauldron.com/models"
+	"bus.zcauldron.com/pkg/models"
 	"github.com/gin-gonic/gin"
 )
 

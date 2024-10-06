@@ -4,7 +4,7 @@ import (
 	"log"
 	"net/http"
 
-	"bus.zcauldron.com/models"
+	"bus.zcauldron.com/pkg/models"
 	"bus.zcauldron.com/pkg/views"
 	"bus.zcauldron.com/utils"
 	"github.com/gin-gonic/gin"
