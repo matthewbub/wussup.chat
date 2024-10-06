@@ -10,3 +10,6 @@ Thinking that extracting text from the image is going to be the route i need to 
 
 10/01/2024
 I'm working on a bunch of complex projects at work. It's been a challenge to maintain an understanding of this codebase due to context switching and needing to implement pretty big features such as a proper sign up flow
+
+10/5/2024
+Working with a headless browser (puppeter) is such a fucking easy way to test ui behaviors. I'm thinking about launching a python server via api endpoint, maybe it should be something else like above the server, i just want it to be synonymous with the server

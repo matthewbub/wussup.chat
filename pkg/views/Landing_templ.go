@@ -8,16 +8,16 @@ package views
 import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
-import "bus.zcauldron.com/routes/views/partials"
+import "bus.zcauldron.com/pkg/views/partials"
 
-type LogInData struct {
+type LandingData struct {
 	Title      string
 	Name       string
 	IsLoggedIn bool
 	Message    string
 }
 
-func LogIn(data LogInData) templ.Component {
+func Landing(data LandingData) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -54,30 +54,7 @@ func LogIn(data LogInData) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<main><div class=\"card\"><h2>Login</h2><form action=\"/login\" method=\"post\"><input type=\"text\" name=\"username\" placeholder=\"Username\" required> <input type=\"password\" name=\"password\" placeholder=\"Password\" required><div class=\"form-group\"><div class=\"checkbox-group\"><input type=\"checkbox\" id=\"remember\" name=\"remember\"> <label for=\"remember\">Remember me for 30 days</label></div><a href=\"/forgot-password\">Forgot password?</a></div><button type=\"submit\" class=\"primary-button\">Login</button> ")
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		if data.Message != "" {
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"error\">")
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			var templ_7745c5c3_Var2 string
-			templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(data.Message)
-			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `routes/views/LogIn.templ`, Line: 46, Col: 45}
-			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div>")
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</form></div></main>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<main><div class=\"card\" id=\"app-landing\"><h2>Landing</h2><p>Welcome to the landing page</p></div></main>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

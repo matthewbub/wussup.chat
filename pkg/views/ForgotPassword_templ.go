@@ -8,7 +8,7 @@ package views
 import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
-import "bus.zcauldron.com/routes/views/partials"
+import "bus.zcauldron.com/pkg/views/partials"
 
 type ForgotPasswordData struct {
 	Title      string

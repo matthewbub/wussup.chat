@@ -8,16 +8,16 @@ package views
 import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
-import "bus.zcauldron.com/routes/views/partials"
+import "bus.zcauldron.com/pkg/views/partials"
 
-type SecurityQuestionsData struct {
+type LogInData struct {
 	Title      string
 	Name       string
 	IsLoggedIn bool
 	Message    string
 }
 
-func SecurityQuestions(data SecurityQuestionsData) templ.Component {
+func LogIn(data LogInData) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -54,19 +54,19 @@ func SecurityQuestions(data SecurityQuestionsData) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<main><div class=\"card\"><h2>Security Questions</h2>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<main><div class=\"card\"><h2>Login</h2><form action=\"/login\" method=\"post\"><input type=\"text\" name=\"username\" placeholder=\"Username\" required> <input type=\"password\" name=\"password\" placeholder=\"Password\" required><div class=\"form-group\"><div class=\"checkbox-group\"><input type=\"checkbox\" id=\"remember\" name=\"remember\"> <label for=\"remember\">Remember me for 30 days</label></div><a href=\"/forgot-password\">Forgot password?</a></div><button type=\"submit\" class=\"primary-button\">Login</button> ")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		if data.Message != "" {
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"message\">")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"error\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var2 string
 			templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(data.Message)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `routes/views/SecurityQuestions.templ`, Line: 24, Col: 47}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/LogIn.templ`, Line: 46, Col: 45}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 			if templ_7745c5c3_Err != nil {
@@ -77,7 +77,7 @@ func SecurityQuestions(data SecurityQuestionsData) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<form action=\"/api/sign-up/security-questions\" method=\"post\" id=\"security-questions-form\"><div class=\"question-group\"><label for=\"question1\">Question 1:</label> <select name=\"question1\" id=\"question1\" required><option value=\"\">Select a question</option> <option value=\"pet\">What was the name of your first pet?</option> <option value=\"school\">What elementary school did you attend?</option> <option value=\"city\">In what city were you born?</option></select> <input type=\"text\" name=\"answer1\" placeholder=\"Your answer\" required></div><div class=\"question-group\"><label for=\"question2\">Question 2:</label> <select name=\"question2\" id=\"question2\" required><option value=\"\">Select a question</option> <option value=\"mother\">What is your mother's maiden name?</option> <option value=\"car\">What was the make of your first car?</option> <option value=\"street\">What street did you grow up on?</option></select> <input type=\"text\" name=\"answer2\" placeholder=\"Your answer\" required></div><div class=\"question-group\"><label for=\"question3\">Question 3:</label> <select name=\"question3\" id=\"question3\" required><option value=\"\">Select a question</option> <option value=\"book\">What was the first book you remember reading?</option> <option value=\"job\">What was your first job?</option> <option value=\"teacher\">Who was your favorite teacher?</option></select> <input type=\"text\" name=\"answer3\" placeholder=\"Your answer\" required></div><button type=\"submit\" class=\"primary-button\">Submit</button></form></div></main>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</form></div></main>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
