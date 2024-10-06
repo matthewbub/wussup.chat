@@ -4,8 +4,8 @@ import (
 	"log"
 
 	"bus.zcauldron.com/api"
-	"bus.zcauldron.com/middleware"
 	"bus.zcauldron.com/pkg/handlers"
+	"bus.zcauldron.com/pkg/middleware"
 	"bus.zcauldron.com/utils"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
