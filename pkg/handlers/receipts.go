@@ -5,8 +5,8 @@ import (
 	"net/http"
 
 	"bus.zcauldron.com/pkg/models"
+	"bus.zcauldron.com/pkg/utils"
 	"bus.zcauldron.com/pkg/views"
-	"bus.zcauldron.com/utils"
 	"github.com/a-h/templ"
 	"github.com/gin-gonic/gin"
 )

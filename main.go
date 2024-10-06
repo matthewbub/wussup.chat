@@ -6,7 +6,7 @@ import (
 	"bus.zcauldron.com/api"
 	"bus.zcauldron.com/pkg/handlers"
 	"bus.zcauldron.com/pkg/middleware"
-	"bus.zcauldron.com/utils"
+	"bus.zcauldron.com/pkg/utils"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"

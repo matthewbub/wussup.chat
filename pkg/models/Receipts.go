@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"log"
 
-	"bus.zcauldron.com/utils"
+	"bus.zcauldron.com/pkg/utils"
 )
 
 type Receipt struct {

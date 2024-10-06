@@ -10,8 +10,8 @@ import templruntime "github.com/a-h/templ/runtime"
 
 import (
 	"bus.zcauldron.com/pkg/models"
+	"bus.zcauldron.com/pkg/utils"
 	"bus.zcauldron.com/pkg/views/partials"
-	"bus.zcauldron.com/utils"
 )
 
 // I THINK THIS NEEDS TO BE MOVED TO A NEW FILE

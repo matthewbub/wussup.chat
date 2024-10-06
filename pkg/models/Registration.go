@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"bus.zcauldron.com/utils"
+	"bus.zcauldron.com/pkg/utils"
 	"github.com/google/uuid"
 )
 

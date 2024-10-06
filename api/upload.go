@@ -15,8 +15,8 @@ import (
 	"time"
 
 	"bus.zcauldron.com/pkg/models"
+	"bus.zcauldron.com/pkg/utils"
 	"bus.zcauldron.com/pkg/views/partials"
-	"bus.zcauldron.com/utils"
 	"github.com/gin-gonic/gin"
 )
 
