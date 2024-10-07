@@ -54,7 +54,7 @@ func LogIn(data LogInData) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<main><div class=\"card\"><h2>Login</h2><form action=\"/login\" method=\"post\"><input type=\"text\" name=\"username\" placeholder=\"Username\" required> <input type=\"password\" name=\"password\" placeholder=\"Password\" required><div class=\"form-group\"><div class=\"checkbox-group\"><input type=\"checkbox\" id=\"remember\" name=\"remember\"> <label for=\"remember\">Remember me for 30 days</label></div><a href=\"/forgot-password\">Forgot password?</a></div><button type=\"submit\" class=\"primary-button\">Login</button> ")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<main><div class=\"card\"><h2>Login</h2><form action=\"/api/login\" method=\"post\"><input type=\"text\" name=\"username\" placeholder=\"Username\" required> <input type=\"password\" name=\"password\" placeholder=\"Password\" required><div class=\"form-group\"><div class=\"checkbox-group\"><input type=\"checkbox\" id=\"remember\" name=\"remember\"> <label for=\"remember\">Remember me for 30 days</label></div><a href=\"/forgot-password\">Forgot password?</a></div><button type=\"submit\" class=\"primary-button\">Login</button> ")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -66,7 +66,7 @@ func LogIn(data LogInData) templ.Component {
 			var templ_7745c5c3_Var2 string
 			templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(data.Message)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/LogIn.templ`, Line: 46, Col: 45}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/LogIn.templ`, Line: 46, Col: 40}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 			if templ_7745c5c3_Err != nil {

@@ -43,20 +43,6 @@ func main() {
 	r.Run(":8080")
 }
 
-func registerPublicApiRoutes(r *gin.Engine) {
-	r.POST("/login", api.LoginHandler)
-	r.POST("/sign-up", api.SignUpHandler)
-	r.POST("/api/sign-up/security-questions", api.SecurityQuestionsHandler)
-	// r.POST("/forgot-password", forgotPasswordHandler)
-}
-
-func registerPrivateApiRoutes(auth *gin.RouterGroup) {
-	auth.POST("/upload", api.UploadHandler)
-	auth.POST("/upload/confirm", api.UploadConfirmHandler)
-	auth.POST("/upload/confirm/save", api.SaveReceiptHandler)
-	auth.GET("/logout", api.LogoutHandler)
-}
-
 func registerPublicViews(router *gin.Engine) {
 	router.GET("/", handlers.LandingView)
 	router.GET("/login", handlers.LoginView)
@@ -66,8 +52,22 @@ func registerPublicViews(router *gin.Engine) {
 	router.GET("/forgot-password", handlers.ForgotPasswordView)
 }
 
+func registerPublicApiRoutes(r *gin.Engine) {
+	r.POST("/login", api.LoginHandler)
+	r.POST("/api/sign-up", api.SignUpHandler)
+	r.POST("/api/sign-up/security-questions", api.SecurityQuestionsHandler)
+	// r.POST("/forgot-password", forgotPasswordHandler)
+}
+
 func registerPrivateViews(auth *gin.RouterGroup) {
 	auth.GET("/dashboard", handlers.DashboardView)
 	auth.GET("/dashboard/receipts", handlers.ReceiptsView)
 	auth.GET("/dashboard/receipts/:id", handlers.ReceiptView)
+}
+
+func registerPrivateApiRoutes(auth *gin.RouterGroup) {
+	auth.POST("/upload", api.UploadHandler)
+	auth.POST("/upload/confirm", api.UploadConfirmHandler)
+	auth.POST("/upload/confirm/save", api.SaveReceiptHandler)
+	auth.GET("/logout", api.LogoutHandler)
 }
