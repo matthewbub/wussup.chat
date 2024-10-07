@@ -28,6 +28,20 @@ func InsertUserIntoDatabase(username, hashedPassword, email string) error {
 		return fmt.Errorf("failed to execute statement: %w", err)
 	}
 
+	// Insert the password into the password history
+	stmt, err = db.Prepare("INSERT INTO password_history (user_id, password) VALUES (?, ?)")
+	if err != nil {
+		log.Println(err)
+		return fmt.Errorf("failed to prepare password history statement: %w", err)
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(uuid, hashedPassword)
+	if err != nil {
+		log.Println(err)
+		return fmt.Errorf("failed to insert password into history: %w", err)
+	}
+
 	return nil
 }
 
