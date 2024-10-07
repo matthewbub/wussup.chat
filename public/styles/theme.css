@@ -1,5 +1,13 @@
 @import url("https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap");
 
+:root {
+  --primary-color: #1e3a8a;
+  --secondary-color: #3b82f6;
+  --background-color: #f3f4f6;
+  --text-color: #1f2937;
+  --border-color: #e5e7eb;
+}
+
 /* General Styles */
 * {
   box-sizing: border-box;
@@ -12,15 +20,14 @@ html,
 body {
   padding: 0;
   margin: 0;
-  /* height: 100%; */
-  background-color: #f5f5f5;
+  background-color: var(--background-color);
 }
 
 body {
   font-family: "Roboto", Arial, sans-serif;
   margin: 0;
   padding: 0;
-  color: #333;
+  color: var(--text-color);
   line-height: 1.6;
   font-size: 16px;
   display: flex;
@@ -34,7 +41,7 @@ main {
 
 /* header */
 header {
-  background-color: #003366;
+  background-color: var(--primary-color);
   color: #fff;
   padding: 1rem;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -192,15 +199,16 @@ table {
   width: 100%;
   border-collapse: collapse;
 }
+
+table thead {
+  background-color: var(--primary-color);
+  color: #fff;
+}
+
 table th,
 table td {
   padding: 0.5rem;
   text-align: left;
-}
-
-table th:first-child,
-table td:first-child {
-  padding-left: 0;
 }
 
 table th:last-child,
@@ -210,7 +218,7 @@ table td:last-child {
 
 /* footer */
 footer {
-  background-color: #003366;
+  background-color: var(--primary-color);
   color: #fff;
   text-align: center;
   padding: 1.5rem;
@@ -233,7 +241,7 @@ footer a:hover {
 }
 
 .primary-button {
-  background-color: #003366;
+  background-color: var(--secondary-color);
   color: #fff;
   border: none;
   cursor: pointer;
@@ -244,7 +252,7 @@ footer a:hover {
 }
 
 .primary-button:hover {
-  background-color: #004080;
+  background-color: var(--primary-color);
 }
 
 .secondary-button {
@@ -263,8 +271,6 @@ footer a:hover {
   background-color: #003366;
   color: #fff;
 }
-
-// ... existing code ...
 
 .question-group {
   display: flex;
