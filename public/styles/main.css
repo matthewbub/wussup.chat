@@ -21,6 +21,17 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
+.receipt-pagination {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+.receipt-pagination button {
+  margin: 0 5px;
+  height: fit-content;
+}
+
 /* Media query for tablets */
 @media (max-width: 768px) {
   .receipt-upload-container,
@@ -50,11 +61,29 @@
     max-width: 100%;
   }
 }
+
 .receipt-upload-container {
   margin-top: 20px;
   border: 2px dashed var(--border-color);
   text-align: center;
   transition: background-color 0.3s ease;
+}
+
+.receipt-modify-container,
+.receipt-confirmation-container {
+  margin-top: 20px;
+}
+
+.receipt-confirmation-header h2 {
+  margin-bottom: 0;
+}
+
+.receipt-confirmation-header p {
+  margin-top: 0;
+}
+
+.receipt-header h2 {
+  margin-bottom: 0;
 }
 
 .receipt-upload-container.dragover {
@@ -165,4 +194,52 @@
   color: #bbb;
   text-decoration: none;
   cursor: pointer;
+}
+
+.dashboard-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 20px;
+  width: 100%;
+}
+
+.dashboard-action {
+  width: 50%;
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+  color: var(--text-color);
+  border: 2px solid var(--border-color);
+  border-radius: 10px;
+  padding: 10px;
+  transition: background-color 0.3s ease;
+  background-color: #fff;
+}
+
+.dashboard-action:hover {
+  background-color: var(--background-color);
+}
+
+.dashboard-action h3 {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+.dashboard-action p {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+@media (min-width: 768px) {
+  .dashboard-actions {
+    flex-direction: row;
+  }
+}
+
+.dashboard {
+  display: flex;
+  flex-direction: column;
+  max-width: 700px;
+  margin: 0 auto;
 }

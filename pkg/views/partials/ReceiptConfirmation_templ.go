@@ -31,14 +31,14 @@ func ReceiptConfirmation(receipt models.Receipt) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div id=\"results\"><div class=\"receipt-confirmation-container\" id=\"confirm-single-receipt\"><table><thead><tr><th>Merchant</th><th>Date</th><th>Total</th></tr></thead> <tbody><tr><td id=\"merchant\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div id=\"result\" class=\"receipt-confirmation-container\" id=\"confirm-single-receipt\"><div class=\"receipt-confirmation-header\"><h2>Receipt</h2><p>Please confirm the receipt details below.</p></div><h3>Merchant</h3><table><thead><tr><th>Merchant</th><th>Date</th><th>Total</th></tr></thead> <tbody><tr><td id=\"merchant\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var2 string
 		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(receipt.Merchant)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/partials/ReceiptConfirmation.templ`, Line: 18, Col: 48}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/partials/ReceiptConfirmation.templ`, Line: 23, Col: 46}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 		if templ_7745c5c3_Err != nil {
@@ -51,7 +51,7 @@ func ReceiptConfirmation(receipt models.Receipt) templ.Component {
 		var templ_7745c5c3_Var3 string
 		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(receipt.Date)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/partials/ReceiptConfirmation.templ`, Line: 19, Col: 40}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/partials/ReceiptConfirmation.templ`, Line: 24, Col: 38}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 		if templ_7745c5c3_Err != nil {
@@ -64,7 +64,7 @@ func ReceiptConfirmation(receipt models.Receipt) templ.Component {
 		var templ_7745c5c3_Var4 string
 		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(receipt.Total)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/partials/ReceiptConfirmation.templ`, Line: 20, Col: 42}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/partials/ReceiptConfirmation.templ`, Line: 25, Col: 40}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 		if templ_7745c5c3_Err != nil {
@@ -82,7 +82,7 @@ func ReceiptConfirmation(receipt models.Receipt) templ.Component {
 			var templ_7745c5c3_Var5 string
 			templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(item.Name)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/partials/ReceiptConfirmation.templ`, Line: 36, Col: 39}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/partials/ReceiptConfirmation.templ`, Line: 41, Col: 37}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 			if templ_7745c5c3_Err != nil {
@@ -95,7 +95,7 @@ func ReceiptConfirmation(receipt models.Receipt) templ.Component {
 			var templ_7745c5c3_Var6 string
 			templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(item.Price)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/partials/ReceiptConfirmation.templ`, Line: 37, Col: 41}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/partials/ReceiptConfirmation.templ`, Line: 42, Col: 39}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 			if templ_7745c5c3_Err != nil {
@@ -106,7 +106,7 @@ func ReceiptConfirmation(receipt models.Receipt) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</tbody></table><div class=\"button-container\"><button class=\"secondary-button\">Back</button> <button class=\"primary-button\" id=\"save-button\">Save</button></div></div></div>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</tbody></table><div class=\"button-container\"><button class=\"secondary-button\">Back</button> <button class=\"primary-button\" id=\"save-button\">Save</button></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

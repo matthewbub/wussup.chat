@@ -198,11 +198,13 @@ form a:hover {
 table {
   width: 100%;
   border-collapse: collapse;
+  border: 1px solid var(--border-color);
 }
 
 table thead {
   background-color: var(--primary-color);
   color: #fff;
+  border: 1px solid var(--primary-color);
 }
 
 table th,
@@ -214,6 +216,10 @@ table td {
 table th:last-child,
 table td:last-child {
   text-align: right;
+}
+
+table tbody tr:nth-child(odd) {
+  background-color: var(--background-color);
 }
 
 /* footer */
@@ -249,10 +255,25 @@ footer a:hover {
   transition: background-color 0.3s ease;
   width: auto;
   padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .primary-button:hover {
   background-color: var(--primary-color);
+}
+
+.primary-button:disabled {
+  background-color: #ccc;
+  color: #fff;
+  cursor: not-allowed;
+}
+
+/* if button is actually a link */
+a.primary-button {
+  text-decoration: none;
 }
 
 .secondary-button {

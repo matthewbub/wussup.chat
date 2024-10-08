@@ -28,9 +28,13 @@ templ ReceiptView(data ReceiptViewData) {
       <main>
         <p class="message">{ data.Message }</p>
         <div class="receipt-collection-container">
-        <h2>Receipts</h2>
-        <table>
-          <thead>
+          <div class="receipt-header">
+            <h2>Receipt</h2>            
+          </div>
+
+          <h3>Merchant</h3>
+          <table>
+            <thead>
             <tr>
               <th>Merchant</th>
               <th>Date</th>
@@ -47,7 +51,7 @@ templ ReceiptView(data ReceiptViewData) {
         </table>
 
         <div class="receipt-items">
-          <h2>Items</h2>
+          <h3>Items</h3>
           <table>
             <thead>
               <tr>

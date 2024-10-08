@@ -2,6 +2,7 @@ package views
 
 import (
   "fmt"
+  "strconv"
 	"bus.zcauldron.com/pkg/models"
 	"bus.zcauldron.com/pkg/views/partials"
 )
@@ -28,7 +29,7 @@ templ Receipts(data ReceiptsData) {
           id="imageUploadForm" 
           enctype="multipart/form-data" 
           hx-post="/upload" 
-          hx-target="#result" 
+          hx-target="this" 
           hx-swap="outerHTML"
           hx-trigger="submit"
           hx-indicator="#loading-spinner"
@@ -40,7 +41,7 @@ templ Receipts(data ReceiptsData) {
           <button type="submit" class="primary-button">Upload</button>        
           <div id="loading-spinner" class="htmx-indicator pulse-indicator">Processing your request. This may take a few moments...</div>
         </form>
-        <div id="result"></div>
+        // <div id="result"></div>
         <div class="receipt-collection-container">
           <h2>Receipts</h2>
           <table>
@@ -61,6 +62,11 @@ templ Receipts(data ReceiptsData) {
               }
             </tbody>
           </table>
+          <div class="receipt-pagination">
+            <a href={ templ.SafeURL(fmt.Sprintf("/dashboard/receipts?page=%d", 1)) } class="primary-button" disabled>Previous</a>
+            <p>{ strconv.Itoa(len(data.Receipts)) } items</p>
+            <a href={ templ.SafeURL(fmt.Sprintf("/dashboard/receipts?page=%d", 2)) } class="primary-button">Next</a>
+          </div>
         </div>
       </main>
       @partials.GlobalFooter()
