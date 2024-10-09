@@ -48,7 +48,13 @@ templ Finances(data FinancesData) {
               for _, item := range data.Receipts {
                 <tr class="receipt">
                   <td><a href={ templ.SafeURL(fmt.Sprintf("/dashboard/receipts/%s", item.ID)) }>{ item.Merchant }</a></td>
-                  <td>{ item.Date }</td>
+                  <td>
+                    if item.Date != "" {
+                      { item.Date }
+                    } else {
+                      <span>N/A</span>
+                    }
+                  </td>
                   <td>{ item.Total }</td>
                 </tr>
               }
@@ -67,7 +73,20 @@ templ Finances(data FinancesData) {
 							<a href={ templ.SafeURL(fmt.Sprintf("/dashboard/finances?page=%d&records=%d", data.Pagination.NextPage, data.Pagination.RecordsPerPage)) } class="primary-button">Next</a>
 						}
 					</div>
-					<p>Total records: { strconv.Itoa(data.Pagination.TotalRecords) }</p>
+          <p>
+            
+            Displaying records 
+            { strconv.Itoa(data.Pagination.CurrentPage * data.Pagination.RecordsPerPage - data.Pagination.RecordsPerPage + 1) } 
+            to
+             if (len(data.Receipts) < data.Pagination.RecordsPerPage) {
+              { strconv.Itoa(len(data.Receipts) + (data.Pagination.CurrentPage * data.Pagination.RecordsPerPage) - data.Pagination.RecordsPerPage)  }
+             } else {
+              { strconv.Itoa(data.Pagination.CurrentPage * data.Pagination.RecordsPerPage) } 
+             }
+            of 
+            { strconv.Itoa(data.Pagination.TotalRecords) }
+            
+          </p>
         </div>
       </main>
       @partials.GlobalFooter()

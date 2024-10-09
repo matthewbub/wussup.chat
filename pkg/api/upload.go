@@ -107,7 +107,7 @@ func UploadHandler(c *gin.Context) {
 				"content": []map[string]interface{}{
 					{
 						"type": "text",
-						"text": "Please extract the merchant name, date, total amount, and list of items with their names and prices from this receipt image. " +
+						"text": "Please extract the merchant name, date in the format MM/DD/YYYY, total amount, and list of items with their names and prices from this receipt image. " +
 							"Consider quantities and prices per unit. Consider the list of items may not always have prices listed, such as napkins or condiments. " +
 							"Do not guess any information. If you cannot extract certain fields or if the image is not a receipt, return the same JSON format with those fields left empty.",
 					},
@@ -235,11 +235,37 @@ func UploadConfirmHandler(c *gin.Context) {
 		return
 	}
 
+	data := map[string]string{
+		"merchant": utils.SanitizeInput(c.PostForm("zcauldron_c_merchant")),
+		"date":     utils.SanitizeInput(c.PostForm("zcauldron_c_date")),
+		"total":    utils.SanitizeInput(c.PostForm("zcauldron_c_total")),
+	}
+
+	if data["date"] == "" {
+		data["date"] = time.Now().Format("10/08/2024")
+	}
+
+	// TODO implement this - right now there are some wonky dates that are breaking the app,
+	// 	this might be a non problem when we roll the db
+
+	// else {
+	// 	date, err := utils.FormatDate(data["date"])
+	// 	if err != nil {
+	// 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to parse date"})
+	// 		return
+	// 	}
+	// 	data["date"] = date
+	// }
+
+	if data["total"] == "" {
+		data["total"] = "0.00"
+	}
+
 	// Extract form data into a structured format
 	receipt := models.Receipt{
-		Merchant: c.PostForm("zcauldron_c_merchant"),
-		Date:     c.PostForm("zcauldron_c_date"),
-		Total:    c.PostForm("zcauldron_c_total"),
+		Merchant: data["merchant"],
+		Date:     data["date"],
+		Total:    data["total"],
 	}
 
 	// Create a map to store the item names by index
