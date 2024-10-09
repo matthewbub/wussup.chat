@@ -62,8 +62,8 @@ func registerPublicApiRoutes(r *gin.Engine) {
 func registerPrivateViews(auth *gin.RouterGroup) {
 	auth.GET("/dashboard", handlers.DashboardView)
 	auth.GET("/dashboard/finances", handlers.FinancesView)
-	auth.GET("/dashboard/finances/:id", handlers.ReceiptView)
 	auth.GET("/dashboard/finances/receipts", handlers.ReceiptsView)
+	auth.GET("/dashboard/finances/receipts/:id", handlers.ReceiptView)
 }
 
 func registerPrivateApiRoutes(auth *gin.RouterGroup) {

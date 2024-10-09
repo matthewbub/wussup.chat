@@ -43,7 +43,6 @@ func GetUserFromSession(c *gin.Context) (*UserObject, error) {
 		return nil, fmt.Errorf("user not found in database")
 	}
 
-	fmt.Printf("user: %v\n", user)
 	if user.Username != username || user.Email != email || user.ID != userID {
 		log.Println("session data does not match database")
 		return nil, fmt.Errorf("session data does not match database")

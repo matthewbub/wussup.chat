@@ -12,7 +12,7 @@ import (
 )
 
 func ReceiptView(c *gin.Context) {
-	user, err := utils.GetUserFromSession(c)
+	_, err := utils.GetUserFromSession(c)
 	if err != nil {
 		log.Println(err)
 		c.Redirect(http.StatusSeeOther, "/login")
@@ -35,9 +35,6 @@ func ReceiptView(c *gin.Context) {
 	templ.Handler(views.ReceiptView(views.ReceiptViewData{
 		Title:      "ZCauldron Receipt",
 		IsLoggedIn: true,
-		User:       &utils.UserObject{ID: user.ID, Username: user.Username, Email: user.Email},
-		Email:      user.Email,
-		Message:    "Welcome to the receipt",
 		Receipt:    *receipt,
 	})).ServeHTTP(c.Writer, c.Request)
 }

@@ -3,18 +3,12 @@ package views
 import (
 	"bus.zcauldron.com/pkg/models"
 	"bus.zcauldron.com/pkg/views/partials"
-	"bus.zcauldron.com/pkg/utils"
 )
 
-// I THINK THIS NEEDS TO BE MOVED TO A NEW FILE
 type ReceiptViewData struct {
 	Title string
-	Name string
-	IsLoggedIn bool
-	Message string
-	Receipt models.Receipt
-  Email string
-  User *utils.UserObject
+	IsLoggedIn bool	
+	Receipt models.Receipt  
 }
 
 templ ReceiptView(data ReceiptViewData) {
@@ -26,7 +20,6 @@ templ ReceiptView(data ReceiptViewData) {
 		<body>
 			@partials.GlobalHeader(data.IsLoggedIn)			
       <main>
-        <p class="message">{ data.Message }</p>
         <div class="receipt-collection-container">
           <div class="receipt-header">
             <h2>Receipt</h2>            

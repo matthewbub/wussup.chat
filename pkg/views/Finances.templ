@@ -47,7 +47,7 @@ templ Finances(data FinancesData) {
             <tbody>
               for _, item := range data.Receipts {
                 <tr class="receipt">
-                  <td><a href={ templ.SafeURL(fmt.Sprintf("/dashboard/receipts/%s", item.ID)) }>{ item.Merchant }</a></td>
+                  <td><a href={ templ.SafeURL(fmt.Sprintf("/dashboard/finances/receipts/%s", item.ID)) }>{ item.Merchant }</a></td>
                   <td>
                     if item.Date != "" {
                       { item.Date }
