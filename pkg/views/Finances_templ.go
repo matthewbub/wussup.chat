@@ -15,15 +15,25 @@ import (
 	"strconv"
 )
 
-type ReceiptsData struct {
+type FinancesData struct {
 	Title      string
 	Name       string
 	IsLoggedIn bool
 	Message    string
 	Receipts   []models.Receipt
+	Pagination PaginationData
 }
 
-func Receipts(data ReceiptsData) templ.Component {
+type PaginationData struct {
+	CurrentPage    int
+	NextPage       int
+	PreviousPage   int
+	TotalRecords   int
+	TotalPages     int
+	RecordsPerPage int
+}
+
+func Finances(data FinancesData) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -60,7 +70,7 @@ func Receipts(data ReceiptsData) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<main><form class=\"receipt-upload-container\" id=\"imageUploadForm\" enctype=\"multipart/form-data\" hx-post=\"/upload\" hx-target=\"this\" hx-swap=\"outerHTML\" hx-trigger=\"submit\" hx-indicator=\"#loading-spinner\"><h2>Upload Receipt</h2><label for=\"image\">Drag and drop your receipt image here, or click to select a file</label> <input type=\"file\" id=\"image\" name=\"image\" accept=\"image/*\" required> <span class=\"info-text\">Supported file types: .png, .jpeg, .jpg, .webp, .gif</span> <button type=\"submit\" class=\"primary-button\">Upload</button><div id=\"loading-spinner\" class=\"htmx-indicator pulse-indicator\">Processing your request. This may take a few moments...</div></form><div class=\"receipt-collection-container\"><h2>Receipts</h2><table><thead><tr><th>Merchant</th><th>Date</th><th>Total</th></tr></thead> <tbody>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<main><div class=\"receipt-collection-container\"><h2>View your recenet finance history</h2><table><thead><tr><th>Merchant</th><th>Date</th><th>Total</th></tr></thead> <tbody>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -81,7 +91,7 @@ func Receipts(data ReceiptsData) templ.Component {
 			var templ_7745c5c3_Var3 string
 			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(item.Merchant)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/Receipts.templ`, Line: 58, Col: 111}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/Finances.templ`, Line: 50, Col: 111}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 			if templ_7745c5c3_Err != nil {
@@ -94,7 +104,7 @@ func Receipts(data ReceiptsData) templ.Component {
 			var templ_7745c5c3_Var4 string
 			templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(item.Date)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/Receipts.templ`, Line: 59, Col: 33}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/Finances.templ`, Line: 51, Col: 33}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 			if templ_7745c5c3_Err != nil {
@@ -107,7 +117,7 @@ func Receipts(data ReceiptsData) templ.Component {
 			var templ_7745c5c3_Var5 string
 			templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(item.Total)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/Receipts.templ`, Line: 60, Col: 34}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/Finances.templ`, Line: 52, Col: 34}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 			if templ_7745c5c3_Err != nil {
@@ -118,38 +128,94 @@ func Receipts(data ReceiptsData) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</tbody></table><div class=\"receipt-pagination\"><a href=\"")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</tbody></table><div class=\"receipt-pagination\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var6 templ.SafeURL = templ.SafeURL(fmt.Sprintf("/dashboard/receipts?page=%d", 1))
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(string(templ_7745c5c3_Var6)))
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
+		if data.Pagination.PreviousPage < 1 {
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<a href=\"#\" class=\"primary-button disabled\">Previous</a> ")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		} else {
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<a href=\"")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var6 templ.SafeURL = templ.SafeURL(fmt.Sprintf("/dashboard/finances?page=%d&records=%d", data.Pagination.PreviousPage, data.Pagination.RecordsPerPage))
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(string(templ_7745c5c3_Var6)))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" class=\"primary-button\">Previous</a> ")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" class=\"primary-button\" disabled>Previous</a><p>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<span>Page ")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var7 string
-		templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(strconv.Itoa(len(data.Receipts)))
+		templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(strconv.Itoa(data.Pagination.CurrentPage))
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/Receipts.templ`, Line: 67, Col: 49}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/Finances.templ`, Line: 63, Col: 60}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(" items</p><a href=\"")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(" of ")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var8 templ.SafeURL = templ.SafeURL(fmt.Sprintf("/dashboard/receipts?page=%d", 2))
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(string(templ_7745c5c3_Var8)))
+		var templ_7745c5c3_Var8 string
+		templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(strconv.Itoa(data.Pagination.TotalPages))
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/Finances.templ`, Line: 63, Col: 108}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" class=\"primary-button\">Next</a></div></div></main>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</span> ")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		if data.Pagination.NextPage > data.Pagination.TotalPages {
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<a href=\"#\" class=\"primary-button disabled\">Next</a>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		} else {
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<a href=\"")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var9 templ.SafeURL = templ.SafeURL(fmt.Sprintf("/dashboard/finances?page=%d&records=%d", data.Pagination.NextPage, data.Pagination.RecordsPerPage))
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(string(templ_7745c5c3_Var9)))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" class=\"primary-button\">Next</a>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div><p>Total records: ")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var10 string
+		templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(strconv.Itoa(data.Pagination.TotalRecords))
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/Finances.templ`, Line: 70, Col: 67}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</p></div></main>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

@@ -70,7 +70,8 @@
 }
 
 .receipt-modify-container,
-.receipt-confirmation-container {
+.receipt-confirmation-container,
+.receipt-collection-container {
   margin-top: 20px;
 }
 

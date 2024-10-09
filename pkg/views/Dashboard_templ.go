@@ -68,7 +68,7 @@ func Dashboard(data DashboardData) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("!</p><div class=\"dashboard-actions\"><a class=\"dashboard-action\" href=\"/dashboard/receipts\"><h3>Receipts</h3><p>View and manage your receipts</p></a> <a class=\"dashboard-action\" href=\"/dashboard/receipts/upload\"><h3>Upload Receipt</h3><p>Upload a receipt to your account</p></a></div></div></main>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("!</p><div class=\"dashboard-actions\"><a href=\"/dashboard/finances\" class=\"dashboard-action\" id=\"finances-card\"><h3>Finances</h3><p>View & manage your finance history</p></a> <a href=\"#\" class=\"dashboard-action\" id=\"add-expenses-card\"><h3>Add Expenses</h3><p>Upload receipts and add expenses</p></a></div></div></main>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

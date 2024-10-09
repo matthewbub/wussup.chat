@@ -16,12 +16,10 @@ func Db() *sql.DB {
 	if err != nil {
 		log.Fatal("Error getting current working directory:", err)
 	}
-	fmt.Printf("cwd %s\n", cwd)
 
 	// Construct the database path
 	// TODO: Make this configurable
 	dbPath := filepath.Join(cwd, "pkg", "database", "dev.db")
-	fmt.Printf("line path %s\n", dbPath)
 	db, err := sql.Open("sqlite3", dbPath)
 
 	if err != nil {

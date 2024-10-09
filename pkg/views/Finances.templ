@@ -1,0 +1,77 @@
+package views
+
+import (
+  "fmt"
+  "strconv"
+	"bus.zcauldron.com/pkg/models"
+	"bus.zcauldron.com/pkg/views/partials"
+)
+
+type FinancesData struct {
+	Title string
+	Name string
+	IsLoggedIn bool
+	Message string
+	Receipts []models.Receipt
+	Pagination PaginationData
+}
+
+type PaginationData struct {
+	CurrentPage    int
+	NextPage       int
+	PreviousPage   int
+	TotalRecords   int
+	TotalPages     int
+	RecordsPerPage int
+}
+
+templ Finances(data FinancesData) {
+	<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			@partials.GlobalHead(data.Title)
+		</head>
+		<body>
+			@partials.GlobalHeader(data.IsLoggedIn)			
+      <main>
+        <div class="receipt-collection-container">
+          <h2>View your recenet finance history</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Merchant</th>
+                <th>Date</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              for _, item := range data.Receipts {
+                <tr class="receipt">
+                  <td><a href={ templ.SafeURL(fmt.Sprintf("/dashboard/receipts/%s", item.ID)) }>{ item.Merchant }</a></td>
+                  <td>{ item.Date }</td>
+                  <td>{ item.Total }</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+          <div class="receipt-pagination">
+						if data.Pagination.PreviousPage < 1 {
+							<a href="#" class="primary-button disabled">Previous</a>
+						} else {
+							<a href={ templ.SafeURL(fmt.Sprintf("/dashboard/finances?page=%d&records=%d", data.Pagination.PreviousPage, data.Pagination.RecordsPerPage)) } class="primary-button">Previous</a>
+						}
+						<span>Page { strconv.Itoa(data.Pagination.CurrentPage) } of { strconv.Itoa(data.Pagination.TotalPages) }</span>
+						if data.Pagination.NextPage > data.Pagination.TotalPages {
+							<a href="#" class="primary-button disabled">Next</a>
+						} else {
+							<a href={ templ.SafeURL(fmt.Sprintf("/dashboard/finances?page=%d&records=%d", data.Pagination.NextPage, data.Pagination.RecordsPerPage)) } class="primary-button">Next</a>
+						}
+					</div>
+					<p>Total records: { strconv.Itoa(data.Pagination.TotalRecords) }</p>
+        </div>
+      </main>
+      @partials.GlobalFooter()
+      <script src="/js/receipt-utils.js"></script>
+		</body>
+	</html>
+}

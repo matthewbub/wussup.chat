@@ -2,7 +2,8 @@ package models
 
 import (
 	"database/sql"
-	"log"
+	"fmt"
+	"strconv"
 
 	"bus.zcauldron.com/pkg/utils"
 )
@@ -65,20 +66,35 @@ func GetReceiptById(id string) (*Receipt, error) {
 	return &receipt, nil
 }
 
-func GetReceipts(userID interface{}) ([]Receipt, error) {
+func GetReceipts(userID interface{}, page, records string) ([]Receipt, int, error) {
 	db := utils.Db()
 
 	query := `
 		SELECT receipts.id, receipts.total, receipts.date, receipts.created_at, receipts.updated_at, receipts.notes, merchants.name FROM receipts
 		JOIN merchants ON receipts.merchant_id = merchants.id
 		WHERE receipts.user_id = ?
+		LIMIT ? OFFSET ?
 	`
 
-	rows, err := db.Query(query, userID)
-	if err != nil {
-		return nil, err
-	}
+	countQuery := `
+		SELECT COUNT(*) FROM receipts
+		WHERE user_id = ?
+	`
 
+	offset, err := strconv.Atoi(page)
+	if err != nil {
+		return nil, 0, fmt.Errorf("invalid page number: %v", err)
+	}
+	pageSizeInt, err := strconv.Atoi(records)
+	if err != nil {
+		return nil, 0, fmt.Errorf("invalid page size: %v", err)
+	}
+	offset = (offset - 1) * pageSizeInt
+
+	rows, err := db.Query(query, userID, pageSizeInt, offset)
+	if err != nil {
+		return nil, 0, err
+	}
 	defer rows.Close()
 
 	receipts := []Receipt{}
@@ -87,10 +103,16 @@ func GetReceipts(userID interface{}) ([]Receipt, error) {
 		var receipt Receipt
 		err := rows.Scan(&receipt.ID, &receipt.Total, &receipt.Date, &receipt.CreatedAt, &receipt.UpdatedAt, &receipt.Notes, &receipt.Merchant)
 		if err != nil {
-			return nil, err
+			return nil, 0, err
 		}
 		receipts = append(receipts, receipt)
 	}
-	log.Println(receipts)
-	return receipts, nil
+
+	var totalRecords int
+	err = db.QueryRow(countQuery, userID).Scan(&totalRecords)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return receipts, totalRecords, nil
 }
