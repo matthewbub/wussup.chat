@@ -1,18 +1,12 @@
 package views
 
 import (
-  "fmt"
-  "strconv"
-	"bus.zcauldron.com/pkg/models"
 	"bus.zcauldron.com/pkg/views/partials"
 )
 
 type ReceiptsData struct {
 	Title string
-	Name string
 	IsLoggedIn bool
-	Message string
-	Receipts []models.Receipt
 }
 
 templ Receipts(data ReceiptsData) {
@@ -41,33 +35,6 @@ templ Receipts(data ReceiptsData) {
           <button type="submit" class="primary-button">Upload</button>        
           <div id="loading-spinner" class="htmx-indicator pulse-indicator">Processing your request. This may take a few moments...</div>
         </form>
-        // <div id="result"></div>
-        <div class="receipt-collection-container">
-          <h2>Receipts</h2>
-          <table>
-            <thead>
-              <tr>
-                <th>Merchant</th>
-                <th>Date</th>
-                <th>Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              for _, item := range data.Receipts {
-                <tr class="receipt">
-                  <td><a href={ templ.SafeURL(fmt.Sprintf("/dashboard/receipts/%s", item.ID)) }>{ item.Merchant }</a></td>
-                  <td>{ item.Date }</td>
-                  <td>{ item.Total }</td>
-                </tr>
-              }
-            </tbody>
-          </table>
-          <div class="receipt-pagination">
-            <a href={ templ.SafeURL(fmt.Sprintf("/dashboard/receipts?page=%d", 1)) } class="primary-button" disabled>Previous</a>
-            <p>{ strconv.Itoa(len(data.Receipts)) } items</p>
-            <a href={ templ.SafeURL(fmt.Sprintf("/dashboard/receipts?page=%d", 2)) } class="primary-button">Next</a>
-          </div>
-        </div>
       </main>
       @partials.GlobalFooter()
       <script src="/js/receipt-utils.js"></script>

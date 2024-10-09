@@ -4,7 +4,6 @@ import (
 	"log"
 	"net/http"
 
-	"bus.zcauldron.com/pkg/models"
 	"bus.zcauldron.com/pkg/utils"
 	"bus.zcauldron.com/pkg/views"
 	"github.com/a-h/templ"
@@ -12,24 +11,15 @@ import (
 )
 
 func ReceiptsView(c *gin.Context) {
-	user, err := utils.GetUserFromSession(c)
+	_, err := utils.GetUserFromSession(c)
 	if err != nil {
 		log.Println(err)
 		c.Redirect(http.StatusSeeOther, "/login")
 		return
 	}
 
-	receipts, err := models.GetReceipts(user.ID)
-	if err != nil {
-		log.Println(err)
-		// TODO improve error handling
-		c.Redirect(http.StatusSeeOther, "/dashboard")
-		return
-	}
-
 	templ.Handler(views.Receipts(views.ReceiptsData{
-		Title:      "Receipts",
+		Title:      "Upload Receipts",
 		IsLoggedIn: true,
-		Receipts:   receipts,
 	})).ServeHTTP(c.Writer, c.Request)
 }
