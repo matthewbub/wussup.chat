@@ -1,7 +1,6 @@
 // TODO: the terms and conditions checkbox should be tested
 import puppeteer from "puppeteer";
 import {
-  navigateToSignUpPage,
   fillSignUpForm,
   verifySecurityQuestionsPage,
   fillSecurityQuestionsForm,
@@ -13,7 +12,6 @@ import {
 } from "./signUpUtils";
 import { log, logError, logSuccess } from "../logger";
 import { signOut } from "../common/signOut";
-import { reloadPage } from "../common/reload";
 
 export async function runSignUpTest() {
   console.log("Running sign up test");
@@ -23,7 +21,7 @@ export async function runSignUpTest() {
 
   try {
     log("[Series]: sign up");
-    await navigateToSignUpPage(page);
+    await page.goto("http://localhost:8080/sign-up");
     const username = await fillSignUpForm(page);
     await verifySecurityQuestionsPage(page, errors);
     await fillSecurityQuestionsForm(page);
@@ -33,42 +31,42 @@ export async function runSignUpTest() {
     await signOut(page, errors);
 
     log("[Series]: sign up - username criteria");
-    await navigateToSignUpPage(page);
+    await page.goto("http://localhost:8080/sign-up");
     await fillDuplicateUsernameForm(page, errors, username);
 
-    await reloadPage(page);
+    await page.reload();
 
     log("[Series]: sign up - email criteria");
-    await navigateToSignUpPage(page);
+    await page.goto("http://localhost:8080/sign-up");
     await fillDuplicateEmailForm(page, errors, username);
 
-    await reloadPage(page);
+    await page.reload();
 
     // New series for password criteria
     log("[Series]: sign up - password criteria");
-    await navigateToSignUpPage(page);
+    await page.goto("http://localhost:8080/sign-up");
     // Test short password
     await fillInvalidPasswordForm(page, errors, username, "short");
-    await reloadPage(page);
-    await navigateToSignUpPage(page);
+    await page.reload();
+    await page.goto("http://localhost:8080/sign-up");
     // Test no uppercase
     await fillInvalidPasswordForm(page, errors, username, "noUppercase");
-    await reloadPage(page);
-    await navigateToSignUpPage(page);
+    await page.reload();
+    await page.goto("http://localhost:8080/sign-up");
     // Test no lowercase
     await fillInvalidPasswordForm(page, errors, username, "noLowercase");
-    await reloadPage(page);
-    await navigateToSignUpPage(page);
+    await page.reload();
+    await page.goto("http://localhost:8080/sign-up");
     // Test no number
     await fillInvalidPasswordForm(page, errors, username, "noNumber");
-    await reloadPage(page);
-    await navigateToSignUpPage(page);
+    await page.reload();
+    await page.goto("http://localhost:8080/sign-up");
     // Test no special character
     await fillInvalidPasswordForm(page, errors, username, "noSpecialChar");
-    await reloadPage(page);
-    await navigateToSignUpPage(page);
+    await page.reload();
+    await page.goto("http://localhost:8080/sign-up");
 
-    await reloadPage(page);
+    await page.reload();
 
     // Test when a user doesn't complete the security questions
     // For this case; we'll assume the user has completely left the app
@@ -89,7 +87,7 @@ export async function runSignUpTest() {
     // 10. Verify that the user is redirected to the dashboard page
     // Test when a user doesn't complete the security questions
     log("[Series]: incomplete security questions");
-    await navigateToSignUpPage(page);
+    await page.goto("http://localhost:8080/sign-up");
     await fillSignUpForm(page);
     await verifySecurityQuestionsPage(
       page,

@@ -2,10 +2,6 @@ import { Page } from "puppeteer";
 import { logSuccess } from "../logger";
 import { randomBytes } from "crypto";
 
-export async function navigateToSignUpPage(page: Page) {
-  await page.goto("http://localhost:8080/sign-up");
-}
-
 export async function fillSignUpForm(page: Page) {
   const randomUsername = randomBytes(8).toString("hex");
 
