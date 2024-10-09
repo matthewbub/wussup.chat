@@ -15,7 +15,7 @@ import {
   verifyDashboardPage,
 } from "../common";
 
-export async function runSignUpTest() {
+export async function runSignUpTest(): Promise<string[]> {
   console.log("Running sign up test");
   let errors: string[] = [];
   const browser = await puppeteer.launch({ headless: true });
@@ -125,4 +125,10 @@ export async function runSignUpTest() {
     }
     await browser.close();
   }
+
+  if (errors.length > 0) {
+    return errors;
+  }
+
+  return [];
 }
