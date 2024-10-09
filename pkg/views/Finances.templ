@@ -62,15 +62,15 @@ templ Finances(data FinancesData) {
           </table>
           <div class="receipt-pagination">
 						if data.Pagination.PreviousPage < 1 {
-							<a href="#" class="primary-button disabled">Previous</a>
+							<a href="#" class="secondary-button disabled">Previous</a>
 						} else {
-							<a href={ templ.SafeURL(fmt.Sprintf("/dashboard/finances?page=%d&records=%d", data.Pagination.PreviousPage, data.Pagination.RecordsPerPage)) } class="primary-button">Previous</a>
+							<a href={ templ.SafeURL(fmt.Sprintf("/dashboard/finances?page=%d&records=%d", data.Pagination.PreviousPage, data.Pagination.RecordsPerPage)) } class="secondary-button">Previous</a>
 						}
 						<span>Page { strconv.Itoa(data.Pagination.CurrentPage) } of { strconv.Itoa(data.Pagination.TotalPages) }</span>
 						if data.Pagination.NextPage > data.Pagination.TotalPages {
-							<a href="#" class="primary-button disabled">Next</a>
+							<a href="#" class="secondary-button disabled">Next</a>
 						} else {
-							<a href={ templ.SafeURL(fmt.Sprintf("/dashboard/finances?page=%d&records=%d", data.Pagination.NextPage, data.Pagination.RecordsPerPage)) } class="primary-button">Next</a>
+							<a href={ templ.SafeURL(fmt.Sprintf("/dashboard/finances?page=%d&records=%d", data.Pagination.NextPage, data.Pagination.RecordsPerPage)) } class="secondary-button">Next</a>
 						}
 					</div>
           <p>
