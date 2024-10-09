@@ -1,17 +1,19 @@
 // TODO: the terms and conditions checkbox should be tested
 import puppeteer from "puppeteer";
 import {
-  fillSignUpForm,
-  verifySecurityQuestionsPage,
-  fillSecurityQuestionsForm,
-  verifySuccessPage,
-  verifyDashboardPage,
   fillDuplicateUsernameForm,
   fillDuplicateEmailForm,
   fillInvalidPasswordForm,
 } from "./signUpUtils";
 import { log, logError, logSuccess } from "../logger";
-import { signOut } from "../common/signOut";
+import {
+  signOut,
+  fillSignUpForm,
+  verifySecurityQuestionsPage,
+  fillSecurityQuestionsForm,
+  verifySuccessPage,
+  verifyDashboardPage,
+} from "../common";
 
 export async function runSignUpTest() {
   console.log("Running sign up test");
