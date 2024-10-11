@@ -6,8 +6,8 @@
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",
-    "test": "pnpm run build && pnpm run start",
-    "test:browser": "vitest"
+    "test": "vitest",
+    "test:legacy": "pnpm run build && pnpm run start"
   },
   "keywords": [],
   "author": "",

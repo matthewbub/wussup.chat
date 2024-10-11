@@ -1,0 +1,105 @@
+package views
+
+import (
+	"fmt"
+
+	"bus.zcauldron.com/pkg/models"
+	"bus.zcauldron.com/pkg/views/partials"
+)
+
+type EditReceiptData struct {
+	Title string
+	IsLoggedIn bool	
+	Receipt models.Receipt  
+}
+
+templ EditReceipt(data EditReceiptData) {
+	<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			@partials.GlobalHead(data.Title)
+			<link rel="stylesheet" href="/styles/edit-receipt.css">
+		</head>
+		<body>
+			@partials.GlobalHeader(data.IsLoggedIn)			
+      <main id="edit-receipt">
+        <div class="receipt-collection-container">
+          <div class="receipt-header">
+            <h2>Edit Receipt</h2>
+            <button class="secondary-button" onclick="goBack()">Cancel</button>
+						<script>
+							function goBack() {
+								window.history.back();
+							}
+						</script>
+          </div>
+
+          <h3>Merchant</h3>
+          <table>
+            <thead>
+            <tr>
+              <th>Merchant</th>
+              <th>Date</th>
+              <th>Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="receipt">
+              <td>
+                <input type="text" value={ data.Receipt.Merchant } />
+              </td>
+              <td>
+                <input type="date" value={ data.Receipt.Date } />
+              </td>
+              <td>
+                <input type="number" value={ data.Receipt.Total } />
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+				if data.Receipt.Notes.Valid {
+					<div class="receipt-notes">
+						<textarea name="notes" placeholder="Notes">{ data.Receipt.Notes.String }</textarea>
+					</div>
+				}
+
+        <div class="receipt-items">
+          <h3>Items</h3>
+          <table class="receipt-items-table">
+            <thead>
+              <tr>
+                <th class="item-name-header">Name</th>
+                <th class="item-price-header">Price</th>
+              </tr>
+            </thead>
+            <tbody>
+              for _, item := range data.Receipt.Items {
+                <tr class="receipt-item-row">
+                  <td class="item-name-cell">
+                    <input 
+                      name={ fmt.Sprintf("item-%d-name", item.ID) } 
+                      type="text" 
+                      value={ item.Name }
+                      class="item-name-input"
+                    />
+                  </td>
+                  <td class="item-price-cell">
+                    <input 
+                      name={ fmt.Sprintf("item-%d-price", item.ID) } 
+                      type="number" 
+                      value={ item.Price }
+                      class="item-price-input"
+                    />
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+			@partials.GlobalFooter()
+		</body>
+	</html>
+}

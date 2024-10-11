@@ -1,6 +1,8 @@
 package views
 
 import (
+	"fmt"
+
 	"bus.zcauldron.com/pkg/models"
 	"bus.zcauldron.com/pkg/views/partials"
 )
@@ -22,7 +24,9 @@ templ ReceiptView(data ReceiptViewData) {
       <main>
         <div class="receipt-collection-container">
           <div class="receipt-header">
-            <h2>Receipt</h2>            
+            <h2>Receipt</h2>      
+
+            <a href={ templ.SafeURL(fmt.Sprintf("/dashboard/finances/receipts/%s/edit", data.Receipt.ID)) } class="primary-button">Edit</a>      
           </div>
 
           <h3>Merchant</h3>
