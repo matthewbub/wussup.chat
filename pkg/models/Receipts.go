@@ -4,8 +4,10 @@ import (
 	"database/sql"
 	"fmt"
 	"strconv"
+	"time"
 
 	"bus.zcauldron.com/pkg/utils"
+	"github.com/gin-gonic/gin"
 )
 
 type Receipt struct {
@@ -29,6 +31,23 @@ type Item struct {
 	CreatedAt  string         `db:"created_at"`
 	UpdatedAt  string         `db:"updated_at"`
 	Notes      sql.NullString `db:"notes"`
+}
+
+type RawReceipt struct {
+	Merchant string             `json:"merchant"`
+	Date     string             `json:"date"`
+	Total    string             `json:"total"`
+	Items    []RawPurchasedItem `json:"items"`
+}
+
+type RawPurchasedItem struct {
+	Name  string `json:"name"`
+	Price string `json:"price"`
+}
+
+type RawImageWithReceipt struct {
+	RawReceipt
+	Image string `json:"image"`
 }
 
 func GetReceiptById(id string) (*Receipt, error) {
@@ -115,4 +134,92 @@ func GetReceipts(userID interface{}, page, records string) ([]Receipt, int, erro
 	}
 
 	return receipts, totalRecords, nil
+}
+
+func InsertMerchant(merchant string) (int, error) {
+	db := utils.Db()
+
+	// First, check if the merchant already exists
+	var id int
+	err := db.QueryRow("SELECT id FROM merchants WHERE name = ?", merchant).Scan(&id)
+	if err == nil {
+		// Merchant exists, update the updated_at field
+		_, err = db.Exec("UPDATE merchants SET updated_at = ? WHERE id = ?", time.Now(), id)
+		if err != nil {
+			return 0, err
+		}
+		return id, nil
+	} else if err != sql.ErrNoRows {
+		// An error occurred other than "no rows found"
+		return 0, err
+	}
+
+	// Merchant doesn't exist, insert a new one
+	stmt, err := db.Prepare("INSERT INTO merchants (name, created_at, updated_at) VALUES (?, ?, ?)")
+	if err != nil {
+		return 0, err
+	}
+	defer stmt.Close()
+
+	res, err := stmt.Exec(merchant, time.Now(), time.Now())
+	if err != nil {
+		return 0, err
+	}
+
+	id64, err := res.LastInsertId()
+	if err != nil {
+		return 0, err
+	}
+
+	return int(id64), nil
+}
+
+func InsertReceipt(c *gin.Context, receipt RawReceipt, merchantId int) (int, error) {
+	db := utils.Db()
+
+	session := utils.GetSession(c)
+	userID := session.Get("user_id")
+
+	stmt, err := db.Prepare("INSERT INTO receipts (user_id, merchant_id, total, date, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)")
+	if err != nil {
+		return 0, err
+	}
+	defer stmt.Close()
+
+	res, err := stmt.Exec(userID, merchantId, receipt.Total, receipt.Date, time.Now(), time.Now())
+	if err != nil {
+		return 0, err
+	}
+
+	id64, err := res.LastInsertId()
+	if err != nil {
+		return 0, err
+	}
+
+	return int(id64), nil
+}
+
+func InsertPurchasedItem(c *gin.Context, purchasedItem RawPurchasedItem, merchantId int, receiptId int) (int, error) {
+	db := utils.Db()
+
+	session := utils.GetSession(c)
+	userID := session.Get("user_id")
+
+	stmt, err := db.Prepare("INSERT INTO purchased_items (user_id, merchant_id, receipt_id, name, price, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)")
+	if err != nil {
+		return 0, err
+	}
+	defer stmt.Close()
+
+	res, err := stmt.Exec(userID, merchantId, receiptId, purchasedItem.Name, purchasedItem.Price, time.Now(), time.Now())
+	if err != nil {
+		return 0, err
+	}
+
+	id64, err := res.LastInsertId()
+	if err != nil {
+		return 0, err
+	}
+
+	return int(id64), nil
 }

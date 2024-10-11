@@ -3,7 +3,6 @@ package api
 import (
 	"bytes"
 	"context"
-	"database/sql"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -19,23 +18,6 @@ import (
 	"bus.zcauldron.com/pkg/views/partials"
 	"github.com/gin-gonic/gin"
 )
-
-type Receipt struct {
-	Merchant string          `json:"merchant"`
-	Date     string          `json:"date"`
-	Total    string          `json:"total"`
-	Items    []PurchasedItem `json:"items"`
-}
-
-type PurchasedItem struct {
-	Name  string `json:"name"`
-	Price string `json:"price"`
-}
-
-type ImageWithReceipt struct {
-	Receipt
-	Image string `json:"image"`
-}
 
 // UploadHandler handles the receipt upload and parsing
 // It takes an image file, sends it to OpenAI for parsing, and returns the results
@@ -188,7 +170,7 @@ func UploadHandler(c *gin.Context) {
 		return
 	}
 
-	_, err = insertTokenUsage(c, openAIResp.Model, openAIResp.Usage.PromptTokens, openAIResp.Usage.CompletionTokens, openAIResp.Usage.TotalTokens)
+	_, err = models.InsertTokenUsage(c, openAIResp.Model, openAIResp.Usage.PromptTokens, openAIResp.Usage.CompletionTokens, openAIResp.Usage.TotalTokens)
 	if err != nil {
 		log.Printf("Error inserting token usage: %v\n", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to insert token usage"})
@@ -215,7 +197,7 @@ func UploadHandler(c *gin.Context) {
 		}
 	}
 
-	log.Printf("Receipt: %+v\n", receipt)
+	// log.Printf("Receipt: %+v\n", receipt)
 
 	imageWithReceipt := utils.ReceiptWithImage{
 		Image:   base64Image,
@@ -262,7 +244,7 @@ func UploadConfirmHandler(c *gin.Context) {
 	}
 
 	// Extract form data into a structured format
-	receipt := models.Receipt{
+	receipt := models.RawReceipt{
 		Merchant: data["merchant"],
 		Date:     data["date"],
 		Total:    data["total"],
@@ -284,21 +266,21 @@ func UploadConfirmHandler(c *gin.Context) {
 		if strings.HasPrefix(key, "price___") {
 			index := strings.TrimPrefix(key, "price___")
 			itemPrice := c.PostForm(key)
-			receipt.Items = append(receipt.Items, models.Item{
+			receipt.Items = append(receipt.Items, models.RawPurchasedItem{
 				Name:  itemNames[index],
 				Price: fmt.Sprintf("%.2f", float64(utils.FormatCurrency(itemPrice))/100),
 			})
 		}
 	}
 
-	component := partials.ReceiptConfirmation(receipt)
+	component := partials.ReceiptConfirmation(models.RawReceipt(receipt))
 	component.Render(context.Background(), c.Writer)
 }
 
 func SaveReceiptHandler(c *gin.Context) {
 	// TODO sanitize the receipt data
 	// TODO assume all prices are one of the following formats: $1.00, 1.00, 1, "invalid" and parse accordingly
-	var receipt Receipt
+	var receipt models.RawReceipt
 
 	// Parse the JSON payload
 	if err := c.ShouldBindJSON(&receipt); err != nil {
@@ -309,14 +291,14 @@ func SaveReceiptHandler(c *gin.Context) {
 	// When a user adds a receipt we need to create a merchant if it doesn't exist,
 	// we need to create a new receipt,
 	// and then use the ID from both of those to add the receipt items
-	merchantId, err := insertMerchant(receipt.Merchant)
+	merchantId, err := models.InsertMerchant(receipt.Merchant)
 	if err != nil || merchantId == 0 {
 		log.Printf("Error inserting merchant: %v\n", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to insert merchant"})
 		return
 	}
 
-	receiptId, err := insertReceipt(c, receipt, merchantId)
+	receiptId, err := models.InsertReceipt(c, receipt, merchantId)
 	if err != nil || receiptId == 0 {
 		log.Printf("Error inserting receipt: %v\n", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to insert receipt"})
@@ -324,11 +306,11 @@ func SaveReceiptHandler(c *gin.Context) {
 	}
 
 	for _, item := range receipt.Items {
-		purchasedItem := PurchasedItem{
+		rawPurchasedItem := models.RawPurchasedItem{
 			Name:  item.Name,
 			Price: fmt.Sprintf("%.2f", float64(utils.FormatCurrency(item.Price))/100),
 		}
-		_, err := insertPurchasedItem(c, purchasedItem, merchantId, receiptId)
+		_, err := models.InsertPurchasedItem(c, rawPurchasedItem, merchantId, receiptId)
 		if err != nil {
 			log.Printf("Error inserting purchased item: %v\n", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to insert purchased item"})
@@ -337,117 +319,4 @@ func SaveReceiptHandler(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Receipt saved successfully", "success": true})
-}
-
-func insertMerchant(merchant string) (int, error) {
-	db := utils.Db()
-
-	// First, check if the merchant already exists
-	var id int
-	err := db.QueryRow("SELECT id FROM merchants WHERE name = ?", merchant).Scan(&id)
-	if err == nil {
-		// Merchant exists, update the updated_at field
-		_, err = db.Exec("UPDATE merchants SET updated_at = ? WHERE id = ?", time.Now(), id)
-		if err != nil {
-			return 0, err
-		}
-		return id, nil
-	} else if err != sql.ErrNoRows {
-		// An error occurred other than "no rows found"
-		return 0, err
-	}
-
-	// Merchant doesn't exist, insert a new one
-	stmt, err := db.Prepare("INSERT INTO merchants (name, created_at, updated_at) VALUES (?, ?, ?)")
-	if err != nil {
-		return 0, err
-	}
-	defer stmt.Close()
-
-	res, err := stmt.Exec(merchant, time.Now(), time.Now())
-	if err != nil {
-		return 0, err
-	}
-
-	id64, err := res.LastInsertId()
-	if err != nil {
-		return 0, err
-	}
-
-	return int(id64), nil
-}
-
-func insertReceipt(c *gin.Context, receipt Receipt, merchantId int) (int, error) {
-	db := utils.Db()
-
-	session := utils.GetSession(c)
-	userID := session.Get("user_id")
-
-	stmt, err := db.Prepare("INSERT INTO receipts (user_id, merchant_id, total, date, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)")
-	if err != nil {
-		return 0, err
-	}
-	defer stmt.Close()
-
-	res, err := stmt.Exec(userID, merchantId, receipt.Total, receipt.Date, time.Now(), time.Now())
-	if err != nil {
-		return 0, err
-	}
-
-	id64, err := res.LastInsertId()
-	if err != nil {
-		return 0, err
-	}
-
-	return int(id64), nil
-}
-
-func insertPurchasedItem(c *gin.Context, purchasedItem PurchasedItem, merchantId int, receiptId int) (int, error) {
-	db := utils.Db()
-
-	session := utils.GetSession(c)
-	userID := session.Get("user_id")
-
-	stmt, err := db.Prepare("INSERT INTO purchased_items (user_id, merchant_id, receipt_id, name, price, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)")
-	if err != nil {
-		return 0, err
-	}
-	defer stmt.Close()
-
-	res, err := stmt.Exec(userID, merchantId, receiptId, purchasedItem.Name, purchasedItem.Price, time.Now(), time.Now())
-	if err != nil {
-		return 0, err
-	}
-
-	id64, err := res.LastInsertId()
-	if err != nil {
-		return 0, err
-	}
-
-	return int(id64), nil
-}
-
-func insertTokenUsage(c *gin.Context, model string, promptTokens int, completionTokens int, totalTokens int) (int, error) {
-	db := utils.Db()
-
-	session := utils.GetSession(c)
-	userID := session.Get("user_id")
-
-	stmt, err := db.Prepare("INSERT INTO token_usage (user_id, model, prompt_tokens, completion_tokens, total_tokens, created_at) VALUES (?, ?, ?, ?, ?, ?)")
-	if err != nil {
-		return 0, err
-	}
-	defer stmt.Close()
-
-	res, err := stmt.Exec(userID, model, promptTokens, completionTokens, totalTokens, time.Now())
-	if err != nil {
-		return 0, err
-	}
-
-	id64, err := res.LastInsertId()
-	if err != nil {
-		return 0, err
-	}
-
-	return int(id64), nil
 }
