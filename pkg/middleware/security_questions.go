@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 
+	"bus.zcauldron.com/pkg/models"
 	"bus.zcauldron.com/pkg/utils"
 	"github.com/gin-gonic/gin"
 )
@@ -19,16 +20,24 @@ func SecurityQuestionsRequired() gin.HandlerFunc {
 			return
 		}
 
+		log.Printf("[SecurityQuestionsRequired] User ID found in session: %v", userID)
 		db := utils.Db()
 		defer db.Close()
 
-		var answered bool
-		err := db.QueryRow("SELECT security_questions_answered FROM users WHERE id = ?", userID).Scan(&answered)
-		if err != nil || !answered {
-			log.Println("[SecurityQuestionsRequired] User not found in database, redirecting to sign-up")
-			c.Redirect(http.StatusSeeOther, "/sign-up/security-questions")
+		answered, err := models.CheckSecurityQuestionsAnswered(userID)
+		log.Printf("[SecurityQuestionsRequired] Security questions answered: %v", answered)
+		if err != nil {
+			log.Printf("[SecurityQuestionsRequired] Error checking if security questions are answered: %v", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
 			c.Abort()
 			return
+		}
+
+		if !answered {
+			log.Printf("[SecurityQuestionsRequired] Security questions not answered for user %v, redirecting to security questions", userID)
+			// c.Redirect(http.StatusSeeOther, "/sign-up/security-questions")
+			// c.Abort()
+			// return
 		}
 
 		c.Next()

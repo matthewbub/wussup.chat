@@ -14,7 +14,7 @@ func InsertUserIntoDatabase(username, hashedPassword, email string) error {
 	defer db.Close()
 
 	// Use a prepared statement to prevent SQL injection
-	stmt, err := db.Prepare("INSERT INTO users (id, username, password, email, created_at, updated_at, security_questions_answered) VALUES (?, ?, ?, ?, ?, ?, ?)")
+	stmt, err := db.Prepare("INSERT INTO users (id, username, password, email, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)")
 	if err != nil {
 		log.Println(err)
 		return fmt.Errorf("failed to prepare statement: %w", err)
@@ -22,7 +22,7 @@ func InsertUserIntoDatabase(username, hashedPassword, email string) error {
 	defer stmt.Close()
 
 	var uuid string = uuid.New().String()
-	_, err = stmt.Exec(uuid, username, hashedPassword, email, time.Now(), time.Now(), false)
+	_, err = stmt.Exec(uuid, username, hashedPassword, email, time.Now(), time.Now())
 	if err != nil {
 		log.Println(err)
 		return fmt.Errorf("failed to execute statement: %w", err)
@@ -54,6 +54,8 @@ func UpdateUserSecurityQuestionsAnswered(userID interface{}) error {
 		log.Println(err)
 		return err
 	}
+
+	log.Printf("[UpdateUserSecurityQuestionsAnswered] Security questions answered updated for user %v", userID)
 
 	return nil
 }

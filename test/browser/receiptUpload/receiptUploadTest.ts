@@ -26,6 +26,10 @@ export async function runReceiptUploadTest() {
 
     // BEGIN RECEIPT UPLOAD TEST
     await page.goto("http://localhost:8080/receipt-upload");
+    // <a href="/dashboard/finances" class="dashboard-action" id="finances-card"><h3>Finances</h3><p>View &amp; manage your finance history</p></a>
+
+    // await page.click("#finances-card");
+
     // await fillReceiptUploadForm(page);
     // await verifyReceiptUploadPage(page, errors);
     // await verifyReceiptUploadSuccessPage(page, errors);

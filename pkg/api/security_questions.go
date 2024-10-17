@@ -12,7 +12,14 @@ import (
 
 func SecurityQuestionsHandler(c *gin.Context) {
 	session := utils.GetSession(c)
-	userID := session.Get("user_id")
+	userIDInterface := session.Get("user_id")
+
+	userID, ok := userIDInterface.(string)
+	if !ok || userID == "" {
+		log.Println("[SecurityQuestionsHandler] Invalid or missing user ID in session")
+		renderErrorPage(c, http.StatusBadRequest, "Invalid session. Please try logging in again.")
+		return
+	}
 
 	// Check if security questions have already been answered
 	answered, err := models.CheckSecurityQuestionsAnswered(userID)
@@ -23,8 +30,8 @@ func SecurityQuestionsHandler(c *gin.Context) {
 	}
 
 	if answered {
-		log.Println("[SecurityQuestionsHandler] Security questions already answered, rendering 404 page")
-		render404Page(c)
+		log.Println("[SecurityQuestionsHandler] Security questions already answered")
+		c.Redirect(http.StatusSeeOther, "/dashboard")
 		return
 	}
 
@@ -36,8 +43,8 @@ func SecurityQuestionsHandler(c *gin.Context) {
 	answer3 := utils.SanitizeInput(c.PostForm("answer3"))
 
 	// Validate form data
-	if userID == "" || question1 == "" || answer1 == "" || question2 == "" || answer2 == "" || question3 == "" || answer3 == "" {
-		log.Println("[SecurityQuestionsHandler] User ID or question/answer fields are empty")
+	if question1 == "" || answer1 == "" || question2 == "" || answer2 == "" || question3 == "" || answer3 == "" {
+		log.Println("[SecurityQuestionsHandler] One or more question/answer fields are empty")
 		renderErrorPage(c, http.StatusBadRequest, "All fields are required")
 		return
 	}

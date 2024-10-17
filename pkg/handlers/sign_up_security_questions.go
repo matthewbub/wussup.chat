@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"log"
+	"net/http"
 
 	"bus.zcauldron.com/pkg/utils"
 	"bus.zcauldron.com/pkg/views"
@@ -23,10 +24,9 @@ func SignUpSecurityQuestionsView(c *gin.Context) {
 
 	if user.SecurityQuestionsAnswered {
 		log.Println("User already has security questions answered")
-		templ.Handler(views.ErrorPage(views.ErrorPageData{
-			Title:      "Error",
-			IsLoggedIn: false,
-		})).ServeHTTP(c.Writer, c.Request)
+
+		c.Redirect(http.StatusSeeOther, "/dashboard")
+		c.Abort()
 		return
 	}
 

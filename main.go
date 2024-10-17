@@ -33,11 +33,10 @@ func main() {
 
 	auth := r.Group("/")
 	auth.Use(middleware.AuthRequired())
-	auth.Use(middleware.SecurityQuestionsRequired())
-	{
-		registerPrivateViews(auth)
-		registerPrivateApiRoutes(auth)
-	}
+	// auth.Use(middleware.SecurityQuestionsRequired())
+
+	registerPrivateViews(auth)
+	registerPrivateApiRoutes(auth)
 
 	log.Println("Server is running on port http://localhost:8080")
 	r.Run(":8080")

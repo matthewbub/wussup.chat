@@ -3,6 +3,7 @@ package models
 import (
 	"database/sql"
 	"fmt"
+	"log"
 	"time"
 
 	"bus.zcauldron.com/pkg/utils"
@@ -25,6 +26,14 @@ func InsertSecurityQuestionsIntoDatabase(userID interface{}, question1, answer1,
 	if err != nil {
 		return fmt.Errorf("failed to execute statement: %w", err)
 	}
+
+	// Update user to indicate security questions have been answered
+	err = UpdateUserSecurityQuestionsAnswered(userID)
+	if err != nil {
+		return fmt.Errorf("failed to update user security questions answered: %w", err)
+	}
+
+	log.Printf("[InsertSecurityQuestionsIntoDatabase] Security questions inserted for user %v", userID)
 
 	return nil
 }

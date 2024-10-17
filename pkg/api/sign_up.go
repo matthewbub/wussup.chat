@@ -103,7 +103,8 @@ func SignUpHandler(c *gin.Context) {
 	}
 
 	// Render success page
-	renderSecurityQuestionsPage(c)
+	// c.Redirect(http.StatusSeeOther, "/sign-up/security-questions")
+	c.Redirect(http.StatusSeeOther, "/sign-up/success")
 }
 
 func hashPassword(password string) (string, error) {
