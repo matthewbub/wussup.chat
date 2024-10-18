@@ -58,7 +58,7 @@ func EditReceipt(data EditReceiptData) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<main id=\"edit-receipt\"><div class=\"receipt-collection-container\"><div class=\"receipt-header\"><h2>Edit Receipt</h2><button class=\"secondary-button\" onclick=\"goBack()\">Cancel</button><script>\n\t\t\t\t\t\t\tfunction goBack() {\n\t\t\t\t\t\t\t\twindow.history.back();\n\t\t\t\t\t\t\t}\n\t\t\t\t\t\t</script></div><h3>Merchant</h3><table><thead><tr><th>Merchant</th><th>Date</th><th>Total</th></tr></thead> <tbody><tr class=\"receipt\"><td><input type=\"text\" value=\"")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<main id=\"edit-receipt\"><div class=\"receipt-collection-container\"><div class=\"receipt-header\"><h2>Edit Receipt</h2><button class=\"secondary-button\" onclick=\"goBack()\">Cancel</button><script>\n                function goBack() {\n                    window.history.back();\n                }\n            </script></div><h3>Merchant</h3><table><thead><tr><th>Merchant</th><th>Date</th><th>Total</th></tr></thead> <tbody><tr class=\"receipt\"><td><input type=\"text\" value=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -109,7 +109,7 @@ func EditReceipt(data EditReceiptData) templ.Component {
 			var templ_7745c5c3_Var5 string
 			templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(data.Receipt.Notes.String)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/EditReceipt.templ`, Line: 63, Col: 76}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/EditReceipt.templ`, Line: 63, Col: 86}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 			if templ_7745c5c3_Err != nil {

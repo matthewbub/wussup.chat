@@ -1,7 +1,8 @@
 .receipt-upload-container,
 .receipt-collection-container,
 .receipt-modify-container,
-.receipt-confirmation-container {
+.receipt-confirmation-container,
+.manual-receipt-upload-container {
   max-width: 700px;
   margin-top: 0;
   margin-right: auto;
@@ -17,7 +18,8 @@
 
 .receipt-collection-container,
 .receipt-modify-container,
-.receipt-confirmation-container {
+.receipt-confirmation-container,
+.manual-receipt-upload-container {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
@@ -37,7 +39,8 @@
   .receipt-upload-container,
   .receipt-collection-container,
   .receipt-modify-container,
-  .receipt-confirmation-container {
+  .receipt-confirmation-container,
+  .manual-receipt-upload-container {
     max-width: 600px;
   }
 }
@@ -47,7 +50,8 @@
   .receipt-upload-container,
   .receipt-collection-container,
   .receipt-modify-container,
-  .receipt-confirmation-container {
+  .receipt-confirmation-container,
+  .manual-receipt-upload-container {
     max-width: 500px;
   }
 }
@@ -57,7 +61,8 @@
   .receipt-upload-container,
   .receipt-collection-container,
   .receipt-modify-container,
-  .receipt-confirmation-container {
+  .receipt-confirmation-container,
+  .manual-receipt-upload-container {
     max-width: 100%;
   }
 }

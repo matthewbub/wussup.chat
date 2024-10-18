@@ -27,11 +27,11 @@ templ EditReceipt(data EditReceiptData) {
           <div class="receipt-header">
             <h2>Edit Receipt</h2>
             <button class="secondary-button" onclick="goBack()">Cancel</button>
-						<script>
-							function goBack() {
-								window.history.back();
-							}
-						</script>
+            <script>
+                function goBack() {
+                    window.history.back();
+                }
+            </script>
           </div>
 
           <h3>Merchant</h3>
@@ -58,11 +58,11 @@ templ EditReceipt(data EditReceiptData) {
           </tbody>
         </table>
 
-				if data.Receipt.Notes.Valid {
-					<div class="receipt-notes">
-						<textarea name="notes" placeholder="Notes">{ data.Receipt.Notes.String }</textarea>
-					</div>
-				}
+        if data.Receipt.Notes.Valid {
+            <div class="receipt-notes">
+                <textarea name="notes" placeholder="Notes">{ data.Receipt.Notes.String }</textarea>
+            </div>
+        }
 
         <div class="receipt-items">
           <h3>Items</h3>
@@ -99,7 +99,7 @@ templ EditReceipt(data EditReceiptData) {
         </div>
       </div>
     </main>
-			@partials.GlobalFooter()
-		</body>
-	</html>
+    @partials.GlobalFooter()
+    </body>
+</html>
 }

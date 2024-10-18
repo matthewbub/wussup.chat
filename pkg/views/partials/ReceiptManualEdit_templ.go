@@ -34,59 +34,69 @@ func ReceiptManualEdit(ReceiptWithImage utils.ReceiptWithImage) templ.Component 
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div id=\"results\" class=\"receipt-modify-container\"><div><h2>Receipt</h2><p>Automated receipt parsing is not 100% accurate. Please confirm the receipt details below.</p></div><img class=\"receipt-image\" src=\"")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div id=\"results\" class=\"receipt-modify-container\"><div><h2>Receipt</h2><p>Add or modify the details of your receipt here</p></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var2 string
-		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs("data:image/png;base64," + ReceiptWithImage.Image)
-		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/partials/ReceiptManualEdit.templ`, Line: 19, Col: 60}
+		if ReceiptWithImage.Image != "" {
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<img class=\"receipt-image\" src=\"")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var2 string
+			templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs("data:image/png;base64," + ReceiptWithImage.Image)
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/partials/ReceiptManualEdit.templ`, Line: 19, Col: 64}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" alt=\"Receipt Image\" onclick=\"openReceiptModal()\"><div id=\"receiptImageModal\" class=\"receipt-modal\" onclick=\"closeReceiptModal()\"><span class=\"receipt-modal-close\">&times;</span> <img class=\"receipt-modal-content\" id=\"receiptFullImage\"></div>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
-		if templ_7745c5c3_Err != nil {
-			return templ_7745c5c3_Err
-		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" alt=\"Receipt Image\" onclick=\"openReceiptModal()\"><div id=\"receiptImageModal\" class=\"receipt-modal\" onclick=\"closeReceiptModal()\"><span class=\"receipt-modal-close\">&times;</span> <img class=\"receipt-modal-content\" id=\"receiptFullImage\"></div><form method=\"post\" hx-post=\"/upload/confirm\" hx-target=\"#results\" hx-swap=\"outerHTML\"><div class=\"receipt-field\"><label for=\"zcauldron_c_merchant\">Merchant</label> <input type=\"text\" value=\"")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<form method=\"post\" hx-post=\"/upload/confirm\" hx-target=\"#results\" hx-swap=\"outerHTML\"><div class=\"receipt-field\"><label for=\"zcauldron_c_merchant\">Merchant</label> <input type=\"text\" value=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var3 string
 		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(ReceiptWithImage.Receipt.Merchant)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/partials/ReceiptManualEdit.templ`, Line: 36, Col: 67}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/partials/ReceiptManualEdit.templ`, Line: 38, Col: 67}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" name=\"zcauldron_c_merchant\"></div><div class=\"receipt-field\"><label for=\"zcauldron_c_date\">Date</label> <input type=\"text\" value=\"")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" name=\"zcauldron_c_merchant\" placeholder=\"Bobs Burgers\"></div><div class=\"receipt-field\"><label for=\"zcauldron_c_date\">Date</label> <input type=\"text\" value=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var4 string
 		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(ReceiptWithImage.Receipt.Date)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/partials/ReceiptManualEdit.templ`, Line: 40, Col: 63}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/partials/ReceiptManualEdit.templ`, Line: 42, Col: 63}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" name=\"zcauldron_c_date\"></div><div class=\"receipt-field\"><label for=\"zcauldron_c_total\">Total</label> <input type=\"text\" value=\"")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" name=\"zcauldron_c_date\" placeholder=\"10/08/2024\"></div><div class=\"receipt-field\"><label for=\"zcauldron_c_total\">Total</label> <input type=\"text\" value=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var5 string
 		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(ReceiptWithImage.Receipt.Total)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/partials/ReceiptManualEdit.templ`, Line: 44, Col: 64}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/partials/ReceiptManualEdit.templ`, Line: 46, Col: 64}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" name=\"zcauldron_c_total\"></div><div class=\"receipt-field-items\"><h3>Items</h3><ul class=\"receipt-items\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" name=\"zcauldron_c_total\" placeholder=\"$100.00\"></div><div class=\"receipt-field-items\"><h3>Items</h3><ul class=\"receipt-items\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -116,7 +126,7 @@ func ReceiptManualEdit(ReceiptWithImage utils.ReceiptWithImage) templ.Component 
 			var templ_7745c5c3_Var8 string
 			templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(item.Name)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/partials/ReceiptManualEdit.templ`, Line: 54, Col: 32}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/partials/ReceiptManualEdit.templ`, Line: 56, Col: 32}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 			if templ_7745c5c3_Err != nil {
@@ -129,7 +139,7 @@ func ReceiptManualEdit(ReceiptWithImage utils.ReceiptWithImage) templ.Component 
 			var templ_7745c5c3_Var9 string
 			templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs("name___" + strconv.Itoa(index))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/partials/ReceiptManualEdit.templ`, Line: 55, Col: 53}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/partials/ReceiptManualEdit.templ`, Line: 57, Col: 53}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 			if templ_7745c5c3_Err != nil {
@@ -142,7 +152,7 @@ func ReceiptManualEdit(ReceiptWithImage utils.ReceiptWithImage) templ.Component 
 			var templ_7745c5c3_Var10 string
 			templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs("name___" + strconv.Itoa(index))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/partials/ReceiptManualEdit.templ`, Line: 56, Col: 51}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/partials/ReceiptManualEdit.templ`, Line: 58, Col: 51}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 			if templ_7745c5c3_Err != nil {
@@ -155,7 +165,7 @@ func ReceiptManualEdit(ReceiptWithImage utils.ReceiptWithImage) templ.Component 
 			var templ_7745c5c3_Var11 string
 			templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(item.Price)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/partials/ReceiptManualEdit.templ`, Line: 61, Col: 33}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/partials/ReceiptManualEdit.templ`, Line: 63, Col: 33}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 			if templ_7745c5c3_Err != nil {
@@ -168,7 +178,7 @@ func ReceiptManualEdit(ReceiptWithImage utils.ReceiptWithImage) templ.Component 
 			var templ_7745c5c3_Var12 string
 			templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs("price___" + strconv.Itoa(index))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/partials/ReceiptManualEdit.templ`, Line: 62, Col: 54}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/partials/ReceiptManualEdit.templ`, Line: 64, Col: 54}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
 			if templ_7745c5c3_Err != nil {
@@ -181,7 +191,7 @@ func ReceiptManualEdit(ReceiptWithImage utils.ReceiptWithImage) templ.Component 
 			var templ_7745c5c3_Var13 string
 			templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs("price___" + strconv.Itoa(index))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/partials/ReceiptManualEdit.templ`, Line: 63, Col: 52}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/partials/ReceiptManualEdit.templ`, Line: 65, Col: 52}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var13))
 			if templ_7745c5c3_Err != nil {

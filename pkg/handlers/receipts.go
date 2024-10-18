@@ -18,7 +18,7 @@ func ReceiptsView(c *gin.Context) {
 		return
 	}
 
-	templ.Handler(views.Receipts(views.ReceiptsData{
+	templ.Handler(views.ReceiptUploadForm(views.ReceiptUploadFormData{
 		Title:      "Upload Receipts",
 		IsLoggedIn: true,
 	})).ServeHTTP(c.Writer, c.Request)

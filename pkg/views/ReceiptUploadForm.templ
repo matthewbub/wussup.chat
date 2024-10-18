@@ -1,0 +1,54 @@
+package views
+
+import (
+  "bus.zcauldron.com/pkg/views/partials"
+)
+
+type ReceiptUploadFormData struct {
+  Title      string
+  IsLoggedIn bool
+}
+
+templ ReceiptUploadForm(data ReceiptUploadFormData) {
+  <!DOCTYPE html>
+  <html lang="en">
+    <head>
+      @partials.GlobalHead(data.Title)
+    </head>
+    <body>
+      @partials.GlobalHeader(data.IsLoggedIn)
+      <main>
+        <form
+          class="receipt-upload-container"
+          id="imageUploadForm"
+          enctype="multipart/form-data"
+          hx-post="/upload"
+          hx-target="this"
+          hx-swap="outerHTML"
+          hx-trigger="submit"
+          hx-indicator="#loading-spinner"
+        >
+          <h2>Upload Receipt</h2>
+          <label for="image">Drag and drop your receipt image here, or click to select a file</label>
+          <input type="file" id="image" name="image" accept="image/*" required>
+          <span class="info-text">Supported file types: .png, .jpeg, .jpg, .webp, .gif</span>
+          <button type="submit" class="primary-button">Upload</button>
+          <button 
+            type="button" 
+            class="secondary-button" 
+            id="manual-upload-button"
+            hx-get="/manual-upload"
+            hx-target="#imageUploadForm"
+            hx-swap="outerHTML"
+            hx-trigger="click"
+          >
+            Manual Upload
+          </button>
+          <div id="loading-spinner" class="htmx-indicator pulse-indicator">Processing your request. This may take a few moments...</div>
+        </form>
+      </main>
+      @partials.GlobalFooter()
+      <script src="/js/receipt-utils.js"></script>
+    </body>
+  </html>
+}

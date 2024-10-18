@@ -209,6 +209,12 @@ func UploadHandler(c *gin.Context) {
 	component.Render(context.Background(), c.Writer)
 }
 
+func ManualUploadHandler(c *gin.Context) {
+	// Load the template file
+	component := partials.ReceiptManualEdit(utils.ReceiptWithImage{})
+	component.Render(context.Background(), c.Writer)
+}
+
 func UploadConfirmHandler(c *gin.Context) {
 	// dump the form data
 	// Parse the form data

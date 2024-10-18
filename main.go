@@ -68,6 +68,7 @@ func registerPrivateViews(auth *gin.RouterGroup) {
 
 func registerPrivateApiRoutes(auth *gin.RouterGroup) {
 	auth.POST("/upload", api.UploadHandler)
+	auth.GET("/manual-upload", api.ManualUploadHandler)
 	auth.POST("/upload/confirm", api.UploadConfirmHandler)
 	auth.POST("/upload/confirm/save", api.SaveReceiptHandler)
 	auth.GET("/logout", api.LogoutHandler)

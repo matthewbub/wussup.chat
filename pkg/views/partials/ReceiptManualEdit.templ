@@ -5,43 +5,49 @@ import (
   "strconv"
 )
 
+// We can't enfore types in the input fields beyond text
+// It's a bit unpredicatable what the AI will return.. 
+// We attempt to format the responses when we submit this form
+// Suppose i could modify the pormpt but i feel more comfortable with this
 templ ReceiptManualEdit(ReceiptWithImage utils.ReceiptWithImage) {	
   <div id="results" class="receipt-modify-container">
     <div>
       <h2>Receipt</h2>
       <p>
-        Automated receipt parsing is not 100% accurate. Please confirm the receipt
-        details below.
+        Add or modify the details of your receipt here
       </p>
     </div>
-    <img 
-      class="receipt-image" 
-      src={"data:image/png;base64," + ReceiptWithImage.Image} 
-      alt="Receipt Image" 
-      onclick="openReceiptModal()"
-    />
-    <div id="receiptImageModal" class="receipt-modal" onclick="closeReceiptModal()">
-      <span class="receipt-modal-close">&times;</span>
-      <img class="receipt-modal-content" id="receiptFullImage">
-    </div>
+    if ReceiptWithImage.Image != "" {
+        <img
+          class="receipt-image"
+          src={"data:image/png;base64," + ReceiptWithImage.Image}
+          alt="Receipt Image"
+          onclick="openReceiptModal()"
+        />
+         <div id="receiptImageModal" class="receipt-modal" onclick="closeReceiptModal()">
+              <span class="receipt-modal-close">&times;</span>
+              <img class="receipt-modal-content" id="receiptFullImage">
+        </div>
+    }
+
 
     <form
       method="post"
       hx-post="/upload/confirm"
       hx-target="#results"
       hx-swap="outerHTML"
-    >
+    >      
       <div class="receipt-field">
         <label for="zcauldron_c_merchant">Merchant</label>
-        <input type="text" value={ReceiptWithImage.Receipt.Merchant} name="zcauldron_c_merchant" />
+        <input type="text" value={ReceiptWithImage.Receipt.Merchant} name="zcauldron_c_merchant" placeholder="Bobs Burgers"/>
       </div>
       <div class="receipt-field">
         <label for="zcauldron_c_date">Date</label>
-        <input type="text" value={ReceiptWithImage.Receipt.Date} name="zcauldron_c_date" />
+        <input type="text" value={ReceiptWithImage.Receipt.Date} name="zcauldron_c_date" placeholder="10/08/2024"/>
       </div>
       <div class="receipt-field">
         <label for="zcauldron_c_total">Total</label>
-        <input type="text" value={ReceiptWithImage.Receipt.Total} name="zcauldron_c_total" />
+        <input type="text" value={ReceiptWithImage.Receipt.Total} name="zcauldron_c_total" placeholder="$100.00"/>
       </div>
 
       <div class="receipt-field-items">
