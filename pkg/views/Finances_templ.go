@@ -71,7 +71,7 @@ func Finances(data FinancesData) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<main><div class=\"message-container\" style=\"display: none;\"><i class=\"fa-solid fa-triangle-exclamation\"></i><p id=\"message\"></p><a href=\"/dashboard/finances\" id=\"close-message-button\" aria-label=\"Close message\"><i class=\"fa-solid fa-x\"></i></a></div><div class=\"receipt-collection-container\"><h2>View your recenet finance history</h2><table class=\"modifiable-receipts\" id=\"receipts-table\"><thead><tr><th>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<main><div class=\"message-container\" style=\"display: none;\"><i class=\"fa-solid fa-triangle-exclamation\"></i><p id=\"message\"></p><a href=\"/dashboard/finances\" id=\"close-message-button\" aria-label=\"Close message\"><i class=\"fa-solid fa-x\"></i></a></div><div class=\"receipt-collection-container\"><div class=\"receipt-collection-header\"><h2>View your recenet finance history</h2><div class=\"receipt-collection-actions\"><a href=\"/dashboard/finances/receipts\" class=\"primary-button\">Add Receipt</a></div></div><table class=\"modifiable-receipts\" id=\"receipts-table\"><thead><tr><th>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -99,7 +99,7 @@ func Finances(data FinancesData) templ.Component {
 			var templ_7745c5c3_Var2 string
 			templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(item.ID)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/Finances.templ`, Line: 69, Col: 76}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/Finances.templ`, Line: 75, Col: 76}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 			if templ_7745c5c3_Err != nil {
@@ -121,7 +121,7 @@ func Finances(data FinancesData) templ.Component {
 			var templ_7745c5c3_Var4 string
 			templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(item.Merchant)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/Finances.templ`, Line: 73, Col: 37}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/Finances.templ`, Line: 79, Col: 37}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 			if templ_7745c5c3_Err != nil {
@@ -135,7 +135,7 @@ func Finances(data FinancesData) templ.Component {
 				var templ_7745c5c3_Var5 string
 				templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(item.Date)
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/Finances.templ`, Line: 78, Col: 33}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/Finances.templ`, Line: 84, Col: 33}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 				if templ_7745c5c3_Err != nil {
@@ -154,7 +154,7 @@ func Finances(data FinancesData) templ.Component {
 			var templ_7745c5c3_Var6 string
 			templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(item.Total)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/Finances.templ`, Line: 83, Col: 34}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/Finances.templ`, Line: 89, Col: 34}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 			if templ_7745c5c3_Err != nil {
@@ -201,7 +201,7 @@ func Finances(data FinancesData) templ.Component {
 			var templ_7745c5c3_Var8 string
 			templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(strconv.Itoa(data.Pagination.CurrentPage))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/Finances.templ`, Line: 219, Col: 68}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/Finances.templ`, Line: 225, Col: 68}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 			if templ_7745c5c3_Err != nil {
@@ -214,7 +214,7 @@ func Finances(data FinancesData) templ.Component {
 			var templ_7745c5c3_Var9 string
 			templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(strconv.Itoa(data.Pagination.TotalPages))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/Finances.templ`, Line: 219, Col: 116}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/Finances.templ`, Line: 225, Col: 116}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 			if templ_7745c5c3_Err != nil {
@@ -251,7 +251,7 @@ func Finances(data FinancesData) templ.Component {
 			var templ_7745c5c3_Var11 string
 			templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(strconv.Itoa(data.Pagination.CurrentPage*data.Pagination.RecordsPerPage - data.Pagination.RecordsPerPage + 1))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/Finances.templ`, Line: 228, Col: 127}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/Finances.templ`, Line: 234, Col: 127}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 			if templ_7745c5c3_Err != nil {
@@ -265,7 +265,7 @@ func Finances(data FinancesData) templ.Component {
 				var templ_7745c5c3_Var12 string
 				templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs(strconv.Itoa(len(data.Receipts) + (data.Pagination.CurrentPage * data.Pagination.RecordsPerPage) - data.Pagination.RecordsPerPage))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/Finances.templ`, Line: 231, Col: 148}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/Finances.templ`, Line: 237, Col: 148}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
 				if templ_7745c5c3_Err != nil {
@@ -279,7 +279,7 @@ func Finances(data FinancesData) templ.Component {
 				var templ_7745c5c3_Var13 string
 				templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs(strconv.Itoa(data.Pagination.CurrentPage * data.Pagination.RecordsPerPage))
 				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/Finances.templ`, Line: 233, Col: 92}
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/Finances.templ`, Line: 239, Col: 92}
 				}
 				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var13))
 				if templ_7745c5c3_Err != nil {
@@ -297,7 +297,7 @@ func Finances(data FinancesData) templ.Component {
 			var templ_7745c5c3_Var14 string
 			templ_7745c5c3_Var14, templ_7745c5c3_Err = templ.JoinStringErrs(strconv.Itoa(data.Pagination.TotalRecords))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/Finances.templ`, Line: 236, Col: 58}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/Finances.templ`, Line: 242, Col: 58}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var14))
 			if templ_7745c5c3_Err != nil {

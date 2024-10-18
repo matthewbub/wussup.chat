@@ -41,7 +41,13 @@ templ Finances(data FinancesData) {
           <a href="/dashboard/finances" id="close-message-button" aria-label="Close message"><i class="fa-solid fa-x"></i></a>
         </div>
         <div class="receipt-collection-container">
-          <h2>View your recenet finance history</h2>          
+          <div class="receipt-collection-header">
+            <h2>View your recenet finance history</h2>          
+
+            <div class="receipt-collection-actions">
+              <a href="/dashboard/finances/receipts" class="primary-button">Add Receipt</a>
+            </div>
+          </div>
           <table class="modifiable-receipts" id="receipts-table">
             <thead>
               <tr>

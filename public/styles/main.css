@@ -284,3 +284,19 @@
   border-radius: 10px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
+
+.receipt-collection-header {
+  display: flex;
+  gap: 10px;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.receipt-collection-actions {
+  display: flex;
+  flex-direction: row;
+}
+
+.receipt-collection-actions a {
+  width: fit-content;
+}
