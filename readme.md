@@ -23,6 +23,16 @@ However, if you're modifying only say, only `*.go` code, you'd only need to run 
 3. Duplicate the `.env.example` -> `.env` Generate a secure key and add the key to the .env file as `SESSION_SECRET_KEY = #...`
 4. Add your Open AI api key for intelligent parsing as `OPENAI_API_KEY=#...`
 
+### VSCode / VSCode Forks
+
+[Download the Templ extension.](https://marketplace.visualstudio.com/items?itemName=a-h.templ) - We use Templ as the template language. By default, when you format Templ code it creates a file relative to the `.templ` file. It can easily create an overwhelming workspace. (Golang handles this nicely by default)
+
+[SQLite Explorer](https://marketplace.visualstudio.com/items?itemName=alexcvzz.vscode-sqlite) - Helpful for exploring the database.
+
+### Goland
+
+Configure the database
+
 ## Testing
 
 Currently, the only way we're testing code is via a headless browser. (Can be found in the `test/browser` directory.) The gains in this approach are that we can write tests in a way that feels like pseudo coding through a user journey. It feels much more like a human QA ran through the steps and reported back their findings. I'm jazzed because it feels sooo much less shitty than the respectable mess that is working with React and Jest with JSDom.

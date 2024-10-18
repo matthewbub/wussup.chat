@@ -87,6 +87,55 @@ func GetReceiptById(id string) (*Receipt, error) {
 	return &receipt, nil
 }
 
+func SimpleGetReceipts(userID interface{}, receiptIds []string) ([]Receipt, error) {
+	db := utils.Db()
+
+	var query string
+	var args []interface{}
+
+	if len(receiptIds) == 0 {
+		// Handle the case where no receipt IDs are provided
+		query = `
+			SELECT receipts.id, receipts.total, receipts.date, receipts.created_at, receipts.updated_at, receipts.notes, merchants.name FROM receipts
+			JOIN merchants ON receipts.merchant_id = merchants.id
+			WHERE receipts.user_id = ?
+		`
+		args = []interface{}{userID}
+	} else {
+		// Original query with IN clause
+		query = `
+			SELECT receipts.id, receipts.total, receipts.date, receipts.created_at, receipts.updated_at, receipts.notes, merchants.name FROM receipts
+			JOIN merchants ON receipts.merchant_id = merchants.id
+			WHERE receipts.user_id = ? AND receipts.id IN (?` + strings.Repeat(",?", len(receiptIds)-1) + `)
+		`
+		args = make([]interface{}, len(receiptIds)+1)
+		args[0] = userID
+		for i, id := range receiptIds {
+			args[i+1] = id
+		}
+	}
+
+	// Execute the query with the prepared arguments
+	rows, err := db.Query(query, args...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	receipts := []Receipt{}
+
+	for rows.Next() {
+		var receipt Receipt
+		err := rows.Scan(&receipt.ID, &receipt.Total, &receipt.Date, &receipt.CreatedAt, &receipt.UpdatedAt, &receipt.Notes, &receipt.Merchant)
+		if err != nil {
+			return nil, err
+		}
+		receipts = append(receipts, receipt)
+	}
+
+	return receipts, nil
+}
+
 func GetReceipts(userID interface{}, page, records string) ([]Receipt, int, error) {
 	db := utils.Db()
 

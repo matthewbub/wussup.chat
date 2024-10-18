@@ -1,24 +1,13 @@
 package api
 
 import (
+	"fmt"
 	"net/http"
 
 	"bus.zcauldron.com/pkg/models"
 	"bus.zcauldron.com/pkg/utils"
 	"github.com/gin-gonic/gin"
 )
-
-func GetReceipt(c *gin.Context) {
-	id := c.Param("id")
-
-	receipt, err := models.GetReceiptById(id)
-	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"error": "Receipt not found"})
-		return
-	}
-
-	c.JSON(http.StatusOK, receipt)
-}
 
 func DeleteReceipts(c *gin.Context) {
 	var request struct {
@@ -37,7 +26,7 @@ func DeleteReceipts(c *gin.Context) {
 	}
 
 	// Validate receipt ownership
-	validReceipts := []string{}
+	var validReceipts []string
 	for _, id := range request.ReceiptIDs {
 		validated, err := models.ValidateReceiptOwnership(user.ID, id)
 		if err != nil {
@@ -66,4 +55,73 @@ func DeleteReceipts(c *gin.Context) {
 		"success": true,
 		"message": "Receipts deleted successfully",
 	})
+}
+
+func ExportReceipts(c *gin.Context) {
+	var request struct {
+		ReceiptIDs []string `json:"receipt_ids"`
+	}
+
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request"})
+		return
+	}
+
+	user, err := utils.GetUserFromSession(c)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get user from session"})
+		return
+	}
+
+	// Validate receipt ownership
+	var validReceipts []string
+	for _, id := range request.ReceiptIDs {
+		validated, err := models.ValidateReceiptOwnership(user.ID, id)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to validate receipt ownership"})
+			return
+		}
+		if validated {
+			validReceipts = append(validReceipts, id)
+		}
+	}
+
+	if len(validReceipts) == 0 {
+		c.JSON(http.StatusNotFound, gin.H{"error": "No valid receipts found"})
+		return
+	}
+
+	// Prepare csv
+	//https://stackoverflow.com/questions/6076984/sqlite-how-do-i-save-the-result-of-a-query-as-a-csv-file
+	rows, err := models.SimpleGetReceipts(user.ID, validReceipts)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get receipts"})
+		return
+	}
+
+	csvData := "Date,Merchant,Total,Notes,ID,CreatedAt,UpdatedAt\n"
+	for _, row := range rows {
+		csvData += fmt.Sprintf("%s,%s,%s,%s,%s,%s,%s\n",
+			row.Date,
+			row.Merchant,
+			row.Total,
+			row.Notes.String,
+			row.ID,
+			row.CreatedAt,
+			row.UpdatedAt,
+		)
+	}
+
+	// Set headers for file download
+	filename := "receipts.csv"
+	c.Header("Content-Description", "File Transfer")
+	c.Header("Content-Disposition", "attachment; filename="+filename)
+	c.Header("Content-Type", "text/csv")
+	c.Header("Content-Transfer-Encoding", "binary")
+	c.Header("Expires", "0")
+	c.Header("Cache-Control", "must-revalidate")
+	c.Header("Pragma", "public")
+
+	// Write CSV data directly to the response
+	c.String(http.StatusOK, csvData)
 }

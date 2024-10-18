@@ -152,7 +152,34 @@ templ Finances(data FinancesData) {
               exportSelectedButton.addEventListener('click', function() {
                 const selectedReceipts = Array.from(receiptCheckboxes).filter(checkbox => checkbox.checked);
                 const selectedReceiptIds = selectedReceipts.map(receipt => receipt.value);
-                console.log(selectedReceiptIds);
+                console.log('Exporting receipts:', selectedReceiptIds);
+
+                fetch('/api/v1/finances/receipts/export', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({ receipt_ids: selectedReceiptIds }),
+                })
+                .then(response => {
+                  if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                  }
+                  return response.blob();
+                })
+                .then(blob => {
+                  const url = window.URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.style.display = 'none';
+                  a.href = url;
+                  a.download = 'receipts.csv';
+                  document.body.appendChild(a);
+                  a.click();
+                  window.URL.revokeObjectURL(url);
+                })
+                .catch(error => {
+                  console.error('Error exporting receipts:', error);
+                });
               });
 
               updateButtonVisibility();

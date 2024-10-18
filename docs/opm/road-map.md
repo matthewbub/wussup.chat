@@ -1,0 +1,9 @@
+- Print Receipts
+- Edit Receipts
+- Import Receipts
+- Archive Receipts
+- Complex Receipt Filters
+- Controls / Permissions
+- Localization
+- Billing?
+- E2E encryption

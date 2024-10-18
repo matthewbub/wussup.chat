@@ -13,6 +13,10 @@ import (
 	"strconv"
 )
 
+// We can't enfore types in the input fields beyond text
+// It's a bit unpredicatable what the AI will return..
+// We attempt to format the responses when we submit this form
+// Suppose i could modify the pormpt but i feel more comfortable with this
 func ReceiptManualEdit(ReceiptWithImage utils.ReceiptWithImage) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
@@ -46,7 +50,7 @@ func ReceiptManualEdit(ReceiptWithImage utils.ReceiptWithImage) templ.Component 
 			var templ_7745c5c3_Var2 string
 			templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs("data:image/png;base64," + ReceiptWithImage.Image)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/partials/ReceiptManualEdit.templ`, Line: 19, Col: 64}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/partials/ReceiptManualEdit.templ`, Line: 23, Col: 64}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 			if templ_7745c5c3_Err != nil {
@@ -64,7 +68,7 @@ func ReceiptManualEdit(ReceiptWithImage utils.ReceiptWithImage) templ.Component 
 		var templ_7745c5c3_Var3 string
 		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(ReceiptWithImage.Receipt.Merchant)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/partials/ReceiptManualEdit.templ`, Line: 38, Col: 67}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/partials/ReceiptManualEdit.templ`, Line: 42, Col: 67}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 		if templ_7745c5c3_Err != nil {
@@ -77,7 +81,7 @@ func ReceiptManualEdit(ReceiptWithImage utils.ReceiptWithImage) templ.Component 
 		var templ_7745c5c3_Var4 string
 		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(ReceiptWithImage.Receipt.Date)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/partials/ReceiptManualEdit.templ`, Line: 42, Col: 63}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/partials/ReceiptManualEdit.templ`, Line: 46, Col: 63}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 		if templ_7745c5c3_Err != nil {
@@ -90,7 +94,7 @@ func ReceiptManualEdit(ReceiptWithImage utils.ReceiptWithImage) templ.Component 
 		var templ_7745c5c3_Var5 string
 		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(ReceiptWithImage.Receipt.Total)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/partials/ReceiptManualEdit.templ`, Line: 46, Col: 64}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/partials/ReceiptManualEdit.templ`, Line: 50, Col: 64}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 		if templ_7745c5c3_Err != nil {
@@ -126,7 +130,7 @@ func ReceiptManualEdit(ReceiptWithImage utils.ReceiptWithImage) templ.Component 
 			var templ_7745c5c3_Var8 string
 			templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(item.Name)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/partials/ReceiptManualEdit.templ`, Line: 56, Col: 32}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/partials/ReceiptManualEdit.templ`, Line: 60, Col: 32}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 			if templ_7745c5c3_Err != nil {
@@ -139,7 +143,7 @@ func ReceiptManualEdit(ReceiptWithImage utils.ReceiptWithImage) templ.Component 
 			var templ_7745c5c3_Var9 string
 			templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs("name___" + strconv.Itoa(index))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/partials/ReceiptManualEdit.templ`, Line: 57, Col: 53}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/partials/ReceiptManualEdit.templ`, Line: 61, Col: 53}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 			if templ_7745c5c3_Err != nil {
@@ -152,7 +156,7 @@ func ReceiptManualEdit(ReceiptWithImage utils.ReceiptWithImage) templ.Component 
 			var templ_7745c5c3_Var10 string
 			templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs("name___" + strconv.Itoa(index))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/partials/ReceiptManualEdit.templ`, Line: 58, Col: 51}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/partials/ReceiptManualEdit.templ`, Line: 62, Col: 51}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 			if templ_7745c5c3_Err != nil {
@@ -165,7 +169,7 @@ func ReceiptManualEdit(ReceiptWithImage utils.ReceiptWithImage) templ.Component 
 			var templ_7745c5c3_Var11 string
 			templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(item.Price)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/partials/ReceiptManualEdit.templ`, Line: 63, Col: 33}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/partials/ReceiptManualEdit.templ`, Line: 67, Col: 33}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 			if templ_7745c5c3_Err != nil {
@@ -178,7 +182,7 @@ func ReceiptManualEdit(ReceiptWithImage utils.ReceiptWithImage) templ.Component 
 			var templ_7745c5c3_Var12 string
 			templ_7745c5c3_Var12, templ_7745c5c3_Err = templ.JoinStringErrs("price___" + strconv.Itoa(index))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/partials/ReceiptManualEdit.templ`, Line: 64, Col: 54}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/partials/ReceiptManualEdit.templ`, Line: 68, Col: 54}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var12))
 			if templ_7745c5c3_Err != nil {
@@ -191,7 +195,7 @@ func ReceiptManualEdit(ReceiptWithImage utils.ReceiptWithImage) templ.Component 
 			var templ_7745c5c3_Var13 string
 			templ_7745c5c3_Var13, templ_7745c5c3_Err = templ.JoinStringErrs("price___" + strconv.Itoa(index))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/partials/ReceiptManualEdit.templ`, Line: 65, Col: 52}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/partials/ReceiptManualEdit.templ`, Line: 69, Col: 52}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var13))
 			if templ_7745c5c3_Err != nil {
