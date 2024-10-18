@@ -277,7 +277,8 @@
 .modal {
   position: fixed;
   width: 400px;
-  margin: auto;
+  left: 0;
+  right: 0;
   background: rgb(255, 255, 255);
   padding: 20px;
   border-radius: 10px;

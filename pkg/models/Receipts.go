@@ -3,7 +3,9 @@ package models
 import (
 	"database/sql"
 	"fmt"
+	"log"
 	"strconv"
+	"strings"
 	"time"
 
 	"bus.zcauldron.com/pkg/utils"
@@ -222,4 +224,58 @@ func InsertPurchasedItem(c *gin.Context, purchasedItem RawPurchasedItem, merchan
 	}
 
 	return int(id64), nil
+}
+
+func ValidateReceiptOwnership(userId string, receiptId string) (bool, error) {
+	db := utils.Db()
+	log.Printf("userId: %s", userId)
+	log.Printf("receiptId: %s", receiptId)
+
+	query := `
+		SELECT COUNT(*)
+		FROM receipts
+		WHERE id = ? AND user_id = ?
+	`
+
+	var count int
+	err := db.QueryRow(query, receiptId, userId).Scan(&count)
+	if err != nil {
+		return false, err
+	}
+
+	return count > 0, nil
+}
+
+func DeleteReceipts(receiptIds []string, userId string) error {
+	db := utils.Db()
+
+	// Create placeholders for the IN clause
+	placeholders := make([]string, len(receiptIds))
+	for i := range placeholders {
+		placeholders[i] = "?"
+	}
+
+	// Prepare the query with the correct number of placeholders
+	query := fmt.Sprintf("DELETE FROM receipts WHERE id IN (%s) AND user_id = ?", strings.Join(placeholders, ","))
+
+	// Create a slice of interface{} to hold all arguments
+	args := make([]interface{}, len(receiptIds)+1)
+	for i, id := range receiptIds {
+		args[i] = id
+	}
+	args[len(receiptIds)] = userId
+
+	// Prepare and execute the statement
+	stmt, err := db.Prepare(query)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	_, err = stmt.Exec(args...)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

@@ -5,15 +5,16 @@ import (
   "strconv"
 	"bus.zcauldron.com/pkg/models"
 	"bus.zcauldron.com/pkg/views/partials"
+	"bus.zcauldron.com/pkg/utils"
 )
 
 type FinancesData struct {
 	Title string
 	Name string
 	IsLoggedIn bool
-	Message string
 	Receipts []models.Receipt
 	Pagination PaginationData
+	User utils.UserObject
 }
 
 type PaginationData struct {
@@ -34,9 +35,14 @@ templ Finances(data FinancesData) {
 		<body>
 			@partials.GlobalHeader(data.IsLoggedIn)			
       <main>
+        <div class="message-container" style="display: none;">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+          <p id="message"></p>
+          <a href="/dashboard/finances" id="close-message-button" aria-label="Close message"><i class="fa-solid fa-x"></i></a>
+        </div>
         <div class="receipt-collection-container">
-          <h2>View your recenet finance history</h2>
-          <table class="modifiable-receipts">
+          <h2>View your recenet finance history</h2>          
+          <table class="modifiable-receipts" id="receipts-table">
             <thead>
               <tr>
                 <th>
@@ -86,16 +92,23 @@ templ Finances(data FinancesData) {
               <button class="outlined-button" id="export-selected">Export (x)</button>
             </div>
 
-              <div id="deleteModal" class="modal" style="display: none;">
-                <div class="modal-content">
-                  <h3>Confirm Deletion</h3>
-                  <p>Are you sure you want to delete the selected receipts?</p>
-                  <div class="modal-actions">
-                    <button id="confirmDelete" class="primary-button">Delete</button>
-                    <button id="cancelDelete" class="secondary-button">Cancel</button>
-                  </div>
+            <div id="deleteModal" class="modal" style="display: none;">
+              <div class="modal-content">
+                <h3>Confirm Deletion</h3>
+                <p>Are you sure you want to delete the selected receipts?</p>
+                <div class="modal-actions">
+                  <button
+                    id="confirmDelete" 
+                    class="primary-button"
+                  >
+                    Delete
+                  </button>
+                  <button id="cancelDelete" class="secondary-button">
+                    Cancel
+                  </button>
                 </div>
               </div>
+            </div>
 
             <script>
               const selectAllCheckbox = document.getElementById('select-all');
@@ -130,12 +143,6 @@ templ Finances(data FinancesData) {
                 });
               });          
 
-              // deleteSelectedButton.addEventListener('click', function() {
-              //   const selectedReceipts = Array.from(receiptCheckboxes).filter(checkbox => checkbox.checked);
-              //   const selectedReceiptIds = selectedReceipts.map(receipt => receipt.value);
-              //   console.log(selectedReceiptIds);
-              // });
-
               exportSelectedButton.addEventListener('click', function() {
                 const selectedReceipts = Array.from(receiptCheckboxes).filter(checkbox => checkbox.checked);
                 const selectedReceiptIds = selectedReceipts.map(receipt => receipt.value);
@@ -160,6 +167,26 @@ templ Finances(data FinancesData) {
                 const selectedReceipts = Array.from(receiptCheckboxes).filter(checkbox => checkbox.checked);
                 const selectedReceiptIds = selectedReceipts.map(receipt => receipt.value);
                 console.log('Deleting receipts:', selectedReceiptIds);
+
+                fetch('/api/v1/finances/receipts/delete', {
+                  method: 'DELETE',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({ receipt_ids: selectedReceiptIds }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                  if (data.success) {
+                    window.location.href = window.location.href + '?deleted=true';
+                  } else {
+                    console.error('Failed to delete receipts:', data.error);
+                  }
+                })
+                .catch(error => {
+                  console.error('Error deleting receipts:', error);
+                });
+                
                 // TODO: Implement actual deletion logic here
                 modal.style.display = 'none';
               });
@@ -174,6 +201,13 @@ templ Finances(data FinancesData) {
                   modal.style.display = 'none';
                 }
               });
+
+              if (window.location.search.includes('deleted=true')) {
+                const message = document.getElementById('message');
+                const messageContainer = document.querySelector('.message-container');
+                message.textContent = 'Receipts deleted successfully';                
+                messageContainer.style.display = 'flex';
+              }
             </script>
 
             <div class="receipt-pagination">
