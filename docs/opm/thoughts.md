@@ -13,3 +13,6 @@ I'm working on a bunch of complex projects at work. It's been a challenge to mai
 
 10/5/2024
 Working with a headless browser (puppeter) is such a fucking easy way to test ui behaviors. I'm thinking about launching a python server via api endpoint, maybe it should be something else like above the server, i just want it to be synonymous with the server
+
+10/17/2024
+Gave up on this project and went off to do other things but now im back. Having a surprising amount of fun working in the app after being away for a bit and am actually banging out some real features so that's nice
