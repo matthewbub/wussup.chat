@@ -1,32 +1,34 @@
 // TODO: the terms and conditions checkbox should be tested
-import puppeteer from "puppeteer";
+import { Page } from "puppeteer";
 import {
   fillDuplicateUsernameForm,
   fillDuplicateEmailForm,
   fillInvalidPasswordForm,
 } from "./signUpUtils";
-import { log, logError, logSuccess } from "../../logger";
+import TestLogger from "../logger";
 import {
   signOut,
   fillSignUpForm,
-  verifySecurityQuestionsPage,
-  fillSecurityQuestionsForm,
   verifySuccessPage,
   verifyDashboardPage,
 } from "../common";
 
-export async function runSignUpTest(): Promise<string[]> {
+export async function runSignUpTest(page: Page): Promise<string[]> {
+  const testLogger = new TestLogger();
+  const log = testLogger.log.bind(testLogger);
+  const logError = testLogger.logError.bind(testLogger);
+  const logSuccess = testLogger.logSuccess.bind(testLogger);
+
   console.log("Running sign up test");
   let errors: string[] = [];
-  const browser = await puppeteer.launch({ headless: true });
-  const page = await browser.newPage();
+  // const browser = await puppeteer.launch({ headless: true });
+  // const page = await browser.newPage();
 
   try {
     log("[Series]: sign up");
     await page.goto("http://localhost:8080/sign-up");
     const username = await fillSignUpForm(page);
-    // await verifySecurityQuestionsPage(page, errors);
-    // await fillSecurityQuestionsForm(page);
+
     await verifySuccessPage(page, errors);
     await verifyDashboardPage(page, errors);
 
@@ -80,7 +82,6 @@ export async function runSignUpTest(): Promise<string[]> {
     } else {
       logSuccess("All tests passed");
     }
-    await browser.close();
   }
 
   if (errors.length > 0) {

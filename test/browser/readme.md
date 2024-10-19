@@ -10,4 +10,4 @@ pnpm install
 pnpm run test
 ```
 
-so with these tests we're using a uuid as the unique username / email so I suppose there is a chance for collision
+so with these tests we're using a uuid as the unique username / email so I suppose there is a chance for collision. i also give 0 fucks how fast the tests are :p

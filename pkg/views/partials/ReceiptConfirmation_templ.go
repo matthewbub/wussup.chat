@@ -31,7 +31,7 @@ func ReceiptConfirmation(receipt models.RawReceipt) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div id=\"result\" class=\"receipt-confirmation-container\" id=\"confirm-single-receipt\"><div class=\"receipt-confirmation-header\"><h2>Receipt</h2><p>Please confirm the receipt details below.</p></div><h3>Merchant</h3><table><thead><tr><th>Merchant</th><th>Date</th><th>Total</th></tr></thead> <tbody><tr><td id=\"merchant\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div id=\"receipt-confirmation\" class=\"receipt-confirmation-container\"><div class=\"receipt-confirmation-header\"><h2>Receipt</h2><p>Please confirm the receipt details below.</p></div><h3>Merchant</h3><table><thead><tr><th>Merchant</th><th>Date</th><th>Total</th></tr></thead> <tbody><tr><td id=\"merchant\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -106,7 +106,7 @@ func ReceiptConfirmation(receipt models.RawReceipt) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</tbody></table><div class=\"button-container\"><button class=\"secondary-button\">Back</button> <button class=\"primary-button\" id=\"save-button\">Save</button></div></div>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</tbody></table><div class=\"button-container\"><button class=\"secondary-button\">Back</button> <button class=\"primary-button\" id=\"save-button\" type=\"submit\">Save</button></div></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

@@ -39,15 +39,22 @@ templ ReceiptManualEdit(ReceiptWithImage utils.ReceiptWithImage) {
     >      
       <div class="receipt-field">
         <label for="zcauldron_c_merchant">Merchant</label>
-        <input type="text" value={ReceiptWithImage.Receipt.Merchant} name="zcauldron_c_merchant" placeholder="Bobs Burgers"/>
+        <input 
+          required
+          id="zc-c-merchant" 
+          type="text" 
+          value={ReceiptWithImage.Receipt.Merchant} 
+          name="zcauldron_c_merchant" 
+          placeholder="Bobs Burgers"
+        />
       </div>
       <div class="receipt-field">
         <label for="zcauldron_c_date">Date</label>
-        <input type="text" value={ReceiptWithImage.Receipt.Date} name="zcauldron_c_date" placeholder="10/08/2024"/>
+        <input id="zc-c-date" type="text" value={ReceiptWithImage.Receipt.Date} name="zcauldron_c_date" placeholder="10/08/2024"/>
       </div>
       <div class="receipt-field">
         <label for="zcauldron_c_total">Total</label>
-        <input type="text" value={ReceiptWithImage.Receipt.Total} name="zcauldron_c_total" placeholder="$100.00"/>
+        <input id="zc-c-total" type="text" value={ReceiptWithImage.Receipt.Total} name="zcauldron_c_total" placeholder="$100.00"/>
       </div>
 
       <div class="receipt-field-items">
@@ -79,7 +86,7 @@ templ ReceiptManualEdit(ReceiptWithImage utils.ReceiptWithImage) {
       </div>
       <div class="button-container">
         <button type="button" class="add-item secondary-button">Add Item</button>
-        <button type="submit" class="primary-button">Next</button>
+        <button type="submit" class="primary-button" id="next">Next</button>
       </div>
     </form>
 

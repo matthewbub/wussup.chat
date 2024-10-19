@@ -61,40 +61,40 @@ func ReceiptManualEdit(ReceiptWithImage utils.ReceiptWithImage) templ.Component 
 				return templ_7745c5c3_Err
 			}
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<form method=\"post\" hx-post=\"/upload/confirm\" hx-target=\"#results\" hx-swap=\"outerHTML\"><div class=\"receipt-field\"><label for=\"zcauldron_c_merchant\">Merchant</label> <input type=\"text\" value=\"")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<form method=\"post\" hx-post=\"/upload/confirm\" hx-target=\"#results\" hx-swap=\"outerHTML\"><div class=\"receipt-field\"><label for=\"zcauldron_c_merchant\">Merchant</label> <input id=\"zc-c-merchant\" type=\"text\" value=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var3 string
 		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(ReceiptWithImage.Receipt.Merchant)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/partials/ReceiptManualEdit.templ`, Line: 42, Col: 67}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/partials/ReceiptManualEdit.templ`, Line: 42, Col: 86}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" name=\"zcauldron_c_merchant\" placeholder=\"Bobs Burgers\"></div><div class=\"receipt-field\"><label for=\"zcauldron_c_date\">Date</label> <input type=\"text\" value=\"")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" name=\"zcauldron_c_merchant\" placeholder=\"Bobs Burgers\"></div><div class=\"receipt-field\"><label for=\"zcauldron_c_date\">Date</label> <input id=\"zc-c-date\" type=\"text\" value=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var4 string
 		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(ReceiptWithImage.Receipt.Date)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/partials/ReceiptManualEdit.templ`, Line: 46, Col: 63}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/partials/ReceiptManualEdit.templ`, Line: 46, Col: 78}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" name=\"zcauldron_c_date\" placeholder=\"10/08/2024\"></div><div class=\"receipt-field\"><label for=\"zcauldron_c_total\">Total</label> <input type=\"text\" value=\"")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" name=\"zcauldron_c_date\" placeholder=\"10/08/2024\"></div><div class=\"receipt-field\"><label for=\"zcauldron_c_total\">Total</label> <input id=\"zc-c-total\" type=\"text\" value=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var5 string
 		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(ReceiptWithImage.Receipt.Total)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/partials/ReceiptManualEdit.templ`, Line: 50, Col: 64}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/partials/ReceiptManualEdit.templ`, Line: 50, Col: 80}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 		if templ_7745c5c3_Err != nil {
@@ -206,7 +206,7 @@ func ReceiptManualEdit(ReceiptWithImage utils.ReceiptWithImage) templ.Component 
 				return templ_7745c5c3_Err
 			}
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</ul><div class=\"no-items-message\" style=\"display: none\">No items here. Please add items manually or click \"Next\" to proceed.</div></div><div class=\"button-container\"><button type=\"button\" class=\"add-item secondary-button\">Add Item</button> <button type=\"submit\" class=\"primary-button\">Next</button></div></form><script>\n      function openReceiptModal() {\n        var modal = document.getElementById(\"receiptImageModal\");\n        var modalImg = document.getElementById(\"receiptFullImage\");\n        var img = document.querySelector(\".receipt-image\");\n        modal.style.display = \"block\";\n        modalImg.src = img.src;\n      }\n\n      function closeReceiptModal() {\n        var modal = document.getElementById(\"receiptImageModal\");\n        modal.style.display = \"none\";\n      }\n    </script></div>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</ul><div class=\"no-items-message\" style=\"display: none\">No items here. Please add items manually or click \"Next\" to proceed.</div></div><div class=\"button-container\"><button type=\"button\" class=\"add-item secondary-button\">Add Item</button> <button type=\"submit\" class=\"primary-button\" id=\"next\">Next</button></div></form><script>\n      function openReceiptModal() {\n        var modal = document.getElementById(\"receiptImageModal\");\n        var modalImg = document.getElementById(\"receiptFullImage\");\n        var img = document.querySelector(\".receipt-image\");\n        modal.style.display = \"block\";\n        modalImg.src = img.src;\n      }\n\n      function closeReceiptModal() {\n        var modal = document.getElementById(\"receiptImageModal\");\n        modal.style.display = \"none\";\n      }\n    </script></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

@@ -3,7 +3,7 @@ package partials
 import "bus.zcauldron.com/pkg/models"
 
 templ ReceiptConfirmation(receipt models.RawReceipt) {	
-  <div id="result" class="receipt-confirmation-container" id="confirm-single-receipt">
+  <div id="receipt-confirmation" class="receipt-confirmation-container">
     <div class="receipt-confirmation-header">
       <h2>Receipt</h2>
       <p>Please confirm the receipt details below.</p>
@@ -47,7 +47,7 @@ templ ReceiptConfirmation(receipt models.RawReceipt) {
 
     <div class="button-container">
       <button class="secondary-button">Back</button>
-      <button class="primary-button" id="save-button">Save</button>
+      <button class="primary-button" id="save-button" type="submit">Save</button>
     </div>
   </div>
 }

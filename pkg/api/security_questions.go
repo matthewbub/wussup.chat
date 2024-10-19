@@ -6,7 +6,6 @@ import (
 
 	"bus.zcauldron.com/pkg/models"
 	"bus.zcauldron.com/pkg/utils"
-	"bus.zcauldron.com/pkg/views"
 	"github.com/gin-gonic/gin"
 )
 
@@ -67,12 +66,4 @@ func SecurityQuestionsHandler(c *gin.Context) {
 
 	// Render success page or redirect to another page
 	c.Redirect(http.StatusSeeOther, "/sign-up/success")
-}
-
-func render404Page(c *gin.Context) {
-	data := views.ErrorPageData{
-		Title:      "404",
-		IsLoggedIn: false,
-	}
-	views.ErrorPage(data).Render(c.Request.Context(), c.Writer)
 }

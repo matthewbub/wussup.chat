@@ -1,14 +1,16 @@
 package api
 
 import (
-	"log"
-	"net/http"
-
 	"bus.zcauldron.com/pkg/utils"
 	"github.com/gin-gonic/gin"
+	"log"
+	"net/http"
 )
 
-func LogoutHandler(c *gin.Context) {
+// Pretty much the json version of logout.go
+
+func InvalidateSessionHandler(c *gin.Context) {
+	// Clear session
 	session := utils.GetSession(c)
 	session.Delete("user_id")
 	session.Delete("username")
@@ -18,5 +20,6 @@ func LogoutHandler(c *gin.Context) {
 		log.Println("Trouble invalidating session")
 		return
 	}
-	c.Redirect(http.StatusSeeOther, "/login")
+
+	c.JSON(http.StatusOK, gin.H{"message": "ok"})
 }

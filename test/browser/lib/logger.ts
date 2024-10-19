@@ -29,7 +29,7 @@ class TestLogger {
     this.failedTests = 0;
   }
 }
-
+export default TestLogger;
 export const testLogger = new TestLogger();
 export const log = testLogger.log.bind(testLogger);
 export const logError = testLogger.logError.bind(testLogger);

@@ -1,5 +1,5 @@
 import { Page } from "puppeteer";
-import { logSuccess } from "../../logger";
+import { logSuccess } from "../logger";
 import { randomBytes } from "crypto";
 
 export async function fillDuplicateUsernameForm(

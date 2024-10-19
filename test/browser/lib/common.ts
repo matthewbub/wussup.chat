@@ -50,6 +50,7 @@ export async function fillSecurityQuestionsForm(page: Page) {
 }
 
 export async function verifySuccessPage(page: Page, errors: string[]) {
+  await new Promise((resolve) => setTimeout(resolve, 2000));
   const successPage = await page.$("#registration-success");
   if (successPage) {
     logSuccess("User registration successful");
