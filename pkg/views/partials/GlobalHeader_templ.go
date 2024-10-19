@@ -29,7 +29,7 @@ func GlobalHeader(isLoggedin bool) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<header><nav><div><h1 style=\"font-size: 20px; font-weight: 600; margin: 0;\">ZCauldron</h1><span style=\"font-weight: 300; margin: 0;\">easy finance</span></div><div class=\"nav-links\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<header class=\"zc-global-header\"><nav><div><h1 style=\"font-size: 20px; font-weight: 600; margin: 0;\">ZCauldron</h1><span style=\"font-weight: 300; margin: 0;\">easy finance</span></div><div class=\"nav-links\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

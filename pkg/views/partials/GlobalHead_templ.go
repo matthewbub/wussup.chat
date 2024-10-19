@@ -42,7 +42,7 @@ func GlobalHead(title string) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</title><link rel=\"stylesheet\" href=\"/styles/theme.css\"><link rel=\"stylesheet\" href=\"/styles/main.css\"><link rel=\"stylesheet\" href=\"/styles/htmx.css\"><script src=\"/js/htmx.min.js\"></script><script src=\"https://kit.fontawesome.com/d38c30af27.js\" crossorigin=\"anonymous\"></script>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</title><link rel=\"stylesheet\" href=\"/styles/theme.css\"><link rel=\"stylesheet\" href=\"/styles/main.css\"><link rel=\"stylesheet\" href=\"/styles/htmx.css\"><link rel=\"stylesheet\" href=\"/styles/print.css\"><script src=\"/js/htmx.min.js\"></script><script src=\"https://kit.fontawesome.com/d38c30af27.js\" crossorigin=\"anonymous\"></script>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

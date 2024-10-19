@@ -50,7 +50,7 @@ func ReceiptView(data ReceiptViewData) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</head><body>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<style>\n        .zc-receipt-actions {\n          display: flex;\n          gap: 10px;\n        }\n\n        @media print {\n          .zc-global-header {\n            display: none;\n          }\n\n          .zc-global-footer {\n            display: none;\n          }\n\n          .zc-receipt-actions {\n            display: none;\n          }\n\n          .receipt-collection-container {\n            box-shadow: none;\n          }\n\n          .receipt-header {\n            display: none;\n          }\n\n          .zc-receipt-merchant,\n          .zc-receipt-items {\n            display: none;\n          }\n\n          .zc-receipt-merchant-table th,\n          .zc-receipt-items-table th {\n            color: #000000;\n          }\n\n          .zc-receipt-merchant-table td,\n          .zc-receipt-items-table td {\n            border-bottom: 1px solid var(--border-color);\n          }\n        }\n      </style></head><body>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -58,7 +58,7 @@ func ReceiptView(data ReceiptViewData) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<main><div class=\"receipt-collection-container\"><div class=\"receipt-header\"><h2>Receipt</h2><a href=\"")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<main><div class=\"receipt-collection-container\"><div class=\"receipt-header\"><h2>Receipt</h2><div class=\"zc-receipt-actions\"><a href=\"")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -67,14 +67,14 @@ func ReceiptView(data ReceiptViewData) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" class=\"primary-button\">Edit</a></div><h3>Merchant</h3><table><thead><tr><th>Merchant</th><th>Date</th><th>Total</th></tr></thead> <tbody><tr class=\"receipt\"><td>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" class=\"primary-button\">Edit</a> <button class=\"outlined-button\" onclick=\"window.print()\" title=\"Print\" aria-label=\"Print\">Print            </button></div></div><h3 class=\"zc-receipt-merchant\">Merchant</h3><table class=\"zc-receipt-merchant-table\"><thead><tr><th>Merchant</th><th>Date</th><th>Total</th></tr></thead> <tbody><tr class=\"receipt\"><td>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var3 string
 		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(data.Receipt.Merchant)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/Receipt.templ`, Line: 43, Col: 41}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/Receipt.templ`, Line: 91, Col: 41}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 		if templ_7745c5c3_Err != nil {
@@ -87,7 +87,7 @@ func ReceiptView(data ReceiptViewData) templ.Component {
 		var templ_7745c5c3_Var4 string
 		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(data.Receipt.Date)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/Receipt.templ`, Line: 44, Col: 37}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/Receipt.templ`, Line: 92, Col: 37}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 		if templ_7745c5c3_Err != nil {
@@ -100,13 +100,13 @@ func ReceiptView(data ReceiptViewData) templ.Component {
 		var templ_7745c5c3_Var5 string
 		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(data.Receipt.Total)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/Receipt.templ`, Line: 45, Col: 38}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/Receipt.templ`, Line: 93, Col: 38}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</td></tr></tbody></table><div class=\"receipt-items\"><h3>Items</h3><table><thead><tr><th>Name</th><th>Price</th></tr></thead> <tbody>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</td></tr></tbody></table><div class=\"receipt-items\"><h3 class=\"zc-receipt-items\">Items</h3><table class=\"zc-receipt-items-table\"><thead><tr><th>Name</th><th>Price</th></tr></thead> <tbody>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -118,7 +118,7 @@ func ReceiptView(data ReceiptViewData) templ.Component {
 			var templ_7745c5c3_Var6 string
 			templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(item.Name)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/Receipt.templ`, Line: 62, Col: 33}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/Receipt.templ`, Line: 110, Col: 33}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 			if templ_7745c5c3_Err != nil {
@@ -131,7 +131,7 @@ func ReceiptView(data ReceiptViewData) templ.Component {
 			var templ_7745c5c3_Var7 string
 			templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(item.Price)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/Receipt.templ`, Line: 63, Col: 34}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/Receipt.templ`, Line: 111, Col: 34}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 			if templ_7745c5c3_Err != nil {

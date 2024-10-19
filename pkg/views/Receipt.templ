@@ -18,6 +18,49 @@ templ ReceiptView(data ReceiptViewData) {
 	<html lang="en">
 		<head>
 			@partials.GlobalHead(data.Title)
+      <style>
+        .zc-receipt-actions {
+          display: flex;
+          gap: 10px;
+        }
+
+        @media print {
+          .zc-global-header {
+            display: none;
+          }
+
+          .zc-global-footer {
+            display: none;
+          }
+
+          .zc-receipt-actions {
+            display: none;
+          }
+
+          .receipt-collection-container {
+            box-shadow: none;
+          }
+
+          .receipt-header {
+            display: none;
+          }
+
+          .zc-receipt-merchant,
+          .zc-receipt-items {
+            display: none;
+          }
+
+          .zc-receipt-merchant-table th,
+          .zc-receipt-items-table th {
+            color: #000000;
+          }
+
+          .zc-receipt-merchant-table td,
+          .zc-receipt-items-table td {
+            border-bottom: 1px solid var(--border-color);
+          }
+        }
+      </style>
 		</head>
 		<body>
 			@partials.GlobalHeader(data.IsLoggedIn)			
@@ -26,11 +69,16 @@ templ ReceiptView(data ReceiptViewData) {
           <div class="receipt-header">
             <h2>Receipt</h2>      
 
-            <a href={ templ.SafeURL(fmt.Sprintf("/dashboard/finances/receipts/%s/edit", data.Receipt.ID)) } class="primary-button">Edit</a>      
+            <div class="zc-receipt-actions">
+              <a href={ templ.SafeURL(fmt.Sprintf("/dashboard/finances/receipts/%s/edit", data.Receipt.ID)) } class="primary-button">Edit</a>
+              <button class="outlined-button" onclick="window.print()" title="Print" aria-label="Print">
+                Print            
+              </button>
+            </div>
           </div>
 
-          <h3>Merchant</h3>
-          <table>
+          <h3 class="zc-receipt-merchant">Merchant</h3>
+          <table class="zc-receipt-merchant-table">
             <thead>
             <tr>
               <th>Merchant</th>
@@ -48,8 +96,8 @@ templ ReceiptView(data ReceiptViewData) {
         </table>
 
         <div class="receipt-items">
-          <h3>Items</h3>
-          <table>
+          <h3 class="zc-receipt-items">Items</h3>
+          <table class="zc-receipt-items-table">
             <thead>
               <tr>
                 <th>Name</th>
