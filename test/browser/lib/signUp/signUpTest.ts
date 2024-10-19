@@ -5,7 +5,7 @@ import {
   fillDuplicateEmailForm,
   fillInvalidPasswordForm,
 } from "./signUpUtils";
-import { log, logError, logSuccess } from "../logger";
+import { log, logError, logSuccess } from "../../logger";
 import {
   signOut,
   fillSignUpForm,

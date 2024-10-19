@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "tsc",
+    "build": "echo 'this is a test directory, you probably want to run the test script instead'",
     "start": "node dist/index.js",
     "test": "vitest",
     "test:legacy": "pnpm run build && pnpm run start"

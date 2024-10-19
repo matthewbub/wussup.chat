@@ -1,6 +1,5 @@
 import { getTestResults } from "./logger";
-import { runSignUpTest } from "./signUp/signUpTest";
-import { runReceiptUploadTest } from "./receiptUpload/receiptUploadTest";
+import { runSignUpTest } from "./lib/signUp/signUpTest";
 
 /**
  * This was the original test runner for the browser tests.
@@ -13,7 +12,6 @@ import { runReceiptUploadTest } from "./receiptUpload/receiptUploadTest";
   console.log("Running test suites");
 
   await runSignUpTest();
-  await runReceiptUploadTest();
 
   const end = performance.now();
   console.log(`Test suites completed in ${end - start} milliseconds`);
