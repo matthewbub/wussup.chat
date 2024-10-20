@@ -282,7 +282,11 @@ func UploadConfirmHandler(c *gin.Context) {
 	}
 
 	component := partials.ReceiptConfirmation(models.RawReceipt(receipt))
-	component.Render(context.Background(), c.Writer)
+	err := component.Render(context.Background(), c.Writer)
+	if err != nil {
+		log.Printf("Something went wrong rendering the template")
+		return
+	}
 }
 
 func SaveReceiptHandler(c *gin.Context) {
@@ -324,6 +328,13 @@ func SaveReceiptHandler(c *gin.Context) {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to insert purchased item"})
 			return
 		}
+	}
+
+	err = models.InsertReceiptImageIntoDatabase(c, receipt, receiptId)
+	if err != nil {
+		log.Printf("Error inserting image into database: %v\n", err)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to insert image into database"})
+		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Receipt saved successfully", "success": true})

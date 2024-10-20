@@ -110,10 +110,6 @@ templ ReceiptManualEdit(ReceiptWithImage utils.ReceiptWithImage) {
         modal.style.display = "none";
       }
 
-
-      // This has the potential to break things,
-      // we'll probably need to clear the session storage if we
-      // land on any page that isn't this exact partial
       function checkSessionStorage() {
         const storage = sessionStorage.getItem('zc-temp-receipt')
 

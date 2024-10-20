@@ -65,6 +65,10 @@ waitForElement("#save-button").then(() => {
       data.items.push(itemData);
     });
 
+    if (document.querySelector(".receipt-image")?.src) {
+      data.image = document.querySelector(".receipt-image")?.src;
+    }
+
     const request = await fetch("/upload/confirm/save", {
       method: "POST",
       headers: {
