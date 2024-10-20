@@ -31,16 +31,39 @@ func ReceiptConfirmation(receipt models.RawReceipt) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div id=\"receipt-confirmation\" class=\"receipt-confirmation-container\"><div class=\"receipt-confirmation-header\"><h2>Receipt</h2><p>Please confirm the receipt details below.</p></div><h3>Merchant</h3><table><thead><tr><th>Merchant</th><th>Date</th><th>Total</th></tr></thead> <tbody><tr><td id=\"merchant\">")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div id=\"receipt-confirmation\" class=\"receipt-confirmation-container\"><div class=\"receipt-confirmation-header\"><h2>Receipt</h2><p>Please confirm the receipt details below.</p></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var2 string
-		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(receipt.Merchant)
-		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/partials/ReceiptConfirmation.templ`, Line: 23, Col: 46}
+		if receipt.Image != "" {
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<img class=\"receipt-image\" src=\"")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var2 string
+			templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs("data:image/png;base64," + receipt.Image)
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/partials/ReceiptConfirmation.templ`, Line: 15, Col: 55}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("\" alt=\"Receipt Image\" onclick=\"openReceiptModal()\" id=\"zc-confirm-receipt-img\"><div id=\"zc-confirm-receipt-img\" class=\"receipt-modal\" onclick=\"closeReceiptModal()\"><span class=\"receipt-modal-close\">&times;</span> <img class=\"receipt-modal-content\" id=\"receiptFullImage\"></div>")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<h3>Merchant</h3><table><thead><tr><th>Merchant</th><th>Date</th><th>Total</th></tr></thead> <tbody><tr><td id=\"merchant\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		var templ_7745c5c3_Var3 string
+		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(receipt.Merchant)
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/partials/ReceiptConfirmation.templ`, Line: 36, Col: 46}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -48,12 +71,12 @@ func ReceiptConfirmation(receipt models.RawReceipt) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var3 string
-		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(receipt.Date)
+		var templ_7745c5c3_Var4 string
+		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(receipt.Date)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/partials/ReceiptConfirmation.templ`, Line: 24, Col: 38}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/partials/ReceiptConfirmation.templ`, Line: 37, Col: 38}
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -61,12 +84,12 @@ func ReceiptConfirmation(receipt models.RawReceipt) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		var templ_7745c5c3_Var4 string
-		templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(receipt.Total)
+		var templ_7745c5c3_Var5 string
+		templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(receipt.Total)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/partials/ReceiptConfirmation.templ`, Line: 25, Col: 40}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/partials/ReceiptConfirmation.templ`, Line: 38, Col: 40}
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -79,12 +102,12 @@ func ReceiptConfirmation(receipt models.RawReceipt) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			var templ_7745c5c3_Var5 string
-			templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(item.Name)
+			var templ_7745c5c3_Var6 string
+			templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(item.Name)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/partials/ReceiptConfirmation.templ`, Line: 41, Col: 37}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/partials/ReceiptConfirmation.templ`, Line: 54, Col: 37}
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -92,12 +115,12 @@ func ReceiptConfirmation(receipt models.RawReceipt) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			var templ_7745c5c3_Var6 string
-			templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(item.Price)
+			var templ_7745c5c3_Var7 string
+			templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(item.Price)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/partials/ReceiptConfirmation.templ`, Line: 42, Col: 39}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/partials/ReceiptConfirmation.templ`, Line: 55, Col: 39}
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -106,7 +129,7 @@ func ReceiptConfirmation(receipt models.RawReceipt) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</tbody></table><div class=\"button-container\"><button class=\"secondary-button\">Back</button> <button class=\"primary-button\" id=\"save-button\" type=\"submit\">Save</button></div></div>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</tbody></table><div class=\"button-container\"><button class=\"secondary-button\" hx-get=\"/manual-upload\" hx-target=\"#receipt-confirmation\" hx-swap=\"outerHTML\">Back</button> <button class=\"primary-button\" id=\"save-button\" type=\"submit\">Save</button></div><script>\n          function openReceiptModal() {\n            var modal = document.getElementById(\"receiptImageModal\");\n            var modalImg = document.getElementById(\"receiptFullImage\");\n            var img = document.querySelector(\".receipt-image\");\n            modal.style.display = \"block\";\n            modalImg.src = img.src;\n          }\n\n          function closeReceiptModal() {\n            var modal = document.getElementById(\"receiptImageModal\");\n            modal.style.display = \"none\";\n          }\n\n          function getFields() {\n              const fields = {\n                img: document.querySelector(\"#zc-confirm-receipt-img\")?.src,\n                merchant: document.querySelector(\"#merchant\").innerHTML,\n                date: document.querySelector(\"#date\").innerHTML,\n                total: document.querySelector(\"#total\").innerHTML,\n                items: []\n              }\n\n             const items = document.querySelectorAll(\".item\");\n             items.forEach((item) => {\n               const itemData = {\n                 name: item.querySelector(\"#name\").innerHTML,\n                 price: item.querySelector(\"#price\").innerHTML,\n               };\n               fields.items.push(itemData);\n             });\n\n              sessionStorage.setItem('zc-temp-receipt', JSON.stringify(fields))\n          }\n\n           getFields()\n        </script></div>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

@@ -224,6 +224,7 @@ func UploadConfirmHandler(c *gin.Context) {
 	}
 
 	data := map[string]string{
+		"image":    utils.SanitizeInput(c.PostForm("zcauldron_c_image")),
 		"merchant": utils.SanitizeInput(c.PostForm("zcauldron_c_merchant")),
 		"date":     utils.SanitizeInput(c.PostForm("zcauldron_c_date")),
 		"total":    utils.SanitizeInput(c.PostForm("zcauldron_c_total")),
@@ -251,6 +252,7 @@ func UploadConfirmHandler(c *gin.Context) {
 
 	// Extract form data into a structured format
 	receipt := models.RawReceipt{
+		Image:    data["image"],
 		Merchant: data["merchant"],
 		Date:     data["date"],
 		Total:    data["total"],

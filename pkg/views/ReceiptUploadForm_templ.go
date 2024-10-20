@@ -12,6 +12,10 @@ import (
 	"bus.zcauldron.com/pkg/views/partials"
 )
 
+// SEE PARTIALS ALSO
+// pkg/views/partials/ReceiptConfirmation.templ
+// pkg/views/partials/ReceiptManualEdit.templ
+
 type ReceiptUploadFormData struct {
 	Title      string
 	IsLoggedIn bool
@@ -54,7 +58,7 @@ func ReceiptUploadForm(data ReceiptUploadFormData) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<main><div id=\"zc-receipt-upload\"><form class=\"receipt-upload-container\" id=\"imageUploadForm\" enctype=\"multipart/form-data\" hx-post=\"/upload\" hx-target=\"#zc-receipt-upload\" hx-swap=\"outerHTML\" hx-trigger=\"submit\" hx-indicator=\"#loading-spinner\"><h2>Upload Receipt</h2><label for=\"image\">Drag and drop your receipt image here, or click to select a file</label> <input id=\"zc-receipt-upload\" type=\"file\" id=\"image\" name=\"image\" accept=\"image/*\" required> <span class=\"info-text\">Supported file types: .png, .jpeg, .jpg, .webp, .gif</span> <button type=\"submit\" class=\"primary-button\">Upload</button><div id=\"loading-spinner\" class=\"htmx-indicator pulse-indicator\">Processing your request. This may take a few moments...</div></form><div class=\"zc-or-manual-upload-container\"><button type=\"button\" class=\"secondary-button zc-manual-upload-button\" id=\"manual-upload-button\" hx-get=\"/manual-upload\" hx-target=\"#zc-receipt-upload\" hx-swap=\"outerHTML\" hx-trigger=\"click\">Manual Upload</button></div></div></main>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<main><div id=\"zc-receipt-upload\"><form class=\"receipt-upload-container\" id=\"imageUploadForm\" enctype=\"multipart/form-data\" hx-post=\"/upload\" hx-target=\"#zc-receipt-upload\" hx-swap=\"outerHTML\" hx-trigger=\"submit\" hx-indicator=\"#loading-spinner\" hx-on:submit=\"sessionStorage.removeItem(&#39;zc-temp-receipt&#39;);\"><h2>Upload Receipt</h2><label for=\"image\">Drag and drop your receipt image here, or click to select a file</label> <input id=\"zc-receipt-upload\" type=\"file\" id=\"image\" name=\"image\" accept=\"image/*\" required> <span class=\"info-text\">Supported file types: .png, .jpeg, .jpg, .webp, .gif</span> <button type=\"submit\" class=\"primary-button\">Upload</button><div id=\"loading-spinner\" class=\"htmx-indicator pulse-indicator\">Processing your request. This may take a few moments...</div></form><div class=\"zc-or-manual-upload-container\"><button type=\"button\" class=\"secondary-button zc-manual-upload-button\" id=\"manual-upload-button\" hx-get=\"/manual-upload\" hx-target=\"#zc-receipt-upload\" hx-swap=\"outerHTML\" hx-trigger=\"click\" hx-on:click=\"sessionStorage.removeItem(&#39;zc-temp-receipt&#39;);\">Manual Upload</button></div></div></main>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

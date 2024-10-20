@@ -17,26 +17,32 @@ templ ReceiptManualEdit(ReceiptWithImage utils.ReceiptWithImage) {
         Add or modify the details of your receipt here
       </p>
     </div>
-    if ReceiptWithImage.Image != "" {
-        <img
-          class="receipt-image"
-          src={"data:image/png;base64," + ReceiptWithImage.Image}
-          alt="Receipt Image"
-          onclick="openReceiptModal()"
-        />
-         <div id="receiptImageModal" class="receipt-modal" onclick="closeReceiptModal()">
-              <span class="receipt-modal-close">&times;</span>
-              <img class="receipt-modal-content" id="receiptFullImage">
-        </div>
-    }
-
-
+    <div id="zc-hj-receipt-img">
+        if ReceiptWithImage.Image != "" {
+            <img
+              class="receipt-image"
+              src={"data:image/png;base64," + ReceiptWithImage.Image}
+              alt="Receipt Image"
+              onclick="openReceiptModal()"
+            />
+             <div id="receiptImageModal" class="receipt-modal" onclick="closeReceiptModal()">
+                  <span class="receipt-modal-close">&times;</span>
+                  <img class="receipt-modal-content" id="receiptFullImage">
+            </div>
+        }
+    </div>
     <form
       method="post"
       hx-post="/upload/confirm"
       hx-target="#results"
       hx-swap="outerHTML"
-    >      
+      id="zc-receipt-manual-upload-form"
+    > 
+      <div>
+        <label for="zcauldron_c_image" class="sr-only">Image</label>
+        <input id="zc-hidden-img" type="hidden" name="zcauldron_c_image" value={ReceiptWithImage.Image} />
+      </div>
+      
       <div class="receipt-field">
         <label for="zcauldron_c_merchant">Merchant</label>
         <input 
@@ -103,6 +109,77 @@ templ ReceiptManualEdit(ReceiptWithImage utils.ReceiptWithImage) {
         var modal = document.getElementById("receiptImageModal");
         modal.style.display = "none";
       }
+
+
+      // This has the potential to break things,
+      // we'll probably need to clear the session storage if we
+      // land on any page that isn't this exact partial
+      function checkSessionStorage() {
+        const storage = sessionStorage.getItem('zc-temp-receipt')
+
+        if (storage) {
+          const data = JSON.parse(storage);
+          
+          // Populate merchant, date, total,  and img
+          document.getElementById('zc-c-merchant').value = data.merchant;
+          document.getElementById('zc-c-date').value = data.date;
+          document.getElementById('zc-c-total').value = data.total;
+
+          // set hidden form value for img
+          document.getElementById('zc-hidden-img').src = data.img;
+
+          // hijack image container cause the og img isn't going to show via the back button
+          document.getElementById('zc-hj-receipt-img').innerHTML = `
+             <img
+               class="receipt-image"
+               src="${data.img}"
+               alt="Receipt Image"
+               onclick="openReceiptModal()"
+             />
+              <div id="receiptImageModal" class="receipt-modal" onclick="closeReceiptModal()">
+                   <span class="receipt-modal-close">&times;</span>
+                   <img class="receipt-modal-content" id="receiptFullImage">
+             </div>
+          `;
+
+          // Populate items
+          const itemsList = document.querySelector('.receipt-items');
+          itemsList.innerHTML = ''; // Clear existing items
+
+          data.items.forEach((item, index) => {
+            const li = document.createElement('li');
+            li.className = `receipt-item receipt-item-${index}`;
+            li.innerHTML = `
+              <input
+                type="text"
+                value="${item.name}"
+                name="name___${index}"
+                id="name___${index}"
+                class="receipt-item-name"
+              />
+              <input
+                type="text"
+                value="${item.price}"
+                name="price___${index}"
+                id="price___${index}"
+                class="receipt-item-price"
+              />
+              <button type="button" class="remove-item">X</button>
+            `;
+            itemsList.appendChild(li);
+          });
+
+          // Update the image if it exists
+          const imgElement = document.querySelector('.receipt-image');
+          if (imgElement && data.img) {
+            imgElement.src = data.img;
+          }
+
+          // Clear the session storage after populating the form
+          sessionStorage.removeItem('zc-temp-receipt');
+        }
+      }
+      checkSessionStorage()
     </script>
   </div>
 

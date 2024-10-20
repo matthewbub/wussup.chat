@@ -4,6 +4,10 @@ import (
   "bus.zcauldron.com/pkg/views/partials"
 )
 
+// SEE PARTIALS ALSO
+// pkg/views/partials/ReceiptConfirmation.templ
+// pkg/views/partials/ReceiptManualEdit.templ
+
 type ReceiptUploadFormData struct {
   Title      string
   IsLoggedIn bool
@@ -42,6 +46,7 @@ templ ReceiptUploadForm(data ReceiptUploadFormData) {
               hx-swap="outerHTML"
               hx-trigger="submit"
               hx-indicator="#loading-spinner"
+              hx-on:submit="sessionStorage.removeItem('zc-temp-receipt');"
             >
               <h2>Upload Receipt</h2>
               <label for="image">Drag and drop your receipt image here, or click to select a file</label>
@@ -59,6 +64,7 @@ templ ReceiptUploadForm(data ReceiptUploadFormData) {
                   hx-target="#zc-receipt-upload"
                   hx-swap="outerHTML"
                   hx-trigger="click"
+                  hx-on:click="sessionStorage.removeItem('zc-temp-receipt');"
                 >
                   Manual Upload
                 </button>

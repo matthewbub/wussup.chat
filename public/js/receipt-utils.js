@@ -18,8 +18,12 @@ function waitForElement(selector) {
   });
 }
 
+// TODO: this breaks when we use the back button to return to the manual upload form
+// I think its because the waitForElement is not triggered again
+// Gonna have to figure out a better way to do this
 waitForElement(".receipt-items").then((receiptItems) => {
   const addItemButton = document.querySelector(".add-item");
+  console.log(addItemButton, receiptItems);
 
   addItemButton.addEventListener("click", function () {
     const length = receiptItems.children.length;
@@ -126,4 +130,26 @@ Promise.all([
 
   // Configure the observer to watch for childList changes
   observer.observe(receiptItems, { childList: true });
+});
+
+// Session storage for Receipt Confirmation Back Button
+waitForElement("#zc-receipt-manual-upload-form").then(() => {
+  const data = {
+    image: document.querySelector(".receipt-image")?.src,
+    merchant: document.querySelector("#zc-c-merchant").innerHTML,
+    date: document.querySelector("#zc-c-date").innerHTML,
+    total: document.querySelector("#zc-c-total").innerHTML,
+    items: [],
+  };
+
+  const items = document.querySelectorAll(".item");
+  items.forEach((item) => {
+    const itemData = {
+      name: item.querySelector("#name").innerHTML,
+      price: item.querySelector("#price").innerHTML,
+    };
+    data.items.push(itemData);
+  });
+
+  sessionStorage.setItem("zc-temp-receipt", JSON.stringify(data));
 });

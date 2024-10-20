@@ -36,6 +36,7 @@ type Item struct {
 }
 
 type RawReceipt struct {
+	Image    string             `json:"image"`
 	Merchant string             `json:"merchant"`
 	Date     string             `json:"date"`
 	Total    string             `json:"total"`
@@ -45,11 +46,6 @@ type RawReceipt struct {
 type RawPurchasedItem struct {
 	Name  string `json:"name"`
 	Price string `json:"price"`
-}
-
-type RawImageWithReceipt struct {
-	RawReceipt
-	Image string `json:"image"`
 }
 
 func GetReceiptById(id string) (*Receipt, error) {

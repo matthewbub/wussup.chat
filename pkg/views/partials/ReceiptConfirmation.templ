@@ -9,6 +9,19 @@ templ ReceiptConfirmation(receipt models.RawReceipt) {
       <p>Please confirm the receipt details below.</p>
     </div>
 
+     if receipt.Image != "" {
+        <img
+          class="receipt-image"
+          src={"data:image/png;base64," + receipt.Image}
+          alt="Receipt Image"
+          onclick="openReceiptModal()"
+          id="zc-confirm-receipt-img"
+        />
+         <div id="zc-confirm-receipt-img" class="receipt-modal" onclick="closeReceiptModal()">
+              <span class="receipt-modal-close">&times;</span>
+              <img class="receipt-modal-content" id="receiptFullImage">
+        </div>
+    }
     <h3>Merchant</h3>
     <table>
       <thead>
@@ -46,8 +59,55 @@ templ ReceiptConfirmation(receipt models.RawReceipt) {
     </table>
 
     <div class="button-container">
-      <button class="secondary-button">Back</button>
-      <button class="primary-button" id="save-button" type="submit">Save</button>
+      <button class="secondary-button"
+        hx-get="/manual-upload"
+        hx-target="#receipt-confirmation"
+        hx-swap="outerHTML"
+
+      >Back</button>
+      <button 
+        class="primary-button" 
+        id="save-button" 
+        type="submit"
+      >Save</button>
     </div>
+
+     <script>
+          function openReceiptModal() {
+            var modal = document.getElementById("receiptImageModal");
+            var modalImg = document.getElementById("receiptFullImage");
+            var img = document.querySelector(".receipt-image");
+            modal.style.display = "block";
+            modalImg.src = img.src;
+          }
+
+          function closeReceiptModal() {
+            var modal = document.getElementById("receiptImageModal");
+            modal.style.display = "none";
+          }
+
+          function getFields() {
+              const fields = {
+                img: document.querySelector("#zc-confirm-receipt-img")?.src,
+                merchant: document.querySelector("#merchant").innerHTML,
+                date: document.querySelector("#date").innerHTML,
+                total: document.querySelector("#total").innerHTML,
+                items: []
+              }
+
+             const items = document.querySelectorAll(".item");
+             items.forEach((item) => {
+               const itemData = {
+                 name: item.querySelector("#name").innerHTML,
+                 price: item.querySelector("#price").innerHTML,
+               };
+               fields.items.push(itemData);
+             });
+
+              sessionStorage.setItem('zc-temp-receipt', JSON.stringify(fields))
+          }
+
+           getFields()
+        </script>
   </div>
 }

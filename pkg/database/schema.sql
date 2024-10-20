@@ -85,6 +85,17 @@ CREATE TABLE IF NOT EXISTS token_usage (
     FOREIGN KEY (user_id) REFERENCES users (id)
 );
 
+CREATE TABLE IF NOT EXISTS receipt_blobs (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL,
+    receipt_id INT NOT NULL,
+    img_blob BLOB NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users (id),
+    FOREIGN KEY (receipt_id) REFERENCES receipts (id)
+);
+
 -- 
 -- CREATE TABLE IF NOT EXISTS tenants (
 --     id TEXT PRIMARY KEY AUTOINCREMENT,
