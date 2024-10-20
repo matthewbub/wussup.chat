@@ -46,7 +46,7 @@ func ReceiptUploadForm(data ReceiptUploadFormData) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</head><body>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<style>\n        .zc-or-manual-upload-container {\n            margin-top: 20px;\n            margin-right: auto;\n            margin-left: auto;\n            display: flex;\n            justify-content: flex-end;\n            align-items: flex-end;\n        }\n\n        .zc-manual-upload-button {\n            width: fit-content;\n        }\n      </style></head><body>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -54,7 +54,7 @@ func ReceiptUploadForm(data ReceiptUploadFormData) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<main><form class=\"receipt-upload-container\" id=\"imageUploadForm\" enctype=\"multipart/form-data\" hx-post=\"/upload\" hx-target=\"this\" hx-swap=\"outerHTML\" hx-trigger=\"submit\" hx-indicator=\"#loading-spinner\"><h2>Upload Receipt</h2><label for=\"image\">Drag and drop your receipt image here, or click to select a file</label> <input id=\"zc-receipt-upload\" type=\"file\" id=\"image\" name=\"image\" accept=\"image/*\" required> <span class=\"info-text\">Supported file types: .png, .jpeg, .jpg, .webp, .gif</span> <button type=\"submit\" class=\"primary-button\">Upload</button> <button type=\"button\" class=\"secondary-button\" id=\"manual-upload-button\" hx-get=\"/manual-upload\" hx-target=\"#imageUploadForm\" hx-swap=\"outerHTML\" hx-trigger=\"click\">Manual Upload</button><div id=\"loading-spinner\" class=\"htmx-indicator pulse-indicator\">Processing your request. This may take a few moments...</div></form></main>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<main><div id=\"zc-receipt-upload\"><form class=\"receipt-upload-container\" id=\"imageUploadForm\" enctype=\"multipart/form-data\" hx-post=\"/upload\" hx-target=\"#zc-receipt-upload\" hx-swap=\"outerHTML\" hx-trigger=\"submit\" hx-indicator=\"#loading-spinner\"><h2>Upload Receipt</h2><label for=\"image\">Drag and drop your receipt image here, or click to select a file</label> <input id=\"zc-receipt-upload\" type=\"file\" id=\"image\" name=\"image\" accept=\"image/*\" required> <span class=\"info-text\">Supported file types: .png, .jpeg, .jpg, .webp, .gif</span> <button type=\"submit\" class=\"primary-button\">Upload</button><div id=\"loading-spinner\" class=\"htmx-indicator pulse-indicator\">Processing your request. This may take a few moments...</div></form><div class=\"zc-or-manual-upload-container\"><button type=\"button\" class=\"secondary-button zc-manual-upload-button\" id=\"manual-upload-button\" hx-get=\"/manual-upload\" hx-target=\"#zc-receipt-upload\" hx-swap=\"outerHTML\" hx-trigger=\"click\">Manual Upload</button></div></div></main>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

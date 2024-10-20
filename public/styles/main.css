@@ -16,6 +16,10 @@
   gap: 10px;
 }
 
+.zc-or-manual-upload-container {
+  max-width: 700px;
+}
+
 .receipt-collection-container,
 .receipt-modify-container,
 .receipt-confirmation-container,
@@ -40,7 +44,8 @@
   .receipt-collection-container,
   .receipt-modify-container,
   .receipt-confirmation-container,
-  .manual-receipt-upload-container {
+  .manual-receipt-upload-container,
+  .zc-or-manual-upload-container {
     max-width: 600px;
   }
 }
@@ -51,7 +56,8 @@
   .receipt-collection-container,
   .receipt-modify-container,
   .receipt-confirmation-container,
-  .manual-receipt-upload-container {
+  .manual-receipt-upload-container,
+  .zc-or-manual-upload-container {
     max-width: 500px;
   }
 }
@@ -62,7 +68,8 @@
   .receipt-collection-container,
   .receipt-modify-container,
   .receipt-confirmation-container,
-  .manual-receipt-upload-container {
+  .manual-receipt-upload-container,
+  .zc-or-manual-upload-container {
     max-width: 100%;
   }
 }
@@ -102,7 +109,7 @@
 }
 
 .receipt-upload-container.dragover {
-  background-color: var(--background-color);
+  background-color: #77a9de;
 }
 
 .info-text {
@@ -164,12 +171,18 @@
 }
 
 .receipt-image {
-  height: 400px;
-  width: fit-content;
+  height: fit-content;
+  width: 60%;
   display: flex;
   align-items: center;
   justify-content: center;
   margin: auto;
+}
+
+@media (max-width: 768px) {
+  .receipt-image {
+    width: 100%;
+  }
 }
 
 .receipt-modal {
