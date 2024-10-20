@@ -94,7 +94,8 @@ waitForElement(".receipt-upload-container").then(() => {
     e.preventDefault();
     uploadContainer.classList.remove("dragover");
     const files = e.dataTransfer.files;
-    document.getElementById("image").files = files;
+    console.log(document.getElementById("zc-receipt-upload"));
+    document.getElementById("zc-receipt-upload").files = files;
   });
 });
 
