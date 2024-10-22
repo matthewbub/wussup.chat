@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "scripts": {
     "dev": "vite",
-    "build": "tsc --noEmit --skipLibCheck && vite build"
+    "build": "tsc --noEmit --skipLibCheck && vite build && ../scripts/insertScriptsIntoWebsiteDist/insertScriptsIntoWebsiteDist"
   },
   "dependencies": {
     "clsx": "^2.1.1",
