@@ -79,4 +79,5 @@ func registerPrivateApiRoutes(auth *gin.RouterGroup) {
 	auth.GET("/logout", api.LogoutHandler)
 	auth.DELETE("/api/v1/finances/receipts/delete", api.DeleteReceipts)
 	auth.POST("/api/v1/finances/receipts/export", api.ExportReceipts)
+	auth.POST("/api/v1/finances/receipts/upload", api.UploadHandlerButInJson)
 }

@@ -318,3 +318,20 @@
 .receipt-collection-actions a {
   width: fit-content;
 }
+
+.zc-or-manual-upload-container {
+  margin-top: 20px;
+  margin-right: auto;
+  margin-left: auto;
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-end;
+}
+
+.zc-manual-upload-button {
+  width: fit-content;
+}
+
+.error {
+  color: red;
+}
