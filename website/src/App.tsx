@@ -2,7 +2,7 @@ import React from "react";
 import { GlobalFooter } from "./components/GlobalFooter";
 import { GlobalHeader } from "./components/GlobalHeader";
 import { create } from "zustand";
-import { useForm } from "react-hook-form";
+import { useFieldArray, useForm } from "react-hook-form";
 
 enum Steps {
   AUTO_UPLOAD = "AUTO_UPLOAD",
@@ -26,6 +26,14 @@ interface Receipt {
 interface ReceiptData {
   receipt: Receipt;
   image: string;
+}
+
+interface ManualFormData {
+  merchant: string;
+  date: string;
+  total: string;
+  items: { name: string; price: string }[];
+  image?: string;
 }
 
 export const useStore = create<{
@@ -189,7 +197,176 @@ function AutoUploadForm() {
 }
 
 function ManualUploadForm() {
-  return <div>Manual Upload Form</div>;
+  const receiptData = useStore((state) => state.receiptData);
+  const setReceiptData = useStore((state) => state.setReceiptData);
+  const setCurrentStep = useStore((state) => state.setCurrentStep);
+
+  const defaultValues = receiptData
+    ? {
+        merchant: receiptData.receipt.merchant,
+        date: receiptData.receipt.date,
+        total: receiptData.receipt.total,
+        items: receiptData.receipt.items,
+        image: receiptData.image,
+      }
+    : {
+        merchant: "",
+        date: "",
+        total: "",
+        items: [],
+        image: "",
+      };
+
+  const { register, control, handleSubmit, watch } = useForm<ManualFormData>({
+    defaultValues,
+  });
+
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "items",
+  });
+
+  const onSubmit = (data: ManualFormData) => {
+    // Update the receipt data in the store
+    setReceiptData({
+      receipt: {
+        merchant: data.merchant,
+        date: data.date,
+        total: data.total,
+        items: data.items,
+      },
+      image: data.image || "",
+    });
+    // Proceed to the confirmation step
+    console.log("Proceeding to confirmation step");
+    setCurrentStep(Steps.CONFIRM_UPLOAD);
+  };
+
+  // Handle image modal logic
+  const [isModalOpen, setModalOpen] = React.useState(false);
+  const openReceiptModal = () => setModalOpen(true);
+  const closeReceiptModal = () => setModalOpen(false);
+
+  const imageSrc = watch("image");
+
+  return (
+    <div id="results" className="receipt-modify-container">
+      <div>
+        <h2>Receipt</h2>
+        <p>Add or modify the details of your receipt here</p>
+      </div>
+      {imageSrc && (
+        <div id="zc-hj-receipt-img" onClick={openReceiptModal}>
+          <img
+            className="receipt-image"
+            src={`data:image/png;base64,${imageSrc}`}
+            alt="Receipt"
+          />
+          {isModalOpen && (
+            <div
+              id="receiptImageModal"
+              className="receipt-modal"
+              onClick={closeReceiptModal}
+            >
+              <span className="receipt-modal-close">&times;</span>
+              <img
+                className="receipt-modal-content"
+                id="receiptFullImage"
+                src={`data:image/png;base64,${imageSrc}`}
+                alt="Receipt Full"
+              />
+            </div>
+          )}
+        </div>
+      )}
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        id="zc-receipt-manual-upload-form"
+      >
+        {/* Hidden image field */}
+        <input type="hidden" {...register("image")} />
+
+        <div className="receipt-field">
+          <label htmlFor="merchant">Merchant</label>
+          <input
+            required
+            id="zc-c-merchant"
+            type="text"
+            placeholder="Bob's Burgers"
+            {...register("merchant", { required: true })}
+          />
+        </div>
+        <div className="receipt-field">
+          <label htmlFor="date">Date</label>
+          <input
+            id="zc-c-date"
+            type="text"
+            placeholder="MM/DD/YYYY"
+            {...register("date")}
+          />
+        </div>
+        <div className="receipt-field">
+          <label htmlFor="total">Total</label>
+          <input
+            id="zc-c-total"
+            type="text"
+            placeholder="$100.00"
+            {...register("total")}
+          />
+        </div>
+
+        <div className="receipt-field-items">
+          <h3>Items</h3>
+          <ul className="receipt-items">
+            {fields.map((item, index) => (
+              <li
+                key={item.id}
+                className={`receipt-item receipt-item-${index}`}
+              >
+                <input
+                  type="text"
+                  placeholder="Item Name"
+                  {...register(`items.${index}.name` as const)}
+                  className="receipt-item-name"
+                />
+                <input
+                  type="text"
+                  placeholder="Item Price"
+                  {...register(`items.${index}.price` as const)}
+                  className="receipt-item-price"
+                />
+                <button
+                  type="button"
+                  className="remove-item"
+                  onClick={() => remove(index)}
+                >
+                  X
+                </button>
+              </li>
+            ))}
+          </ul>
+          {fields.length === 0 && (
+            <div className="no-items-message">
+              No items here. Please add items manually or click "Next" to
+              proceed.
+            </div>
+          )}
+        </div>
+        <div className="button-container">
+          <button
+            type="button"
+            className="add-item secondary-button"
+            onClick={() => append({ name: "", price: "" })}
+          >
+            Add Item
+          </button>
+          <button type="submit" className="primary-button" id="next">
+            Next
+          </button>
+        </div>
+      </form>
+    </div>
+  );
 }
 
 export default App;
