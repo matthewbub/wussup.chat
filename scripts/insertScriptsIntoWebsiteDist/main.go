@@ -19,17 +19,14 @@ func main() {
 	}
 
 	// Define the replacement HTML
-	replacementHTML := `
-	<link rel="stylesheet" href="/styles/theme.css" />
+	replacementHTML := `<link rel="stylesheet" href="/styles/theme.css" />
 	<link rel="stylesheet" href="/styles/main.css" />
 	<link rel="stylesheet" href="/styles/htmx.css" />
-	<link rel="stylesheet" href="/styles/print.css" />
-	`
+	<link rel="stylesheet" href="/styles/print.css" />`
 
-	// Replace the <!-- RESERVED --> string
-	newContent := strings.Replace(string(content), "<!-- RESERVED -->", replacementHTML, 1)
+	// Replace the <!-- THIS COMMENT IS RESERVED FOR A BUILD STEP (DO NOT REMOVE) --> string
+	newContent := strings.Replace(string(content), "<!-- THIS COMMENT IS RESERVED FOR A BUILD STEP (DO NOT REMOVE) -->", replacementHTML, 1)
 
-	log.Println("newContent:", newContent)
 	// Write the new content back to the file
 	err = os.WriteFile(filePath, []byte(newContent), 0644)
 	if err != nil {

@@ -27,6 +27,9 @@ func main() {
 	r.Static("/styles", "./public/styles")
 	r.Static("/js", "./public/js")
 
+	// React build assets
+	r.Static("/_assets", "./website/dist/_assets")
+
 	// alllll routes
 	registerPublicViews(r)
 	registerPublicApiRoutes(r)
@@ -63,6 +66,7 @@ func registerPrivateViews(auth *gin.RouterGroup) {
 	auth.GET("/dashboard", handlers.DashboardView)
 	auth.GET("/dashboard/finances", handlers.FinancesView)
 	auth.GET("/dashboard/finances/receipts", handlers.ReceiptsView)
+	auth.GET("/dashboard/finances/v2/receipts", handlers.ReceiptsV2View)
 	auth.GET("/dashboard/finances/receipts/:id", handlers.ReceiptView)
 	auth.GET("/dashboard/finances/receipts/:id/edit", handlers.EditReceiptView)
 }
