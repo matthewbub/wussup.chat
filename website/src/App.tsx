@@ -4,39 +4,81 @@ import { GlobalHeader } from "./components/GlobalHeader";
 import { create } from "zustand";
 import { useForm } from "react-hook-form";
 
+enum Steps {
+  AUTO_UPLOAD = "AUTO_UPLOAD",
+  MANUAL_UPLOAD = "MANUAL_UPLOAD",
+  AUTO_EDIT = "AUTO_EDIT",
+  CONFIRM_UPLOAD = "CONFIRM_UPLOAD",
+}
 export const useStore = create<{
   isLoading: boolean;
   setIsLoading: (value: boolean) => void;
   errorMessage: string | null;
   setErrorMessage: (message: string | null) => void;
+  currentStep: Steps;
+  setCurrentStep: (step: Steps) => void;
 }>((set) => ({
   isLoading: false,
   setIsLoading: (value: boolean) => set({ isLoading: value }),
   errorMessage: null,
   setErrorMessage: (message: string | null) => set({ errorMessage: message }),
+  currentStep: Steps.AUTO_UPLOAD,
+  setCurrentStep: (step: Steps) => set({ currentStep: step }),
 }));
 
 function App() {
+  const currentStep = useStore((state) => state.currentStep);
+  const setCurrentStep = useStore((state) => state.setCurrentStep);
+  const setErrorMessage = useStore((state) => state.setErrorMessage);
   return (
     <>
       <GlobalHeader />
       <main>
         <div>
-          <AutoUploadForm />
+          {currentStep === Steps.AUTO_UPLOAD && <AutoUploadForm />}
+          {/* {currentStep === Steps.AUTO_EDIT && <AutoUploadForm />} */}
 
-          <div className="zc-or-manual-upload-container">
-            <button
-              type="button"
-              className="secondary-button zc-manual-upload-button"
-              id="manual-upload-button"
-            >
-              Manual Upload
-            </button>
-          </div>
+          <AutoOrManualToggleButton />
         </div>
       </main>
       <GlobalFooter />
     </>
+  );
+}
+
+function AutoOrManualToggleButton() {
+  const currentStep = useStore((state) => state.currentStep);
+  const setCurrentStep = useStore((state) => state.setCurrentStep);
+  const setErrorMessage = useStore((state) => state.setErrorMessage);
+
+  // Only show the button if the current step is either AUTO_UPLOAD or MANUAL_UPLOAD
+  if (
+    currentStep !== Steps.AUTO_UPLOAD &&
+    currentStep !== Steps.MANUAL_UPLOAD
+  ) {
+    return null;
+  }
+
+  return (
+    <div className="zc-or-manual-upload-container">
+      <button
+        type="button"
+        className="secondary-button zc-manual-upload-button"
+        id="manual-upload-button"
+        onClick={() => {
+          if (currentStep === Steps.AUTO_UPLOAD) {
+            setCurrentStep(Steps.MANUAL_UPLOAD);
+            setErrorMessage(null);
+          } else if (currentStep === Steps.MANUAL_UPLOAD) {
+            setCurrentStep(Steps.AUTO_UPLOAD);
+            setErrorMessage(null);
+          }
+        }}
+      >
+        {currentStep === Steps.AUTO_UPLOAD && "Manual Upload"}
+        {currentStep === Steps.MANUAL_UPLOAD && "Image Upload"}
+      </button>
+    </div>
   );
 }
 
