@@ -10,6 +10,24 @@ enum Steps {
   AUTO_EDIT = "AUTO_EDIT",
   CONFIRM_UPLOAD = "CONFIRM_UPLOAD",
 }
+
+interface ReceiptItem {
+  name: string;
+  price: string;
+}
+
+interface Receipt {
+  merchant: string;
+  date: string;
+  total: string;
+  items: ReceiptItem[];
+}
+
+interface ReceiptData {
+  receipt: Receipt;
+  image: string;
+}
+
 export const useStore = create<{
   isLoading: boolean;
   setIsLoading: (value: boolean) => void;
@@ -17,6 +35,8 @@ export const useStore = create<{
   setErrorMessage: (message: string | null) => void;
   currentStep: Steps;
   setCurrentStep: (step: Steps) => void;
+  receiptData: ReceiptData | null;
+  setReceiptData: (data: ReceiptData) => void;
 }>((set) => ({
   isLoading: false,
   setIsLoading: (value: boolean) => set({ isLoading: value }),
@@ -24,6 +44,8 @@ export const useStore = create<{
   setErrorMessage: (message: string | null) => set({ errorMessage: message }),
   currentStep: Steps.AUTO_UPLOAD,
   setCurrentStep: (step: Steps) => set({ currentStep: step }),
+  receiptData: null,
+  setReceiptData: (data: ReceiptData) => set({ receiptData: data }),
 }));
 
 function App() {
@@ -36,7 +58,8 @@ function App() {
       <main>
         <div>
           {currentStep === Steps.AUTO_UPLOAD && <AutoUploadForm />}
-          {/* {currentStep === Steps.AUTO_EDIT && <AutoUploadForm />} */}
+          {currentStep === Steps.AUTO_EDIT && <ManualUploadForm />}
+          {currentStep === Steps.MANUAL_UPLOAD && <ManualUploadForm />}
 
           <AutoOrManualToggleButton />
         </div>
@@ -93,6 +116,8 @@ function AutoUploadForm() {
   const setIsLoading = useStore((state) => state.setIsLoading);
   const errorMessage = useStore((state) => state.errorMessage);
   const setErrorMessage = useStore((state) => state.setErrorMessage);
+  const setReceiptData = useStore((state) => state.setReceiptData);
+  const setCurrentStep = useStore((state) => state.setCurrentStep);
 
   const onSubmit = async (data: { image: FileList }) => {
     setIsLoading(true);
@@ -114,9 +139,13 @@ function AutoUploadForm() {
       }
 
       const result = await response.json();
-      // Process the result as needed
-      // For now, we'll just log it
-      console.log("Upload successful:", result);
+      const transformedResult: ReceiptData = {
+        receipt: result.Receipt,
+        image: result.image,
+      };
+
+      setReceiptData(transformedResult);
+      setCurrentStep(Steps.AUTO_EDIT);
     } catch (error) {
       console.error("Error uploading image:", error);
       setErrorMessage((error as Error).message);
@@ -157,6 +186,10 @@ function AutoUploadForm() {
       </form>
     </div>
   );
+}
+
+function ManualUploadForm() {
+  return <div>Manual Upload Form</div>;
 }
 
 export default App;
