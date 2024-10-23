@@ -98,7 +98,10 @@ func SignUpHandler(c *gin.Context) {
 
 	if err := session.Save(); err != nil {
 		log.Printf("Error creating session: %v", err)
-		renderLoginErrorPage(c, "Error creating session")
+		templ.Handler(views.GeneralError(views.GeneralErrorData{
+			Title:   "Sign Up",
+			Message: "Error creating session",
+		}))
 		return
 	}
 
@@ -175,6 +178,6 @@ func handleDatabaseError(c *gin.Context, err error) {
 	fmt.Println("Error creating account:", err)
 }
 
-func renderSecurityQuestionsPage(c *gin.Context) {
-	c.Redirect(http.StatusSeeOther, "/sign-up/security-questions")
-}
+// func renderSecurityQuestionsPage(c *gin.Context) {
+// 	c.Redirect(http.StatusSeeOther, "/sign-up/security-questions")
+// }

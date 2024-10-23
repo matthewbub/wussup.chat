@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func Recovery() gin.HandlerFunc {
+func Recovery(message string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		defer func() {
 			if err := recover(); err != nil {
@@ -24,7 +24,7 @@ func Recovery() gin.HandlerFunc {
 					// TODO why is this here
 					IsLoggedIn: false,
 					// TODO this was a test message
-					Message: "Something went wrong",
+					Message: message,
 				})).ServeHTTP(c.Writer, c.Request)
 
 				// Ensure that the rest of the handlers are not called

@@ -1,6 +1,7 @@
 package models
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 	"time"
@@ -72,6 +73,9 @@ func GetUserFromDatabase(username string) (*utils.UserObject, error) {
 		&user.SecurityQuestionsAnswered,
 	)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, fmt.Errorf("user not found")
+		}
 		log.Println(err)
 		return nil, err
 	}

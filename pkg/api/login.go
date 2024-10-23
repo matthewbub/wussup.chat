@@ -1,11 +1,14 @@
 package api
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 	"net/http"
 
 	"bus.zcauldron.com/pkg/utils"
+	"bus.zcauldron.com/pkg/views"
+	"github.com/a-h/templ"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
@@ -19,29 +22,63 @@ func LoginHandler(c *gin.Context) {
 
 	// Validate input
 	if username == "" || password == "" {
-		renderLoginErrorPage(c, "Username and password are required")
+		templ.Handler(views.LogIn(views.LogInData{
+			Title:   "Login",
+			Message: "Username and password are required",
+		}))
 		return
 	}
 
 	// Check user credentials
 	user, err := getUserFromDatabase(username)
-	fmt.Printf("user at login: %v\n", user)
+	fmt.Printf("user found; but unverified: %s\n", user.ID)
 	if err != nil {
-		handleLoginError(c, err)
+		// destroy session
+		session := utils.GetSession(c)
+		session.Clear()
+		session.Save()
+
+		templ.Handler(views.LogIn(views.LogInData{
+			Title:   "Login",
+			Message: "Invalid username or password",
+		})).ServeHTTP(c.Writer, c.Request)
+		return
+	}
+
+	// Check if user is nil
+	if user == nil {
+		// destroy session
+		session := utils.GetSession(c)
+		session.Clear()
+		session.Save()
+		templ.Handler(views.LogIn(views.LogInData{
+			Title:   "Login",
+			Message: "Invalid username or password",
+		})).ServeHTTP(c.Writer, c.Request)
 		return
 	}
 
 	// Compare passwords
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
-		renderLoginErrorPage(c, "Invalid username or password")
+		templ.Handler(views.LogIn(views.LogInData{
+			Title:   "Login",
+			Message: "Invalid username or password",
+		})).ServeHTTP(c.Writer, c.Request)
 		return
 	}
+	log.Println("User validated")
 
-	// Set session
+	// Set session only if there is data
 	session := utils.GetSession(c)
-	session.Set("user_id", user.ID)
-	session.Set("username", user.Username)
-	session.Set("email", user.Email)
+	if user.ID != "" {
+		session.Set("user_id", user.ID)
+	}
+	if user.Username != "" {
+		session.Set("username", user.Username)
+	}
+	if user.Email != "" {
+		session.Set("email", user.Email)
+	}
 
 	if rememberMe {
 		session.Options(sessions.Options{
@@ -50,7 +87,10 @@ func LoginHandler(c *gin.Context) {
 	}
 
 	if err := session.Save(); err != nil {
-		renderLoginErrorPage(c, "Error creating session")
+		templ.Handler(views.LogIn(views.LogInData{
+			Title:   "Login",
+			Message: "Error creating session",
+		})).ServeHTTP(c.Writer, c.Request)
 		return
 	}
 
@@ -66,26 +106,12 @@ func getUserFromDatabase(username string) (*User, error) {
 	err := db.QueryRow("SELECT id, username, password, email FROM users WHERE username = ?", username).
 		Scan(&user.ID, &user.Username, &user.Password, &user.Email)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, fmt.Errorf("user not found")
+		}
 		return nil, err
 	}
 	return user, nil
-}
-
-func handleLoginError(c *gin.Context, err error) {
-	fmt.Println("Error during login:", err)
-	if err.Error() == "user not found" {
-		renderLoginErrorPage(c, "Invalid username or password")
-	} else {
-		log.Println("Error during login:", err)
-		renderLoginErrorPage(c, "An error occurred during login")
-	}
-}
-
-func renderLoginErrorPage(c *gin.Context, message string) {
-	c.HTML(http.StatusUnauthorized, "login.go.tmpl", gin.H{
-		"title":   "Login",
-		"message": message,
-	})
 }
 
 type User struct {
