@@ -180,6 +180,7 @@ func GetReceipts(userID interface{}, page, records string) ([]Receipt, int, erro
 		return nil, 0, err
 	}
 
+	log.Printf("Total receipts: %d\n", totalRecords)
 	return receipts, totalRecords, nil
 }
 

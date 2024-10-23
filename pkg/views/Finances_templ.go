@@ -71,7 +71,7 @@ func Finances(data FinancesData) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<main><div class=\"message-container\" style=\"display: none;\"><i class=\"fa-solid fa-triangle-exclamation\"></i><p id=\"message\"></p><a href=\"/dashboard/finances\" id=\"close-message-button\" aria-label=\"Close message\"><i class=\"fa-solid fa-x\"></i></a></div><div class=\"receipt-collection-container\"><div class=\"receipt-collection-header\"><h2>View your recenet finance history</h2><div class=\"receipt-collection-actions\"><a href=\"/dashboard/finances/receipts\" class=\"primary-button\">Add Receipt</a></div></div><table class=\"modifiable-receipts\" id=\"receipts-table\"><thead><tr><th>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<main><div class=\"message-container\" style=\"display: none;\"><i class=\"fa-solid fa-triangle-exclamation\"></i><p id=\"message\"></p><a href=\"/dashboard/finances\" id=\"close-message-button\" aria-label=\"Close message\"><i class=\"fa-solid fa-x\"></i></a></div><div class=\"receipt-collection-container\"><div class=\"receipt-collection-header\"><h2>View your recenet finance history</h2><div class=\"receipt-collection-actions\"><a href=\"/dashboard/finances/v2/receipts\" class=\"primary-button\">Add Receipt</a></div></div><table class=\"modifiable-receipts\" id=\"receipts-table\"><thead><tr><th>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -86,7 +86,7 @@ func Finances(data FinancesData) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		if len(data.Receipts) == 0 {
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<tr class=\"receipt\"><td colspan=\"4\" style=\"text-align: center;\">No data found <br><a href=\"/dashboard/finances/receipts\">Add some receipts</a></td></tr>")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<tr class=\"receipt\"><td colspan=\"4\" style=\"text-align: center;\">No data found <br><a href=\"/dashboard/finances/v2/receipts\">Add some receipts</a></td></tr>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

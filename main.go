@@ -72,12 +72,15 @@ func registerPrivateViews(auth *gin.RouterGroup) {
 }
 
 func registerPrivateApiRoutes(auth *gin.RouterGroup) {
+	auth.GET("/logout", api.LogoutHandler)
+	auth.DELETE("/api/v1/finances/receipts/delete", api.DeleteReceipts)
+	auth.POST("/api/v1/finances/receipts/export", api.ExportReceipts)
+	auth.POST("/api/v1/finances/receipts/upload-image", api.UploadHandlerButInJson)
+	auth.POST("/api/v1/finances/receipts/upload", api.SaveReceiptHandler)
+
+	// @deprecated
 	auth.POST("/upload", api.UploadHandler)
 	auth.GET("/manual-upload", api.ManualUploadHandler)
 	auth.POST("/upload/confirm", api.UploadConfirmHandler)
 	auth.POST("/upload/confirm/save", api.SaveReceiptHandler)
-	auth.GET("/logout", api.LogoutHandler)
-	auth.DELETE("/api/v1/finances/receipts/delete", api.DeleteReceipts)
-	auth.POST("/api/v1/finances/receipts/export", api.ExportReceipts)
-	auth.POST("/api/v1/finances/receipts/upload", api.UploadHandlerButInJson)
 }

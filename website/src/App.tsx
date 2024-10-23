@@ -68,6 +68,7 @@ function App() {
           {currentStep === Steps.AUTO_UPLOAD && <AutoUploadForm />}
           {currentStep === Steps.AUTO_EDIT && <ManualUploadForm />}
           {currentStep === Steps.MANUAL_UPLOAD && <ManualUploadForm />}
+          {currentStep === Steps.CONFIRM_UPLOAD && <ConfirmUploadForm />}
 
           <AutoOrManualToggleButton />
         </div>
@@ -135,7 +136,7 @@ function AutoUploadForm() {
     formData.append("image", data.image[0]);
 
     try {
-      const response = await fetch("/api/v1/finances/receipts/upload", {
+      const response = await fetch("/api/v1/finances/receipts/upload-image", {
         method: "POST",
         body: formData,
       });
@@ -237,8 +238,8 @@ function ManualUploadForm() {
       },
       image: data.image || "",
     });
-    // Proceed to the confirmation step
-    console.log("Proceeding to confirmation step");
+
+    // do nada; proceed to the confirmation step
     setCurrentStep(Steps.CONFIRM_UPLOAD);
   };
 
@@ -365,6 +366,161 @@ function ManualUploadForm() {
           </button>
         </div>
       </form>
+    </div>
+  );
+}
+
+function ConfirmUploadForm() {
+  const [isModalOpen, setModalOpen] = React.useState(false);
+  const receiptData = useStore((state) => state.receiptData);
+  const setCurrentStep = useStore((state) => state.setCurrentStep);
+  const isLoading = useStore((state) => state.isLoading);
+  const setIsLoading = useStore((state) => state.setIsLoading);
+  const setErrorMessage = useStore((state) => state.setErrorMessage);
+  const setReceiptData = useStore((state) => state.setReceiptData);
+
+  if (!receiptData) {
+    return null; // Optionally, you could redirect to the first step
+  }
+
+  const handleBack = () => {
+    // Navigate back to the manual edit step
+    // technically, we could go back to the manual upload step
+    // they are essentially the same thing
+    // just different names for clarity in end-user workflows
+    setCurrentStep(Steps.AUTO_EDIT);
+  };
+
+  const handleSave = async () => {
+    setIsLoading(true);
+    setErrorMessage(null);
+
+    try {
+      const response = await fetch("/api/v1/finances/receipts/upload", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(receiptData),
+      });
+
+      if (!response.ok) {
+        // Handle error response from the server
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to save receipt");
+      }
+
+      // Handle success (e.g., redirect to another page, show success message)
+      console.log("Receipt saved successfully");
+      // Reset the state or navigate as needed
+      setCurrentStep(Steps.AUTO_UPLOAD);
+      setReceiptData({
+        receipt: {
+          merchant: "",
+          date: "",
+          total: "",
+          items: [],
+        },
+        image: "",
+      });
+    } catch (error) {
+      console.error("Error saving receipt:", error);
+      setErrorMessage((error as Error).message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Image modal handlers
+  const openReceiptModal = () => setModalOpen(true);
+  const closeReceiptModal = () => setModalOpen(false);
+
+  return (
+    <div id="receipt-confirmation" className="receipt-confirmation-container">
+      <div className="receipt-confirmation-header">
+        <h2>Receipt</h2>
+        <p>Please confirm the receipt details below.</p>
+      </div>
+
+      {receiptData.image && (
+        <div id="zc-confirm-receipt-img">
+          <img
+            className="receipt-image"
+            src={`data:image/png;base64,${receiptData.image}`}
+            alt="Receipt Image"
+            onClick={openReceiptModal}
+          />
+          {isModalOpen && (
+            <div
+              id="receiptImageModal"
+              className="receipt-modal"
+              onClick={closeReceiptModal}
+            >
+              <span className="receipt-modal-close">&times;</span>
+              <img
+                className="receipt-modal-content"
+                id="receiptFullImage"
+                src={`data:image/png;base64,${receiptData.image}`}
+                alt="Receipt Full"
+              />
+            </div>
+          )}
+        </div>
+      )}
+
+      <h3>Merchant</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Merchant</th>
+            <th>Date</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td id="merchant">{receiptData.receipt.merchant}</td>
+            <td id="date">{receiptData.receipt.date}</td>
+            <td id="total">{receiptData.receipt.total}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>Items</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Item Name</th>
+            <th>Price</th>
+          </tr>
+        </thead>
+        <tbody>
+          {receiptData.receipt.items.map((item, index) => (
+            <tr key={index} className="item">
+              <td id="name">{item.name}</td>
+              <td id="price">{item.price}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+
+      <div className="button-container">
+        <button className="secondary-button" onClick={handleBack}>
+          Back
+        </button>
+        <button
+          className="primary-button"
+          id="save-button"
+          onClick={handleSave}
+          disabled={isLoading}
+        >
+          {isLoading ? "Saving..." : "Save"}
+        </button>
+      </div>
+
+      {isLoading && (
+        <div>Processing your request. This may take a few moments...</div>
+      )}
     </div>
   );
 }

@@ -490,6 +490,8 @@ func SaveReceiptHandler(c *gin.Context) {
 		return
 	}
 
+	log.Printf("Receipt recieved: %+v\n", receipt)
+
 	// When a user adds a receipt we need to create a merchant if it doesn't exist,
 	// we need to create a new receipt,
 	// and then use the ID from both of those to add the receipt items

@@ -45,7 +45,7 @@ templ Finances(data FinancesData) {
             <h2>View your recenet finance history</h2>          
 
             <div class="receipt-collection-actions">
-              <a href="/dashboard/finances/receipts" class="primary-button">Add Receipt</a>
+              <a href="/dashboard/finances/v2/receipts" class="primary-button">Add Receipt</a>
             </div>
           </div>
           <table class="modifiable-receipts" id="receipts-table">
@@ -65,7 +65,7 @@ templ Finances(data FinancesData) {
             <tbody>
               if len(data.Receipts) == 0 {
                 <tr class="receipt">
-                 <td colspan="4" style="text-align: center;">No data found <br/><a href="/dashboard/finances/receipts">Add some receipts</a></td>
+                 <td colspan="4" style="text-align: center;">No data found <br/><a href="/dashboard/finances/v2/receipts">Add some receipts</a></td>
                 </tr>
               }
 
