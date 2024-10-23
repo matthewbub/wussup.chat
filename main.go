@@ -22,6 +22,7 @@ func main() {
 	secretKey := utils.GetSecretKeyFromEnv()
 	store := cookie.NewStore([]byte(secretKey))
 	r.Use(sessions.Sessions("session", store))
+	r.Use(middleware.Recovery())
 
 	// static files
 	r.Static("/styles", "./public/styles")
@@ -36,6 +37,7 @@ func main() {
 
 	auth := r.Group("/")
 	auth.Use(middleware.AuthRequired())
+	auth.Use(middleware.Recovery())
 	// auth.Use(middleware.SecurityQuestionsRequired())
 
 	registerPrivateViews(auth)

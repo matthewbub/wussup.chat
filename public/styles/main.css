@@ -2,7 +2,8 @@
 .receipt-collection-container,
 .receipt-modify-container,
 .receipt-confirmation-container,
-.manual-receipt-upload-container {
+.manual-receipt-upload-container,
+.general-error {
   max-width: 700px;
   margin-top: 0;
   margin-right: auto;
@@ -23,7 +24,8 @@
 .receipt-collection-container,
 .receipt-modify-container,
 .receipt-confirmation-container,
-.manual-receipt-upload-container {
+.manual-receipt-upload-container,
+.general-error {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
@@ -45,7 +47,8 @@
   .receipt-modify-container,
   .receipt-confirmation-container,
   .manual-receipt-upload-container,
-  .zc-or-manual-upload-container {
+  .zc-or-manual-upload-container,
+  .general-error {
     max-width: 600px;
   }
 }
@@ -57,7 +60,8 @@
   .receipt-modify-container,
   .receipt-confirmation-container,
   .manual-receipt-upload-container,
-  .zc-or-manual-upload-container {
+  .zc-or-manual-upload-container,
+  .general-error {
     max-width: 500px;
   }
 }
@@ -69,7 +73,8 @@
   .receipt-modify-container,
   .receipt-confirmation-container,
   .manual-receipt-upload-container,
-  .zc-or-manual-upload-container {
+  .zc-or-manual-upload-container,
+  .general-error {
     max-width: 100%;
   }
 }
@@ -83,15 +88,18 @@
 
 .receipt-modify-container,
 .receipt-confirmation-container,
-.receipt-collection-container {
+.receipt-collection-container,
+.general-error {
   margin-top: 20px;
 }
 
-.receipt-confirmation-header h2 {
+.receipt-confirmation-header h2,
+.general-error h2 {
   margin-bottom: 0;
 }
 
-.receipt-confirmation-header p {
+.receipt-confirmation-header p,
+.general-error p {
   margin-top: 0;
 }
 
