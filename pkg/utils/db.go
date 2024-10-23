@@ -13,7 +13,11 @@ import (
 
 func init() {
 	// Load .env file if it exists
-	godotenv.Load()
+	err := godotenv.Load()
+	if err != nil {
+		log.Printf("Failed to init the env")
+		return
+	}
 }
 
 func Db() *sql.DB {

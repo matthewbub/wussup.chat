@@ -2,6 +2,7 @@ package api
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -31,12 +32,15 @@ func LoginHandler(c *gin.Context) {
 
 	// Check user credentials
 	user, err := getUserFromDatabase(username)
-	fmt.Printf("user found; but unverified: %s\n", user.ID)
 	if err != nil {
 		// destroy session
 		session := utils.GetSession(c)
 		session.Clear()
-		session.Save()
+		err := session.Save()
+		if err != nil {
+			log.Println("unable to save session")
+			return
+		}
 
 		templ.Handler(views.LogIn(views.LogInData{
 			Title:   "Login",
@@ -50,7 +54,13 @@ func LoginHandler(c *gin.Context) {
 		// destroy session
 		session := utils.GetSession(c)
 		session.Clear()
-		session.Save()
+		err := session.Save()
+		if err != nil {
+			log.Println("unable to save session")
+			return
+		}
+
+		log.Println("Invalid Username")
 		templ.Handler(views.LogIn(views.LogInData{
 			Title:   "Login",
 			Message: "Invalid username or password",
@@ -58,8 +68,11 @@ func LoginHandler(c *gin.Context) {
 		return
 	}
 
+	log.Println("user found; but unverified")
+
 	// Compare passwords
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
+		log.Println("Invalid Password")
 		templ.Handler(views.LogIn(views.LogInData{
 			Title:   "Login",
 			Message: "Invalid username or password",
@@ -100,13 +113,18 @@ func LoginHandler(c *gin.Context) {
 
 func getUserFromDatabase(username string) (*User, error) {
 	db := utils.Db()
-	defer db.Close()
+	defer func(db *sql.DB) {
+		err := db.Close()
+		if err != nil {
+			log.Println("Something went wrong closing database")
+		}
+	}(db)
 
 	user := &User{}
 	err := db.QueryRow("SELECT id, username, password, email FROM users WHERE username = ?", username).
 		Scan(&user.ID, &user.Username, &user.Password, &user.Email)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			return nil, fmt.Errorf("user not found")
 		}
 		return nil, err

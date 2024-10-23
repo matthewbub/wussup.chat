@@ -15,21 +15,18 @@ import (
 func main() {
 	r := gin.Default()
 
-	// Set trusted proxies
-	r.SetTrustedProxies(nil)
-
-	// session management
-	secretKey := utils.GetSecretKeyFromEnv()
-	store := cookie.NewStore([]byte(secretKey))
-	r.Use(sessions.Sessions("session", store))
-	r.Use(middleware.Recovery("Something went wrong"))
-
 	// static files
 	r.Static("/styles", "./public/styles")
 	r.Static("/js", "./public/js")
 
 	// React build assets
 	r.Static("/_assets", "./website/dist/_assets")
+
+	// session management
+	secretKey := utils.GetSecretKeyFromEnv()
+	store := cookie.NewStore([]byte(secretKey))
+	r.Use(sessions.Sessions("session", store))
+	r.Use(middleware.Recovery("Something went wrong"))
 
 	// alllll routes
 	registerPublicViews(r)
@@ -42,6 +39,10 @@ func main() {
 
 	registerPrivateViews(auth)
 	registerPrivateApiRoutes(auth)
+	r.NoRoute(func(c *gin.Context) {
+		log.Printf("404 Not Found: %s %s", c.Request.Method, c.Request.URL.Path)
+		c.JSON(404, gin.H{"message": "Not Found"})
+	})
 
 	log.Println("Server is running on port http://localhost:8080")
 	r.Run(":8080")
