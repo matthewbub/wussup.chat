@@ -7,8 +7,14 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/joho/godotenv"
 	_ "github.com/mattn/go-sqlite3"
 )
+
+func init() {
+	// Load .env file if it exists
+	godotenv.Load()
+}
 
 func Db() *sql.DB {
 	// Get the current working directory
@@ -17,9 +23,14 @@ func Db() *sql.DB {
 		log.Fatal("Error getting current working directory:", err)
 	}
 
-	// Construct the database path
-	// TODO: Make this configurable
-	dbPath := filepath.Join(cwd, "pkg", "database", "dev.db")
+	var dbPath string
+	if os.Getenv("ENV") == "development" {
+		dbPath = filepath.Join(cwd, "pkg", "database", "dev.db")
+		fmt.Println("Using development database:", dbPath)
+	} else {
+		dbPath = filepath.Join(cwd, "pkg", "database", "prod.db")
+		fmt.Println("Using production database:", dbPath)
+	}
 	db, err := sql.Open("sqlite3", dbPath)
 
 	if err != nil {

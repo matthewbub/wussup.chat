@@ -1,18 +1,25 @@
+- Deploy
+
 - Store images
+
   - this would require db changes
+    WIP - Got distracted by the rewrite (fix back button)
+    We are storing the images though
+
 - Edit Receipts
   - we have an existing template but it would be preferred to reuse the same template we use for the upload form cause the js logic for those receipt items gets muddy
 - Import Receipts
 - Archive Receipts
   - this would require db changes
 - Complex Receipt Filters
-  - e.g. between a range of dates
+  - e.g. between a range of dates (use tanstack table)
 - Controls / Permissions
   - requires through planning
 - Billing?
 - E2E encryption
 - Add categories to receipts
 - Add notes to receipts and receipt items
+- AI to learn how to better budget (Continue to define this)
 
 - Localization
 

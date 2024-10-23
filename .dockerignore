@@ -1,0 +1,8 @@
+# Binaries
+main
+
+# Dependency directories
+vendor/
+
+# Ignore configuration files and directories
+.env
