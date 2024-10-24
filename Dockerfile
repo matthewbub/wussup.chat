@@ -54,6 +54,9 @@ WORKDIR /root/
 # Copy the binary from the build stage
 COPY --from=go-builder /app/main .
 
+# Copy the public assets (e.g., CSS, JS) into the image
+COPY --from=go-builder /app/public ./public
+
 # Copy the website build from the build stage
 COPY --from=web-builder /app/website/dist ./website/dist
 
