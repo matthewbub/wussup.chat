@@ -188,12 +188,24 @@ func UploadHandler(c *gin.Context) {
 
 	// format the total and each item's price to two decimal places
 	if receipt.Total != "" {
-		receipt.Total = fmt.Sprintf("%.2f", float64(utils.FormatCurrency(receipt.Total))/100)
+		total, err := utils.FormatCurrency(receipt.Total)
+		if err != nil {
+			log.Printf("Invalid total price format: %v\n", err)
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid total price format"})
+			return
+		}
+		receipt.Total = fmt.Sprintf("%.2f", float64(total)/100)
 	}
 
 	if len(receipt.Items) > 0 {
 		for i := range receipt.Items {
-			receipt.Items[i].Price = fmt.Sprintf("%.2f", float64(utils.FormatCurrency(receipt.Items[i].Price))/100)
+			itemPrice, err := utils.FormatCurrency(receipt.Items[i].Price)
+			if err != nil {
+				log.Printf("Invalid item price format: %v\n", err)
+				c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid item price format"})
+				return
+			}
+			receipt.Items[i].Price = fmt.Sprintf("%.2f", float64(itemPrice)/100)
 		}
 	}
 
@@ -323,7 +335,12 @@ func UploadHandlerButInJson(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to send request"})
 		return
 	}
-	defer resp.Body.Close()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			log.Printf("Something went wrong")
+		}
+	}(resp.Body)
 
 	// Read the response
 	respBody, err := io.ReadAll(resp.Body)
@@ -376,12 +393,24 @@ func UploadHandlerButInJson(c *gin.Context) {
 
 	// format the total and each item's price to two decimal places
 	if receipt.Total != "" {
-		receipt.Total = fmt.Sprintf("%.2f", float64(utils.FormatCurrency(receipt.Total))/100)
+		totalPrice, err := utils.FormatCurrency(receipt.Total)
+		if err != nil {
+			log.Printf("Invalid total price format: %v\n", err)
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid total price format"})
+			return
+		}
+		receipt.Total = fmt.Sprintf("%.2f", float64(totalPrice)/100)
 	}
 
 	if len(receipt.Items) > 0 {
 		for i := range receipt.Items {
-			receipt.Items[i].Price = fmt.Sprintf("%.2f", float64(utils.FormatCurrency(receipt.Items[i].Price))/100)
+			itemPrice, err := utils.FormatCurrency(receipt.Items[i].Price)
+			if err != nil {
+				log.Printf("Invalid item price format: %v\n", err)
+				c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid item price format"})
+				return
+			}
+			receipt.Items[i].Price = fmt.Sprintf("%.2f", float64(itemPrice)/100)
 		}
 	}
 
@@ -436,16 +465,18 @@ func UploadConfirmHandler(c *gin.Context) {
 	// 	data["date"] = date
 	// }
 
-	if data["total"] == "" {
-		data["total"] = "0.00"
+	total, err := utils.FormatCurrency(data["total"])
+	if err != nil {
+		log.Printf("Invalid total price format: %v\n", err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid total price format"})
+		return
 	}
-
 	// Extract form data into a structured format
 	receipt := models.RawReceipt{
 		Image:    data["image"],
 		Merchant: data["merchant"],
 		Date:     data["date"],
-		Total:    data["total"],
+		Total:    total,
 	}
 
 	// Create a map to store the item names by index
@@ -464,15 +495,21 @@ func UploadConfirmHandler(c *gin.Context) {
 		if strings.HasPrefix(key, "price___") {
 			index := strings.TrimPrefix(key, "price___")
 			itemPrice := c.PostForm(key)
+			itemPriceInt, err := utils.FormatCurrency(itemPrice)
+			if err != nil {
+				log.Printf("Invalid item price format: %v\n", err)
+				c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid item price format"})
+				return
+			}
 			receipt.Items = append(receipt.Items, models.RawPurchasedItem{
 				Name:  itemNames[index],
-				Price: fmt.Sprintf("%.2f", float64(utils.FormatCurrency(itemPrice))/100),
+				Price: itemPriceInt,
 			})
 		}
 	}
 
 	component := partials.ReceiptConfirmation(models.RawReceipt(receipt))
-	err := component.Render(context.Background(), c.Writer)
+	err = component.Render(context.Background(), c.Writer)
 	if err != nil {
 		log.Printf("Something went wrong rendering the template")
 		return
@@ -480,41 +517,63 @@ func UploadConfirmHandler(c *gin.Context) {
 }
 
 func SaveReceiptHandler(c *gin.Context) {
-	// TODO sanitize the receipt data
-	// TODO assume all prices are one of the following formats: $1.00, 1.00, 1, "invalid" and parse accordingly
-	var receipt models.RawReceipt
+	var input struct {
+		Receipt struct {
+			Merchant string `json:"merchant"`
+			Date     string `json:"date"`
+			Total    string `json:"total"`
+			Items    []struct {
+				Name  string `json:"name"`
+				Price string `json:"price"`
+			} `json:"items"`
+		} `json:"receipt"`
+		Image string `json:"image"`
+	}
 
 	// Parse the JSON payload
-	if err := c.ShouldBindJSON(&receipt); err != nil {
+	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid JSON payload"})
 		return
 	}
 
-	log.Printf("Receipt recieved: %+v\n", receipt)
-
 	// When a user adds a receipt we need to create a merchant if it doesn't exist,
 	// we need to create a new receipt,
 	// and then use the ID from both of those to add the receipt items
-	merchantId, err := models.InsertMerchant(receipt.Merchant)
+	merchantId, err := models.InsertMerchant(input.Receipt.Merchant)
 	if err != nil || merchantId == 0 {
 		log.Printf("Error inserting merchant: %v\n", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to insert merchant"})
 		return
 	}
 
-	receiptId, err := models.InsertReceipt(c, receipt, merchantId)
+	total, err := utils.FormatCurrency(input.Receipt.Total)
+	if err != nil {
+		log.Printf("Invalid total price format: %v\n", err)
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid total price format"})
+		return
+	}
+
+	receiptId, err := models.InsertReceipt(c, fmt.Sprintf("%d", total), input.Receipt.Date, merchantId)
 	if err != nil || receiptId == 0 {
 		log.Printf("Error inserting receipt: %v\n", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to insert receipt"})
 		return
 	}
 
-	for _, item := range receipt.Items {
-		rawPurchasedItem := models.RawPurchasedItem{
-			Name:  item.Name,
-			Price: fmt.Sprintf("%.2f", float64(utils.FormatCurrency(item.Price))/100),
+	for _, item := range input.Receipt.Items {
+		itemPrice, err := utils.FormatCurrency(item.Price)
+		if err != nil {
+			log.Printf("Invalid item price format: %v\n", err)
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid item price format"})
+			return
 		}
-		_, err := models.InsertPurchasedItem(c, rawPurchasedItem, merchantId, receiptId)
+		rawPurchasedItem := models.RawPurchasedItem{
+			Name:         item.Name,
+			Price:        itemPrice,
+			CurrencyType: "USD",
+		}
+
+		_, err = models.InsertPurchasedItem(c, rawPurchasedItem, merchantId, receiptId)
 		if err != nil {
 			log.Printf("Error inserting purchased item: %v\n", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to insert purchased item"})
@@ -522,7 +581,7 @@ func SaveReceiptHandler(c *gin.Context) {
 		}
 	}
 
-	err = models.InsertReceiptImageIntoDatabase(c, receipt, receiptId)
+	err = models.InsertReceiptImageIntoDatabase(c, input.Image, receiptId)
 	if err != nil {
 		log.Printf("Error inserting image into database: %v\n", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to insert image into database"})

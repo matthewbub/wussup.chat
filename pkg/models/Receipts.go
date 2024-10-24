@@ -13,46 +13,50 @@ import (
 )
 
 type Receipt struct {
-	ID        string         `db:"id"`
-	Merchant  string         `db:"merchant"`
-	Date      string         `db:"date"`
-	Total     string         `db:"total"`
-	CreatedAt string         `db:"created_at"`
-	UpdatedAt string         `db:"updated_at"`
-	Notes     sql.NullString `db:"notes"`
-	Items     []Item         `db:"items"`
+	ID           string         `db:"id"`
+	Merchant     string         `db:"merchant"`
+	Date         string         `db:"date"`
+	Total        int64          `db:"total"`
+	CurrencyType string         `db:"currency_type"`
+	CreatedAt    string         `db:"created_at"`
+	UpdatedAt    string         `db:"updated_at"`
+	Notes        sql.NullString `db:"notes"`
+	Items        []Item         `db:"items"`
 }
 
 type Item struct {
-	ID         int            `db:"id"`
-	UserID     string         `db:"user_id"`
-	MerchantID int            `db:"merchant_id"`
-	ReceiptID  int            `db:"receipt_id"`
-	Name       string         `db:"name"`
-	Price      string         `db:"price"`
-	CreatedAt  string         `db:"created_at"`
-	UpdatedAt  string         `db:"updated_at"`
-	Notes      sql.NullString `db:"notes"`
+	ID           int            `db:"id"`
+	UserID       string         `db:"user_id"`
+	MerchantID   int            `db:"merchant_id"`
+	ReceiptID    int            `db:"receipt_id"`
+	Name         string         `db:"name"`
+	Price        int64          `db:"price"`
+	CurrencyType string         `db:"currency_type"`
+	CreatedAt    string         `db:"created_at"`
+	UpdatedAt    string         `db:"updated_at"`
+	Notes        sql.NullString `db:"notes"`
 }
 
 type RawReceipt struct {
-	Image    string             `json:"image"`
-	Merchant string             `json:"merchant"`
-	Date     string             `json:"date"`
-	Total    string             `json:"total"`
-	Items    []RawPurchasedItem `json:"items"`
+	Image        string             `json:"image"`
+	Merchant     string             `json:"merchant"`
+	Date         string             `json:"date"`
+	Total        int64              `json:"total"`
+	CurrencyType string             `json:"currency_type"`
+	Items        []RawPurchasedItem `json:"items"`
 }
 
 type RawPurchasedItem struct {
-	Name  string `json:"name"`
-	Price string `json:"price"`
+	Name         string `json:"name"`
+	Price        int64  `json:"price"`
+	CurrencyType string `json:"currency_type"`
 }
 
 func GetReceiptById(id string) (*Receipt, error) {
 	db := utils.Db()
 
 	query := `
-		SELECT r.id, r.total, r.date, r.created_at, r.updated_at, r.notes, m.name,
+		SELECT r.id, r.total, r.currency_type, r.date, r.created_at, r.updated_at, r.notes, m.name,
 			   pi.id, pi.user_id, pi.merchant_id, pi.receipt_id, pi.name, pi.price, pi.created_at, pi.updated_at, pi.notes
 		FROM receipts r
 		JOIN merchants m ON r.merchant_id = m.id
@@ -222,19 +226,19 @@ func InsertMerchant(merchant string) (int, error) {
 	return int(id64), nil
 }
 
-func InsertReceipt(c *gin.Context, receipt RawReceipt, merchantId int) (int, error) {
+func InsertReceipt(c *gin.Context, total string, date string, merchantId int) (int, error) {
 	db := utils.Db()
 
 	session := utils.GetSession(c)
 	userID := session.Get("user_id")
 
-	stmt, err := db.Prepare("INSERT INTO receipts (user_id, merchant_id, total, date, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)")
+	stmt, err := db.Prepare("INSERT INTO receipts (user_id, merchant_id, total, currency_type, date, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)")
 	if err != nil {
 		return 0, err
 	}
 	defer stmt.Close()
 
-	res, err := stmt.Exec(userID, merchantId, receipt.Total, receipt.Date, time.Now(), time.Now())
+	res, err := stmt.Exec(userID, merchantId, total, "USD", date, time.Now(), time.Now())
 	if err != nil {
 		return 0, err
 	}
@@ -253,13 +257,13 @@ func InsertPurchasedItem(c *gin.Context, purchasedItem RawPurchasedItem, merchan
 	session := utils.GetSession(c)
 	userID := session.Get("user_id")
 
-	stmt, err := db.Prepare("INSERT INTO purchased_items (user_id, merchant_id, receipt_id, name, price, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)")
+	stmt, err := db.Prepare("INSERT INTO purchased_items (user_id, merchant_id, receipt_id, name, price, currency_type, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
 	if err != nil {
 		return 0, err
 	}
 	defer stmt.Close()
 
-	res, err := stmt.Exec(userID, merchantId, receiptId, purchasedItem.Name, purchasedItem.Price, time.Now(), time.Now())
+	res, err := stmt.Exec(userID, merchantId, receiptId, purchasedItem.Name, purchasedItem.Price, "USD", time.Now(), time.Now())
 	if err != nil {
 		return 0, err
 	}

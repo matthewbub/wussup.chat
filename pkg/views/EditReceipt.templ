@@ -52,7 +52,7 @@ templ EditReceipt(data EditReceiptData) {
                 <input type="date" value={ data.Receipt.Date } />
               </td>
               <td>
-                <input type="number" value={ data.Receipt.Total } />
+                <input type="number" value={ fmt.Sprintf("%.2f", float64(data.Receipt.Total)/100) } />
               </td>
             </tr>
           </tbody>
@@ -88,7 +88,7 @@ templ EditReceipt(data EditReceiptData) {
                     <input 
                       name={ fmt.Sprintf("item-%d-price", item.ID) } 
                       type="number" 
-                      value={ item.Price }
+                      value={ fmt.Sprintf("%.2f", float64(item.Price)/100) }
                       class="item-price-input"
                     />
                   </td>

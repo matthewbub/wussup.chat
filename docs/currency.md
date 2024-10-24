@@ -1,0 +1,36 @@
+- **United States Dollar** (USD) - $
+- **Euro** (EUR) - €
+- **British Pound Sterling** (GBP) - £
+- **Japanese Yen** (JPY) - ¥
+- **Australian Dollar** (AUD) - A$
+- **Canadian Dollar** (CAD) - C$
+- **Swiss Franc** (CHF) - CHF
+- **Chinese Yuan Renminbi** (CNY) - ¥
+- **Swedish Krona** (SEK) - kr
+- **New Zealand Dollar** (NZD) - NZ$
+- **Mexican Peso** (MXN) - $
+- **Singapore Dollar** (SGD) - S$
+- **Hong Kong Dollar** (HKD) - HK$
+- **Norwegian Krone** (NOK) - kr
+- **South Korean Won** (KRW) - ₩
+- **Turkish Lira** (TRY) - ₺
+- **Indian Rupee** (INR) - ₹
+- **Brazilian Real** (BRL) - R$
+- **South African Rand** (ZAR) - R
+- **Russian Ruble** (RUB) - ₽
+- **Saudi Riyal** (SAR) - ر.س
+- **United Arab Emirates Dirham** (AED) - د.إ
+- **Israeli New Shekel** (ILS) - ₪
+- **Philippine Peso** (PHP) - ₱
+- **Malaysian Ringgit** (MYR) - RM
+- **Thai Baht** (THB) - ฿
+- **Polish Zloty** (PLN) - zł
+- **Danish Krone** (DKK) - kr
+- **Hungarian Forint** (HUF) - Ft
+- **Czech Koruna** (CZK) - Kč
+- **Indonesian Rupiah** (IDR) - Rp
+- **Chilean Peso** (CLP) - $
+- **Colombian Peso** (COP) - $
+- **Argentine Peso** (ARS) - $
+- **Vietnamese Dong** (VND) - ₫
+- **Egyptian Pound** (EGP) - ج.م

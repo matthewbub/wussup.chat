@@ -86,7 +86,7 @@ templ Finances(data FinancesData) {
                       <span>N/A</span>
                     }
                   </td>
-                  <td>{ item.Total }</td>
+                  <td>{ fmt.Sprintf("%.2f", float64(item.Total)/100) }</td>
                 </tr>
               }
             </tbody>

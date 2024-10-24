@@ -1,6 +1,9 @@
 package partials
 
-import "bus.zcauldron.com/pkg/models"
+import (
+	"fmt"
+	"bus.zcauldron.com/pkg/models"
+)
 
 templ ReceiptConfirmation(receipt models.RawReceipt) {	
   <div id="receipt-confirmation" class="receipt-confirmation-container">
@@ -35,7 +38,7 @@ templ ReceiptConfirmation(receipt models.RawReceipt) {
         <tr>
           <td id="merchant">{ receipt.Merchant }</td>
           <td id="date">{ receipt.Date }</td>
-          <td id="total">{ receipt.Total }</td>
+          <td id="total">{ fmt.Sprintf("%.2f", float64(receipt.Total)/100) }</td>
         </tr>
       </tbody>
     </table>
@@ -52,7 +55,7 @@ templ ReceiptConfirmation(receipt models.RawReceipt) {
         for _, item := range receipt.Items {
           <tr class="item">
             <td id="name">{ item.Name }</td>
-            <td id="price">{ item.Price }</td>
+            <td id="price">{ fmt.Sprintf("%.2f", float64(item.Price)/100) }</td>
           </tr>
         }
       </tbody>

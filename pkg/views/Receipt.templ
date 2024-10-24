@@ -90,7 +90,7 @@ templ ReceiptView(data ReceiptViewData) {
             <tr class="receipt">
               <td>{ data.Receipt.Merchant }</td>
               <td>{ data.Receipt.Date }</td>
-              <td>{ data.Receipt.Total }</td>
+              <td>{ fmt.Sprintf("%.2f", float64(data.Receipt.Total)/100) }</td>
             </tr>
           </tbody>
         </table>
@@ -108,7 +108,7 @@ templ ReceiptView(data ReceiptViewData) {
               for _, item := range data.Receipt.Items {
                 <tr>
                   <td>{ item.Name }</td>
-                  <td>{ item.Price }</td>
+                  <td>{ fmt.Sprintf("%.2f", float64(item.Price)/100) }</td>
                 </tr>
               }
             </tbody>

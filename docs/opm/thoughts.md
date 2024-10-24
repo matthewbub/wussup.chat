@@ -16,3 +16,6 @@ Working with a headless browser (puppeter) is such a fucking easy way to test ui
 
 10/17/2024
 Gave up on this project and went off to do other things but now im back. Having a surprising amount of fun working in the app after being away for a bit and am actually banging out some real features so that's nice
+
+10/23/2024
+Dockerized app and slapped it into a DO droplet. Rewrote the upload form in React (twice). Currency formatting is a growing pain point now, it feels like the currency is being formatted and stored in ways that conflict with one another. Conventions will need to be established

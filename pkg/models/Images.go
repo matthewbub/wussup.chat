@@ -10,11 +10,11 @@ import (
 	"github.com/google/uuid"
 )
 
-func InsertReceiptImageIntoDatabase(c *gin.Context, rawReceipt RawReceipt, receiptID int) error {
+func InsertReceiptImageIntoDatabase(c *gin.Context, image string, receiptID int) error {
 	db := utils.Db()
 	defer db.Close()
 
-	if rawReceipt.Image == "" {
+	if image == "" {
 		return nil
 	}
 
@@ -29,7 +29,7 @@ func InsertReceiptImageIntoDatabase(c *gin.Context, rawReceipt RawReceipt, recei
 		return fmt.Errorf("failed to prepare statement: %w", err)
 	}
 
-	_, err = stmt.Exec(uuid.New().String(), user.ID, receiptID, rawReceipt.Image, time.Now(), time.Now())
+	_, err = stmt.Exec(uuid.New().String(), user.ID, receiptID, image, time.Now(), time.Now())
 	if err != nil {
 		log.Println(err)
 		return fmt.Errorf("failed to execute statement: %w", err)

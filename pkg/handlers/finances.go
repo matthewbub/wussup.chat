@@ -39,9 +39,38 @@ func FinancesView(c *gin.Context) {
 		return
 	}
 
+	// var clientSafeReceipts []models.Receipt
+	// for _, receipt := range receipts {
+	// 	// total, err := utils.FormatCurrency(receipt.Total)
+	// 	// if err != nil {
+	// 	// 	log.Printf("Invalid total price format: %v\n", err)
+	// 	// 	c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid total price format"})
+	// 	// 	return
+	// 	// }
+	// 	if receipt.Total != 0 {
+
+	// 	receipt.Total = utils.FormatCentsToUSD(receipt.Total)
+
+	// 	for _, item := range receipt.Items {
+	// 		itemPrice, err := utils.FormatCurrency(item.Price)
+	// 		if err != nil {
+	// 			log.Printf("Invalid item price format: %v\n", err)
+	// 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid item price format"})
+	// 			return
+	// 		}
+	// 		item.Price = utils.FormatCentsToUSD(itemPrice)
+	// 	}
+
+	// 	clientSafeReceipts = append(clientSafeReceipts, receipt)
+
+	// }
+
+	// log.Print(clientSafeReceipts[0])
 	currentPage, _ := strconv.Atoi(page)
 	recordsPerPage, _ := strconv.Atoi(records)
 	totalPages := (totalRecords + recordsPerPage - 1) / recordsPerPage
+
+	//log.Printf("FinancesView: %v", receipts)
 
 	templ.Handler(views.Finances(views.FinancesData{
 		Title:      "Finances",
