@@ -18,8 +18,8 @@ type Receipt struct {
 	Date         string         `db:"date"`
 	Total        int64          `db:"total"`
 	CurrencyType string         `db:"currency_type"`
-	CreatedAt    string         `db:"created_at"`
-	UpdatedAt    string         `db:"updated_at"`
+	CreatedAt    time.Time      `db:"created_at"`
+	UpdatedAt    time.Time      `db:"updated_at"`
 	Notes        sql.NullString `db:"notes"`
 	Items        []Item         `db:"items"`
 }
@@ -32,8 +32,8 @@ type Item struct {
 	Name         string         `db:"name"`
 	Price        int64          `db:"price"`
 	CurrencyType string         `db:"currency_type"`
-	CreatedAt    string         `db:"created_at"`
-	UpdatedAt    string         `db:"updated_at"`
+	CreatedAt    time.Time      `db:"created_at"`
+	UpdatedAt    time.Time      `db:"updated_at"`
 	Notes        sql.NullString `db:"notes"`
 }
 

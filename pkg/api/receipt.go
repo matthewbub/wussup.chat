@@ -104,11 +104,11 @@ func ExportReceipts(c *gin.Context) {
 		csvData += fmt.Sprintf("%s,%s,%s,%s,%s,%s,%s\n",
 			row.Date,
 			row.Merchant,
-			row.Total,
+			utils.FormatCentsToUSD(row.Total),
 			row.Notes.String,
 			row.ID,
-			row.CreatedAt,
-			row.UpdatedAt,
+			row.CreatedAt.Format("01/02/2006"),
+			row.UpdatedAt.Format("01/02/2006"),
 		)
 	}
 
