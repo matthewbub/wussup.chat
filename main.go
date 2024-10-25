@@ -44,7 +44,7 @@ func main() {
 		c.JSON(404, gin.H{"message": "Not Found"})
 	})
 
-	log.Println("Server is running on port http://localhost:8080")
+	log.Println("Server is running on port 8080")
 	r.Run(":8080")
 }
 

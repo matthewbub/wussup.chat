@@ -16,17 +16,12 @@ import (
 )
 
 func LoginHandler(c *gin.Context) {
-	// Extract form data
-	username := c.PostForm("username")
-	password := c.PostForm("password")
-	rememberMe := c.PostForm("remember") == "on"
+	username := utils.SanitizeInput(c.PostForm("username"))
+	password := utils.SanitizeInput(c.PostForm("password"))
+	rememberMe := utils.SanitizeInput(c.PostForm("remember")) == "on"
 
-	// Validate input
 	if username == "" || password == "" {
-		templ.Handler(views.LogIn(views.LogInData{
-			Title:   "Login",
-			Message: "Username and password are required",
-		}))
+		handleLoginError(c, "Invalid username or password")
 		return
 	}
 
@@ -36,16 +31,12 @@ func LoginHandler(c *gin.Context) {
 		// destroy session
 		session := utils.GetSession(c)
 		session.Clear()
-		err := session.Save()
+		err = session.Save()
 		if err != nil {
-			log.Println("unable to save session")
+			handleLoginError(c, "Internal server error")
 			return
 		}
-
-		templ.Handler(views.LogIn(views.LogInData{
-			Title:   "Login",
-			Message: "Invalid username or password",
-		})).ServeHTTP(c.Writer, c.Request)
+		handleLoginError(c, "Invalid username or password")
 		return
 	}
 
@@ -56,15 +47,10 @@ func LoginHandler(c *gin.Context) {
 		session.Clear()
 		err := session.Save()
 		if err != nil {
-			log.Println("unable to save session")
+			handleLoginError(c, "Internal server error")
 			return
 		}
-
-		log.Println("Invalid Username")
-		templ.Handler(views.LogIn(views.LogInData{
-			Title:   "Login",
-			Message: "Invalid username or password",
-		})).ServeHTTP(c.Writer, c.Request)
+		handleLoginError(c, "Invalid username or password")
 		return
 	}
 
@@ -72,17 +58,24 @@ func LoginHandler(c *gin.Context) {
 
 	// Compare passwords
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
-		log.Println("Invalid Password")
-		templ.Handler(views.LogIn(views.LogInData{
-			Title:   "Login",
-			Message: "Invalid username or password",
-		})).ServeHTTP(c.Writer, c.Request)
+		handleLoginError(c, "Invalid username or password")
 		return
 	}
 	log.Println("User validated")
 
-	// Set session only if there is data
 	session := utils.GetSession(c)
+	setSessionData(session, user, rememberMe)
+
+	if err := session.Save(); err != nil {
+		handleLoginError(c, "Internal server error")
+		return
+	}
+
+	// Redirect to dashboard or home page
+	c.Redirect(http.StatusSeeOther, "/dashboard")
+}
+
+func setSessionData(session sessions.Session, user *User, rememberMe bool) {
 	if user.ID != "" {
 		session.Set("user_id", user.ID)
 	}
@@ -99,16 +92,11 @@ func LoginHandler(c *gin.Context) {
 		})
 	}
 
-	if err := session.Save(); err != nil {
-		templ.Handler(views.LogIn(views.LogInData{
-			Title:   "Login",
-			Message: "Error creating session",
-		})).ServeHTTP(c.Writer, c.Request)
-		return
-	}
-
-	// Redirect to dashboard or home page
-	c.Redirect(http.StatusSeeOther, "/dashboard")
+	session.Options(sessions.Options{
+		HttpOnly: true,                    // Prevents JavaScript from accessing cookies
+		Secure:   true,                    // Ensures cookies are only sent over HTTPS
+		SameSite: http.SameSiteStrictMode, // Prevents CSRF attacks
+	})
 }
 
 func getUserFromDatabase(username string) (*User, error) {
@@ -130,6 +118,18 @@ func getUserFromDatabase(username string) (*User, error) {
 		return nil, err
 	}
 	return user, nil
+}
+
+func handleLoginError(c *gin.Context, message string) {
+	session := utils.GetSession(c)
+	session.Clear()
+	if err := session.Save(); err != nil {
+		log.Println("unable to save session")
+	}
+	templ.Handler(views.LogIn(views.LogInData{
+		Title:   "Login",
+		Message: message,
+	})).ServeHTTP(c.Writer, c.Request)
 }
 
 type User struct {
