@@ -66,24 +66,24 @@ func registerPublicApiRoutes(r *gin.Engine) {
 }
 
 func registerPrivateViews(auth *gin.RouterGroup) {
-	auth.GET("/dashboard", handlers.DashboardView)
-	auth.GET("/dashboard/finances", handlers.FinancesView)
-	auth.GET("/dashboard/finances/receipts", handlers.ReceiptsView)
-	auth.GET("/dashboard/finances/v2/receipts", handlers.ReceiptsV2View)
-	auth.GET("/dashboard/finances/receipts/:id", handlers.ReceiptView)
-	auth.GET("/dashboard/finances/receipts/:id/edit", handlers.EditReceiptView)
+	auth.GET("/dashboard", middleware.AuthRequired(), handlers.DashboardView)
+	auth.GET("/dashboard/finances", middleware.AuthRequired(), handlers.FinancesView)
+	auth.GET("/dashboard/finances/receipts", middleware.AuthRequired(), handlers.ReceiptsView)
+	auth.GET("/dashboard/finances/v2/receipts", middleware.AuthRequired(), handlers.ReceiptsV2View)
+	auth.GET("/dashboard/finances/receipts/:id", middleware.AuthRequired(), handlers.ReceiptView)
+	auth.GET("/dashboard/finances/receipts/:id/edit", middleware.AuthRequired(), handlers.EditReceiptView)
 }
 
 func registerPrivateApiRoutes(auth *gin.RouterGroup) {
-	auth.GET("/logout", api.LogoutHandler)
-	auth.DELETE("/api/v1/finances/receipts/delete", api.DeleteReceipts)
-	auth.POST("/api/v1/finances/receipts/export", api.ExportReceipts)
-	auth.POST("/api/v1/finances/receipts/upload-image", api.UploadHandlerButInJson)
-	auth.POST("/api/v1/finances/receipts/upload", api.SaveReceiptHandler)
+	auth.GET("/logout", middleware.AuthRequired(), api.LogoutHandler)
+	auth.DELETE("/api/v1/finances/receipts/delete", middleware.AuthRequired(), api.DeleteReceipts)
+	auth.POST("/api/v1/finances/receipts/export", middleware.AuthRequired(), api.ExportReceipts)
+	auth.POST("/api/v1/finances/receipts/upload-image", middleware.AuthRequired(), api.UploadHandlerButInJson)
+	auth.POST("/api/v1/finances/receipts/upload", middleware.AuthRequired(), api.SaveReceiptHandler)
 
 	// @deprecated
-	auth.POST("/upload", api.UploadHandler)
-	auth.GET("/manual-upload", api.ManualUploadHandler)
-	auth.POST("/upload/confirm", api.UploadConfirmHandler)
-	auth.POST("/upload/confirm/save", api.SaveReceiptHandler)
+	auth.POST("/upload", middleware.AuthRequired(), api.UploadHandler)
+	auth.GET("/manual-upload", middleware.AuthRequired(), api.ManualUploadHandler)
+	auth.POST("/upload/confirm", middleware.AuthRequired(), api.UploadConfirmHandler)
+	auth.POST("/upload/confirm/save", middleware.AuthRequired(), api.SaveReceiptHandler)
 }
