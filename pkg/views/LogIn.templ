@@ -20,7 +20,7 @@ templ LogIn(data LogInData) {
 			<main>
 				<div class="card">
 					<h2>Login</h2>
-					<form action="/login" method="post">
+					<form id="login-form">
 						<input 
 							type="text" 
 							name="username" 
@@ -42,10 +42,59 @@ templ LogIn(data LogInData) {
 						</div>
 						<button type="submit" class="primary-button">Login</button>
 
-						if data.Message != "" {
-							<div class="error">{ data.Message }</div>
-						}
+						
+						<div class="error" id="error-message">{ data.Message }</div>
+
 					</form>
+					<script>
+					 document.addEventListener("DOMContentLoaded", function() {
+                         const loginForm = document.getElementById("login-form");
+                         const errorMessage = document.getElementById("error-message");
+
+                         loginForm.addEventListener("submit", async function(event) {
+                             event.preventDefault(); // Prevent the default form submission
+
+                             // Get form data
+                             const formData = new FormData(loginForm);
+                             const username = formData.get("username");
+                             const password = formData.get("password");
+                             const remember = formData.get("remember") === "on";
+
+                             try {
+                                 // Send login data using fetch
+                                 const response = await fetch("/api/v1/public/login", {
+                                     method: "POST",
+                                     headers: {
+                                         "Content-Type": "application/json"
+                                     },
+																			//  TODO encrypt fields
+                                     body: JSON.stringify({ username, password, remember })
+                                 });
+
+                                 // Parse the JSON response
+                                 const data = await response.json();
+
+                                 if (response.ok) {
+                                     if (errorMessage) {
+                                         errorMessage.style.display = "none";
+                                     }
+                                     localStorage.setItem("token", data.token); // Store token for authenticated requests
+                                     window.location.href = "/dashboard"; // Redirect to the dashboard
+                                 } else if (errorMessage) {
+                                     // Login failed
+                                     errorMessage.style.display = "block";
+                                     errorMessage.innerText = data.message || "Login failed. Please try again.";
+                                 }
+                             } catch (error) {
+                                 console.error("Error during login:", error);
+																 if (errorMessage) {
+																	errorMessage.style.display = "block";
+																	errorMessage.innerText = "An error occurred. Please try again.";
+																}
+                             }
+                         });
+                     });
+					</script>
 				</div>
 			</main>
 			@partials.GlobalFooter()

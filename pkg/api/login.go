@@ -1,81 +1,67 @@
 package api
 
 import (
-	"database/sql"
-	"errors"
-	"fmt"
-	"log"
+	"encoding/json"
 	"net/http"
 
+	"golang.org/x/crypto/bcrypt"
+
+	"bus.zcauldron.com/pkg/models"
 	"bus.zcauldron.com/pkg/utils"
-	"bus.zcauldron.com/pkg/views"
-	"github.com/a-h/templ"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
-	"golang.org/x/crypto/bcrypt"
 )
 
 func LoginHandler(c *gin.Context) {
-	username := utils.SanitizeInput(c.PostForm("username"))
-	password := utils.SanitizeInput(c.PostForm("password"))
-	rememberMe := utils.SanitizeInput(c.PostForm("remember")) == "on"
+	var body struct {
+		Username string `json:"username"`
+		Password string `json:"password"`
+		Remember bool   `json:"remember"`
+	}
+	if err := json.NewDecoder(c.Request.Body).Decode(&body); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid request body"})
+		return
+	}
+	username := utils.SanitizeInput(body.Username)
+	password := utils.SanitizeInput(body.Password)
+	rememberMe := body.Remember
 
 	if username == "" || password == "" {
-		handleLoginError(c, "Invalid username or password")
+		c.JSON(http.StatusUnauthorized, gin.H{"message": "Invalid username or password"})
 		return
 	}
 
-	// Check user credentials
-	user, err := getUserFromDatabase(username)
-	if err != nil {
-		// destroy session
-		session := utils.GetSession(c)
-		session.Clear()
-		err = session.Save()
-		if err != nil {
-			handleLoginError(c, "Internal server error")
-			return
-		}
-		handleLoginError(c, "Invalid username or password")
+	user, err := models.ValidateUserForLogin(username)
+	if err != nil || user == nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"message": "Invalid username or password"})
 		return
 	}
 
-	// Check if user is nil
-	if user == nil {
-		// destroy session
-		session := utils.GetSession(c)
-		session.Clear()
-		err := session.Save()
-		if err != nil {
-			handleLoginError(c, "Internal server error")
-			return
-		}
-		handleLoginError(c, "Invalid username or password")
-		return
-	}
-
-	log.Println("user found; but unverified")
-
-	// Compare passwords
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
-		handleLoginError(c, "Invalid username or password")
+		c.JSON(http.StatusUnauthorized, gin.H{"message": "Invalid username or password"})
 		return
 	}
-	log.Println("User validated")
 
 	session := utils.GetSession(c)
 	setSessionData(session, user, rememberMe)
-
 	if err := session.Save(); err != nil {
-		handleLoginError(c, "Internal server error")
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Internal server error"})
 		return
 	}
 
-	// Redirect to dashboard or home page
-	c.Redirect(http.StatusSeeOther, "/dashboard")
+	token, err := utils.GenerateJWT(user.ID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"message": "Internal server error"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"ok":    true,
+		"token": token,
+	})
 }
 
-func setSessionData(session sessions.Session, user *User, rememberMe bool) {
+func setSessionData(session sessions.Session, user *models.UserForValidation, rememberMe bool) {
 	if user.ID != "" {
 		session.Set("user_id", user.ID)
 	}
@@ -97,44 +83,4 @@ func setSessionData(session sessions.Session, user *User, rememberMe bool) {
 		Secure:   true,                    // Ensures cookies are only sent over HTTPS
 		SameSite: http.SameSiteStrictMode, // Prevents CSRF attacks
 	})
-}
-
-func getUserFromDatabase(username string) (*User, error) {
-	db := utils.Db()
-	defer func(db *sql.DB) {
-		err := db.Close()
-		if err != nil {
-			log.Println("Something went wrong closing database")
-		}
-	}(db)
-
-	user := &User{}
-	err := db.QueryRow("SELECT id, username, password, email FROM users WHERE username = ?", username).
-		Scan(&user.ID, &user.Username, &user.Password, &user.Email)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, fmt.Errorf("user not found")
-		}
-		return nil, err
-	}
-	return user, nil
-}
-
-func handleLoginError(c *gin.Context, message string) {
-	session := utils.GetSession(c)
-	session.Clear()
-	if err := session.Save(); err != nil {
-		log.Println("unable to save session")
-	}
-	templ.Handler(views.LogIn(views.LogInData{
-		Title:   "Login",
-		Message: message,
-	})).ServeHTTP(c.Writer, c.Request)
-}
-
-type User struct {
-	ID       string
-	Username string
-	Password string
-	Email    string
 }

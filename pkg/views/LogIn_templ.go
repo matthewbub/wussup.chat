@@ -54,30 +54,20 @@ func LogIn(data LogInData) templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<main><div class=\"card\"><h2>Login</h2><form action=\"/login\" method=\"post\"><input type=\"text\" name=\"username\" placeholder=\"Username\" required> <input type=\"password\" name=\"password\" placeholder=\"Password\" required><div class=\"form-group\"><div class=\"checkbox-group\"><input type=\"checkbox\" id=\"remember\" name=\"remember\"> <label for=\"remember\">Remember me for 30 days</label></div><a href=\"/forgot-password\">Forgot password?</a></div><button type=\"submit\" class=\"primary-button\">Login</button> ")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<main><div class=\"card\"><h2>Login</h2><form id=\"login-form\"><input type=\"text\" name=\"username\" placeholder=\"Username\" required> <input type=\"password\" name=\"password\" placeholder=\"Password\" required><div class=\"form-group\"><div class=\"checkbox-group\"><input type=\"checkbox\" id=\"remember\" name=\"remember\"> <label for=\"remember\">Remember me for 30 days</label></div><a href=\"/forgot-password\">Forgot password?</a></div><button type=\"submit\" class=\"primary-button\">Login</button><div class=\"error\" id=\"error-message\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		if data.Message != "" {
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"error\">")
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			var templ_7745c5c3_Var2 string
-			templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(data.Message)
-			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/LogIn.templ`, Line: 46, Col: 40}
-			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div>")
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
+		var templ_7745c5c3_Var2 string
+		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(data.Message)
+		if templ_7745c5c3_Err != nil {
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `pkg/views/LogIn.templ`, Line: 46, Col: 58}
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</form></div></main>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("</div></form><script>\n\t\t\t\t\t document.addEventListener(\"DOMContentLoaded\", function() {\n                         const loginForm = document.getElementById(\"login-form\");\n                         const errorMessage = document.getElementById(\"error-message\");\n\n                         loginForm.addEventListener(\"submit\", async function(event) {\n                             event.preventDefault(); // Prevent the default form submission\n\n                             // Get form data\n                             const formData = new FormData(loginForm);\n                             const username = formData.get(\"username\");\n                             const password = formData.get(\"password\");\n                             const remember = formData.get(\"remember\") === \"on\";\n\n                             try {\n                                 // Send login data using fetch\n                                 const response = await fetch(\"/api/v1/public/login\", {\n                                     method: \"POST\",\n                                     headers: {\n                                         \"Content-Type\": \"application/json\"\n                                     },\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t//  TODO encrypt fields\n                                     body: JSON.stringify({ username, password, remember })\n                                 });\n\n                                 // Parse the JSON response\n                                 const data = await response.json();\n\n                                 if (response.ok) {\n                                     if (errorMessage) {\n                                         errorMessage.style.display = \"none\";\n                                     }\n                                     localStorage.setItem(\"token\", data.token); // Store token for authenticated requests\n                                     window.location.href = \"/dashboard\"; // Redirect to the dashboard\n                                 } else if (errorMessage) {\n                                     // Login failed\n                                     errorMessage.style.display = \"block\";\n                                     errorMessage.innerText = data.message || \"Login failed. Please try again.\";\n                                 }\n                             } catch (error) {\n                                 console.error(\"Error during login:\", error);\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t if (errorMessage) {\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\terrorMessage.style.display = \"block\";\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\terrorMessage.innerText = \"An error occurred. Please try again.\";\n\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t}\n                             }\n                         });\n                     });\n\t\t\t\t\t</script></div></main>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

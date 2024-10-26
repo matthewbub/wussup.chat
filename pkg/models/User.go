@@ -2,6 +2,7 @@ package models
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"log"
 	"time"
@@ -81,4 +82,32 @@ func GetUserFromDatabase(username string) (*utils.UserObject, error) {
 	}
 
 	return &user, nil
+}
+
+type UserForValidation struct {
+	ID       string
+	Username string
+	Password string
+	Email    string
+}
+
+func ValidateUserForLogin(username string) (*UserForValidation, error) {
+	db := utils.Db()
+	defer func(db *sql.DB) {
+		err := db.Close()
+		if err != nil {
+			log.Println("Something went wrong closing database")
+		}
+	}(db)
+
+	user := &UserForValidation{}
+	err := db.QueryRow("SELECT id, username, password, email FROM users WHERE username = ?", username).
+		Scan(&user.ID, &user.Username, &user.Password, &user.Email)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, fmt.Errorf("user not found")
+		}
+		return nil, err
+	}
+	return user, nil
 }

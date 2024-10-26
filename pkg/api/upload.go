@@ -450,7 +450,7 @@ func UploadConfirmHandler(c *gin.Context) {
 	}
 
 	if data["date"] == "" {
-		data["date"] = time.Now().Format("10/08/2024")
+		data["date"] = time.Now().Format("01/02/2006")
 	}
 
 	// TODO implement this - right now there are some wonky dates that are breaking the app,

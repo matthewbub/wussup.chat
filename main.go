@@ -58,7 +58,7 @@ func registerPublicViews(router *gin.Engine) {
 }
 
 func registerPublicApiRoutes(r *gin.Engine) {
-	r.POST("/login", api.LoginHandler)
+	r.POST("/api/v1/public/login", api.LoginHandler)
 	r.POST("/sign-up", api.SignUpHandler)
 	r.POST("/api/sign-up/security-questions", api.SecurityQuestionsHandler)
 
