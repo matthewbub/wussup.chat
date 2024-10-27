@@ -24,3 +24,11 @@ func GetSecretKeyFromEnv() []byte {
 	}
 	return decoded
 }
+
+func GetEnv() string {
+	env := os.Getenv("ENV")
+	if env == "" {
+		log.Printf("ENV environment variable is not set")
+	}
+	return env
+}

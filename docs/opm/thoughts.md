@@ -19,3 +19,6 @@ Gave up on this project and went off to do other things but now im back. Having 
 
 10/23/2024
 Dockerized app and slapped it into a DO droplet. Rewrote the upload form in React (twice). Currency formatting is a growing pain point now, it feels like the currency is being formatted and stored in ways that conflict with one another. Conventions will need to be established
+
+10/26/2024
+Explored a few options for routing in the react app including tanstack router, react-router, hand-rolling a router, and distributing multiple html files at build. Settled for tanstack router. Also JWT based auth instead of server-side sessions cause its been a bottle neck.

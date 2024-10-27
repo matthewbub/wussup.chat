@@ -14,7 +14,47 @@ import (
 
 func main() {
 	r := gin.Default()
+	env := utils.GetEnv()
+	r.Use(func(c *gin.Context) {
+		origin := c.Request.Header.Get("Origin")
+		allowedOrigins := []string{
+			"https://zcauldron.com",
+		}
 
+		// log.Println("Origin:", origin)
+		// log.Println("GO_ENV:", env)
+		// log.Println("Allowed origins:", allowedOrigins)
+		// if utils.ContainsOrigin(allowedOrigins, origin) {
+		// 	log.Println("Allowed origin matched:", origin)
+		// 	// CORS headers
+		// } else {
+		// 	log.Println("Blocked origin:", origin)
+		// 	// c.AbortWithStatus(401)
+		// 	// return
+		// }
+
+		if env == "development" {
+			allowedOrigins = append(allowedOrigins, "http://localhost:3001")
+			allowedOrigins = append(allowedOrigins, "http://localhost:8080")
+		}
+
+		if origin == "" || utils.ContainsOrigin(allowedOrigins, origin) {
+			c.Writer.Header().Set("Access-Control-Allow-Origin", origin)
+			c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
+			c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
+			c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT, DELETE")
+
+			if c.Request.Method == "OPTIONS" {
+				c.AbortWithStatus(204)
+				return
+			}
+		} else {
+			c.AbortWithStatus(401)
+			return
+		}
+
+		c.Next()
+	})
 	// static files
 	r.Static("/styles", "./public/styles")
 	r.Static("/js", "./public/js")
@@ -63,6 +103,7 @@ func registerPublicApiRoutes(r *gin.Engine) {
 	r.POST("/api/sign-up/security-questions", api.SecurityQuestionsHandler)
 
 	r.GET("/api/v1/invalidate-session", api.InvalidateSessionHandler)
+	r.POST("/api/v1/login/jwt", api.LoginWithJWTHandler)
 }
 
 func registerPrivateViews(auth *gin.RouterGroup) {
@@ -80,6 +121,8 @@ func registerPrivateApiRoutes(auth *gin.RouterGroup) {
 	auth.POST("/api/v1/finances/receipts/export", middleware.AuthRequired(), api.ExportReceipts)
 	auth.POST("/api/v1/finances/receipts/upload-image", middleware.AuthRequired(), api.UploadHandlerButInJson)
 	auth.POST("/api/v1/finances/receipts/upload", middleware.AuthRequired(), api.SaveReceiptHandler)
+
+	auth.GET("/api/v1/example/jwt", middleware.JWTAuthMiddleware(), api.ExampleAuthEndpoint)
 
 	// @deprecated
 	auth.POST("/upload", middleware.AuthRequired(), api.UploadHandler)
