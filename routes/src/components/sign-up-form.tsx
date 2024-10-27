@@ -134,7 +134,7 @@ export function SignUpForm() {
               <p className="text-sm text-red-500">{errors.confirmPassword}</p>
             )}
           </div>
-          <div className="space-y-2">
+          <div className="space-y-2 flex items-baseline gap-2">
             <input
               type="checkbox"
               id="terms"
@@ -142,7 +142,7 @@ export function SignUpForm() {
               onChange={() => setTermsAccepted(!termsAccepted)}
               required
             />
-            <Label htmlFor="terms">
+            <Label htmlFor="terms" className="text-sm">
               I agree to the{" "}
               <Link href="/terms-of-service">Terms of Service</Link> and{" "}
               <Link href="/privacy-policy">Privacy Policy</Link>

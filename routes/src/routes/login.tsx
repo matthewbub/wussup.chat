@@ -15,7 +15,7 @@ function LoginComponent() {
   }
 
   return (
-    <main>
+    <main className="flex justify-center items-center h-screen">
       <LoginFormComponent />
     </main>
   );

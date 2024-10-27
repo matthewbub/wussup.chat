@@ -35,7 +35,7 @@ export function LoginFormComponent() {
   };
 
   return (
-    <Card className="w-full max-w-md mx-auto mt-20">
+    <Card className="w-full max-w-md mx-auto">
       <CardHeader>
         <CardTitle className="text-2xl font-bold">Login</CardTitle>
         <CardDescription>
@@ -84,7 +84,7 @@ export function LoginFormComponent() {
         >
           Forgot password?
         </Link>
-        <Link href="/signup" className="text-sm text-blue-600 hover:underline">
+        <Link href="/sign-up" className="text-sm text-blue-600 hover:underline">
           Sign up
         </Link>
       </CardFooter>
