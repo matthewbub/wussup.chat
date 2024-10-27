@@ -1,6 +1,6 @@
 import { useAuthStore } from "../stores/auth";
 import * as React from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Navigate } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/login")({
   component: LoginComponent,
@@ -10,8 +10,13 @@ function LoginComponent() {
   const [username, setUsername] = React.useState("");
   const [password, setPassword] = React.useState("");
   const login = useAuthStore((state) => state.login);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
-  const handleSubmit = (e) => {
+  if (isAuthenticated) {
+    return <Navigate to="/" />;
+  }
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     login(username, password); // Call login from Zustand
   };
