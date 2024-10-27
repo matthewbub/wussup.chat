@@ -1,30 +1,62 @@
 package middleware
 
 import (
+	"log"
 	"net/http"
+	"time"
 
 	"bus.zcauldron.com/pkg/utils"
 	"github.com/gin-gonic/gin"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 func JWTAuthMiddleware() gin.HandlerFunc {
+	jwtSecretKey := utils.GetSecretKeyFromEnv()
 	return func(c *gin.Context) {
-		tokenString := c.GetHeader("Authorization")
-		if tokenString == "" {
-			c.JSON(http.StatusUnauthorized, gin.H{"message": "Token required"})
-			c.Abort()
-			return
-		}
-
-		userID, err := utils.VerifyJWT(tokenString)
+		// Retrieve token from cookie
+		tokenString, err := c.Cookie("jwt")
+		log.Println("tokenString", tokenString)
 		if err != nil {
-			c.JSON(http.StatusUnauthorized, gin.H{"message": "Invalid token"})
-			c.Abort()
+			log.Println("error getting token from cookie", err)
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Authentication required"})
 			return
 		}
 
-		// Set user ID in the context for further use in the handlers
-		c.Set("user_id", userID)
+		// Parse the token with the MapClaims type
+		token, err := jwt.ParseWithClaims(tokenString, jwt.MapClaims{}, func(token *jwt.Token) (interface{}, error) {
+			return []byte(jwtSecretKey), nil
+		})
+
+		if err != nil || !token.Valid {
+			log.Println("error parsing token", err)
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid or expired token"})
+			return
+		}
+
+		// Type assertion to access claims
+		claims, ok := token.Claims.(jwt.MapClaims)
+		if !ok {
+			log.Println("error getting token claims")
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid token claims"})
+			return
+		}
+
+		// Check expiration time (exp) claim
+		if exp, ok := claims["exp"].(float64); ok {
+			if time.Unix(int64(exp), 0).Before(time.Now()) {
+				log.Println("token expired")
+				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Token expired"})
+				return
+			}
+		} else {
+			log.Println("invalid token expiration")
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Invalid token expiration"})
+			return
+		}
+
+		log.Println("token is valid and not expired; proceeding with the request")
+
+		// Token is valid and not expired; proceed with the request
 		c.Next()
 	}
 }

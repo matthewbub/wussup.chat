@@ -7,12 +7,9 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-func GenerateJWT(userID string, rememberMe bool) (string, error) {
+func GenerateJWT(userID string) (string, error) {
 	jwtSecret := GetSecretKeyFromEnv()
 	expiration := time.Minute * 10
-	if rememberMe {
-		expiration = time.Minute * 30
-	}
 
 	claims := jwt.MapClaims{
 		"user_id": userID,

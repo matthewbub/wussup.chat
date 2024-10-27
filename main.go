@@ -2,8 +2,10 @@ package main
 
 import (
 	"log"
+	"strconv"
 
 	"bus.zcauldron.com/pkg/api"
+	"bus.zcauldron.com/pkg/constants"
 	"bus.zcauldron.com/pkg/handlers"
 	"bus.zcauldron.com/pkg/middleware"
 	"bus.zcauldron.com/pkg/utils"
@@ -18,7 +20,7 @@ func main() {
 	r.Use(func(c *gin.Context) {
 		origin := c.Request.Header.Get("Origin")
 		allowedOrigins := []string{
-			"https://zcauldron.com",
+			"https://" + constants.AppConfig.ProductionDomain,
 		}
 
 		// log.Println("Origin:", origin)
@@ -34,8 +36,8 @@ func main() {
 		// }
 
 		if env == "development" {
-			allowedOrigins = append(allowedOrigins, "http://localhost:3001")
-			allowedOrigins = append(allowedOrigins, "http://localhost:8080")
+			allowedOrigins = append(allowedOrigins, "http://"+constants.AppConfig.DevelopmentDomain+":"+strconv.Itoa(constants.AppConfig.DevelopmentPorts.Frontend))
+			allowedOrigins = append(allowedOrigins, "http://"+constants.AppConfig.DevelopmentDomain+":"+strconv.Itoa(constants.AppConfig.DevelopmentPorts.Backend))
 		}
 
 		if origin == "" || utils.ContainsOrigin(allowedOrigins, origin) {
@@ -55,6 +57,7 @@ func main() {
 
 		c.Next()
 	})
+
 	// static files
 	r.Static("/styles", "./public/styles")
 	r.Static("/js", "./public/js")
@@ -72,13 +75,13 @@ func main() {
 	registerPublicViews(r)
 	registerPublicApiRoutes(r)
 
-	auth := r.Group("/")
-	auth.Use(middleware.AuthRequired())
-	auth.Use(middleware.Recovery("Something went wrong"))
+	// auth := r.Group("/")
+	// auth.Use(middleware.AuthRequired())
+	r.Use(middleware.Recovery("Something went wrong"))
 	// auth.Use(middleware.SecurityQuestionsRequired())
 
-	registerPrivateViews(auth)
-	registerPrivateApiRoutes(auth)
+	registerPrivateViews(r)
+	registerPrivateApiRoutes(r)
 	r.NoRoute(func(c *gin.Context) {
 		log.Printf("404 Not Found: %s %s", c.Request.Method, c.Request.URL.Path)
 		c.JSON(404, gin.H{"message": "Not Found"})
@@ -97,36 +100,37 @@ func registerPublicViews(router *gin.Engine) {
 	router.GET("/forgot-password", handlers.ForgotPasswordView)
 }
 
-func registerPublicApiRoutes(r *gin.Engine) {
-	r.POST("/login", api.LoginHandler)
-	r.POST("/sign-up", api.SignUpHandler)
-	r.POST("/api/sign-up/security-questions", api.SecurityQuestionsHandler)
+func registerPublicApiRoutes(router *gin.Engine) {
+	router.POST("/login", api.LoginHandler)
+	router.POST("/sign-up", api.SignUpHandler)
+	router.POST("/api/sign-up/security-questions", api.SecurityQuestionsHandler)
 
-	r.GET("/api/v1/invalidate-session", api.InvalidateSessionHandler)
-	r.POST("/api/v1/login/jwt", api.LoginWithJWTHandler)
+	router.GET("/api/v1/invalidate-session", api.InvalidateSessionHandler)
+	router.POST("/api/v1/login/jwt", api.LoginWithJWTHandler)
+	router.POST("/api/v1/logout/jwt", api.JWTLogout)
 }
 
-func registerPrivateViews(auth *gin.RouterGroup) {
-	auth.GET("/dashboard", middleware.AuthRequired(), handlers.DashboardView)
-	auth.GET("/dashboard/finances", middleware.AuthRequired(), handlers.FinancesView)
-	auth.GET("/dashboard/finances/receipts", middleware.AuthRequired(), handlers.ReceiptsView)
-	auth.GET("/dashboard/finances/v2/receipts", middleware.AuthRequired(), handlers.ReceiptsV2View)
-	auth.GET("/dashboard/finances/receipts/:id", middleware.AuthRequired(), handlers.ReceiptView)
-	auth.GET("/dashboard/finances/receipts/:id/edit", middleware.AuthRequired(), handlers.EditReceiptView)
+func registerPrivateViews(router *gin.Engine) {
+	router.GET("/dashboard", middleware.AuthRequired(), handlers.DashboardView)
+	router.GET("/dashboard/finances", middleware.AuthRequired(), handlers.FinancesView)
+	router.GET("/dashboard/finances/receipts", middleware.AuthRequired(), handlers.ReceiptsView)
+	router.GET("/dashboard/finances/v2/receipts", middleware.AuthRequired(), handlers.ReceiptsV2View)
+	router.GET("/dashboard/finances/receipts/:id", middleware.AuthRequired(), handlers.ReceiptView)
+	router.GET("/dashboard/finances/receipts/:id/edit", middleware.AuthRequired(), handlers.EditReceiptView)
 }
 
-func registerPrivateApiRoutes(auth *gin.RouterGroup) {
-	auth.GET("/logout", middleware.AuthRequired(), api.LogoutHandler)
-	auth.DELETE("/api/v1/finances/receipts/delete", middleware.AuthRequired(), api.DeleteReceipts)
-	auth.POST("/api/v1/finances/receipts/export", middleware.AuthRequired(), api.ExportReceipts)
-	auth.POST("/api/v1/finances/receipts/upload-image", middleware.AuthRequired(), api.UploadHandlerButInJson)
-	auth.POST("/api/v1/finances/receipts/upload", middleware.AuthRequired(), api.SaveReceiptHandler)
+func registerPrivateApiRoutes(router *gin.Engine) {
+	router.GET("/logout", middleware.AuthRequired(), api.LogoutHandler)
+	router.DELETE("/api/v1/finances/receipts/delete", middleware.AuthRequired(), api.DeleteReceipts)
+	router.POST("/api/v1/finances/receipts/export", middleware.AuthRequired(), api.ExportReceipts)
+	router.POST("/api/v1/finances/receipts/upload-image", middleware.AuthRequired(), api.UploadHandlerButInJson)
+	router.POST("/api/v1/finances/receipts/upload", middleware.AuthRequired(), api.SaveReceiptHandler)
 
-	auth.GET("/api/v1/example/jwt", middleware.JWTAuthMiddleware(), api.ExampleAuthEndpoint)
+	router.GET("/api/v1/example/jwt", middleware.JWTAuthMiddleware(), api.ExampleAuthEndpoint)
 
 	// @deprecated
-	auth.POST("/upload", middleware.AuthRequired(), api.UploadHandler)
-	auth.GET("/manual-upload", middleware.AuthRequired(), api.ManualUploadHandler)
-	auth.POST("/upload/confirm", middleware.AuthRequired(), api.UploadConfirmHandler)
-	auth.POST("/upload/confirm/save", middleware.AuthRequired(), api.SaveReceiptHandler)
+	router.POST("/upload", middleware.AuthRequired(), api.UploadHandler)
+	router.GET("/manual-upload", middleware.AuthRequired(), api.ManualUploadHandler)
+	router.POST("/upload/confirm", middleware.AuthRequired(), api.UploadConfirmHandler)
+	router.POST("/upload/confirm/save", middleware.AuthRequired(), api.SaveReceiptHandler)
 }
