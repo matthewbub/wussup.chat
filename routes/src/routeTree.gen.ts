@@ -11,11 +11,18 @@
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
+import { Route as SignUpImport } from './routes/sign-up'
 import { Route as LoginImport } from './routes/login'
 import { Route as AboutImport } from './routes/about'
 import { Route as IndexImport } from './routes/index'
 
 // Create/Update Routes
+
+const SignUpRoute = SignUpImport.update({
+  id: '/sign-up',
+  path: '/sign-up',
+  getParentRoute: () => rootRoute,
+} as any)
 
 const LoginRoute = LoginImport.update({
   id: '/login',
@@ -60,6 +67,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginImport
       parentRoute: typeof rootRoute
     }
+    '/sign-up': {
+      id: '/sign-up'
+      path: '/sign-up'
+      fullPath: '/sign-up'
+      preLoaderRoute: typeof SignUpImport
+      parentRoute: typeof rootRoute
+    }
   }
 }
 
@@ -69,12 +83,14 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/login': typeof LoginRoute
+  '/sign-up': typeof SignUpRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/login': typeof LoginRoute
+  '/sign-up': typeof SignUpRoute
 }
 
 export interface FileRoutesById {
@@ -82,14 +98,15 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/login': typeof LoginRoute
+  '/sign-up': typeof SignUpRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about' | '/login'
+  fullPaths: '/' | '/about' | '/login' | '/sign-up'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/login'
-  id: '__root__' | '/' | '/about' | '/login'
+  to: '/' | '/about' | '/login' | '/sign-up'
+  id: '__root__' | '/' | '/about' | '/login' | '/sign-up'
   fileRoutesById: FileRoutesById
 }
 
@@ -97,12 +114,14 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
   LoginRoute: typeof LoginRoute
+  SignUpRoute: typeof SignUpRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
   LoginRoute: LoginRoute,
+  SignUpRoute: SignUpRoute,
 }
 
 export const routeTree = rootRoute
@@ -119,7 +138,8 @@ export const routeTree = rootRoute
       "children": [
         "/",
         "/about",
-        "/login"
+        "/login",
+        "/sign-up"
       ]
     },
     "/": {
@@ -130,6 +150,9 @@ export const routeTree = rootRoute
     },
     "/login": {
       "filePath": "login.tsx"
+    },
+    "/sign-up": {
+      "filePath": "sign-up.tsx"
     }
   }
 }

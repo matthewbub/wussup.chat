@@ -1,12 +1,14 @@
 import * as React from "react";
 import { Link, Outlet, createRootRoute } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/router-devtools";
+import { useAuthStore } from "@/stores/auth";
 
 export const Route = createRootRoute({
   component: RootComponent,
 });
 
 function RootComponent() {
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   return (
     <>
       <div className="p-2 flex gap-2 text-lg">
@@ -27,14 +29,31 @@ function RootComponent() {
         >
           About
         </Link>
-        <Link
-          to="/login"
-          activeProps={{
-            className: "font-bold",
-          }}
-        >
-          Login
-        </Link>
+        {!isAuthenticated && (
+          <>
+            <Link
+              to="/login"
+              activeProps={{
+                className: "font-bold",
+              }}
+            >
+              Login
+            </Link>
+            <Link
+              to="/sign-up"
+              activeProps={{
+                className: "font-bold",
+              }}
+            >
+              Sign Up
+            </Link>
+          </>
+        )}
+        {isAuthenticated && (
+          <Link onClick={() => useAuthStore.getState().useLogout()}>
+            Logout
+          </Link>
+        )}
       </div>
       <hr />
       <Outlet />

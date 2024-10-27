@@ -6,6 +6,13 @@ type AuthStore = {
   error: string | null;
   useLogin: (username: string, password: string) => Promise<void>;
   useLogout: () => Promise<void>;
+  useSignup: (
+    username: string,
+    email: string,
+    password: string,
+    confirmPassword: string,
+    termsAccepted: boolean
+  ) => Promise<void>;
 };
 
 export const useAuthStore = create<AuthStore>((set) => ({
@@ -51,6 +58,41 @@ export const useAuthStore = create<AuthStore>((set) => ({
       }
     } catch (error) {
       set({ error: "An error occurred during logout" });
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  useSignup: async (
+    username: string,
+    email: string,
+    password: string,
+    confirmPassword: string,
+    termsAccepted: boolean
+  ) => {
+    try {
+      set({ isLoading: true, error: null });
+      const response = await fetch("/api/v1/sign-up/jwt", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          username,
+          email,
+          password,
+          confirmPassword,
+          termsAccepted,
+        }),
+      });
+      const json = await response.json();
+
+      if (json.ok) {
+        set({ isAuthenticated: true });
+      } else {
+        set({ error: json.message || "Signup failed" });
+      }
+    } catch {
+      set({ error: "An error occurred during signup" });
     } finally {
       set({ isLoading: false });
     }

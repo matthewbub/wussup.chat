@@ -42,26 +42,22 @@ func LoginWithJWTHandler(c *gin.Context) {
 	}
 
 	// Set cookie with JWT
-	var cookieConfig struct {
+	cookieConfig := struct {
 		Expiration time.Duration
 		Domain     string
 		Secure     bool
+	}{
+		Expiration: constants.AppConfig.DefaultJWTExpiration,
+		Domain:     constants.AppConfig.ProductionDomain,
+		Secure:     true,
 	}
 
-	cookieConfig.Expiration = time.Minute * 10
-	cookieConfig.Domain = constants.AppConfig.ProductionDomain
-	cookieConfig.Secure = true
-
 	env := os.Getenv("ENV")
-
 	if env == "development" {
 		cookieConfig.Domain = constants.AppConfig.DevelopmentDomain
 		cookieConfig.Secure = false
 	}
 
 	c.SetCookie("jwt", jwtToken, int(cookieConfig.Expiration.Seconds()), "/", cookieConfig.Domain, cookieConfig.Secure, true)
-	c.JSON(http.StatusOK, gin.H{
-		"ok": true,
-		// "token": jwtToken,
-	})
+	c.JSON(http.StatusOK, gin.H{"ok": true})
 }

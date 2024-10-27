@@ -108,6 +108,7 @@ func registerPublicApiRoutes(router *gin.Engine) {
 	router.GET("/api/v1/invalidate-session", api.InvalidateSessionHandler)
 	router.POST("/api/v1/login/jwt", api.LoginWithJWTHandler)
 	router.POST("/api/v1/logout/jwt", api.JWTLogout)
+	router.POST("/api/v1/sign-up/jwt", api.JwtSignUpHandler)
 }
 
 func registerPrivateViews(router *gin.Engine) {
