@@ -19,7 +19,9 @@ type LoginFormInputs = {
 };
 
 export function LoginFormComponent() {
-  const useLogin = useAuthStore((state) => state.login);
+  const useLogin = useAuthStore((state) => state.useLogin);
+  const isLoading = useAuthStore((state) => state.isLoading);
+  const error = useAuthStore((state) => state.error);
 
   // Initialize react-hook-form
   const {
@@ -29,12 +31,11 @@ export function LoginFormComponent() {
   } = useForm<LoginFormInputs>();
 
   const onSubmit = async (data: LoginFormInputs) => {
-    const result = await useLogin(data.username, data.password);
-    console.log(result);
+    await useLogin(data.username, data.password);
   };
 
   return (
-    <Card className="w-full max-w-md mx-auto">
+    <Card className="w-full max-w-md mx-auto mt-20">
       <CardHeader>
         <CardTitle className="text-2xl font-bold">Login</CardTitle>
         <CardDescription>
@@ -70,9 +71,10 @@ export function LoginFormComponent() {
               <p className="text-sm text-red-500">{errors.password.message}</p>
             )}
           </div>
-          <Button type="submit" className="w-full">
-            Log in
+          <Button type="submit" className="w-full" disabled={isLoading}>
+            {isLoading ? "Logging in..." : "Log in"}
           </Button>
+          {error && <p className="text-sm text-red-500">{error}</p>}
         </form>
       </CardContent>
       <CardFooter className="flex justify-between">

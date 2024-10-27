@@ -1,64 +1,39 @@
-import * as React from "react";
+import React from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { fetchSecureTest } from "@/utils/auth-helpers";
 import { useAuthStore } from "@/stores/auth";
+import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/")({
   component: HomeComponent,
 });
 
 function HomeComponent() {
-  const [token, setToken] = React.useState("");
-  const login = useAuthStore((state) => state.login);
+  const useLogin = useAuthStore((state) => state.useLogin);
+  const useLogout = useAuthStore((state) => state.useLogout);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+
   return (
-    <div className="p-2">
-      <h1 className="text-3xl font-bold underline">Hello world!</h1>
+    <div className="p-2 mx-auto max-w-2xl">
+      <h1 className="text-3xl font-bold pb-4">
+        {isAuthenticated ? "Logged in" : "Logged out"}
+      </h1>
 
-      <button
-        onClick={async () => {
-          await login("admin", "P@ss12345");
-          // fetch("/api/v1/login/jwt", {
-          //   method: "POST",
-          //   credentials: "include",
-          //   body: JSON.stringify({
-          //     username: "admin",
-          //     password: "P@ss12345",
-          //   }),
-          // })
-          //   .then((res) => res.json())
-          //   .then((data) => {
-          //     if (data.ok) {
-          //       setToken(data.token);
-          //     }
-          //   });
-        }}
-      >
-        Test Login
-      </button>
+      <div className="flex gap-2">
+        {isAuthenticated && (
+          <Button onClick={fetchSecureTest}>Test Example</Button>
+        )}
 
-      {/* {token && ( */}
-      <>
-        <div>
-          <button onClick={fetchSecureTest}>Test Example</button>
-        </div>
-        <button
-          onClick={() => {
-            fetch("/api/v1/logout/jwt", {
-              method: "POST",
-              credentials: "include",
-            })
-              .then((res) => res.json())
-              .then((data) => {
-                if (data.ok) {
-                  setToken("");
-                }
-              });
-          }}
-        >
-          Logout
-        </button>
-      </>
-      {/* )} */}
+        {isAuthenticated && (
+          <Button
+            onClick={async () => {
+              await useLogout();
+            }}
+          >
+            Logout
+          </Button>
+        )}
+      </div>
     </div>
   );
 }

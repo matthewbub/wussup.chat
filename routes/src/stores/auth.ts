@@ -2,48 +2,57 @@ import { create } from "zustand";
 
 type AuthStore = {
   isAuthenticated: boolean;
-  login: (username: string, password: string) => Promise<void>;
-  logout: () => Promise<void>;
+  isLoading: boolean;
+  error: string | null;
+  useLogin: (username: string, password: string) => Promise<void>;
+  useLogout: () => Promise<void>;
 };
 
 export const useAuthStore = create<AuthStore>((set) => ({
   isAuthenticated: false,
-
-  // Login function, sets isAuthenticated to true if login succeeds
-  login: async (username: string, password: string) => {
+  isLoading: false,
+  error: null,
+  useLogin: async (username: string, password: string) => {
     try {
+      set({ isLoading: true, error: null });
       const response = await fetch("/api/v1/login/jwt", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include", // Ensures cookies are included
+        credentials: "include",
         body: JSON.stringify({ username, password }),
       });
+      const json = await response.json();
 
-      if (response.ok) {
+      if (json.ok) {
         set({ isAuthenticated: true });
       } else {
-        console.error("Login failed");
+        set({ error: "Invalid username or password" });
       }
     } catch (error) {
-      console.error("Error during login:", error);
+      set({ error: "An error occurred during login" });
+    } finally {
+      set({ isLoading: false });
     }
   },
 
-  // Logout function, clears isAuthenticated state
-  logout: async () => {
+  useLogout: async () => {
     try {
+      set({ isLoading: true });
       const response = await fetch("/api/v1/logout/jwt", {
         method: "POST",
-        credentials: "include", // Include cookies to access the server
+        credentials: "include",
       });
+      const json = await response.json();
 
-      if (response.ok) {
+      if (json.ok) {
         set({ isAuthenticated: false });
       } else {
-        console.error("Logout failed");
+        set({ error: "An error occurred during logout" });
       }
     } catch (error) {
-      console.error("Error during logout:", error);
+      set({ error: "An error occurred during logout" });
+    } finally {
+      set({ isLoading: false });
     }
   },
 }));
