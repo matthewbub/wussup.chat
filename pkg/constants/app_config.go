@@ -12,6 +12,9 @@ type Config struct {
 	DefaultJWTExpiration time.Duration
 	// TODO: Implement ExtendJWTExpiration
 	// ExtendJWTExpiration  time.Duration
+
+	// TODO: Implement SecondaryAuthType
+	// SecondaryAuthType string
 }
 
 var AppConfig = Config{
@@ -27,4 +30,7 @@ var AppConfig = Config{
 	DefaultJWTExpiration: time.Minute * 10,
 	// TODO: Implement ExtendJWTExpiration
 	// ExtendJWTExpiration:  time.Hour * 24,
+
+	// TODO: Implement SecondaryAuthType
+	// SecondaryAuthType: "KBA", // KBA = Knowledge Based Authentication || MFA = Multi-Factor Authentication
 }
