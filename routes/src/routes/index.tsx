@@ -31,15 +31,15 @@ function HomeComponent() {
         </li>
         <li>
           <strong>Security questions answered:</strong>{" "}
-          {isSecurityQuestionsAnswered
-            ? "Security questions answered."
-            : "Security questions not answered."}
-          <a
-            href="/security-questions"
-            className="pl-1 text-blue-500 dark:text-blue-400 hover:underline"
-          >
-            Answer security questions
-          </a>
+          {isSecurityQuestionsAnswered ? "Yes" : "No"}
+          {isAuthenticated && !isSecurityQuestionsAnswered && (
+            <a
+              href="/security-questions"
+              className="pl-1 text-blue-500 dark:text-blue-400 hover:underline"
+            >
+              Answer security questions
+            </a>
+          )}
         </li>
         {user && (
           <li>

@@ -14,10 +14,16 @@ type SecurityQuestion struct {
 	Answer   string `json:"answer"`
 }
 
+type SecurityQuestionsPayload struct {
+	Questions []SecurityQuestion `json:"questions"`
+}
+
 func JWTSecurityQuestionsHandler(c *gin.Context) {
+	log.Println("[SecurityQuestionsHandler] Received request")
 	// Get JWT from the request
 	token, err := c.Cookie("jwt")
 	if err != nil {
+		log.Printf("[SecurityQuestionsHandler] Error getting JWT: %v", err)
 		c.JSON(http.StatusUnauthorized, gin.H{"ok": false, "message": "Unauthorized"})
 		return
 	}
@@ -42,12 +48,13 @@ func JWTSecurityQuestionsHandler(c *gin.Context) {
 		return
 	}
 
-	// Parse and validate JSON body
-	var questions []SecurityQuestion
-	if err := c.ShouldBindJSON(&questions); err != nil {
+	var payload SecurityQuestionsPayload
+	if err := c.ShouldBindJSON(&payload); err != nil {
+		log.Printf("[SecurityQuestionsHandler] Error parsing JSON: %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"ok": false, "message": "Invalid data"})
 		return
 	}
+	questions := payload.Questions
 	if len(questions) != 3 {
 		c.JSON(http.StatusBadRequest, gin.H{"ok": false, "message": "Please provide exactly three questions and answers"})
 		return

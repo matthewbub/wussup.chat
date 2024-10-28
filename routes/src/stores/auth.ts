@@ -1,3 +1,4 @@
+import { fetchWithAuth } from "@/utils/auth-helpers";
 import { create } from "zustand";
 
 type AuthStore = {
@@ -40,19 +41,27 @@ export const useAuthStore = create<AuthStore>((set) => ({
       });
       const json = (await response.json()) as {
         ok: boolean;
-        user?: { id: string; username: string; email: string };
+        user?: {
+          id: string;
+          username: string;
+          email: string;
+          securityQuestionsAnswered?: boolean;
+        };
         error?: string;
       };
       if (json.ok) {
         set({
           isAuthenticated: true,
           user: json?.user,
+          isSecurityQuestionsAnswered:
+            json?.user?.securityQuestionsAnswered ?? false,
         });
       } else {
         set({
           error: json?.error || "An error occurred during auth check",
           isAuthenticated: false,
           user: null,
+          isSecurityQuestionsAnswered: false,
         });
       }
     } catch (error) {
@@ -60,6 +69,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
         error: "An error occurred during auth check",
         isAuthenticated: false,
         user: null,
+        isSecurityQuestionsAnswered: false,
       });
     } finally {
       set({ isLoading: false });
@@ -84,7 +94,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
       if (json.ok) {
         set({
           isAuthenticated: true,
-          isSecurityQuestionsAnswered: json?.securityQuestionsAnswered,
+          isSecurityQuestionsAnswered: json?.securityQuestionsAnswered ?? false,
         });
       } else {
         set({ error: json.message || "Invalid username or password" });
@@ -111,12 +121,14 @@ export const useAuthStore = create<AuthStore>((set) => ({
         set({
           error: "An error occurred during logout",
           user: null,
+          isSecurityQuestionsAnswered: false,
         });
       }
     } catch (error) {
       set({
         error: "An error occurred during logout",
         user: null,
+        isSecurityQuestionsAnswered: false,
       });
     } finally {
       set({ isLoading: false });
@@ -168,7 +180,26 @@ export const useAuthStore = create<AuthStore>((set) => ({
   useSecurityQuestions: async (
     questions: { question: string; answer: string }[]
   ) => {
-    console.log(questions);
+    try {
+      set({ isLoading: true, error: null });
+      const response = await fetchWithAuth("/api/v1/security-questions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ questions }),
+      });
+      const json = await response.json();
+      if (json.ok) {
+        set({ isSecurityQuestionsAnswered: true });
+      } else {
+        set({
+          error: json.message || "An error occurred during security questions",
+        });
+      }
+    } catch (error) {
+      set({ error: "An error occurred during security questions" });
+    } finally {
+      set({ isLoading: false });
+    }
   },
 
   useAuthCheck: async () => {

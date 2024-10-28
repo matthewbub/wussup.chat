@@ -43,9 +43,10 @@ func JWTAuthCheckHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"ok": true,
 		"user": gin.H{
-			"id":       user.ID,
-			"username": user.Username,
-			"email":    user.Email,
+			"id":                        user.ID,
+			"username":                  user.Username,
+			"email":                     user.Email,
+			"securityQuestionsAnswered": user.SecurityQuestionsAnswered,
 		},
 	})
 }

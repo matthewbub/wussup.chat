@@ -23,18 +23,6 @@ func main() {
 			"https://" + constants.AppConfig.ProductionDomain,
 		}
 
-		// log.Println("Origin:", origin)
-		// log.Println("GO_ENV:", env)
-		// log.Println("Allowed origins:", allowedOrigins)
-		// if utils.ContainsOrigin(allowedOrigins, origin) {
-		// 	log.Println("Allowed origin matched:", origin)
-		// 	// CORS headers
-		// } else {
-		// 	log.Println("Blocked origin:", origin)
-		// 	// c.AbortWithStatus(401)
-		// 	// return
-		// }
-
 		if env == "development" {
 			allowedOrigins = append(allowedOrigins, "http://"+constants.AppConfig.DevelopmentDomain+":"+strconv.Itoa(constants.AppConfig.DevelopmentPorts.Frontend))
 			allowedOrigins = append(allowedOrigins, "http://"+constants.AppConfig.DevelopmentDomain+":"+strconv.Itoa(constants.AppConfig.DevelopmentPorts.Backend))
@@ -130,6 +118,7 @@ func registerPrivateApiRoutes(router *gin.Engine) {
 	router.POST("/api/v1/finances/receipts/upload", middleware.AuthRequired(), api.SaveReceiptHandler)
 
 	router.GET("/api/v1/example/jwt", middleware.JWTAuthMiddleware(), api.ExampleAuthEndpoint)
+	router.POST("/api/v1/security-questions", middleware.JWTAuthMiddleware(), api.JWTSecurityQuestionsHandler)
 
 	// @deprecated
 	router.POST("/upload", middleware.AuthRequired(), api.UploadHandler)
