@@ -82,3 +82,25 @@ func GetUserFromDatabase(username string) (*utils.UserObject, error) {
 
 	return &user, nil
 }
+
+func GetUserByID(userID string) (*utils.UserObject, error) {
+	db := utils.Db()
+	defer db.Close()
+
+	user := utils.UserObject{}
+	err := db.QueryRow("SELECT id, username, email, security_questions_answered FROM users WHERE id = ?", userID).Scan(
+		&user.ID,
+		&user.Username,
+		&user.Email,
+		&user.SecurityQuestionsAnswered,
+	)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, fmt.Errorf("user not found")
+		}
+		log.Println(err)
+		return nil, err
+	}
+
+	return &user, nil
+}

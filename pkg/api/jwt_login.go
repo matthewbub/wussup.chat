@@ -59,5 +59,9 @@ func LoginWithJWTHandler(c *gin.Context) {
 	}
 
 	c.SetCookie("jwt", jwtToken, int(cookieConfig.Expiration.Seconds()), "/", cookieConfig.Domain, cookieConfig.Secure, true)
-	c.JSON(http.StatusOK, gin.H{"ok": true})
+	c.JSON(http.StatusOK, gin.H{
+		"ok":                        true,
+		"message":                   "Logged in successfully",
+		"securityQuestionsAnswered": user.SecurityQuestionsAnswered,
+	})
 }

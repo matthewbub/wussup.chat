@@ -109,8 +109,8 @@ func getUserFromDatabase(username string) (*User, error) {
 	}(db)
 
 	user := &User{}
-	err := db.QueryRow("SELECT id, username, password, email FROM users WHERE username = ?", username).
-		Scan(&user.ID, &user.Username, &user.Password, &user.Email)
+	err := db.QueryRow("SELECT id, username, password, email, security_questions_answered FROM users WHERE username = ?", username).
+		Scan(&user.ID, &user.Username, &user.Password, &user.Email, &user.SecurityQuestionsAnswered)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, fmt.Errorf("user not found")
@@ -133,8 +133,9 @@ func handleLoginError(c *gin.Context, message string) {
 }
 
 type User struct {
-	ID       string
-	Username string
-	Password string
-	Email    string
+	ID                        string
+	Username                  string
+	Password                  string
+	Email                     string
+	SecurityQuestionsAnswered bool
 }
