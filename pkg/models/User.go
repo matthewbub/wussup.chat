@@ -104,3 +104,60 @@ func GetUserByID(userID string) (*utils.UserObject, error) {
 
 	return &user, nil
 }
+
+func GetUserWithPasswordByID(userID string) (*utils.UserWithPassword, error) {
+	db := utils.Db()
+	defer db.Close()
+
+	user := utils.UserWithPassword{}
+	err := db.QueryRow("SELECT id, username, email, security_questions_answered, password FROM users WHERE id = ?", userID).Scan(
+		&user.ID,
+		&user.Username,
+		&user.Email,
+		&user.SecurityQuestionsAnswered,
+		&user.Password,
+	)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, fmt.Errorf("user not found")
+		}
+		log.Println(err)
+		return nil, err
+	}
+
+	return &user, nil
+}
+
+func UpdateUserPassword(userID, hashedPassword string) error {
+	db := utils.Db()
+	defer db.Close()
+
+	stmt, err := db.Prepare("UPDATE users SET password = ? WHERE id = ?")
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	_, err = stmt.Exec(hashedPassword, userID)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	log.Printf("[UpdateUserPassword] Password updated for user %v", userID)
+
+	// Insert the password into the password history
+	stmt, err = db.Prepare("INSERT INTO password_history (user_id, password) VALUES (?, ?)")
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	_, err = stmt.Exec(userID, hashedPassword)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	return nil
+}

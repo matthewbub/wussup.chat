@@ -42,3 +42,8 @@ func IsValidEmail(email string) bool {
 	re := regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
 	return re.MatchString(email)
 }
+
+// MaxLength returns true if the input is less than or equal to the max length.
+func MaxLength(input string, maxLength int) bool {
+	return len(input) <= maxLength
+}

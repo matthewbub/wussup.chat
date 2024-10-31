@@ -102,6 +102,9 @@ func JwtSignUpHandler(c *gin.Context) {
 }
 
 func validatePassword(password string) error {
+	if !utils.MaxLength(password, 100) {
+		return fmt.Errorf("password must be less than 100 characters")
+	}
 	if !utils.MustBe8Characters(password) {
 		return fmt.Errorf("password must be at least 8 characters")
 	}

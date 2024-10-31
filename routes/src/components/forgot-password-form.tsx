@@ -29,9 +29,15 @@ export function ForgotPasswordForm() {
     }
 
     try {
-      // Here you would typically make an API call to initiate the password reset process
-      // For this example, we'll simulate a successful request
-      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulating API call
+      const data = await fetch("/api/v1/forgot-password", {
+        method: "POST",
+        body: JSON.stringify({ username }),
+      });
+      const json = await data.json();
+      if (!json.ok) {
+        throw new Error("Failed to send password reset email");
+      }
+
       setMessage({
         type: "success",
         content:

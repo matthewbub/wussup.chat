@@ -99,6 +99,7 @@ func registerPublicApiRoutes(router *gin.Engine) {
 	router.POST("/api/v1/logout/jwt", api.JWTLogout)
 	router.POST("/api/v1/sign-up/jwt", api.JwtSignUpHandler)
 	router.GET("/api/v1/auth-check/jwt", api.JWTAuthCheckHandler)
+	router.POST("/api/v1/forgot-password", api.JWTForgotPasswordHandler)
 }
 
 func registerPrivateViews(router *gin.Engine) {
@@ -119,6 +120,7 @@ func registerPrivateApiRoutes(router *gin.Engine) {
 
 	router.GET("/api/v1/example/jwt", middleware.JWTAuthMiddleware(), api.ExampleAuthEndpoint)
 	router.POST("/api/v1/security-questions", middleware.JWTAuthMiddleware(), api.JWTSecurityQuestionsHandler)
+	router.POST("/api/v1/auth/reset-password", middleware.JWTAuthMiddleware(), api.JWTResetPasswordHandler)
 
 	// @deprecated
 	router.POST("/upload", middleware.AuthRequired(), api.UploadHandler)

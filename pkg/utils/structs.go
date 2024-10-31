@@ -7,6 +7,11 @@ type UserObject struct {
 	SecurityQuestionsAnswered bool
 }
 
+type UserWithPassword struct {
+	UserObject
+	Password string
+}
+
 type ReceiptParseResult struct {
 	Merchant string            `json:"merchant"`
 	Date     string            `json:"date"`

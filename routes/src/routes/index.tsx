@@ -1,5 +1,5 @@
 import React from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { fetchSecureTest } from "@/utils/auth-helpers";
 import { useAuthStore } from "@/stores/auth";
 import { Button } from "@/components/ui/button";
@@ -52,12 +52,10 @@ function HomeComponent() {
           </li>
         )}
       </ol>
-      <div className="flex gap-2 mt-5">
-        {isAuthenticated && (
-          <Button onClick={fetchSecureTest}>Test Example</Button>
-        )}
 
-        {isAuthenticated && (
+      {isAuthenticated && (
+        <div className="flex space-x-2 mt-4">
+          <Button onClick={fetchSecureTest}>Test Example</Button>
           <Button
             onClick={async () => {
               await useLogout();
@@ -65,8 +63,9 @@ function HomeComponent() {
           >
             Logout
           </Button>
-        )}
-      </div>
+          <Link href="/account/reset-password">Reset Password</Link>
+        </div>
+      )}
     </div>
   );
 }

@@ -63,6 +63,7 @@ export function LoginFormComponent() {
             <Input
               id="password"
               type="password"
+              placeholder="Enter your password"
               {...register("password", {
                 required: "Please enter your password",
               })}

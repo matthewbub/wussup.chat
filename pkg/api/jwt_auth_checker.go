@@ -13,8 +13,7 @@ func JWTAuthCheckHandler(c *gin.Context) {
 	tokenString, err := c.Cookie("jwt")
 	if err != nil || tokenString == "" {
 		c.JSON(http.StatusUnauthorized, gin.H{
-			"ok":    false,
-			"error": "Token required",
+			"ok": false,
 		})
 		return
 	}
