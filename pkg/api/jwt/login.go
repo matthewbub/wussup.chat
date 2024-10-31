@@ -1,4 +1,4 @@
-package api
+package jwt
 
 import (
 	"net/http"
@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"bus.zcauldron.com/pkg/constants"
+	"bus.zcauldron.com/pkg/models"
 	"bus.zcauldron.com/pkg/utils"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
@@ -22,7 +23,7 @@ func LoginWithJWTHandler(c *gin.Context) {
 	password := utils.SanitizeInput(body.Password)
 
 	// Existing user validation logic
-	user, err := getUserFromDatabase(username)
+	user, err := models.GetUserWithPasswordByUserName(username)
 	if err != nil || user == nil || bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)) != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"ok":      false,

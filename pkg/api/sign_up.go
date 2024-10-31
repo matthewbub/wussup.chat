@@ -10,7 +10,6 @@ import (
 	"bus.zcauldron.com/pkg/views"
 	"github.com/a-h/templ"
 	"github.com/gin-gonic/gin"
-	"golang.org/x/crypto/bcrypt"
 )
 
 // TODO: Add a check to see if the user has agreed to the terms of service and privacy policy
@@ -68,7 +67,7 @@ func SignUpHandler(c *gin.Context) {
 	}
 
 	// Hash password
-	hashedPassword, err := hashPassword(userData.password)
+	hashedPassword, err := utils.HashPassword(userData.password)
 	if err != nil {
 		log.Printf("Error hashing password: %v", err)
 		renderErrorPage(c, http.StatusInternalServerError, "Error processing your request")
@@ -108,14 +107,6 @@ func SignUpHandler(c *gin.Context) {
 	// Render success page
 	// c.Redirect(http.StatusSeeOther, "/sign-up/security-questions")
 	c.Redirect(http.StatusSeeOther, "/sign-up/success")
-}
-
-func hashPassword(password string) (string, error) {
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-	if err != nil {
-		return "", err
-	}
-	return string(hashedPassword), nil
 }
 
 func extractUserData(c *gin.Context) (struct {

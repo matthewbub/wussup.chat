@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"bus.zcauldron.com/pkg/api"
+	"bus.zcauldron.com/pkg/api/jwt"
 	"bus.zcauldron.com/pkg/constants"
 	"bus.zcauldron.com/pkg/handlers"
 	"bus.zcauldron.com/pkg/middleware"
@@ -70,6 +71,8 @@ func main() {
 
 	registerPrivateViews(r)
 	registerPrivateApiRoutes(r)
+	registerJwtApiRoutes(r)
+
 	r.NoRoute(func(c *gin.Context) {
 		log.Printf("404 Not Found: %s %s", c.Request.Method, c.Request.URL.Path)
 		c.JSON(404, gin.H{"message": "Not Found"})
@@ -79,6 +82,8 @@ func main() {
 	r.Run(":8080")
 }
 
+// PUBLIC VIEWS
+// These use Templ as a template engine
 func registerPublicViews(router *gin.Engine) {
 	router.GET("/", handlers.LandingView)
 	router.GET("/login", handlers.LoginView)
@@ -88,18 +93,12 @@ func registerPublicViews(router *gin.Engine) {
 	router.GET("/forgot-password", handlers.ForgotPasswordView)
 }
 
+// These primarily talk to the Templ application
 func registerPublicApiRoutes(router *gin.Engine) {
 	router.POST("/login", api.LoginHandler)
 	router.POST("/sign-up", api.SignUpHandler)
 	router.POST("/api/sign-up/security-questions", api.SecurityQuestionsHandler)
-
 	router.GET("/api/v1/invalidate-session", api.InvalidateSessionHandler)
-	router.POST("/api/v1/login/jwt", api.LoginWithJWTHandler)
-	router.POST("/api/v1/security-questions/jwt", api.JWTSecurityQuestionsHandler)
-	router.POST("/api/v1/logout/jwt", api.JWTLogout)
-	router.POST("/api/v1/sign-up/jwt", api.JwtSignUpHandler)
-	router.GET("/api/v1/auth-check/jwt", api.JWTAuthCheckHandler)
-	router.POST("/api/v1/forgot-password", api.JWTForgotPasswordHandler)
 }
 
 func registerPrivateViews(router *gin.Engine) {
@@ -119,12 +118,22 @@ func registerPrivateApiRoutes(router *gin.Engine) {
 	router.POST("/api/v1/finances/receipts/upload", middleware.AuthRequired(), api.SaveReceiptHandler)
 
 	router.GET("/api/v1/example/jwt", middleware.JWTAuthMiddleware(), api.ExampleAuthEndpoint)
-	router.POST("/api/v1/security-questions", middleware.JWTAuthMiddleware(), api.JWTSecurityQuestionsHandler)
-	router.POST("/api/v1/auth/reset-password", middleware.JWTAuthMiddleware(), api.JWTResetPasswordHandler)
 
 	// @deprecated
 	router.POST("/upload", middleware.AuthRequired(), api.UploadHandler)
 	router.GET("/manual-upload", middleware.AuthRequired(), api.ManualUploadHandler)
 	router.POST("/upload/confirm", middleware.AuthRequired(), api.UploadConfirmHandler)
 	router.POST("/upload/confirm/save", middleware.AuthRequired(), api.SaveReceiptHandler)
+}
+
+// JWT API ROUTES
+func registerJwtApiRoutes(router *gin.Engine) {
+	router.POST("/api/v1/login/jwt", jwt.LoginWithJWTHandler)
+	router.POST("/api/v1/logout/jwt", jwt.Logout)
+	router.POST("/api/v1/forgot-password", jwt.ForgotPasswordHandler)
+	router.GET("/api/v1/auth-check/jwt", jwt.AuthCheckHandler)
+	router.POST("/api/v1/security-questions/jwt", jwt.SecurityQuestionsHandler)
+	router.POST("/api/v1/sign-up/jwt", jwt.SignUpHandler)
+	router.POST("/api/v1/security-questions", middleware.JWTAuthMiddleware(), jwt.SecurityQuestionsHandler)
+	router.POST("/api/v1/auth/reset-password", middleware.JWTAuthMiddleware(), jwt.ResetPasswordHandler)
 }

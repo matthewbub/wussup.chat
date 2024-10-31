@@ -1,4 +1,4 @@
-package api
+package jwt
 
 import (
 	"fmt"
@@ -14,7 +14,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func JwtSignUpHandler(c *gin.Context) {
+func SignUpHandler(c *gin.Context) {
 	// Parse request body as JSON
 	var body struct {
 		Username        string `json:"username"`

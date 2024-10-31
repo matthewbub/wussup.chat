@@ -161,3 +161,26 @@ func UpdateUserPassword(userID, hashedPassword string) error {
 
 	return nil
 }
+
+func GetUserWithPasswordByUserName(username string) (*utils.UserWithPassword, error) {
+	db := utils.Db()
+	defer db.Close()
+
+	user := utils.UserWithPassword{}
+	err := db.QueryRow("SELECT id, username, email, security_questions_answered, password FROM users WHERE username = ?", username).Scan(
+		&user.ID,
+		&user.Username,
+		&user.Email,
+		&user.SecurityQuestionsAnswered,
+		&user.Password,
+	)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, fmt.Errorf("user not found")
+		}
+		log.Println(err)
+		return nil, err
+	}
+
+	return &user, nil
+}

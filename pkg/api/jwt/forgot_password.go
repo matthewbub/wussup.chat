@@ -1,13 +1,14 @@
-package api
+package jwt
 
 import (
-	"bus.zcauldron.com/pkg/utils"
-	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
+
+	"bus.zcauldron.com/pkg/utils"
+	"github.com/gin-gonic/gin"
 )
 
-func JWTForgotPasswordHandler(c *gin.Context) {
+func ForgotPasswordHandler(c *gin.Context) {
 	var body struct {
 		Username string `json:"username"`
 	}

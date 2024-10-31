@@ -1,4 +1,4 @@
-package api
+package jwt
 
 import (
 	"net/http"
@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func JWTLogout(c *gin.Context) {
+func Logout(c *gin.Context) {
 	env := os.Getenv("ENV")
 
 	domain := constants.AppConfig.ProductionDomain

@@ -1,4 +1,4 @@
-package api
+package jwt
 
 import (
 	"net/http"
@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func JWTAuthCheckHandler(c *gin.Context) {
+func AuthCheckHandler(c *gin.Context) {
 	// Retrieve the JWT from the cookie
 	tokenString, err := c.Cookie("jwt")
 	if err != nil || tokenString == "" {

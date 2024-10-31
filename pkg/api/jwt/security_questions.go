@@ -1,4 +1,4 @@
-package api
+package jwt
 
 import (
 	"log"
@@ -18,7 +18,7 @@ type SecurityQuestionsPayload struct {
 	Questions []SecurityQuestion `json:"questions"`
 }
 
-func JWTSecurityQuestionsHandler(c *gin.Context) {
+func SecurityQuestionsHandler(c *gin.Context) {
 	log.Println("[SecurityQuestionsHandler] Received request")
 	// Get JWT from the request
 	token, err := c.Cookie("jwt")

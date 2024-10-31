@@ -1,4 +1,4 @@
-package api
+package jwt
 
 import (
 	"log"
@@ -10,8 +10,8 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-// JWTResetPasswordHandler This is specifically for the users that are currently logged in
-func JWTResetPasswordHandler(c *gin.Context) {
+// ResetPasswordHandler This is specifically for the users that are currently logged in
+func ResetPasswordHandler(c *gin.Context) {
 	// Retrieve JWT token from cookies
 	tokenString, err := c.Cookie("jwt")
 	if err != nil || tokenString == "" {
@@ -63,7 +63,7 @@ func JWTResetPasswordHandler(c *gin.Context) {
 	}
 
 	// Hash the new password
-	newPasswordHash, err := hashPassword(body.NewPassword)
+	newPasswordHash, err := utils.HashPassword(body.NewPassword)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"ok": false, "message": "Error updating password"})
 		return
