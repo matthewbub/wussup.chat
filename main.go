@@ -2,11 +2,9 @@ package main
 
 import (
 	"log"
-	"strconv"
 
 	"bus.zcauldron.com/pkg/api"
 	"bus.zcauldron.com/pkg/api/jwt"
-	"bus.zcauldron.com/pkg/constants"
 	"bus.zcauldron.com/pkg/handlers"
 	"bus.zcauldron.com/pkg/middleware"
 	"bus.zcauldron.com/pkg/utils"
@@ -17,35 +15,7 @@ import (
 
 func main() {
 	r := gin.Default()
-	env := utils.GetEnv()
-	r.Use(func(c *gin.Context) {
-		origin := c.Request.Header.Get("Origin")
-		allowedOrigins := []string{
-			"https://" + constants.AppConfig.ProductionDomain,
-		}
-
-		if env == "development" {
-			allowedOrigins = append(allowedOrigins, "http://"+constants.AppConfig.DevelopmentDomain+":"+strconv.Itoa(constants.AppConfig.DevelopmentPorts.Frontend))
-			allowedOrigins = append(allowedOrigins, "http://"+constants.AppConfig.DevelopmentDomain+":"+strconv.Itoa(constants.AppConfig.DevelopmentPorts.Backend))
-		}
-
-		if origin == "" || utils.ContainsOrigin(allowedOrigins, origin) {
-			c.Writer.Header().Set("Access-Control-Allow-Origin", origin)
-			c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
-			c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
-			c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT, DELETE")
-
-			if c.Request.Method == "OPTIONS" {
-				c.AbortWithStatus(204)
-				return
-			}
-		} else {
-			c.AbortWithStatus(401)
-			return
-		}
-
-		c.Next()
-	})
+	r.Use(middleware.Cors)
 
 	// static files
 	r.Static("/styles", "./public/styles")
@@ -63,26 +33,16 @@ func main() {
 	// alllll routes
 	registerPublicViews(r)
 	registerPublicApiRoutes(r)
-
-	// auth := r.Group("/")
-	// auth.Use(middleware.AuthRequired())
-	r.Use(middleware.Recovery("Something went wrong"))
-	// auth.Use(middleware.SecurityQuestionsRequired())
-
 	registerPrivateViews(r)
 	registerPrivateApiRoutes(r)
 	registerJwtApiRoutes(r)
 
-	r.NoRoute(func(c *gin.Context) {
-		log.Printf("404 Not Found: %s %s", c.Request.Method, c.Request.URL.Path)
-		c.JSON(404, gin.H{"message": "Not Found"})
-	})
+	r.NoRoute(handlers.NotFound404)
 
 	log.Println("Server is running on port 8080")
 	r.Run(":8080")
 }
 
-// PUBLIC VIEWS
 // These use Templ as a template engine
 func registerPublicViews(router *gin.Engine) {
 	router.GET("/", handlers.LandingView)
@@ -93,7 +53,6 @@ func registerPublicViews(router *gin.Engine) {
 	router.GET("/forgot-password", handlers.ForgotPasswordView)
 }
 
-// These primarily talk to the Templ application
 func registerPublicApiRoutes(router *gin.Engine) {
 	router.POST("/login", api.LoginHandler)
 	router.POST("/sign-up", api.SignUpHandler)
@@ -116,7 +75,6 @@ func registerPrivateApiRoutes(router *gin.Engine) {
 	router.POST("/api/v1/finances/receipts/export", middleware.AuthRequired(), api.ExportReceipts)
 	router.POST("/api/v1/finances/receipts/upload-image", middleware.AuthRequired(), api.UploadHandlerButInJson)
 	router.POST("/api/v1/finances/receipts/upload", middleware.AuthRequired(), api.SaveReceiptHandler)
-
 	router.GET("/api/v1/example/jwt", middleware.JWTAuthMiddleware(), api.ExampleAuthEndpoint)
 
 	// @deprecated
