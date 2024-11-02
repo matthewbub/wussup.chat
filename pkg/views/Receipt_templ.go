@@ -11,14 +11,14 @@ import templruntime "github.com/a-h/templ/runtime"
 import (
 	"fmt"
 
-	"bus.zcauldron.com/pkg/models"
+	"bus.zcauldron.com/pkg/operations"
 	"bus.zcauldron.com/pkg/views/partials"
 )
 
 type ReceiptViewData struct {
 	Title      string
 	IsLoggedIn bool
-	Receipt    models.Receipt
+	Receipt    operations.Receipt
 }
 
 func ReceiptView(data ReceiptViewData) templ.Component {

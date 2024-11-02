@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"bus.zcauldron.com/pkg/models"
+	"bus.zcauldron.com/pkg/operations"
 	"bus.zcauldron.com/pkg/utils"
 	"github.com/gin-gonic/gin"
 )
@@ -28,7 +28,7 @@ func DeleteReceipts(c *gin.Context) {
 	// Validate receipt ownership
 	var validReceipts []string
 	for _, id := range request.ReceiptIDs {
-		validated, err := models.ValidateReceiptOwnership(user.ID, id)
+		validated, err := operations.ValidateReceiptOwnership(user.ID, id)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to validate receipt ownership"})
 			return
@@ -44,7 +44,7 @@ func DeleteReceipts(c *gin.Context) {
 	}
 
 	// Delete receipts
-	err = models.DeleteReceipts(validReceipts, user.ID)
+	err = operations.DeleteReceipts(validReceipts, user.ID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete receipts"})
 		return
@@ -76,7 +76,7 @@ func ExportReceipts(c *gin.Context) {
 	// Validate receipt ownership
 	var validReceipts []string
 	for _, id := range request.ReceiptIDs {
-		validated, err := models.ValidateReceiptOwnership(user.ID, id)
+		validated, err := operations.ValidateReceiptOwnership(user.ID, id)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to validate receipt ownership"})
 			return
@@ -93,7 +93,7 @@ func ExportReceipts(c *gin.Context) {
 
 	// Prepare csv
 	//https://stackoverflow.com/questions/6076984/sqlite-how-do-i-save-the-result-of-a-query-as-a-csv-file
-	rows, err := models.SimpleGetReceipts(user.ID, validReceipts)
+	rows, err := operations.SimpleGetReceipts(user.ID, validReceipts)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get receipts"})
 		return

@@ -2,10 +2,10 @@ package partials
 
 import (
 	"fmt"
-	"bus.zcauldron.com/pkg/models"
+	"bus.zcauldron.com/pkg/operations"
 )
 
-templ ReceiptConfirmation(receipt models.RawReceipt) {	
+templ ReceiptConfirmation(receipt operations.RawReceipt) {	
   <div id="receipt-confirmation" class="receipt-confirmation-container">
     <div class="receipt-confirmation-header">
       <h2>Receipt</h2>

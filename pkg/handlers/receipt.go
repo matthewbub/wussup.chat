@@ -4,7 +4,7 @@ import (
 	"log"
 	"net/http"
 
-	"bus.zcauldron.com/pkg/models"
+	"bus.zcauldron.com/pkg/operations"
 	"bus.zcauldron.com/pkg/utils"
 	"bus.zcauldron.com/pkg/views"
 	"github.com/a-h/templ"
@@ -25,7 +25,7 @@ func ReceiptView(c *gin.Context) {
 		return
 	}
 
-	receipt, err := models.GetReceiptById(receiptID)
+	receipt, err := operations.GetReceiptById(receiptID)
 
 	if err != nil {
 		log.Println(err)

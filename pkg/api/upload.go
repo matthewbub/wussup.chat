@@ -13,7 +13,7 @@ import (
 	"strings"
 	"time"
 
-	"bus.zcauldron.com/pkg/models"
+	"bus.zcauldron.com/pkg/operations"
 	"bus.zcauldron.com/pkg/utils"
 	"bus.zcauldron.com/pkg/views/partials"
 	"github.com/gin-gonic/gin"
@@ -170,7 +170,7 @@ func UploadHandler(c *gin.Context) {
 		return
 	}
 
-	_, err = models.InsertTokenUsage(c, openAIResp.Model, openAIResp.Usage.PromptTokens, openAIResp.Usage.CompletionTokens, openAIResp.Usage.TotalTokens)
+	_, err = operations.InsertTokenUsage(c, openAIResp.Model, openAIResp.Usage.PromptTokens, openAIResp.Usage.CompletionTokens, openAIResp.Usage.TotalTokens)
 	if err != nil {
 		log.Printf("Error inserting token usage: %v\n", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to insert token usage"})
@@ -375,7 +375,7 @@ func UploadHandlerButInJson(c *gin.Context) {
 		return
 	}
 
-	_, err = models.InsertTokenUsage(c, openAIResp.Model, openAIResp.Usage.PromptTokens, openAIResp.Usage.CompletionTokens, openAIResp.Usage.TotalTokens)
+	_, err = operations.InsertTokenUsage(c, openAIResp.Model, openAIResp.Usage.PromptTokens, openAIResp.Usage.CompletionTokens, openAIResp.Usage.TotalTokens)
 	if err != nil {
 		log.Printf("Error inserting token usage: %v\n", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to insert token usage"})
@@ -472,7 +472,7 @@ func UploadConfirmHandler(c *gin.Context) {
 		return
 	}
 	// Extract form data into a structured format
-	receipt := models.RawReceipt{
+	receipt := operations.RawReceipt{
 		Image:    data["image"],
 		Merchant: data["merchant"],
 		Date:     data["date"],
@@ -501,14 +501,14 @@ func UploadConfirmHandler(c *gin.Context) {
 				c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid item price format"})
 				return
 			}
-			receipt.Items = append(receipt.Items, models.RawPurchasedItem{
+			receipt.Items = append(receipt.Items, operations.RawPurchasedItem{
 				Name:  itemNames[index],
 				Price: itemPriceInt,
 			})
 		}
 	}
 
-	component := partials.ReceiptConfirmation(models.RawReceipt(receipt))
+	component := partials.ReceiptConfirmation(operations.RawReceipt(receipt))
 	err = component.Render(context.Background(), c.Writer)
 	if err != nil {
 		log.Printf("Something went wrong rendering the template")
@@ -539,7 +539,7 @@ func SaveReceiptHandler(c *gin.Context) {
 	// When a user adds a receipt we need to create a merchant if it doesn't exist,
 	// we need to create a new receipt,
 	// and then use the ID from both of those to add the receipt items
-	merchantId, err := models.InsertMerchant(input.Receipt.Merchant)
+	merchantId, err := operations.InsertMerchant(input.Receipt.Merchant)
 	if err != nil || merchantId == 0 {
 		log.Printf("Error inserting merchant: %v\n", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to insert merchant"})
@@ -553,7 +553,7 @@ func SaveReceiptHandler(c *gin.Context) {
 		return
 	}
 
-	receiptId, err := models.InsertReceipt(c, fmt.Sprintf("%d", total), input.Receipt.Date, merchantId)
+	receiptId, err := operations.InsertReceipt(c, fmt.Sprintf("%d", total), input.Receipt.Date, merchantId)
 	if err != nil || receiptId == 0 {
 		log.Printf("Error inserting receipt: %v\n", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to insert receipt"})
@@ -567,13 +567,13 @@ func SaveReceiptHandler(c *gin.Context) {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid item price format"})
 			return
 		}
-		rawPurchasedItem := models.RawPurchasedItem{
+		rawPurchasedItem := operations.RawPurchasedItem{
 			Name:         item.Name,
 			Price:        itemPrice,
 			CurrencyType: "USD",
 		}
 
-		_, err = models.InsertPurchasedItem(c, rawPurchasedItem, merchantId, receiptId)
+		_, err = operations.InsertPurchasedItem(c, rawPurchasedItem, merchantId, receiptId)
 		if err != nil {
 			log.Printf("Error inserting purchased item: %v\n", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to insert purchased item"})
@@ -581,7 +581,7 @@ func SaveReceiptHandler(c *gin.Context) {
 		}
 	}
 
-	err = models.InsertReceiptImageIntoDatabase(c, input.Image, receiptId)
+	err = operations.InsertReceiptImageIntoDatabase(c, input.Image, receiptId)
 	if err != nil {
 		log.Printf("Error inserting image into database: %v\n", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to insert image into database"})

@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 
-	"bus.zcauldron.com/pkg/models"
+	"bus.zcauldron.com/pkg/operations"
 	"bus.zcauldron.com/pkg/utils"
 	"bus.zcauldron.com/pkg/views"
 	"github.com/a-h/templ"
@@ -75,14 +75,14 @@ func SignUpHandler(c *gin.Context) {
 	}
 
 	// Insert user into database
-	err = models.InsertUserIntoDatabase(userData.username, hashedPassword, userData.email)
+	err = operations.InsertUserIntoDatabase(userData.username, hashedPassword, userData.email)
 	if err != nil {
 		log.Printf("Error inserting user into database: %v", err)
 		handleDatabaseError(c, err)
 		return
 	}
 
-	user, err := models.GetUserFromDatabase(userData.username)
+	user, err := operations.GetUserFromDatabase(userData.username)
 	if err != nil {
 		log.Printf("Error getting user from database: %v", err)
 		renderErrorPage(c, http.StatusInternalServerError, "Error processing your request")

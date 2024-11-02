@@ -4,7 +4,7 @@ import (
 	"log"
 	"net/http"
 
-	"bus.zcauldron.com/pkg/models"
+	"bus.zcauldron.com/pkg/operations"
 	"bus.zcauldron.com/pkg/utils"
 	"github.com/gin-gonic/gin"
 )
@@ -24,7 +24,7 @@ func SecurityQuestionsRequired() gin.HandlerFunc {
 		db := utils.Db()
 		defer db.Close()
 
-		answered, err := models.CheckSecurityQuestionsAnswered(userID)
+		answered, err := operations.CheckSecurityQuestionsAnswered(userID)
 		log.Printf("[SecurityQuestionsRequired] Security questions answered: %v", answered)
 		if err != nil {
 			log.Printf("[SecurityQuestionsRequired] Error checking if security questions are answered: %v", err)

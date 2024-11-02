@@ -9,7 +9,7 @@ import "github.com/a-h/templ"
 import templruntime "github.com/a-h/templ/runtime"
 
 import (
-	"bus.zcauldron.com/pkg/models"
+	"bus.zcauldron.com/pkg/operations"
 	"bus.zcauldron.com/pkg/utils"
 	"bus.zcauldron.com/pkg/views/partials"
 	"fmt"
@@ -20,7 +20,7 @@ type FinancesData struct {
 	Title      string
 	Name       string
 	IsLoggedIn bool
-	Receipts   []models.Receipt
+	Receipts   []operations.Receipt
 	Pagination PaginationData
 	User       utils.UserObject
 }

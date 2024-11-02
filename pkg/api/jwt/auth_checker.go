@@ -3,7 +3,7 @@ package jwt
 import (
 	"net/http"
 
-	"bus.zcauldron.com/pkg/models"
+	"bus.zcauldron.com/pkg/operations"
 	"bus.zcauldron.com/pkg/utils"
 	"github.com/gin-gonic/gin"
 )
@@ -29,7 +29,7 @@ func AuthCheckHandler(c *gin.Context) {
 	}
 
 	// Check if user exists in the database
-	user, err := models.GetUserByID(userID)
+	user, err := operations.GetUserByID(userID)
 	if err != nil || user == nil {
 		c.JSON(http.StatusUnauthorized, gin.H{
 			"ok":    false,

@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"bus.zcauldron.com/pkg/models"
+	"bus.zcauldron.com/pkg/operations"
 	"bus.zcauldron.com/pkg/utils"
 	"bus.zcauldron.com/pkg/views"
 	"github.com/a-h/templ"
@@ -31,7 +31,7 @@ func FinancesView(c *gin.Context) {
 		records = "10"
 	}
 
-	receipts, totalRecords, err := models.GetReceipts(user.ID, page, records)
+	receipts, totalRecords, err := operations.GetReceipts(user.ID, page, records)
 	if err != nil {
 		log.Println(err)
 		// TODO improve error handling
@@ -39,7 +39,7 @@ func FinancesView(c *gin.Context) {
 		return
 	}
 
-	// var clientSafeReceipts []models.Receipt
+	// var clientSafeReceipts []operations.Receipt
 	// for _, receipt := range receipts {
 	// 	// total, err := utils.FormatCurrency(receipt.Total)
 	// 	// if err != nil {

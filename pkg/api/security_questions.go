@@ -4,7 +4,7 @@ import (
 	"log"
 	"net/http"
 
-	"bus.zcauldron.com/pkg/models"
+	"bus.zcauldron.com/pkg/operations"
 	"bus.zcauldron.com/pkg/utils"
 	"github.com/gin-gonic/gin"
 )
@@ -21,7 +21,7 @@ func SecurityQuestionsHandler(c *gin.Context) {
 	}
 
 	// Check if security questions have already been answered
-	answered, err := models.CheckSecurityQuestionsAnswered(userID)
+	answered, err := operations.CheckSecurityQuestionsAnswered(userID)
 	if err != nil {
 		log.Printf("[SecurityQuestionsHandler] Error checking if security questions are answered: %v", err)
 		handleDatabaseError(c, err)
@@ -49,7 +49,7 @@ func SecurityQuestionsHandler(c *gin.Context) {
 	}
 
 	// Insert security questions into database
-	err = models.InsertSecurityQuestionsIntoDatabase(userID, question1, answer1, question2, answer2, question3, answer3)
+	err = operations.InsertSecurityQuestionsIntoDatabase(userID, question1, answer1, question2, answer2, question3, answer3)
 	if err != nil {
 		log.Printf("[SecurityQuestionsHandler] Error inserting security questions into database: %v", err)
 		handleDatabaseError(c, err)
@@ -57,7 +57,7 @@ func SecurityQuestionsHandler(c *gin.Context) {
 	}
 
 	// Update user to indicate security questions have been answered
-	err = models.UpdateUserSecurityQuestionsAnswered(userID)
+	err = operations.UpdateUserSecurityQuestionsAnswered(userID)
 	if err != nil {
 		log.Printf("[SecurityQuestionsHandler] Error updating user security questions answered: %v", err)
 		handleDatabaseError(c, err)

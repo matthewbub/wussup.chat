@@ -4,7 +4,7 @@ import (
 	"log"
 	"net/http"
 
-	"bus.zcauldron.com/pkg/models"
+	"bus.zcauldron.com/pkg/operations"
 	"bus.zcauldron.com/pkg/utils"
 	"github.com/gin-gonic/gin"
 )
@@ -37,7 +37,7 @@ func SecurityQuestionsHandler(c *gin.Context) {
 	}
 
 	// Check if security questions have already been answered
-	answered, err := models.CheckSecurityQuestionsAnswered(userID)
+	answered, err := operations.CheckSecurityQuestionsAnswered(userID)
 	if err != nil {
 		log.Printf("[SecurityQuestionsHandler] Error checking answered status: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"ok": false, "message": "Error checking security questions status"})
@@ -67,7 +67,7 @@ func SecurityQuestionsHandler(c *gin.Context) {
 	}
 
 	// Insert security questions into the database
-	err = models.InsertSecurityQuestionsIntoDatabase(userID, questions[0].Question, questions[0].Answer, questions[1].Question, questions[1].Answer, questions[2].Question, questions[2].Answer)
+	err = operations.InsertSecurityQuestionsIntoDatabase(userID, questions[0].Question, questions[0].Answer, questions[1].Question, questions[1].Answer, questions[2].Question, questions[2].Answer)
 	if err != nil {
 		log.Printf("[SecurityQuestionsHandler] Error inserting security questions: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"ok": false, "message": "Error saving security questions"})
@@ -75,7 +75,7 @@ func SecurityQuestionsHandler(c *gin.Context) {
 	}
 
 	// Mark security questions as answered
-	err = models.UpdateUserSecurityQuestionsAnswered(userID)
+	err = operations.UpdateUserSecurityQuestionsAnswered(userID)
 	if err != nil {
 		log.Printf("[SecurityQuestionsHandler] Error updating answered status: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"ok": false, "message": "Error updating security questions status"})

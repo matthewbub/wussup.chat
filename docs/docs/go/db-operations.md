@@ -1,6 +1,6 @@
 # User Database Operations
 
-This package provides database operations for user management. While named "models", these functions act more as a repository layer, handling all database interactions related to user entities.
+This package provides database operations for user management.
 
 ## Functions
 
@@ -9,7 +9,7 @@ This package provides database operations for user management. While named "mode
 Creates a new user in the database with a generated UUID.
 
 ```go
-err := models.InsertUserIntoDatabase("johndoe", "hashedPassword123", "john@example.com")
+err := operations.InsertUserIntoDatabase("johndoe", "hashedPassword123", "john@example.com")
 if err != nil {
     log.Fatal(err)
 }
@@ -20,7 +20,7 @@ if err != nil {
 Marks a user's security questions as answered.
 
 ```go
-err := models.UpdateUserSecurityQuestionsAnswered("user-uuid-here")
+err := operations.UpdateUserSecurityQuestionsAnswered("user-uuid-here")
 if err != nil {
     log.Fatal(err)
 }
@@ -31,7 +31,7 @@ if err != nil {
 Retrieves a user by username without password information.
 
 ```go
-user, err := models.GetUserFromDatabase("johndoe")
+user, err := operations.GetUserFromDatabase("johndoe")
 if err != nil {
     log.Fatal(err)
 }
@@ -43,7 +43,7 @@ fmt.Printf("User ID: %s, Email: %s\n", user.ID, user.Email)
 Retrieves a user by their UUID without password information.
 
 ```go
-user, err := models.GetUserByID("user-uuid-here")
+user, err := operations.GetUserByID("user-uuid-here")
 if err != nil {
     log.Fatal(err)
 }
@@ -54,7 +54,7 @@ if err != nil {
 Retrieves a user by their UUID, including password hash (for authentication purposes).
 
 ```go
-user, err := models.GetUserWithPasswordByID("user-uuid-here")
+user, err := operations.GetUserWithPasswordByID("user-uuid-here")
 if err != nil {
     log.Fatal(err)
 }
@@ -65,7 +65,7 @@ if err != nil {
 Updates a user's password and records it in password history.
 
 ```go
-err := models.UpdateUserPassword("user-uuid-here", "newHashedPassword123")
+err := operations.UpdateUserPassword("user-uuid-here", "newHashedPassword123")
 if err != nil {
     log.Fatal(err)
 }
@@ -76,7 +76,7 @@ if err != nil {
 Retrieves a user by username, including password hash (for authentication purposes).
 
 ```go
-user, err := models.GetUserWithPasswordByUserName("johndoe")
+user, err := operations.GetUserWithPasswordByUserName("johndoe")
 if err != nil {
     log.Fatal(err)
 }

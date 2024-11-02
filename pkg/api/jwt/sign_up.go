@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"bus.zcauldron.com/pkg/constants"
-	"bus.zcauldron.com/pkg/models"
+	"bus.zcauldron.com/pkg/operations"
 	"bus.zcauldron.com/pkg/utils"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
@@ -62,13 +62,13 @@ func SignUpHandler(c *gin.Context) {
 	}
 
 	// Insert user into the database
-	if err := models.InsertUserIntoDatabase(body.Username, string(hashedPassword), body.Email); err != nil {
+	if err := operations.InsertUserIntoDatabase(body.Username, string(hashedPassword), body.Email); err != nil {
 		c.JSON(http.StatusConflict, gin.H{"ok": false, "message": "Username or email already exists"})
 		return
 	}
 
 	// Retrieve the user ID for JWT token generation
-	user, err := models.GetUserFromDatabase(body.Username)
+	user, err := operations.GetUserFromDatabase(body.Username)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"ok": false, "message": "Server error"})
 		return

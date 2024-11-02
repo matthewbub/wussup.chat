@@ -4,7 +4,7 @@ import (
 	"log"
 	"net/http"
 
-	"bus.zcauldron.com/pkg/models"
+	"bus.zcauldron.com/pkg/operations"
 	"bus.zcauldron.com/pkg/utils"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
@@ -50,7 +50,7 @@ func ResetPasswordHandler(c *gin.Context) {
 	}
 
 	// Retrieve the user from the database
-	user, err := models.GetUserWithPasswordByID(userID)
+	user, err := operations.GetUserWithPasswordByID(userID)
 	if err != nil || user == nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"ok": false, "message": "User not found"})
 		return
@@ -70,7 +70,7 @@ func ResetPasswordHandler(c *gin.Context) {
 	}
 
 	// Update the user's password in the database
-	if err := models.UpdateUserPassword(userID, string(newPasswordHash)); err != nil {
+	if err := operations.UpdateUserPassword(userID, string(newPasswordHash)); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"ok": false, "message": "Error saving new password"})
 		return
 	}
