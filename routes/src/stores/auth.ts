@@ -11,7 +11,7 @@ type AuthStore = {
     username: string;
     email: string;
   } | null;
-  checkAuth: () => Promise<void>;
+  checkAuth: () => Promise<boolean>;
   useLogin: (username: string, password: string) => Promise<void>;
   useLogout: () => Promise<void>;
   useSignup: (
@@ -24,7 +24,6 @@ type AuthStore = {
   useSecurityQuestions: (
     questions: { question: string; answer: string }[]
   ) => Promise<void>;
-  useAuthCheck: () => Promise<void>;
 };
 
 export const useAuthStore = create<AuthStore>((set) => ({
@@ -55,7 +54,10 @@ export const useAuthStore = create<AuthStore>((set) => ({
           user: json?.user,
           isSecurityQuestionsAnswered:
             json?.user?.securityQuestionsAnswered ?? false,
+          error: null,
         });
+
+        return true;
       } else {
         set({
           error: json?.error || "An error occurred during auth check",
@@ -63,6 +65,8 @@ export const useAuthStore = create<AuthStore>((set) => ({
           user: null,
           isSecurityQuestionsAnswered: false,
         });
+
+        return false;
       }
     } catch (error) {
       set({
@@ -71,6 +75,8 @@ export const useAuthStore = create<AuthStore>((set) => ({
         user: null,
         isSecurityQuestionsAnswered: false,
       });
+
+      return false;
     } finally {
       set({ isLoading: false });
     }
@@ -95,12 +101,23 @@ export const useAuthStore = create<AuthStore>((set) => ({
         set({
           isAuthenticated: true,
           isSecurityQuestionsAnswered: json?.securityQuestionsAnswered ?? false,
+          error: null,
         });
       } else {
-        set({ error: json.message || "Invalid username or password" });
+        set({
+          error: json.message || "Invalid username or password",
+          isAuthenticated: false,
+          user: null,
+          isSecurityQuestionsAnswered: false,
+        });
       }
     } catch (error) {
-      set({ error: "An error occurred during login" });
+      set({
+        error: "An error occurred during login",
+        isAuthenticated: false,
+        user: null,
+        isSecurityQuestionsAnswered: false,
+      });
     } finally {
       set({ isLoading: false });
     }
@@ -116,12 +133,17 @@ export const useAuthStore = create<AuthStore>((set) => ({
       const json = await response.json();
 
       if (json.ok) {
-        set({ isAuthenticated: false });
+        set({
+          isAuthenticated: false,
+          user: null,
+          isSecurityQuestionsAnswered: false,
+        });
       } else {
         set({
           error: "An error occurred during logout",
           user: null,
           isSecurityQuestionsAnswered: false,
+          isAuthenticated: false,
         });
       }
     } catch (error) {
@@ -129,6 +151,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
         error: "An error occurred during logout",
         user: null,
         isSecurityQuestionsAnswered: false,
+        isAuthenticated: false,
       });
     } finally {
       set({ isLoading: false });
@@ -166,12 +189,23 @@ export const useAuthStore = create<AuthStore>((set) => ({
         set({
           isAuthenticated: true,
           isSecurityQuestionsAnswered: json?.securityQuestionsAnswered,
+          error: null,
         });
       } else {
-        set({ error: json.message || "Signup failed" });
+        set({
+          error: json.message || "Signup failed",
+          isAuthenticated: false,
+          user: null,
+          isSecurityQuestionsAnswered: false,
+        });
       }
     } catch {
-      set({ error: "An error occurred during signup" });
+      set({
+        error: "An error occurred during signup",
+        isAuthenticated: false,
+        user: null,
+        isSecurityQuestionsAnswered: false,
+      });
     } finally {
       set({ isLoading: false });
     }
@@ -189,7 +223,10 @@ export const useAuthStore = create<AuthStore>((set) => ({
       });
       const json = await response.json();
       if (json.ok) {
-        set({ isSecurityQuestionsAnswered: true });
+        set({
+          isSecurityQuestionsAnswered: true,
+          error: null,
+        });
       } else {
         set({
           error: json.message || "An error occurred during security questions",
@@ -200,16 +237,5 @@ export const useAuthStore = create<AuthStore>((set) => ({
     } finally {
       set({ isLoading: false });
     }
-  },
-
-  useAuthCheck: async () => {
-    // get the cookie expiry date
-
-    const cookie = document.cookie;
-    const cookieExpiry = cookie
-      .split("; ")
-      .find((row) => row.startsWith("jwt_expiry="))
-      ?.split("=")[1];
-    console.log(cookieExpiry);
   },
 }));

@@ -12,6 +12,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Authorized } from "@/components/Authorized";
 
 export const Route = createFileRoute("/account/reset-password")({
   component: ResetPasswordForAuthenticatedUsers,
@@ -19,9 +20,9 @@ export const Route = createFileRoute("/account/reset-password")({
 
 function ResetPasswordForAuthenticatedUsers() {
   return (
-    <div>
+    <Authorized>
       <AuthenticatedResetPasswordForm />
-    </div>
+    </Authorized>
   );
 }
 
