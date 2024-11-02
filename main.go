@@ -76,8 +76,6 @@ func registerPrivateApiRoutes(router *gin.Engine) {
 	router.POST("/api/v1/finances/receipts/upload-image", middleware.AuthRequired(), api.UploadHandlerButInJson)
 	router.POST("/api/v1/finances/receipts/upload", middleware.AuthRequired(), api.SaveReceiptHandler)
 	router.GET("/api/v1/example/jwt", middleware.JWTAuthMiddleware(), api.ExampleAuthEndpoint)
-
-	// @deprecated
 	router.POST("/upload", middleware.AuthRequired(), api.UploadHandler)
 	router.GET("/manual-upload", middleware.AuthRequired(), api.ManualUploadHandler)
 	router.POST("/upload/confirm", middleware.AuthRequired(), api.UploadConfirmHandler)
