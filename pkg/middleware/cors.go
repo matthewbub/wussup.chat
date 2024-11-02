@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"log"
 	"strconv"
 
 	"bus.zcauldron.com/pkg/constants"
@@ -11,8 +12,18 @@ import (
 func Cors(c *gin.Context) {
 	env := utils.GetEnv()
 	origin := c.Request.Header.Get("Origin")
-	allowedOrigins := []string{
-		"https://" + constants.AppConfig.ProductionDomain,
+
+	if env == "" {
+		log.Println("CORS: No environment found")
+		c.AbortWithStatus(500)
+		return
+	}
+
+	allowedOrigins := []string{}
+
+	// Do not assume prod by default
+	if env == "production" {
+		allowedOrigins = append(allowedOrigins, "https://"+constants.AppConfig.ProductionDomain)
 	}
 
 	if env == "development" {
