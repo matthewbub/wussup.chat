@@ -14,6 +14,12 @@ import {
 } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Link } from "@tanstack/react-router";
+import { config } from "@/app_config";
+import { useForm } from "react-hook-form";
+
+type ForgotPasswordInputs = {
+  username: string;
+};
 
 export const Route = createFileRoute("/forgot-password")({
   component: ForgotPasswordComponent,
@@ -34,24 +40,23 @@ function ForgotPasswordComponent() {
 }
 
 function ForgotPasswordForm() {
-  const [username, setUsername] = React.useState("");
   const [message, setMessage] = React.useState({ type: "", content: "" });
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<ForgotPasswordInputs>();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const onSubmit = async (data: ForgotPasswordInputs) => {
     setMessage({ type: "", content: "" });
 
-    if (!username.trim()) {
-      setMessage({ type: "error", content: "Please enter your username." });
-      return;
-    }
-
     try {
-      const data = await fetch("/api/v1/forgot-password", {
+      const response = await fetch("/api/v1/forgot-password", {
         method: "POST",
-        body: JSON.stringify({ username }),
+        body: JSON.stringify({ username: data.username }),
       });
-      const json = await data.json();
+      const json = await response.json();
       if (!json.ok) {
         throw new Error("Failed to send password reset email");
       }
@@ -61,7 +66,7 @@ function ForgotPasswordForm() {
         content:
           "If a matching account was found, we have sent a password reset link to the associated email address.",
       });
-      setUsername("");
+      reset(); // Clear the form
     } catch (error) {
       setMessage({
         type: "error",
@@ -79,16 +84,23 @@ function ForgotPasswordForm() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="username">Username</Label>
             <Input
               id="username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
               placeholder="Enter your username"
-              required
+              {...register("username", {
+                required: "Please enter your username",
+                maxLength: {
+                  value: config.__PRIVATE__.MAX_USERNAME_LENGTH,
+                  message: `Username must be less than ${config.__PRIVATE__.MAX_USERNAME_LENGTH} characters`,
+                },
+              })}
             />
+            {errors.username && (
+              <p className="text-sm text-red-500">{errors.username.message}</p>
+            )}
           </div>
           {message.content && (
             <Alert

@@ -19,6 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { config } from "@/app_config";
 
 interface FormData {
   questions: { question: string; answer: string }[];
@@ -117,9 +118,20 @@ function SecurityQuestionsForm() {
               <Controller
                 name={`questions.${index}.answer`}
                 control={control}
-                rules={{ required: "Please provide an answer" }}
+                rules={{
+                  required: "Please provide an answer",
+                  maxLength: {
+                    value: config.__PRIVATE__.MAX_SECRET_QUESTION_LENGTH,
+                    message: `Answer must be less than ${config.__PRIVATE__.MAX_SECRET_QUESTION_LENGTH} characters`,
+                  },
+                }}
                 render={({ field }) => (
-                  <Input {...field} placeholder="Your answer" required />
+                  <Input
+                    {...field}
+                    placeholder="Your answer"
+                    required
+                    maxLength={config.__PRIVATE__.MAX_SECRET_QUESTION_LENGTH}
+                  />
                 )}
               />
               {errors.questions?.[index]?.answer && (

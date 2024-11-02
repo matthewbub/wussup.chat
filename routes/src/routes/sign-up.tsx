@@ -14,6 +14,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Link } from "@tanstack/react-router";
+import { config } from "@/app_config";
+import { useForm } from "react-hook-form";
 
 export const Route = createFileRoute("/sign-up")({
   component: SignUpComponent,
@@ -33,63 +35,34 @@ function SignUpComponent() {
   );
 }
 
+type SignUpFormInputs = {
+  username: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+  termsAccepted: boolean;
+};
+
 function SignUpForm() {
   const { useSignup, isLoading, error } = useAuthStore();
 
-  const [username, setUsername] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [termsAccepted, setTermsAccepted] = useState(false);
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    watch,
+  } = useForm<SignUpFormInputs>();
 
-  const [errors, setErrors] = useState({
-    username: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-  });
+  const password = watch("password");
 
-  const validateEmail = (email: string) => {
-    const re = /\S+@\S+\.\S+/;
-    return re.test(email);
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const newErrors = {
-      username: "",
-      email: "",
-      password: "",
-      confirmPassword: "",
-    };
-
-    if (username.length < 3) {
-      newErrors.username = "Username must be at least 3 characters long";
-    }
-
-    if (!validateEmail(email)) {
-      newErrors.email = "Please enter a valid email address";
-    }
-
-    if (password.length < 8) {
-      newErrors.password = "Password must be at least 8 characters long";
-    }
-
-    if (password !== confirmPassword) {
-      newErrors.confirmPassword = "Passwords do not match";
-    }
-
-    setErrors(newErrors);
-
-    if (Object.values(newErrors).every((error) => error === "")) {
-      await useSignup(
-        username,
-        email,
-        password,
-        confirmPassword,
-        termsAccepted
-      );
-    }
+  const onSubmit = async (data: SignUpFormInputs) => {
+    await useSignup(
+      data.username,
+      data.email,
+      data.password,
+      data.confirmPassword,
+      data.termsAccepted
+    );
   };
 
   return (
@@ -99,17 +72,25 @@ function SignUpForm() {
         <CardDescription>Create your account to get started</CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="username">Username</Label>
             <Input
               id="username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required
+              {...register("username", {
+                required: "Username is required",
+                minLength: {
+                  value: 3,
+                  message: "Username must be at least 3 characters long",
+                },
+                maxLength: {
+                  value: config.__PRIVATE__.MAX_USERNAME_LENGTH,
+                  message: `Username must be less than ${config.__PRIVATE__.MAX_USERNAME_LENGTH} characters`,
+                },
+              })}
             />
             {errors.username && (
-              <p className="text-sm text-red-500">{errors.username}</p>
+              <p className="text-sm text-red-500">{errors.username.message}</p>
             )}
           </div>
           <div className="space-y-2">
@@ -118,12 +99,16 @@ function SignUpForm() {
               id="email"
               type="email"
               placeholder="you@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
+              {...register("email", {
+                required: "Email is required",
+                pattern: {
+                  value: /\S+@\S+\.\S+/,
+                  message: "Please enter a valid email address",
+                },
+              })}
             />
             {errors.email && (
-              <p className="text-sm text-red-500">{errors.email}</p>
+              <p className="text-sm text-red-500">{errors.email.message}</p>
             )}
           </div>
           <div className="space-y-2">
@@ -131,12 +116,20 @@ function SignUpForm() {
             <Input
               id="password"
               type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
+              {...register("password", {
+                required: "Password is required",
+                minLength: {
+                  value: 8,
+                  message: "Password must be at least 8 characters long",
+                },
+                maxLength: {
+                  value: config.__PRIVATE__.MAX_PASSWORD_LENGTH,
+                  message: `Password must be less than ${config.__PRIVATE__.MAX_PASSWORD_LENGTH} characters`,
+                },
+              })}
             />
             {errors.password && (
-              <p className="text-sm text-red-500">{errors.password}</p>
+              <p className="text-sm text-red-500">{errors.password.message}</p>
             )}
           </div>
           <div className="space-y-2">
@@ -144,21 +137,25 @@ function SignUpForm() {
             <Input
               id="confirm-password"
               type="password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              required
+              {...register("confirmPassword", {
+                required: "Please confirm your password",
+                validate: (value) =>
+                  value === password || "Passwords do not match",
+              })}
             />
             {errors.confirmPassword && (
-              <p className="text-sm text-red-500">{errors.confirmPassword}</p>
+              <p className="text-sm text-red-500">
+                {errors.confirmPassword.message}
+              </p>
             )}
           </div>
           <div className="space-y-2 flex items-baseline gap-2">
             <input
               type="checkbox"
               id="terms"
-              checked={termsAccepted}
-              onChange={() => setTermsAccepted(!termsAccepted)}
-              required
+              {...register("termsAccepted", {
+                required: "You must accept the terms and conditions",
+              })}
             />
             <Label htmlFor="terms" className="text-sm">
               I agree to the{" "}

@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/card";
 import { Link } from "@tanstack/react-router";
 import { useForm } from "react-hook-form";
+import { config } from "@/app_config";
 
 type LoginFormInputs = {
   username: string;
@@ -72,6 +73,10 @@ function LoginFormComponent() {
               placeholder="Enter your username"
               {...register("username", {
                 required: "Please enter your username",
+                maxLength: {
+                  value: config.__PRIVATE__.MAX_USERNAME_LENGTH,
+                  message: `Username must be less than ${config.__PRIVATE__.MAX_USERNAME_LENGTH} characters`,
+                },
               })}
             />
             {errors.username && (
@@ -86,6 +91,10 @@ function LoginFormComponent() {
               placeholder="Enter your password"
               {...register("password", {
                 required: "Please enter your password",
+                maxLength: {
+                  value: config.__PRIVATE__.MAX_PASSWORD_LENGTH,
+                  message: `Password must be less than ${config.__PRIVATE__.MAX_PASSWORD_LENGTH} characters`,
+                },
               })}
             />
             {errors.password && (

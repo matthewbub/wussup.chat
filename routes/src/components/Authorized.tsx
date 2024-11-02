@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useAuthStore } from "@/stores/auth";
 import { Navigate } from "@tanstack/react-router";
-
+import { config } from "@/app_config";
 export function useAuthCheck() {
   const { checkAuth } = useAuthStore();
 
@@ -14,7 +14,8 @@ export function useAuthCheck() {
       () => {
         checkAuth();
       },
-      5 * 60 * 1000 // 5 minutes
+      // TODO: Make this configurable
+      config.AUTH_CHECK_INTERVAL
     );
 
     // Cleanup on unmount
