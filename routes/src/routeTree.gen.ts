@@ -21,6 +21,7 @@ import { Route as IndexImport } from './routes/index'
 import { Route as DocumentsIndexImport } from './routes/documents/index'
 import { Route as DocumentsIdImport } from './routes/documents/$id'
 import { Route as AccountResetPasswordImport } from './routes/account/reset-password'
+import { Route as AccountMeImport } from './routes/account/me'
 
 // Create/Update Routes
 
@@ -84,6 +85,12 @@ const AccountResetPasswordRoute = AccountResetPasswordImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const AccountMeRoute = AccountMeImport.update({
+  id: '/account/me',
+  path: '/account/me',
+  getParentRoute: () => rootRoute,
+} as any)
+
 // Populate the FileRoutesByPath interface
 
 declare module '@tanstack/react-router' {
@@ -137,6 +144,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SignUpImport
       parentRoute: typeof rootRoute
     }
+    '/account/me': {
+      id: '/account/me'
+      path: '/account/me'
+      fullPath: '/account/me'
+      preLoaderRoute: typeof AccountMeImport
+      parentRoute: typeof rootRoute
+    }
     '/account/reset-password': {
       id: '/account/reset-password'
       path: '/account/reset-password'
@@ -171,6 +185,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/security-questions': typeof SecurityQuestionsRoute
   '/sign-up': typeof SignUpRoute
+  '/account/me': typeof AccountMeRoute
   '/account/reset-password': typeof AccountResetPasswordRoute
   '/documents/$id': typeof DocumentsIdRoute
   '/documents': typeof DocumentsIndexRoute
@@ -184,6 +199,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/security-questions': typeof SecurityQuestionsRoute
   '/sign-up': typeof SignUpRoute
+  '/account/me': typeof AccountMeRoute
   '/account/reset-password': typeof AccountResetPasswordRoute
   '/documents/$id': typeof DocumentsIdRoute
   '/documents': typeof DocumentsIndexRoute
@@ -198,6 +214,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/security-questions': typeof SecurityQuestionsRoute
   '/sign-up': typeof SignUpRoute
+  '/account/me': typeof AccountMeRoute
   '/account/reset-password': typeof AccountResetPasswordRoute
   '/documents/$id': typeof DocumentsIdRoute
   '/documents/': typeof DocumentsIndexRoute
@@ -213,6 +230,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/security-questions'
     | '/sign-up'
+    | '/account/me'
     | '/account/reset-password'
     | '/documents/$id'
     | '/documents'
@@ -225,6 +243,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/security-questions'
     | '/sign-up'
+    | '/account/me'
     | '/account/reset-password'
     | '/documents/$id'
     | '/documents'
@@ -237,6 +256,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/security-questions'
     | '/sign-up'
+    | '/account/me'
     | '/account/reset-password'
     | '/documents/$id'
     | '/documents/'
@@ -251,6 +271,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   SecurityQuestionsRoute: typeof SecurityQuestionsRoute
   SignUpRoute: typeof SignUpRoute
+  AccountMeRoute: typeof AccountMeRoute
   AccountResetPasswordRoute: typeof AccountResetPasswordRoute
   DocumentsIdRoute: typeof DocumentsIdRoute
   DocumentsIndexRoute: typeof DocumentsIndexRoute
@@ -264,6 +285,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   SecurityQuestionsRoute: SecurityQuestionsRoute,
   SignUpRoute: SignUpRoute,
+  AccountMeRoute: AccountMeRoute,
   AccountResetPasswordRoute: AccountResetPasswordRoute,
   DocumentsIdRoute: DocumentsIdRoute,
   DocumentsIndexRoute: DocumentsIndexRoute,
@@ -288,6 +310,7 @@ export const routeTree = rootRoute
         "/login",
         "/security-questions",
         "/sign-up",
+        "/account/me",
         "/account/reset-password",
         "/documents/$id",
         "/documents/"
@@ -313,6 +336,9 @@ export const routeTree = rootRoute
     },
     "/sign-up": {
       "filePath": "sign-up.tsx"
+    },
+    "/account/me": {
+      "filePath": "account/me.tsx"
     },
     "/account/reset-password": {
       "filePath": "account/reset-password.tsx"
