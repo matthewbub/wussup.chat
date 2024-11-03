@@ -28,3 +28,11 @@ type ReceiptWithImage struct {
 	Receipt ReceiptParseResult
 	Image   string `json:"image"`
 }
+
+type User struct {
+	ID                        string
+	Username                  string
+	Email                     string
+	SecurityQuestionsAnswered bool
+	Password                  string
+}

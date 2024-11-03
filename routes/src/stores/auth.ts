@@ -35,7 +35,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
   checkAuth: async () => {
     try {
       set({ isLoading: true, error: null });
-      const response = await fetch("/api/v1/auth-check/jwt", {
+      const response = await fetch("/api/v1/jwt/auth-check", {
         credentials: "include",
       });
       const json = (await response.json()) as {
@@ -87,7 +87,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
   useLogin: async (username: string, password: string) => {
     try {
       set({ isLoading: true, error: null });
-      const response = await fetch("/api/v1/login/jwt", {
+      const response = await fetch("/api/v1/jwt/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -128,7 +128,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
   useLogout: async () => {
     try {
       set({ isLoading: true });
-      const response = await fetch("/api/v1/logout/jwt", {
+      const response = await fetch("/api/v1/jwt/logout", {
         method: "POST",
         credentials: "include",
       });
@@ -169,7 +169,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
   ) => {
     try {
       set({ isLoading: true, error: null });
-      const response = await fetch("/api/v1/sign-up/jwt", {
+      const response = await fetch("/api/v1/jwt/sign-up", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -218,7 +218,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
   ) => {
     try {
       set({ isLoading: true, error: null });
-      const response = await fetchWithAuth("/api/v1/security-questions", {
+      const response = await fetchWithAuth("/api/v1/jwt/security-questions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ questions }),

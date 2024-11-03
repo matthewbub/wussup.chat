@@ -47,7 +47,7 @@ function AuthenticatedResetPasswordForm() {
     }
 
     try {
-      const data = await fetch("/api/v1/auth/reset-password", {
+      const data = await fetch("/api/v1/jwt/reset-password", {
         method: "POST",
         body: JSON.stringify({
           oldPassword,

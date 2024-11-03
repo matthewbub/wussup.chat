@@ -12,20 +12,20 @@
 
 ### `checkAuth`
 
-Checks if the user is authenticated by making a request to `/api/v1/auth-check/jwt`. Updates the state based on the response.
+Checks if the user is authenticated by making a request to `/api/v1/jwt/auth-check`. Updates the state based on the response.
 
 ### `useLogin`
 
-Logs in the user by sending a POST request to `/api/v1/login/jwt`. Updates state based on the response.
+Logs in the user by sending a POST request to `/api/v1/jwt/login`. Updates state based on the response.
 
 ### `useLogout`
 
-Logs out the user by sending a POST request to `/api/v1/logout/jwt`. Clears user state on success.
+Logs out the user by sending a POST request to `/api/v1/jwt/logout`. Clears user state on success.
 
 ### `useSignup`
 
-Registers a new user with username, email, password, confirm password, and terms accepted. Sends a POST request to `/api/v1/sign-up/jwt`
+Registers a new user with username, email, password, confirm password, and terms accepted. Sends a POST request to `/api/v1/jwt/sign-up`
 
 ### `useSecurityQuestions`
 
-Submits security questions and answers for the user. Sends a POST request to `/api/v1/security-questions`.
+Submits security questions and answers for the user. Sends a POST request to `/api/v1/jwt/security-questions`.
