@@ -17,6 +17,22 @@ RUN rm -rf node_modules
 RUN npm install
 RUN npm run build
 
+# Step 2.1: Build stage for website
+FROM node:20-alpine AS web-builder-docs
+WORKDIR /app/docs
+COPY docs ./
+RUN rm -rf node_modules
+RUN npm install
+RUN npm run build
+
+# Step 2.2: Build stage for router
+FROM node:20-alpine AS router-builder
+WORKDIR /app/router
+COPY router ./
+RUN rm -rf node_modules
+RUN npm install
+RUN npm run build
+
 # Step 3: Run stage
 FROM alpine:latest
 RUN apk add --no-cache sqlite
@@ -26,5 +42,7 @@ WORKDIR /root/
 COPY --from=go-builder /app/main .
 COPY --from=go-builder /app/public ./public
 COPY --from=web-builder /app/website/dist ./website/dist
+COPY --from=web-builder-docs /app/docs/build ./docs/build
+COPY --from=router-builder /app/router/dist ./router/dist
 EXPOSE 8080
 CMD ["./main"]

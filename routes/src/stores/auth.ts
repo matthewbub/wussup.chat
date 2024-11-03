@@ -60,7 +60,9 @@ export const useAuthStore = create<AuthStore>((set) => ({
         return true;
       } else {
         set({
-          error: json?.error || "An error occurred during auth check",
+          error:
+            json?.error ||
+            "An error occurred during auth check. Please sign in.",
           isAuthenticated: false,
           user: null,
           isSecurityQuestionsAnswered: false,
@@ -70,7 +72,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
       }
     } catch (error) {
       set({
-        error: "An error occurred during auth check",
+        error: "An error occurred during auth check. Please sign in.",
         isAuthenticated: false,
         user: null,
         isSecurityQuestionsAnswered: false,
