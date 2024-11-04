@@ -11,7 +11,7 @@ function RootComponent() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   return (
     <>
-      <div className="p-2 flex gap-2 justify-between">
+      {/* <div className="p-2 flex gap-2 justify-between">
         <Link
           to="/"
           activeProps={{
@@ -48,8 +48,8 @@ function RootComponent() {
             </Link>
           )}
         </div>
-      </div>
-      <hr />
+      </div> */}
+      {/* <hr /> */}
       <Outlet />
       {/* <TanStackRouterDevtools position="bottom-right" /> */}
     </>

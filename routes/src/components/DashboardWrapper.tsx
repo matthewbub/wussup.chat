@@ -24,6 +24,7 @@ import {
   SidebarSection,
 } from "@/components/catalyst/sidebar";
 import { StackedLayout } from "@/components/catalyst/stacked-layout";
+import { useAuthStore } from "@/stores/auth";
 import {
   ArrowRightStartOnRectangleIcon,
   ChevronDownIcon,
@@ -113,7 +114,9 @@ export function DashboardWrapper({ children }: { children: React.ReactNode }) {
                   <DropdownLabel>Share feedback</DropdownLabel>
                 </DropdownItem>
                 <DropdownDivider />
-                <DropdownItem href="/logout">
+                <DropdownItem
+                  onClick={() => useAuthStore.getState().useLogout()}
+                >
                   <ArrowRightStartOnRectangleIcon />
                   <DropdownLabel>Sign out</DropdownLabel>
                 </DropdownItem>

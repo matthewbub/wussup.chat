@@ -63,6 +63,7 @@ function AccountSettings() {
     security: useRef<HTMLDivElement>(null),
     preferences: useRef<HTMLDivElement>(null),
     dataManagement: useRef<HTMLDivElement>(null),
+    passwordReset: useRef<HTMLDivElement>(null),
   };
 
   const handleUpdateEmail = (e: React.FormEvent) => {
@@ -100,34 +101,42 @@ function AccountSettings() {
   return (
     <DashboardWrapper>
       <div className="mx-auto p-4 flex gap-8">
-        <aside className="w-64 flex-shrink-0">
+        <aside className="hidden md:block w-64 flex-shrink-0">
           <Heading>Account Settings</Heading>
-          <nav className="space-y-2 mt-8">
-            <button
-              onClick={() => scrollToSection("profile")}
-              className="block w-full text-left px-4 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
-            >
-              Profile
-            </button>
-            <button
-              onClick={() => scrollToSection("security")}
-              className="block w-full text-left px-4 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
-            >
-              Security
-            </button>
-            <button
-              onClick={() => scrollToSection("preferences")}
-              className="block w-full text-left px-4 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
-            >
-              Preferences
-            </button>
-            <button
-              onClick={() => scrollToSection("dataManagement")}
-              className="block w-full text-left px-4 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
-            >
-              Data Management
-            </button>
-          </nav>
+          <div>
+            <nav className="space-y-2 mt-4 border-l ml-2">
+              <button
+                onClick={() => scrollToSection("profile")}
+                className="block w-full text-left px-4 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800 text-sm"
+              >
+                Profile
+              </button>
+              <button
+                onClick={() => scrollToSection("passwordReset")}
+                className="block w-full text-left px-4 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800 text-sm"
+              >
+                Password Reset
+              </button>
+              <button
+                onClick={() => scrollToSection("security")}
+                className="block w-full text-left px-4 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800 text-sm"
+              >
+                Security Questions
+              </button>
+              <button
+                onClick={() => scrollToSection("preferences")}
+                className="block w-full text-left px-4 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800 text-sm"
+              >
+                Preferences
+              </button>
+              <button
+                onClick={() => scrollToSection("dataManagement")}
+                className="block w-full text-left px-4 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800 text-sm"
+              >
+                Data Management
+              </button>
+            </nav>
+          </div>
         </aside>
 
         <main className="flex-grow space-y-8">
@@ -141,17 +150,21 @@ function AccountSettings() {
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleUpdateEmail} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="Enter your new email"
-                    />
+                  <div className="grid grid-cols-1 md:grid-cols-4 md:gap-4 gap-2">
+                    <div className="col-span-1 flex items-center">
+                      <Label htmlFor="email">Email</Label>
+                    </div>
+                    <div className="col-span-3">
+                      <Input
+                        id="email"
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="Enter your new email"
+                      />
+                    </div>
                   </div>
-                  <Button type="submit">
+                  <Button type="submit" color="teal">
                     <Mail className="mr-2 h-4 w-4" /> Update Email
                   </Button>
                 </form>
@@ -159,17 +172,11 @@ function AccountSettings() {
             </Card>
           </section>
 
+          <section ref={sectionRefs.passwordReset}>
+            <AuthenticatedResetPasswordForm />
+          </section>
           <section ref={sectionRefs.security}>
-            <Card>
-              <CardHeader>
-                <CardTitle>Security</CardTitle>
-                <CardDescription>Manage your account security</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-20">
-                <AuthenticatedResetPasswordForm />
-                <SecurityQuestionsForm />
-              </CardContent>
-            </Card>
+            <SecurityQuestionsForm />
           </section>
 
           <section ref={sectionRefs.preferences}>
@@ -190,10 +197,11 @@ function AccountSettings() {
                     id="markdown-toggle"
                     checked={useMarkdown}
                     onChange={setUseMarkdown}
+                    color="teal"
                   />
                 </div>
 
-                <div className="space-y-2 grid grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-4 md:gap-4 gap-2">
                   <div className="col-span-1 flex items-center">
                     <Label htmlFor="color-theme">Color Theme</Label>
                   </div>
@@ -210,7 +218,7 @@ function AccountSettings() {
                 </div>
               </CardContent>
               <CardFooter>
-                <Button>
+                <Button color="teal">
                   <Palette className="mr-2 h-4 w-4" /> Save Preferences
                 </Button>
               </CardFooter>
@@ -223,38 +231,48 @@ function AccountSettings() {
                 <CardTitle>Data Management</CardTitle>
                 <CardDescription>Manage your account data</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <Button onClick={handleBulkExport}>
-                    <Download className="mr-2 h-4 w-4" /> Export All Documents
-                  </Button>
+              <CardContent className="space-y-8 md:space-y-8">
+                <div className="grid grid-cols-1 md:grid-cols-4 md:gap-4 gap-2">
+                  <div className="col-span-1 flex items-center">
+                    <Label htmlFor="bulk-export">Export All Documents</Label>
+                  </div>
+                  <div className="col-span-3 flex md:justify-end">
+                    <Button onClick={handleBulkExport} outline>
+                      <Download className="mr-2 h-4 w-4" /> Export All Documents
+                    </Button>
+                  </div>
                 </div>
-                <div>
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button variant="destructive">
-                        <Trash2 className="mr-2 h-4 w-4" /> Delete Account
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>
-                          Are you absolutely sure?
-                        </AlertDialogTitle>
-                        <AlertDialogDescription>
-                          This action cannot be undone. This will permanently
-                          delete your account and remove your data from our
-                          servers.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleDeleteAccount}>
-                          Yes, delete my account
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
+                <div className="grid grid-cols-1 md:grid-cols-4 md:gap-4 gap-2">
+                  <div className="col-span-1 flex items-center">
+                    <Label htmlFor="delete-account">Delete Account</Label>
+                  </div>
+                  <div className="col-span-3 flex md:justify-end">
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button className="w-fit" color="red">
+                          <Trash2 className="mr-2 h-4 w-4" /> Delete Account
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>
+                            Are you absolutely sure?
+                          </AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This action cannot be undone. This will permanently
+                            delete your account and remove your data from our
+                            servers.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction onClick={handleDeleteAccount}>
+                            Yes, delete my account
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -328,7 +346,7 @@ function AuthenticatedResetPasswordForm() {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 mt-4">
-          <div className="grid grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 md:gap-4 gap-2">
             <div className="col-span-1 flex items-center">
               <Label htmlFor="oldPassword">Current Password</Label>
             </div>
@@ -348,7 +366,7 @@ function AuthenticatedResetPasswordForm() {
               )}
             </div>
           </div>
-          <div className="grid grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 md:gap-4 gap-2">
             <div className="col-span-1 flex items-center">
               <Label htmlFor="newPassword">New Password</Label>
             </div>
@@ -376,7 +394,7 @@ function AuthenticatedResetPasswordForm() {
               )}
             </div>
           </div>
-          <div className="grid grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 md:gap-4 gap-2">
             <div className="col-span-1 flex items-center">
               <Label htmlFor="confirmPassword">Confirm New Password</Label>
             </div>
@@ -413,7 +431,7 @@ function AuthenticatedResetPasswordForm() {
               <AlertDescription>{message.content}</AlertDescription>
             </Alert>
           )}
-          <Button type="submit" className="w-fit">
+          <Button type="submit" className="w-fit" color="teal">
             Reset Password
           </Button>
         </form>
@@ -460,13 +478,17 @@ function SecurityQuestionsForm() {
       <CardHeader>
         <CardTitle>Security Questions</CardTitle>
         <CardDescription>
-          Please answer three security questions
+          If you forget your password, you can reset it using your security
+          questions.
         </CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 mt-4">
           {Array.from({ length: 3 }).map((_, index) => (
-            <div key={index} className="grid grid-cols-4 gap-4">
+            <div
+              key={index}
+              className="grid grid-cols-1 md:grid-cols-4 md:gap-4 gap-2"
+            >
               <div className="col-span-1 flex items-center">
                 <Label htmlFor={`questions[${index}].question`}>
                   Question {index + 1}
@@ -519,7 +541,7 @@ function SecurityQuestionsForm() {
               </div>
             </div>
           ))}
-          <Button type="submit" className="w-fit">
+          <Button type="submit" className="w-fit" color="teal">
             Submit
           </Button>
         </form>
