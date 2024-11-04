@@ -1,17 +1,11 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Button } from "@/components/catalyst/button";
+import { Input } from "@/components/catalyst/input";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Switch } from "@/components/catalyst/switch";
+import { Select } from "@/components/catalyst/select";
 import {
   Card,
   CardContent,
@@ -41,16 +35,28 @@ import {
   Palette,
   Shield,
 } from "lucide-react";
+import { createFileRoute } from "@tanstack/react-router";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useForm, Controller } from "react-hook-form";
+import { config } from "@/app_config";
+import { useAuthStore } from "@/stores/auth";
+import { Heading } from "@/components/catalyst/heading";
+import { Text } from "@/components/catalyst/text";
+import { DashboardWrapper } from "@/components/DashboardWrapper";
+import { SelectItem } from "@/components/ui/select";
 
-export default function AccountSettings() {
+interface FormData {
+  questions: { question: string; answer: string }[];
+}
+
+export const Route = createFileRoute("/account/me")({
+  component: AccountSettings,
+});
+
+function AccountSettings() {
   const [email, setEmail] = useState("user@example.com");
-  const [securityQuestion1, setSecurityQuestion1] = useState("");
-  const [securityQuestion2, setSecurityQuestion2] = useState("");
   const [useMarkdown, setUseMarkdown] = useState(true);
   const [colorTheme, setColorTheme] = useState("light");
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
 
   const sectionRefs = {
     profile: useRef<HTMLDivElement>(null),
@@ -92,228 +98,432 @@ export default function AccountSettings() {
   };
 
   return (
-    <div className="container mx-auto p-4 flex gap-8">
-      <aside className="w-64 flex-shrink-0">
-        <ScrollArea className="h-[calc(100vh-2rem)] rounded-md border p-4">
-          <h2 className="text-lg font-semibold mb-4">Table of Contents</h2>
-          <nav className="space-y-2">
+    <DashboardWrapper>
+      <div className="mx-auto p-4 flex gap-8">
+        <aside className="w-64 flex-shrink-0">
+          <Heading>Account Settings</Heading>
+          <nav className="space-y-2 mt-8">
             <button
               onClick={() => scrollToSection("profile")}
-              className="block w-full text-left px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
+              className="block w-full text-left px-4 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
             >
               Profile
             </button>
             <button
               onClick={() => scrollToSection("security")}
-              className="block w-full text-left px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
+              className="block w-full text-left px-4 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
             >
               Security
             </button>
             <button
               onClick={() => scrollToSection("preferences")}
-              className="block w-full text-left px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
+              className="block w-full text-left px-4 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
             >
               Preferences
             </button>
             <button
               onClick={() => scrollToSection("dataManagement")}
-              className="block w-full text-left px-2 py-1 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
+              className="block w-full text-left px-4 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800"
             >
               Data Management
             </button>
           </nav>
-        </ScrollArea>
-      </aside>
+        </aside>
 
-      <main className="flex-grow space-y-8">
-        <h1 className="text-3xl font-bold mb-6">Account Settings</h1>
+        <main className="flex-grow space-y-8">
+          <section ref={sectionRefs.profile}>
+            <Card>
+              <CardHeader>
+                <CardTitle>Profile</CardTitle>
+                <CardDescription>
+                  Manage your profile information
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleUpdateEmail} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="email">Email</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="Enter your new email"
+                    />
+                  </div>
+                  <Button type="submit">
+                    <Mail className="mr-2 h-4 w-4" /> Update Email
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
+          </section>
 
-        <section ref={sectionRefs.profile}>
-          <Card>
-            <CardHeader>
-              <CardTitle>Profile</CardTitle>
-              <CardDescription>Manage your profile information</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleUpdateEmail} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Enter your new email"
+          <section ref={sectionRefs.security}>
+            <Card>
+              <CardHeader>
+                <CardTitle>Security</CardTitle>
+                <CardDescription>Manage your account security</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-20">
+                <AuthenticatedResetPasswordForm />
+                <SecurityQuestionsForm />
+              </CardContent>
+            </Card>
+          </section>
+
+          <section ref={sectionRefs.preferences}>
+            <Card>
+              <CardHeader>
+                <CardTitle>Preferences</CardTitle>
+                <CardDescription>
+                  Customize your editing experience
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <Label htmlFor="markdown-toggle">Use Markdown</Label>
+                    <Text>Toggle between Markdown and WYSIWYG editor</Text>
+                  </div>
+                  <Switch
+                    id="markdown-toggle"
+                    checked={useMarkdown}
+                    onChange={setUseMarkdown}
                   />
                 </div>
-                <Button type="submit">
-                  <Mail className="mr-2 h-4 w-4" /> Update Email
+
+                <div className="space-y-2 grid grid-cols-4 gap-4">
+                  <div className="col-span-1 flex items-center">
+                    <Label htmlFor="color-theme">Color Theme</Label>
+                  </div>
+                  <div className="col-span-3">
+                    <Select
+                      value={colorTheme}
+                      onChange={(e) => setColorTheme(e.target.value)}
+                    >
+                      <option value="light">Light</option>
+                      <option value="dark">Dark</option>
+                      <option value="system">System</option>
+                    </Select>
+                  </div>
+                </div>
+              </CardContent>
+              <CardFooter>
+                <Button>
+                  <Palette className="mr-2 h-4 w-4" /> Save Preferences
                 </Button>
-              </form>
-            </CardContent>
-          </Card>
-        </section>
+              </CardFooter>
+            </Card>
+          </section>
 
-        <section ref={sectionRefs.security}>
-          <Card>
-            <CardHeader>
-              <CardTitle>Security</CardTitle>
-              <CardDescription>Manage your account security</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <form onSubmit={handleResetPassword} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="current-password">Current Password</Label>
-                  <Input
-                    id="current-password"
-                    type="password"
-                    value={currentPassword}
-                    onChange={(e) => setCurrentPassword(e.target.value)}
-                    placeholder="Enter your current password"
-                  />
+          <section ref={sectionRefs.dataManagement}>
+            <Card>
+              <CardHeader>
+                <CardTitle>Data Management</CardTitle>
+                <CardDescription>Manage your account data</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Button onClick={handleBulkExport}>
+                    <Download className="mr-2 h-4 w-4" /> Export All Documents
+                  </Button>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="new-password">New Password</Label>
-                  <Input
-                    id="new-password"
-                    type="password"
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    placeholder="Enter your new password"
-                  />
+                <div>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="destructive">
+                        <Trash2 className="mr-2 h-4 w-4" /> Delete Account
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>
+                          Are you absolutely sure?
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This action cannot be undone. This will permanently
+                          delete your account and remove your data from our
+                          servers.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleDeleteAccount}>
+                          Yes, delete my account
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="confirm-password">Confirm New Password</Label>
-                  <Input
-                    id="confirm-password"
-                    type="password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="Confirm your new password"
-                  />
-                </div>
-                <Button type="submit">
-                  <Shield className="mr-2 h-4 w-4" /> Reset Password
-                </Button>
-              </form>
+              </CardContent>
+            </Card>
+          </section>
+        </main>
+      </div>
+    </DashboardWrapper>
+  );
+}
 
-              <form
-                onSubmit={handleUpdateSecurityQuestions}
-                className="space-y-4"
-              >
-                <div className="space-y-2">
-                  <Label htmlFor="question1">Security Question 1</Label>
-                  <Input
-                    id="question1"
-                    value={securityQuestion1}
-                    onChange={(e) => setSecurityQuestion1(e.target.value)}
-                    placeholder="Enter your first security question"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="question2">Security Question 2</Label>
-                  <Input
-                    id="question2"
-                    value={securityQuestion2}
-                    onChange={(e) => setSecurityQuestion2(e.target.value)}
-                    placeholder="Enter your second security question"
-                  />
-                </div>
-                <Button type="submit">
-                  <Lock className="mr-2 h-4 w-4" /> Update Security Questions
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
-        </section>
+function AuthenticatedResetPasswordForm() {
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+    watch,
+  } = useForm({
+    defaultValues: {
+      oldPassword: "",
+      newPassword: "",
+      confirmPassword: "",
+    },
+  });
+  const [message, setMessage] = useState({ type: "", content: "" });
 
-        <section ref={sectionRefs.preferences}>
-          <Card>
-            <CardHeader>
-              <CardTitle>Preferences</CardTitle>
-              <CardDescription>
-                Customize your editing experience
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label htmlFor="markdown-toggle">Use Markdown</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Toggle between Markdown and WYSIWYG editor
-                  </p>
-                </div>
-                <Switch
-                  id="markdown-toggle"
-                  checked={useMarkdown}
-                  onCheckedChange={setUseMarkdown}
+  const onSubmit = async (data: {
+    oldPassword: string;
+    newPassword: string;
+    confirmPassword: string;
+  }) => {
+    setMessage({ type: "", content: "" });
+
+    try {
+      const response = await fetch("/api/v1/jwt/reset-password", {
+        method: "POST",
+        body: JSON.stringify({
+          oldPassword: data.oldPassword,
+          newPassword: data.newPassword,
+          confirmNewPassword: data.confirmPassword,
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      const json = await response.json();
+      if (!json.ok) {
+        throw new Error("Failed to reset password.");
+      }
+
+      setMessage({
+        type: "success",
+        content: "Password reset successfully.",
+      });
+      reset();
+    } catch (error) {
+      setMessage({
+        type: "error",
+        content: "An error occurred. Please try again later.",
+      });
+    }
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Reset Password</CardTitle>
+        <CardDescription>
+          Enter your current password and a new password to reset.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 mt-4">
+          <div className="grid grid-cols-4 gap-4">
+            <div className="col-span-1 flex items-center">
+              <Label htmlFor="oldPassword">Current Password</Label>
+            </div>
+            <div className="col-span-3">
+              <Input
+                id="oldPassword"
+                type="password"
+                {...register("oldPassword", {
+                  required: "Current password is required",
+                })}
+                placeholder="Enter your current password"
+              />
+              {errors.oldPassword && (
+                <Text className="text-red-500">
+                  {errors.oldPassword.message}
+                </Text>
+              )}
+            </div>
+          </div>
+          <div className="grid grid-cols-4 gap-4">
+            <div className="col-span-1 flex items-center">
+              <Label htmlFor="newPassword">New Password</Label>
+            </div>
+            <div className="col-span-3">
+              <Input
+                id="newPassword"
+                type="password"
+                {...register("newPassword", {
+                  required: "New password is required",
+                  minLength: {
+                    value: 8,
+                    message: "Password must be at least 8 characters long",
+                  },
+                  maxLength: {
+                    value: config.__PRIVATE__.MAX_PASSWORD_LENGTH,
+                    message: `Password must be less than ${config.__PRIVATE__.MAX_PASSWORD_LENGTH} characters`,
+                  },
+                })}
+                placeholder="Enter your new password"
+              />
+              {errors.newPassword && (
+                <Text className="text-red-500">
+                  {errors.newPassword.message}
+                </Text>
+              )}
+            </div>
+          </div>
+          <div className="grid grid-cols-4 gap-4">
+            <div className="col-span-1 flex items-center">
+              <Label htmlFor="confirmPassword">Confirm New Password</Label>
+            </div>
+            <div className="col-span-3">
+              <Input
+                id="confirmPassword"
+                type="password"
+                {...register("confirmPassword", {
+                  required: "Please confirm your password",
+                  validate: (value) =>
+                    value === watch("newPassword") || "Passwords do not match",
+                  minLength: {
+                    value: 8,
+                    message: "Password must be at least 8 characters long",
+                  },
+                  maxLength: {
+                    value: config.__PRIVATE__.MAX_PASSWORD_LENGTH,
+                    message: `Password must be less than ${config.__PRIVATE__.MAX_PASSWORD_LENGTH} characters`,
+                  },
+                })}
+                placeholder="Confirm your new password"
+              />
+              {errors.confirmPassword && (
+                <Text className="text-red-500">
+                  {errors.confirmPassword.message}
+                </Text>
+              )}
+            </div>
+          </div>
+          {message.content && (
+            <Alert
+              variant={message.type === "error" ? "destructive" : "default"}
+            >
+              <AlertDescription>{message.content}</AlertDescription>
+            </Alert>
+          )}
+          <Button type="submit" className="w-fit">
+            Reset Password
+          </Button>
+        </form>
+      </CardContent>
+    </Card>
+  );
+}
+
+const questionOptions = [
+  { value: "pet", label: "What was the name of your first pet?" },
+  { value: "school", label: "What elementary school did you attend?" },
+  { value: "city", label: "In what city were you born?" },
+  { value: "mother", label: "What is your mother's maiden name?" },
+  { value: "car", label: "What was the make of your first car?" },
+  { value: "street", label: "What street did you grow up on?" },
+  { value: "book", label: "What was the first book you remember reading?" },
+  { value: "job", label: "What was your first job?" },
+  { value: "teacher", label: "Who was your favorite teacher?" },
+];
+
+function SecurityQuestionsForm() {
+  const {
+    control,
+    handleSubmit,
+    setError,
+    formState: { errors },
+    reset,
+  } = useForm<FormData>({
+    defaultValues: {
+      questions: Array(3).fill({ question: "", answer: "" }),
+    },
+  });
+
+  const useSecurityQuestions = useAuthStore(
+    (state) => state.useSecurityQuestions
+  );
+
+  const onSubmit = async (data: FormData) => {
+    await useSecurityQuestions(data.questions);
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Security Questions</CardTitle>
+        <CardDescription>
+          Please answer three security questions
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 mt-4">
+          {Array.from({ length: 3 }).map((_, index) => (
+            <div key={index} className="grid grid-cols-4 gap-4">
+              <div className="col-span-1 flex items-center">
+                <Label htmlFor={`questions[${index}].question`}>
+                  Question {index + 1}
+                </Label>
+              </div>
+              <div className="col-span-3 space-y-2">
+                <Controller
+                  name={`questions.${index}.question`}
+                  control={control}
+                  rules={{ required: "Please select a question" }}
+                  render={({ field }) => (
+                    <Select {...field} onChange={field.onChange}>
+                      {questionOptions.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </Select>
+                  )}
                 />
+                {errors.questions?.[index]?.question && (
+                  <p className="text-sm text-red-500">
+                    {errors.questions[index].question?.message}
+                  </p>
+                )}
+                <Controller
+                  name={`questions.${index}.answer`}
+                  control={control}
+                  rules={{
+                    required: "Please provide an answer",
+                    maxLength: {
+                      value: config.__PRIVATE__.MAX_SECRET_QUESTION_LENGTH,
+                      message: `Answer must be less than ${config.__PRIVATE__.MAX_SECRET_QUESTION_LENGTH} characters`,
+                    },
+                  }}
+                  render={({ field }) => (
+                    <Input
+                      {...field}
+                      placeholder="Your answer"
+                      required
+                      maxLength={config.__PRIVATE__.MAX_SECRET_QUESTION_LENGTH}
+                    />
+                  )}
+                />
+                {errors.questions?.[index]?.answer && (
+                  <Text className="text-red-500">
+                    {errors.questions[index].answer?.message}
+                  </Text>
+                )}
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="color-theme">Color Theme</Label>
-                <Select value={colorTheme} onValueChange={setColorTheme}>
-                  <SelectTrigger id="color-theme">
-                    <SelectValue placeholder="Select a color theme" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="light">Light</SelectItem>
-                    <SelectItem value="dark">Dark</SelectItem>
-                    <SelectItem value="system">System</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </CardContent>
-            <CardFooter>
-              <Button>
-                <Palette className="mr-2 h-4 w-4" /> Save Preferences
-              </Button>
-            </CardFooter>
-          </Card>
-        </section>
-
-        <section ref={sectionRefs.dataManagement}>
-          <Card>
-            <CardHeader>
-              <CardTitle>Data Management</CardTitle>
-              <CardDescription>Manage your account data</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Button onClick={handleBulkExport}>
-                  <Download className="mr-2 h-4 w-4" /> Export All Documents
-                </Button>
-              </div>
-              <div>
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button variant="destructive">
-                      <Trash2 className="mr-2 h-4 w-4" /> Delete Account
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>
-                        Are you absolutely sure?
-                      </AlertDialogTitle>
-                      <AlertDialogDescription>
-                        This action cannot be undone. This will permanently
-                        delete your account and remove your data from our
-                        servers.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={handleDeleteAccount}>
-                        Yes, delete my account
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              </div>
-            </CardContent>
-          </Card>
-        </section>
-      </main>
-    </div>
+            </div>
+          ))}
+          <Button type="submit" className="w-fit">
+            Submit
+          </Button>
+        </form>
+      </CardContent>
+    </Card>
   );
 }
