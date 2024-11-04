@@ -4,6 +4,7 @@ import { create } from "zustand";
 type AuthStore = {
   isAuthenticated: boolean;
   isLoading: boolean;
+  isInitializing: boolean;
   isSecurityQuestionsAnswered: boolean;
   error: string | null;
   user: {
@@ -27,6 +28,7 @@ type AuthStore = {
 };
 
 export const useAuthStore = create<AuthStore>((set) => ({
+  isInitializing: true,
   isAuthenticated: false,
   isLoading: false,
   isSecurityQuestionsAnswered: false,
@@ -48,6 +50,8 @@ export const useAuthStore = create<AuthStore>((set) => ({
         };
         error?: string;
       };
+      console.log(json);
+
       if (json.ok) {
         set({
           isAuthenticated: true,
@@ -80,7 +84,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
 
       return false;
     } finally {
-      set({ isLoading: false });
+      set({ isLoading: false, isInitializing: false });
     }
   },
 
