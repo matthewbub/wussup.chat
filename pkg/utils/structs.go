@@ -12,6 +12,12 @@ type UserWithPassword struct {
 	Password string
 }
 
+type UserWithRole struct {
+	UserObject
+	Password                   string
+	ApplicationEnvironmentRole string
+}
+
 type ReceiptParseResult struct {
 	Merchant string            `json:"merchant"`
 	Date     string            `json:"date"`

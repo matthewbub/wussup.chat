@@ -44,13 +44,18 @@ import { Heading } from "@/components/catalyst/heading";
 import { Text } from "@/components/catalyst/text";
 import { DashboardWrapper } from "@/components/DashboardWrapper";
 import { SelectItem } from "@/components/ui/select";
+import { Authorized } from "@/components/Authorized";
 
 interface FormData {
   questions: { question: string; answer: string }[];
 }
 
 export const Route = createFileRoute("/account/me")({
-  component: AccountSettings,
+  component: () => (
+    <Authorized>
+      <AccountSettings />
+    </Authorized>
+  ),
 });
 
 function AccountSettings() {

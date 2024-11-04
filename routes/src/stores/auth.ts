@@ -11,6 +11,8 @@ type AuthStore = {
     id: string;
     username: string;
     email: string;
+    applicationEnvironmentRole: string;
+    securityQuestionsAnswered: boolean;
   } | null;
   checkAuth: () => Promise<boolean>;
   useLogin: (username: string, password: string) => Promise<void>;
@@ -46,6 +48,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
           id: string;
           username: string;
           email: string;
+          applicationEnvironmentRole?: string;
           securityQuestionsAnswered?: boolean;
         };
         error?: string;
@@ -55,9 +58,15 @@ export const useAuthStore = create<AuthStore>((set) => ({
       if (json.ok) {
         set({
           isAuthenticated: true,
-          user: json?.user,
-          isSecurityQuestionsAnswered:
-            json?.user?.securityQuestionsAnswered ?? false,
+          user: {
+            id: json?.user?.id ?? "",
+            username: json?.user?.username ?? "",
+            email: json?.user?.email ?? "",
+            applicationEnvironmentRole:
+              json?.user?.applicationEnvironmentRole ?? "",
+            securityQuestionsAnswered:
+              json?.user?.securityQuestionsAnswered ?? false,
+          },
           error: null,
         });
 
