@@ -90,21 +90,6 @@ function DebugComponent() {
                           {user.securityQuestionsAnswered ? "Yes" : "No"}
                         </TableCell>
                       </TableRow>
-                      <TableRow>
-                        <TableCell>Is Active</TableCell>
-                        <TableCell>
-                          {user.isActive ? "Yes" : "No"}
-                          {user.inactiveAt && (
-                            <span className="text-red-500 space-x-1 flex items-center">
-                              <span>(Inactive since </span>
-                              <span>
-                                {new Date(user.inactiveAt).toLocaleDateString()}
-                                )
-                              </span>
-                            </span>
-                          )}
-                        </TableCell>
-                      </TableRow>
                     </TableBody>
                   </Table>
                 </CardContent>

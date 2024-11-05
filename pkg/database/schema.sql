@@ -7,9 +7,18 @@ CREATE TABLE IF NOT EXISTS users (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     security_questions_answered BOOLEAN DEFAULT FALSE,
-    is_active BOOLEAN DEFAULT TRUE,
+    -- is_active BOOLEAN DEFAULT TRUE,
     inactive_at TIMESTAMP
+    CONSTRAINT chk_user_state CHECK (
+        (inactive_at IS NULL) OR 
+        (inactive_at <= CURRENT_TIMESTAMP)
+    )
 );
+
+CREATE VIEW active_users AS 
+SELECT *, 
+       inactive_at IS NULL as is_active 
+FROM users;
 
 CREATE TABLE IF NOT EXISTS security_questions (
     id TEXT PRIMARY KEY,

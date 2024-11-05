@@ -18,7 +18,6 @@ type UserWithRole struct {
 	UserObject
 	Password                   string
 	ApplicationEnvironmentRole string
-	IsActive                   bool
 	InactiveAt                 sql.NullTime
 }
 

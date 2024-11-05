@@ -39,7 +39,7 @@ func AuthCheckHandler(c *gin.Context) {
 		return
 	}
 
-	if !user.IsActive {
+	if user.InactiveAt.Valid {
 		log.Println("User is inactive", user.ID)
 		c.JSON(http.StatusUnauthorized, gin.H{
 			"ok":    false,
@@ -57,7 +57,6 @@ func AuthCheckHandler(c *gin.Context) {
 			"email":                      user.Email,
 			"securityQuestionsAnswered":  user.SecurityQuestionsAnswered,
 			"applicationEnvironmentRole": user.ApplicationEnvironmentRole,
-			"isActive":                   user.IsActive,
 			"inactiveAt":                 user.InactiveAt,
 		},
 	})

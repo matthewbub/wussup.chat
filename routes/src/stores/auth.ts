@@ -1,6 +1,11 @@
 import { fetchWithAuth } from "@/utils/auth-helpers";
 import { create } from "zustand";
 
+interface NullTime {
+  time: Date | null;
+  valid: boolean;
+}
+
 type AuthStore = {
   isAuthenticated: boolean;
   isLoading: boolean;
@@ -13,8 +18,7 @@ type AuthStore = {
     email: string;
     applicationEnvironmentRole: string;
     securityQuestionsAnswered: boolean;
-    isActive: boolean;
-    inactiveAt: Date | null;
+    inactiveAt: NullTime;
   } | null;
   checkAuth: () => Promise<boolean>;
   useLogin: (username: string, password: string) => Promise<void>;
@@ -52,14 +56,24 @@ export const useAuthStore = create<AuthStore>((set) => ({
           email: string;
           applicationEnvironmentRole?: string;
           securityQuestionsAnswered?: boolean;
-          isActive?: boolean;
-          inactiveAt?: Date;
+          inactiveAt?: {
+            Valid: boolean;
+            value: Date;
+          };
         };
         error?: string;
       };
-      console.log(json);
 
       if (json.ok) {
+        if (json?.user?.inactiveAt?.Valid) {
+          set({
+            error: "This account has been deactivated. Please contact support.",
+            isAuthenticated: false,
+            user: null,
+          });
+          return false;
+        }
+
         set({
           isAuthenticated: true,
           user: {
@@ -70,8 +84,10 @@ export const useAuthStore = create<AuthStore>((set) => ({
               json?.user?.applicationEnvironmentRole ?? "",
             securityQuestionsAnswered:
               json?.user?.securityQuestionsAnswered ?? false,
-            isActive: json?.user?.isActive ?? true,
-            inactiveAt: json?.user?.inactiveAt ?? null,
+            inactiveAt: {
+              isValid: json?.user?.inactiveAt?.Valid ?? false,
+              value: json?.user?.inactiveAt?.value ?? null,
+            },
           },
           error: null,
         });

@@ -31,19 +31,21 @@ func LoginWithJWTHandler(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, utils.JR(utils.JsonResponse{
 			Ok:      false,
 			Message: "Invalid username or password",
-			Code:    "UNAUTHORIZED",
+			Code:    "LOGIN_INVALID_CREDENTIALS",
 			Error:   "Invalid username or password",
 		}))
 		return
 	}
 
+	log.Println(user.InactiveAt)
+
 	// Check if user is inactive
-	if !user.IsActive {
+	if user.InactiveAt.Valid {
 		log.Println("User is inactive", user.ID)
 		c.JSON(http.StatusUnauthorized, utils.JR(utils.JsonResponse{
 			Ok:      false,
 			Message: "Invalid username or password",
-			Code:    "UNAUTHORIZED",
+			Code:    "LOGIN_INACTIVE_USER",
 			Error:   "User is inactive",
 		}))
 		return
@@ -55,7 +57,7 @@ func LoginWithJWTHandler(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, utils.JR(utils.JsonResponse{
 			Ok:      false,
 			Message: "Failed to generate token",
-			Code:    "INTERNAL_SERVER_ERROR",
+			Code:    "LOGIN_JWT_GENERATION_FAILED",
 			Error:   "Failed to generate token",
 		}))
 		return
@@ -77,7 +79,7 @@ func LoginWithJWTHandler(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, utils.JR(utils.JsonResponse{
 			Ok:      false,
 			Message: "ENV is not set",
-			Code:    "INTERNAL_SERVER_ERROR",
+			Code:    "LOGIN_ENV_NOT_SET",
 			Error:   "ENV is not set",
 		}))
 		return

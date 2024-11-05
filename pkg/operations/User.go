@@ -73,7 +73,7 @@ func GetUserFromDatabase(username string) (*utils.UserWithRole, error) {
 	defer db.Close()
 
 	user := utils.UserWithRole{}
-	stmt, err := db.Prepare("SELECT id, username, email, security_questions_answered, application_environment_role, is_active FROM users WHERE username = ?")
+	stmt, err := db.Prepare("SELECT id, username, email, security_questions_answered, application_environment_role, is_active FROM active_users WHERE username = ?")
 	if err != nil {
 		log.Println(err)
 		return nil, err
@@ -104,7 +104,7 @@ func GetUserByID(userID string) (*utils.UserWithRole, error) {
 	defer db.Close()
 
 	user := utils.UserWithRole{}
-	stmt, err := db.Prepare("SELECT id, username, email, security_questions_answered, is_active, application_environment_role FROM users WHERE id = ?")
+	stmt, err := db.Prepare("SELECT id, username, email, security_questions_answered, is_active, application_environment_role FROM active_users WHERE id = ?")
 	if err != nil {
 		log.Println(err)
 		return nil, err
@@ -135,7 +135,7 @@ func GetUserWithPasswordByID(userID string) (*utils.UserWithRole, error) {
 	defer db.Close()
 
 	user := utils.UserWithRole{}
-	stmt, err := db.Prepare("SELECT id, username, email, security_questions_answered, password, is_active, application_environment_role FROM users WHERE id = ?")
+	stmt, err := db.Prepare("SELECT id, username, email, security_questions_answered, password, is_active, application_environment_role FROM active_users WHERE id = ?")
 	if err != nil {
 		log.Println(err)
 		return nil, err
@@ -168,7 +168,7 @@ func GetUserWithRoleByID(userID string) (*utils.UserWithRole, error) {
 
 	user := utils.UserWithRole{}
 
-	stmt, err := db.Prepare("SELECT id, username, email, security_questions_answered, application_environment_role, is_active, password, inactive_at FROM users WHERE id = ?")
+	stmt, err := db.Prepare("SELECT id, username, email, security_questions_answered, application_environment_role, is_active, password, inactive_at FROM active_users WHERE id = ?")
 	if err != nil {
 		log.Println(err)
 		return nil, err
@@ -199,7 +199,7 @@ func UpdateUserPassword(userID, hashedPassword string) error {
 	db := utils.Db()
 	defer db.Close()
 
-	stmt, err := db.Prepare("UPDATE users SET password = ? WHERE id = ?")
+	stmt, err := db.Prepare("UPDATE active_users SET password = ? WHERE id = ?")
 	if err != nil {
 		log.Println(err)
 		return err
@@ -234,7 +234,7 @@ func GetUserWithPasswordByUserName(username string) (*utils.UserWithRole, error)
 	defer db.Close()
 
 	user := utils.UserWithRole{}
-	stmt, err := db.Prepare("SELECT id, username, email, security_questions_answered, password, is_active FROM users WHERE username = ?")
+	stmt, err := db.Prepare("SELECT id, username, email, security_questions_answered, password, inactive_at FROM active_users WHERE username = ?")
 	if err != nil {
 		log.Println(err)
 		return nil, err
@@ -247,7 +247,7 @@ func GetUserWithPasswordByUserName(username string) (*utils.UserWithRole, error)
 		&user.Email,
 		&user.SecurityQuestionsAnswered,
 		&user.Password,
-		&user.IsActive,
+		&user.InactiveAt,
 	)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -264,9 +264,7 @@ func DeleteUser(userID string) error {
 	db := utils.Db()
 	defer db.Close()
 
-	// Mark as inactive
-	// TODO: Cleanup user data after X days
-	stmt, err := db.Prepare("UPDATE users SET is_active = FALSE, inactive_at = ? WHERE id = ?")
+	stmt, err := db.Prepare("UPDATE active_users SET inactive_at = ? WHERE id = ?")
 	if err != nil {
 		log.Println(err)
 		return err
