@@ -1,8 +1,8 @@
 import { useAuthStore } from "@/stores/auth";
 import * as React from "react";
 import { createFileRoute, Navigate } from "@tanstack/react-router";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Button } from "@/components/catalyst/button";
+import { Input } from "@/components/catalyst/input";
 import { Label } from "@/components/ui/label";
 import {
   Card,
@@ -101,7 +101,12 @@ function LoginFormComponent() {
               <p className="text-sm text-red-500">{errors.password.message}</p>
             )}
           </div>
-          <Button type="submit" className="w-full" disabled={isLoading}>
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={isLoading}
+            color="teal"
+          >
             {isLoading ? "Logging in..." : "Log in"}
           </Button>
           {error && <p className="text-sm text-red-500">{error}</p>}

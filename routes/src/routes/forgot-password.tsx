@@ -1,8 +1,8 @@
 import { useAuthStore } from "../stores/auth";
 import * as React from "react";
 import { createFileRoute, Navigate } from "@tanstack/react-router";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Button } from "@/components/catalyst/button";
+import { Input } from "@/components/catalyst/input";
 import { Label } from "@/components/ui/label";
 import {
   Card,

@@ -20,7 +20,7 @@ export const Route = createFileRoute("/")({
 
 export function LandingPageComponent() {
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen mx-auto">
       <header className="px-4 lg:px-6 h-14 flex items-center">
         <a className="flex items-center justify-center" href="#">
           <FileText className="h-6 w-6" />
@@ -41,7 +41,7 @@ export function LandingPageComponent() {
           </a>
         </nav>
       </header>
-      <main className="flex-1">
+      <main className="flex-1 mx-auto">
         <section className="w-full py-12 md:py-24 lg:py-32 xl:py-48">
           <div className="container px-4 md:px-6">
             <div className="flex flex-col items-center space-y-4 text-center">
@@ -69,7 +69,7 @@ export function LandingPageComponent() {
             <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl text-center mb-12">
               Key Features
             </h2>
-            <div className="grid gap-10 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 items-start justify-center">
+            <div className="grid gap-10 sm:grid-cols-2 md:grid-cols-3 items-start justify-center">
               <div className="flex flex-col items-center space-y-2 border-gray-800 p-4">
                 <Layout className="h-12 w-12 mb-4 text-stone-900 dark:text-stone-50" />
                 <h3 className="text-xl font-bold">Multi-Sheet Documents</h3>
@@ -96,27 +96,6 @@ export function LandingPageComponent() {
                 <h3 className="text-xl font-bold">Markdown Support</h3>
                 <p className="text-sm text-gray-500 dark:text-gray-400 text-center">
                   Write in Markdown and preview rendered content
-                </p>
-              </div>
-              <div className="flex flex-col items-center space-y-2 border-gray-800 p-4">
-                <Plus className="h-12 w-12 mb-4 text-stone-900 dark:text-stone-50" />
-                <h3 className="text-xl font-bold">Document Collection</h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 text-center">
-                  Manage and organize multiple documents
-                </p>
-              </div>
-              <div className="flex flex-col items-center space-y-2 border-gray-800 p-4">
-                <Search className="h-12 w-12 mb-4 text-stone-900 dark:text-stone-50" />
-                <h3 className="text-xl font-bold">Advanced Search</h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 text-center">
-                  Quickly find documents in your collection
-                </p>
-              </div>
-              <div className="flex flex-col items-center space-y-2 border-gray-800 p-4">
-                <SortAsc className="h-12 w-12 mb-4 text-stone-900 dark:text-stone-50" />
-                <h3 className="text-xl font-bold">Sorting and Pagination</h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 text-center">
-                  Organize and navigate through large document collections
                 </p>
               </div>
               <div className="flex flex-col items-center space-y-2 border-gray-800 p-4">
