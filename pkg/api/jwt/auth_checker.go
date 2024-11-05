@@ -29,7 +29,7 @@ func AuthCheckHandler(c *gin.Context) {
 	}
 
 	// Check if user exists in the database
-	user, err := operations.GetUserByID(userID)
+	user, err := operations.GetUserWithRoleByID(userID)
 	if err != nil || user == nil {
 		c.JSON(http.StatusUnauthorized, gin.H{
 			"ok":    false,
@@ -42,10 +42,12 @@ func AuthCheckHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"ok": true,
 		"user": gin.H{
-			"id":                        user.ID,
-			"username":                  user.Username,
-			"email":                     user.Email,
-			"securityQuestionsAnswered": user.SecurityQuestionsAnswered,
+			"id":                         user.ID,
+			"username":                   user.Username,
+			"email":                      user.Email,
+			"securityQuestionsAnswered":  user.SecurityQuestionsAnswered,
+			"applicationEnvironmentRole": user.ApplicationEnvironmentRole,
+			"isActive":                   user.IsActive,
 		},
 	})
 }

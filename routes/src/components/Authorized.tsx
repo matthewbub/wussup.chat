@@ -24,7 +24,7 @@ export function useAuthCheck() {
 }
 
 export function Authorized({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, isInitializing } = useAuthStore();
   useAuthCheck();
 
   // Optional: Show loading state while checking authentication
@@ -32,5 +32,8 @@ export function Authorized({ children }: { children: React.ReactNode }) {
   //   return <div>Loading...</div>; // Or your loading component
   // }
 
+  if (isInitializing) {
+    return <div>Authenticating...</div>;
+  }
   return isAuthenticated ? <>{children}</> : <Navigate to="/login" />;
 }

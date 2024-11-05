@@ -15,8 +15,13 @@ import { Route as SignUpImport } from './routes/sign-up'
 import { Route as SecurityQuestionsImport } from './routes/security-questions'
 import { Route as LoginImport } from './routes/login'
 import { Route as ForgotPasswordImport } from './routes/forgot-password'
+import { Route as DebugImport } from './routes/debug'
+import { Route as DashboardImport } from './routes/dashboard'
 import { Route as IndexImport } from './routes/index'
+import { Route as DocumentsIndexImport } from './routes/documents/index'
+import { Route as DocumentsIdImport } from './routes/documents/$id'
 import { Route as AccountResetPasswordImport } from './routes/account/reset-password'
+import { Route as AccountMeImport } from './routes/account/me'
 
 // Create/Update Routes
 
@@ -44,15 +49,45 @@ const ForgotPasswordRoute = ForgotPasswordImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
+const DebugRoute = DebugImport.update({
+  id: '/debug',
+  path: '/debug',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const DashboardRoute = DashboardImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const IndexRoute = IndexImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRoute,
 } as any)
 
+const DocumentsIndexRoute = DocumentsIndexImport.update({
+  id: '/documents/',
+  path: '/documents/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const DocumentsIdRoute = DocumentsIdImport.update({
+  id: '/documents/$id',
+  path: '/documents/$id',
+  getParentRoute: () => rootRoute,
+} as any)
+
 const AccountResetPasswordRoute = AccountResetPasswordImport.update({
   id: '/account/reset-password',
   path: '/account/reset-password',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const AccountMeRoute = AccountMeImport.update({
+  id: '/account/me',
+  path: '/account/me',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -65,6 +100,20 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexImport
+      parentRoute: typeof rootRoute
+    }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardImport
+      parentRoute: typeof rootRoute
+    }
+    '/debug': {
+      id: '/debug'
+      path: '/debug'
+      fullPath: '/debug'
+      preLoaderRoute: typeof DebugImport
       parentRoute: typeof rootRoute
     }
     '/forgot-password': {
@@ -95,11 +144,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SignUpImport
       parentRoute: typeof rootRoute
     }
+    '/account/me': {
+      id: '/account/me'
+      path: '/account/me'
+      fullPath: '/account/me'
+      preLoaderRoute: typeof AccountMeImport
+      parentRoute: typeof rootRoute
+    }
     '/account/reset-password': {
       id: '/account/reset-password'
       path: '/account/reset-password'
       fullPath: '/account/reset-password'
       preLoaderRoute: typeof AccountResetPasswordImport
+      parentRoute: typeof rootRoute
+    }
+    '/documents/$id': {
+      id: '/documents/$id'
+      path: '/documents/$id'
+      fullPath: '/documents/$id'
+      preLoaderRoute: typeof DocumentsIdImport
+      parentRoute: typeof rootRoute
+    }
+    '/documents/': {
+      id: '/documents/'
+      path: '/documents'
+      fullPath: '/documents'
+      preLoaderRoute: typeof DocumentsIndexImport
       parentRoute: typeof rootRoute
     }
   }
@@ -109,76 +179,116 @@ declare module '@tanstack/react-router' {
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/dashboard': typeof DashboardRoute
+  '/debug': typeof DebugRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/security-questions': typeof SecurityQuestionsRoute
   '/sign-up': typeof SignUpRoute
+  '/account/me': typeof AccountMeRoute
   '/account/reset-password': typeof AccountResetPasswordRoute
+  '/documents/$id': typeof DocumentsIdRoute
+  '/documents': typeof DocumentsIndexRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/dashboard': typeof DashboardRoute
+  '/debug': typeof DebugRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/security-questions': typeof SecurityQuestionsRoute
   '/sign-up': typeof SignUpRoute
+  '/account/me': typeof AccountMeRoute
   '/account/reset-password': typeof AccountResetPasswordRoute
+  '/documents/$id': typeof DocumentsIdRoute
+  '/documents': typeof DocumentsIndexRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
+  '/dashboard': typeof DashboardRoute
+  '/debug': typeof DebugRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/security-questions': typeof SecurityQuestionsRoute
   '/sign-up': typeof SignUpRoute
+  '/account/me': typeof AccountMeRoute
   '/account/reset-password': typeof AccountResetPasswordRoute
+  '/documents/$id': typeof DocumentsIdRoute
+  '/documents/': typeof DocumentsIndexRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/dashboard'
+    | '/debug'
     | '/forgot-password'
     | '/login'
     | '/security-questions'
     | '/sign-up'
+    | '/account/me'
     | '/account/reset-password'
+    | '/documents/$id'
+    | '/documents'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/dashboard'
+    | '/debug'
     | '/forgot-password'
     | '/login'
     | '/security-questions'
     | '/sign-up'
+    | '/account/me'
     | '/account/reset-password'
+    | '/documents/$id'
+    | '/documents'
   id:
     | '__root__'
     | '/'
+    | '/dashboard'
+    | '/debug'
     | '/forgot-password'
     | '/login'
     | '/security-questions'
     | '/sign-up'
+    | '/account/me'
     | '/account/reset-password'
+    | '/documents/$id'
+    | '/documents/'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  DashboardRoute: typeof DashboardRoute
+  DebugRoute: typeof DebugRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   LoginRoute: typeof LoginRoute
   SecurityQuestionsRoute: typeof SecurityQuestionsRoute
   SignUpRoute: typeof SignUpRoute
+  AccountMeRoute: typeof AccountMeRoute
   AccountResetPasswordRoute: typeof AccountResetPasswordRoute
+  DocumentsIdRoute: typeof DocumentsIdRoute
+  DocumentsIndexRoute: typeof DocumentsIndexRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  DashboardRoute: DashboardRoute,
+  DebugRoute: DebugRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
   LoginRoute: LoginRoute,
   SecurityQuestionsRoute: SecurityQuestionsRoute,
   SignUpRoute: SignUpRoute,
+  AccountMeRoute: AccountMeRoute,
   AccountResetPasswordRoute: AccountResetPasswordRoute,
+  DocumentsIdRoute: DocumentsIdRoute,
+  DocumentsIndexRoute: DocumentsIndexRoute,
 }
 
 export const routeTree = rootRoute
@@ -194,15 +304,26 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
+        "/dashboard",
+        "/debug",
         "/forgot-password",
         "/login",
         "/security-questions",
         "/sign-up",
-        "/account/reset-password"
+        "/account/me",
+        "/account/reset-password",
+        "/documents/$id",
+        "/documents/"
       ]
     },
     "/": {
       "filePath": "index.tsx"
+    },
+    "/dashboard": {
+      "filePath": "dashboard.tsx"
+    },
+    "/debug": {
+      "filePath": "debug.tsx"
     },
     "/forgot-password": {
       "filePath": "forgot-password.tsx"
@@ -216,8 +337,17 @@ export const routeTree = rootRoute
     "/sign-up": {
       "filePath": "sign-up.tsx"
     },
+    "/account/me": {
+      "filePath": "account/me.tsx"
+    },
     "/account/reset-password": {
       "filePath": "account/reset-password.tsx"
+    },
+    "/documents/$id": {
+      "filePath": "documents/$id.tsx"
+    },
+    "/documents/": {
+      "filePath": "documents/index.tsx"
     }
   }
 }

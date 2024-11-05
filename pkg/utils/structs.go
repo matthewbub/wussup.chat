@@ -12,6 +12,13 @@ type UserWithPassword struct {
 	Password string
 }
 
+type UserWithRole struct {
+	UserObject
+	Password                   string
+	ApplicationEnvironmentRole string
+	IsActive                   bool
+}
+
 type ReceiptParseResult struct {
 	Merchant string            `json:"merchant"`
 	Date     string            `json:"date"`
@@ -27,4 +34,12 @@ type ReceiptItemJSON struct {
 type ReceiptWithImage struct {
 	Receipt ReceiptParseResult
 	Image   string `json:"image"`
+}
+
+type User struct {
+	ID                        string
+	Username                  string
+	Email                     string
+	SecurityQuestionsAnswered bool
+	Password                  string
 }

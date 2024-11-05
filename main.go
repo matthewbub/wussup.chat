@@ -84,12 +84,24 @@ func registerPrivateApiRoutes(router *gin.Engine) {
 
 // JWT API ROUTES
 func registerJwtApiRoutes(router *gin.Engine) {
-	router.POST("/api/v1/login/jwt", jwt.LoginWithJWTHandler)
-	router.POST("/api/v1/logout/jwt", jwt.Logout)
-	router.POST("/api/v1/forgot-password", jwt.ForgotPasswordHandler)
-	router.GET("/api/v1/auth-check/jwt", jwt.AuthCheckHandler)
-	router.POST("/api/v1/security-questions/jwt", jwt.SecurityQuestionsHandler)
-	router.POST("/api/v1/sign-up/jwt", jwt.SignUpHandler)
-	router.POST("/api/v1/security-questions", middleware.JWTAuthMiddleware(), jwt.SecurityQuestionsHandler)
-	router.POST("/api/v1/auth/reset-password", middleware.JWTAuthMiddleware(), jwt.ResetPasswordHandler)
+	router.POST("/api/v1/jwt/login", jwt.LoginWithJWTHandler)
+	router.POST("/api/v1/jwt/logout", jwt.Logout)
+	router.POST("/api/v1/jwt/forgot-password", jwt.ForgotPasswordHandler)
+	router.GET("/api/v1/jwt/auth-check", jwt.AuthCheckHandler)
+	router.POST("/api/v1/jwt/sign-up", jwt.SignUpHandler)
+	router.POST("/api/v1/jwt/security-questions", middleware.JWTAuthMiddleware(), jwt.SecurityQuestionsHandler)
+	router.POST("/api/v1/jwt/reset-password", middleware.JWTAuthMiddleware(), jwt.ResetPasswordHandler)
+
+	// Account API
+	router.POST("/api/v1/account/security", middleware.JWTAuthMiddleware(), jwt.UpdateSecurity)
+	router.POST("/api/v1/account/preferences", middleware.JWTAuthMiddleware(), jwt.UpdatePreferences)
+	router.POST("/api/v1/account/export", middleware.JWTAuthMiddleware(), jwt.ExportData)
+	router.DELETE("/api/v1/jwt/account", middleware.JWTAuthMiddleware(), jwt.DeleteAccount)
+
+	// Document API
+	router.GET("/api/v1/documents", middleware.JWTAuthMiddleware(), jwt.ListDocuments)
+	router.POST("/api/v1/documents", middleware.JWTAuthMiddleware(), jwt.CreateDocument)
+	router.GET("/api/v1/documents/:id", middleware.JWTAuthMiddleware(), jwt.GetDocument)
+	router.PUT("/api/v1/documents/:id", middleware.JWTAuthMiddleware(), jwt.UpdateDocument)
+	router.DELETE("/api/v1/documents/:id", middleware.JWTAuthMiddleware(), jwt.DeleteDocument)
 }

@@ -2,8 +2,8 @@ import { useAuthStore } from "@/stores/auth";
 import * as React from "react";
 import { createFileRoute, Navigate } from "@tanstack/react-router";
 import { useForm, Controller } from "react-hook-form";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Button } from "@/components/catalyst/button";
+import { Input } from "@/components/catalyst/input";
 import { Label } from "@/components/ui/label";
 import {
   Card,
@@ -12,13 +12,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select } from "@/components/catalyst/select";
 import { config } from "@/app_config";
 
 interface FormData {
@@ -96,17 +90,12 @@ function SecurityQuestionsForm() {
                 control={control}
                 rules={{ required: "Please select a question" }}
                 render={({ field }) => (
-                  <Select {...field} onValueChange={field.onChange}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a question" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {questionOptions.map((option) => (
-                        <SelectItem key={option.value} value={option.value}>
-                          {option.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
+                  <Select {...field} onChange={field.onChange}>
+                    {questionOptions.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
                   </Select>
                 )}
               />

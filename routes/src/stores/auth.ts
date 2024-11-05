@@ -4,12 +4,16 @@ import { create } from "zustand";
 type AuthStore = {
   isAuthenticated: boolean;
   isLoading: boolean;
+  isInitializing: boolean;
   isSecurityQuestionsAnswered: boolean;
   error: string | null;
   user: {
     id: string;
     username: string;
     email: string;
+    applicationEnvironmentRole: string;
+    securityQuestionsAnswered: boolean;
+    isActive: boolean;
   } | null;
   checkAuth: () => Promise<boolean>;
   useLogin: (username: string, password: string) => Promise<void>;
@@ -27,6 +31,7 @@ type AuthStore = {
 };
 
 export const useAuthStore = create<AuthStore>((set) => ({
+  isInitializing: true,
   isAuthenticated: false,
   isLoading: false,
   isSecurityQuestionsAnswered: false,
@@ -35,7 +40,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
   checkAuth: async () => {
     try {
       set({ isLoading: true, error: null });
-      const response = await fetch("/api/v1/auth-check/jwt", {
+      const response = await fetch("/api/v1/jwt/auth-check", {
         credentials: "include",
       });
       const json = (await response.json()) as {
@@ -44,23 +49,36 @@ export const useAuthStore = create<AuthStore>((set) => ({
           id: string;
           username: string;
           email: string;
+          applicationEnvironmentRole?: string;
           securityQuestionsAnswered?: boolean;
+          isActive?: boolean;
         };
         error?: string;
       };
+      console.log(json);
+
       if (json.ok) {
         set({
           isAuthenticated: true,
-          user: json?.user,
-          isSecurityQuestionsAnswered:
-            json?.user?.securityQuestionsAnswered ?? false,
+          user: {
+            id: json?.user?.id ?? "",
+            username: json?.user?.username ?? "",
+            email: json?.user?.email ?? "",
+            applicationEnvironmentRole:
+              json?.user?.applicationEnvironmentRole ?? "",
+            securityQuestionsAnswered:
+              json?.user?.securityQuestionsAnswered ?? false,
+            isActive: json?.user?.isActive ?? true,
+          },
           error: null,
         });
 
         return true;
       } else {
         set({
-          error: json?.error || "An error occurred during auth check",
+          error:
+            json?.error ||
+            "An error occurred during auth check. Please sign in.",
           isAuthenticated: false,
           user: null,
           isSecurityQuestionsAnswered: false,
@@ -70,7 +88,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
       }
     } catch (error) {
       set({
-        error: "An error occurred during auth check",
+        error: "An error occurred during auth check. Please sign in.",
         isAuthenticated: false,
         user: null,
         isSecurityQuestionsAnswered: false,
@@ -78,14 +96,14 @@ export const useAuthStore = create<AuthStore>((set) => ({
 
       return false;
     } finally {
-      set({ isLoading: false });
+      set({ isLoading: false, isInitializing: false });
     }
   },
 
   useLogin: async (username: string, password: string) => {
     try {
       set({ isLoading: true, error: null });
-      const response = await fetch("/api/v1/login/jwt", {
+      const response = await fetch("/api/v1/jwt/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -126,7 +144,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
   useLogout: async () => {
     try {
       set({ isLoading: true });
-      const response = await fetch("/api/v1/logout/jwt", {
+      const response = await fetch("/api/v1/jwt/logout", {
         method: "POST",
         credentials: "include",
       });
@@ -167,7 +185,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
   ) => {
     try {
       set({ isLoading: true, error: null });
-      const response = await fetch("/api/v1/sign-up/jwt", {
+      const response = await fetch("/api/v1/jwt/sign-up", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -216,7 +234,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
   ) => {
     try {
       set({ isLoading: true, error: null });
-      const response = await fetchWithAuth("/api/v1/security-questions", {
+      const response = await fetchWithAuth("/api/v1/jwt/security-questions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ questions }),
