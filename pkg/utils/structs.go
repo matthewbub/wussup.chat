@@ -1,5 +1,7 @@
 package utils
 
+import "time"
+
 type UserObject struct {
 	ID                        string
 	Username                  string
@@ -17,6 +19,7 @@ type UserWithRole struct {
 	Password                   string
 	ApplicationEnvironmentRole string
 	IsActive                   bool
+	InactiveAt                 time.Time
 }
 
 type ReceiptParseResult struct {

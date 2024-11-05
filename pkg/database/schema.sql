@@ -7,7 +7,8 @@ CREATE TABLE IF NOT EXISTS users (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     security_questions_answered BOOLEAN DEFAULT FALSE,
-    is_active BOOLEAN DEFAULT TRUE
+    is_active BOOLEAN DEFAULT TRUE,
+    inactive_at TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS security_questions (

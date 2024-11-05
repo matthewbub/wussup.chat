@@ -48,6 +48,7 @@ func AuthCheckHandler(c *gin.Context) {
 			"securityQuestionsAnswered":  user.SecurityQuestionsAnswered,
 			"applicationEnvironmentRole": user.ApplicationEnvironmentRole,
 			"isActive":                   user.IsActive,
+			"inactiveAt":                 user.InactiveAt,
 		},
 	})
 }
