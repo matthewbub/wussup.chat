@@ -1,6 +1,7 @@
 package jwt
 
 import (
+	"log"
 	"net/http"
 
 	"bus.zcauldron.com/pkg/operations"
@@ -31,6 +32,15 @@ func AuthCheckHandler(c *gin.Context) {
 	// Check if user exists in the database
 	user, err := operations.GetUserWithRoleByID(userID)
 	if err != nil || user == nil {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"ok":    false,
+			"error": "User not found",
+		})
+		return
+	}
+
+	if !user.IsActive {
+		log.Println("User is inactive", user.ID)
 		c.JSON(http.StatusUnauthorized, gin.H{
 			"ok":    false,
 			"error": "User not found",

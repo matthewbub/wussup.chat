@@ -1,6 +1,6 @@
 package utils
 
-import "time"
+import "database/sql"
 
 type UserObject struct {
 	ID                        string
@@ -19,7 +19,7 @@ type UserWithRole struct {
 	Password                   string
 	ApplicationEnvironmentRole string
 	IsActive                   bool
-	InactiveAt                 time.Time
+	InactiveAt                 sql.NullTime
 }
 
 type ReceiptParseResult struct {

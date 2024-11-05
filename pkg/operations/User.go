@@ -229,12 +229,12 @@ func UpdateUserPassword(userID, hashedPassword string) error {
 	return nil
 }
 
-func GetUserWithPasswordByUserName(username string) (*utils.UserWithPassword, error) {
+func GetUserWithPasswordByUserName(username string) (*utils.UserWithRole, error) {
 	db := utils.Db()
 	defer db.Close()
 
-	user := utils.UserWithPassword{}
-	stmt, err := db.Prepare("SELECT id, username, email, security_questions_answered, password FROM users WHERE username = ?")
+	user := utils.UserWithRole{}
+	stmt, err := db.Prepare("SELECT id, username, email, security_questions_answered, password, is_active FROM users WHERE username = ?")
 	if err != nil {
 		log.Println(err)
 		return nil, err
@@ -247,6 +247,7 @@ func GetUserWithPasswordByUserName(username string) (*utils.UserWithPassword, er
 		&user.Email,
 		&user.SecurityQuestionsAnswered,
 		&user.Password,
+		&user.IsActive,
 	)
 	if err != nil {
 		if err == sql.ErrNoRows {
