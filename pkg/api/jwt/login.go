@@ -28,31 +28,36 @@ func LoginWithJWTHandler(c *gin.Context) {
 
 	// Basic validation
 	if err != nil || user == nil || bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)) != nil {
-		log.Println("Invalid username or password", username, password)
-		c.JSON(http.StatusOK, gin.H{
-			"ok":      false,
-			"message": "Invalid username or password",
-		})
+		c.JSON(http.StatusUnauthorized, utils.JR(utils.JsonResponse{
+			Ok:      false,
+			Message: "Invalid username or password",
+			Code:    "UNAUTHORIZED",
+			Error:   "Invalid username or password",
+		}))
 		return
 	}
 
 	// Check if user is inactive
 	if !user.IsActive {
 		log.Println("User is inactive", user.ID)
-		c.JSON(http.StatusOK, gin.H{
-			"ok":      false,
-			"message": "Invalid username or password",
-		})
+		c.JSON(http.StatusUnauthorized, utils.JR(utils.JsonResponse{
+			Ok:      false,
+			Message: "Invalid username or password",
+			Code:    "UNAUTHORIZED",
+			Error:   "User is inactive",
+		}))
 		return
 	}
 
 	// Generate JWT after successful login
 	jwtToken, err := utils.GenerateJWT(user.ID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"ok":      false,
-			"message": "Failed to generate token",
-		})
+		c.JSON(http.StatusInternalServerError, utils.JR(utils.JsonResponse{
+			Ok:      false,
+			Message: "Failed to generate token",
+			Code:    "INTERNAL_SERVER_ERROR",
+			Error:   "Failed to generate token",
+		}))
 		return
 	}
 
@@ -69,10 +74,12 @@ func LoginWithJWTHandler(c *gin.Context) {
 
 	env := os.Getenv("ENV")
 	if env == "" {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"ok":      false,
-			"message": "ENV is not set",
-		})
+		c.JSON(http.StatusInternalServerError, utils.JR(utils.JsonResponse{
+			Ok:      false,
+			Message: "ENV is not set",
+			Code:    "INTERNAL_SERVER_ERROR",
+			Error:   "ENV is not set",
+		}))
 		return
 	}
 
@@ -86,9 +93,13 @@ func LoginWithJWTHandler(c *gin.Context) {
 	}
 
 	c.SetCookie("jwt", jwtToken, int(cookieConfig.Expiration.Seconds()), "/", cookieConfig.Domain, cookieConfig.Secure, true)
-	c.JSON(http.StatusOK, gin.H{
-		"ok":                        true,
-		"message":                   "Logged in successfully",
-		"securityQuestionsAnswered": user.SecurityQuestionsAnswered,
-	})
+	c.JSON(http.StatusOK, utils.JR(utils.JsonResponse{
+		Ok:      true,
+		Message: "Logged in successfully",
+		Data: struct {
+			SecurityQuestionsAnswered bool `json:"securityQuestionsAnswered"`
+		}{
+			SecurityQuestionsAnswered: user.SecurityQuestionsAnswered,
+		},
+	}))
 }
