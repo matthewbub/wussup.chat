@@ -96,7 +96,7 @@ func registerJwtApiRoutes(router *gin.Engine) {
 	router.POST("/api/v1/account/security", middleware.JWTAuthMiddleware(), jwt.UpdateSecurity)
 	router.POST("/api/v1/account/preferences", middleware.JWTAuthMiddleware(), jwt.UpdatePreferences)
 	router.POST("/api/v1/account/export", middleware.JWTAuthMiddleware(), jwt.ExportData)
-	router.DELETE("/api/v1/account", middleware.JWTAuthMiddleware(), jwt.DeleteAccount)
+	router.DELETE("/api/v1/jwt/account", middleware.JWTAuthMiddleware(), jwt.DeleteAccount)
 
 	// Document API
 	router.GET("/api/v1/documents", middleware.JWTAuthMiddleware(), jwt.ListDocuments)

@@ -90,6 +90,10 @@ function DebugComponent() {
                           {user.securityQuestionsAnswered ? "Yes" : "No"}
                         </TableCell>
                       </TableRow>
+                      <TableRow>
+                        <TableCell>Is Active</TableCell>
+                        <TableCell>{user.isActive ? "Yes" : "No"}</TableCell>
+                      </TableRow>
                     </TableBody>
                   </Table>
                 </CardContent>

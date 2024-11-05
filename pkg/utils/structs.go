@@ -16,6 +16,7 @@ type UserWithRole struct {
 	UserObject
 	Password                   string
 	ApplicationEnvironmentRole string
+	IsActive                   bool
 }
 
 type ReceiptParseResult struct {

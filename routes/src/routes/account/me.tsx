@@ -94,9 +94,16 @@ function AccountSettings() {
     console.log("Bulk export initiated");
   };
 
-  const handleDeleteAccount = () => {
-    // Implement account deletion logic here
-    console.log("Account deletion initiated");
+  const handleDeleteAccount = async () => {
+    const response = await fetch("/api/v1/jwt/account", {
+      method: "DELETE",
+    });
+
+    if (response.ok) {
+      console.log("Account deleted");
+    } else {
+      console.error("Failed to delete account");
+    }
   };
 
   const scrollToSection = (sectionName: keyof typeof sectionRefs) => {
