@@ -10,7 +10,7 @@ During development it's typically easier to run this command:
 templ generate && ENV=development go run main.go
 ```
 
-We're using Templ for markup. It's a JSX-like template library that **requires an additional build command**. As long as the Golang binary is in your environment path, you should have access to templ in this project.
+As long as the Golang binary is in your environment path, you should have access to templ in this project. Templ is defined `pkg/views` and served directly from a Go route
 
 If you're changing a `*.templ` file, you're going to need to run the `templ generate` command to rebuild the templates. Otherwise, you only need to restart the go server. Since were working with HTMX it's pretty common to need to modify both a template and server side code, hence the suggestion to "just run both".
 

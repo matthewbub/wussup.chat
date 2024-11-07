@@ -1,4 +1,4 @@
-# Authentication Utilities with Zustand
+# Authentication Utilities (Client)
 
 The client side (React) application has a few helpful state properties and an `Authorized` React component to help with building out interactive UIs. We try to set up most of this stuff for you, but it's still helpful to understand.
 
