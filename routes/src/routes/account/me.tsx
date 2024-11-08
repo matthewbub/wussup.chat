@@ -249,7 +249,10 @@ function AccountSettings() {
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                           <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction onClick={handleDeleteAccount}>
+                          <AlertDialogAction
+                            onClick={handleDeleteAccount}
+                            color="red"
+                          >
                             Yes, delete my account
                           </AlertDialogAction>
                         </AlertDialogFooter>

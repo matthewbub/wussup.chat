@@ -1,6 +1,7 @@
 package jwt
 
 import (
+	"log"
 	"net/http"
 
 	"bus.zcauldron.com/pkg/operations"
@@ -38,6 +39,15 @@ func AuthCheckHandler(c *gin.Context) {
 		return
 	}
 
+	if user.InactiveAt.Valid {
+		log.Println("User is inactive", user.ID)
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"ok":    false,
+			"error": "User not found",
+		})
+		return
+	}
+
 	// If user exists and token is valid, return success response
 	c.JSON(http.StatusOK, gin.H{
 		"ok": true,
@@ -47,7 +57,7 @@ func AuthCheckHandler(c *gin.Context) {
 			"email":                      user.Email,
 			"securityQuestionsAnswered":  user.SecurityQuestionsAnswered,
 			"applicationEnvironmentRole": user.ApplicationEnvironmentRole,
-			"isActive":                   user.IsActive,
+			"inactiveAt":                 user.InactiveAt,
 		},
 	})
 }

@@ -109,7 +109,7 @@ func getUserFromDatabase(username string) (*User, error) {
 	}(db)
 
 	user := &User{}
-	err := db.QueryRow("SELECT id, username, password, email, security_questions_answered FROM users WHERE username = ?", username).
+	err := db.QueryRow("SELECT id, username, password, email, security_questions_answered FROM active_users WHERE username = ?", username).
 		Scan(&user.ID, &user.Username, &user.Password, &user.Email, &user.SecurityQuestionsAnswered)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {

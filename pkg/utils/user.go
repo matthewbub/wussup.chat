@@ -14,7 +14,7 @@ func GetUserWithRoleByID(userID string) (*UserWithRole, error) {
 
 	user := UserWithRole{}
 
-	stmt, err := db.Prepare("SELECT id, username, email, security_questions_answered, application_environment_role, is_active, password FROM users WHERE id = ?")
+	stmt, err := db.Prepare("SELECT id, username, email, security_questions_answered, application_environment_role, password FROM active_users WHERE id = ?")
 	if err != nil {
 		log.Println(err)
 		return nil, err
@@ -26,7 +26,6 @@ func GetUserWithRoleByID(userID string) (*UserWithRole, error) {
 		&user.Email,
 		&user.SecurityQuestionsAnswered,
 		&user.ApplicationEnvironmentRole,
-		&user.IsActive,
 		&user.Password,
 	)
 	if err != nil {
@@ -56,7 +55,7 @@ func GetAuthenticatedUser(c *gin.Context) (*UserWithRole, error) {
 
 	// Check if user exists in the database
 	user, err := GetUserWithRoleByID(userID)
-	if err != nil || user == nil || !user.IsActive {
+	if err != nil || user == nil {
 		return nil, fmt.Errorf("user not found")
 	}
 

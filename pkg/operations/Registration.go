@@ -43,7 +43,7 @@ func CheckSecurityQuestionsAnswered(userID interface{}) (bool, error) {
 	defer db.Close()
 
 	var answered bool
-	err := db.QueryRow("SELECT security_questions_answered FROM users WHERE id = ?", userID).Scan(&answered)
+	err := db.QueryRow("SELECT security_questions_answered FROM active_users WHERE id = ?", userID).Scan(&answered)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return false, nil // User not found, treat as not answered
