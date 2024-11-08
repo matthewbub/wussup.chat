@@ -37,7 +37,7 @@ func GetUserFromSession(c *gin.Context) (*UserObject, error) {
 	defer db.Close()
 
 	var user UserObject
-	err := db.QueryRow("SELECT id, username, email, security_questions_answered FROM active_users WHERE id = ?", userID).Scan(&user.ID, &user.Username, &user.Email, &user.SecurityQuestionsAnswered)
+	err := db.QueryRow("SELECT id, username, email, security_questions_answered FROM users WHERE id = ?", userID).Scan(&user.ID, &user.Username, &user.Email, &user.SecurityQuestionsAnswered)
 	if err != nil {
 		log.Println("user not found in database")
 		return nil, fmt.Errorf("user not found in database")

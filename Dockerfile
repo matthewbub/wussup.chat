@@ -9,23 +9,7 @@ COPY . .
 # Build the Go app with CGO enabled
 RUN CGO_ENABLED=1 GOOS=linux go build -a -installsuffix cgo -o main .
 
-# Step 2: Build stage for website
-FROM node:20-alpine AS web-builder
-WORKDIR /app/website
-COPY website ./
-RUN rm -rf node_modules
-RUN npm install
-RUN npm run build
-
-# Step 2.1: Build stage for website
-FROM node:20-alpine AS web-builder-docs
-WORKDIR /app/docs
-COPY docs ./
-RUN rm -rf node_modules
-RUN npm install
-RUN npm run build
-
-# Step 2.2: Build stage for router
+# Step 2: Build stage for router
 FROM node:20-alpine AS router-builder
 WORKDIR /app/router
 COPY router ./
@@ -41,8 +25,6 @@ RUN sqlite3 /root/pkg/database/prod.db < /root/pkg/database/schema.sql
 WORKDIR /root/
 COPY --from=go-builder /app/main .
 COPY --from=go-builder /app/public ./public
-COPY --from=web-builder /app/website/dist ./website/dist
-COPY --from=web-builder-docs /app/docs/build ./docs/build
 COPY --from=router-builder /app/router/dist ./router/dist
 EXPOSE 8080
 CMD ["./main"]
