@@ -9,11 +9,6 @@ type UserObject struct {
 	SecurityQuestionsAnswered bool
 }
 
-type UserWithPassword struct {
-	UserObject
-	Password string
-}
-
 type UserWithRole struct {
 	UserObject
 	Password                   string
@@ -31,17 +26,4 @@ type ReceiptParseResult struct {
 type ReceiptItemJSON struct {
 	Name  string `json:"name"`
 	Price string `json:"price"`
-}
-
-type ReceiptWithImage struct {
-	Receipt ReceiptParseResult
-	Image   string `json:"image"`
-}
-
-type User struct {
-	ID                        string
-	Username                  string
-	Email                     string
-	SecurityQuestionsAnswered bool
-	Password                  string
 }

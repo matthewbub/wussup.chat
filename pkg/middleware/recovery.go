@@ -2,9 +2,8 @@ package middleware
 
 import (
 	"log"
+	"net/http"
 
-	"bus.zcauldron.com/pkg/views"
-	"github.com/a-h/templ"
 	"github.com/gin-gonic/gin"
 )
 
@@ -16,16 +15,7 @@ func Recovery(message string) gin.HandlerFunc {
 				log.Printf("Panic recovered: %v\n", err)
 
 				// Optionally, you can redirect to a specific route
-				// c.Redirect(http.StatusFound, "/error")
-
-				// Or render a specific template
-				templ.Handler(views.GeneralError(views.GeneralErrorData{
-					Title: "Error",
-					// TODO why is this here
-					IsLoggedIn: false,
-					// TODO this was a test message
-					Message: message,
-				})).ServeHTTP(c.Writer, c.Request)
+				c.Redirect(http.StatusFound, "/error")
 
 				// Ensure that the rest of the handlers are not called
 				c.Abort()
