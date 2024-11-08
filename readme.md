@@ -4,6 +4,8 @@
 
 ## Set up
 
+Watch this 5 minute getting started video here: https://www.youtube.com/watch?v=BhJ3JFsOh2g
+
 1. Clone repo
 2. Duplicate the `.env.example` > `.env`
 3. Navigate to the `cmd/generate_base64_key` directory and run `go run main.go` to generate a base64 encoded key.
