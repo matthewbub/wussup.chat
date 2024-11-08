@@ -153,37 +153,8 @@ function AccountSettings() {
 
         <main className="flex-grow space-y-8">
           <section ref={sectionRefs.profile}>
-            <Card>
-              <CardHeader>
-                <CardTitle>Profile</CardTitle>
-                <CardDescription>
-                  Manage your profile information
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleUpdateEmail} className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-4 md:gap-4 gap-2">
-                    <div className="col-span-1 flex items-center">
-                      <Label htmlFor="email">Email</Label>
-                    </div>
-                    <div className="col-span-3">
-                      <Input
-                        id="email"
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        placeholder="Enter your new email"
-                      />
-                    </div>
-                  </div>
-                  <Button type="submit" color="teal">
-                    <Mail className="mr-2 h-4 w-4" /> Update Email
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
+            <UpdateProfileInformation />
           </section>
-
           <section ref={sectionRefs.passwordReset}>
             <AuthenticatedResetPasswordForm />
           </section>
@@ -555,6 +526,73 @@ function SecurityQuestionsForm() {
           ))}
           <Button type="submit" className="w-fit" color="teal">
             Submit
+          </Button>
+        </form>
+      </CardContent>
+    </Card>
+  );
+}
+
+function UpdateProfileInformation() {
+  const user = useAuthStore((state) => state.user);
+  const defaultValues = {
+    email: user?.email || "",
+  };
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({ defaultValues });
+
+  const onSubmit = async (data: { email: string }) => {
+    console.log(data);
+    const response = await fetch("/api/v1/jwt/account/profile", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+    const json = await response.json();
+    if (!json.ok) {
+      throw new Error("Failed to update email.");
+    }
+
+    // setMessage({
+    //   type: "success",
+    //   content: "Email updated successfully.",
+    // });
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Profile</CardTitle>
+        <CardDescription>Manage your profile information</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 md:gap-4 gap-2">
+            <div className="col-span-1 flex items-center">
+              <Label htmlFor="email">Email</Label>
+            </div>
+            <div className="col-span-3">
+              <Input
+                id="email"
+                type="email"
+                {...register("email", {
+                  required: "Email is required",
+                  maxLength: {
+                    value: config.__PRIVATE__.MAX_EMAIL_LENGTH,
+                    message: `Email must be less than ${config.__PRIVATE__.MAX_EMAIL_LENGTH} characters`,
+                  },
+                })}
+                placeholder="Enter your new email"
+              />
+              {errors.email && (
+                <Text className="text-red-500">{errors.email.message}</Text>
+              )}
+            </div>
+          </div>
+          <Button type="submit" color="teal">
+            <Mail className="mr-2 h-4 w-4" /> Update Email
           </Button>
         </form>
       </CardContent>
