@@ -27,7 +27,6 @@ func GetUserWithRoleByID(userID string) (*UserWithRole, error) {
 		&user.SecurityQuestionsAnswered,
 		&user.ApplicationEnvironmentRole,
 		&user.Password,
-		&user.InactiveAt,
 	)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -56,7 +55,7 @@ func GetAuthenticatedUser(c *gin.Context) (*UserWithRole, error) {
 
 	// Check if user exists in the database
 	user, err := GetUserWithRoleByID(userID)
-	if err != nil || user == nil || user.InactiveAt.Valid {
+	if err != nil || user == nil {
 		return nil, fmt.Errorf("user not found")
 	}
 

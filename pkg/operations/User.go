@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"bus.zcauldron.com/pkg/utils"
@@ -267,6 +268,45 @@ func DeleteUser(userID string) error {
 	}
 
 	_, err = stmt.Exec(time.Now(), time.Now(), userID)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	return nil
+}
+
+func UpdateUserEmail(userID, email string) error {
+	db := utils.Db()
+	defer db.Close()
+
+	if email == "" || !strings.Contains(email, "@") || len(email) > 255 {
+		return fmt.Errorf("invalid email")
+	}
+
+	// Check if email is already in use by another user
+	var existingUserID string
+	stmt, err := db.Prepare("SELECT id FROM users WHERE email = ? AND id != ?")
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	err = stmt.QueryRow(email, userID).Scan(&existingUserID)
+	if err != nil && err != sql.ErrNoRows {
+		log.Println(err)
+		return err
+	}
+	if existingUserID != "" {
+		return fmt.Errorf("email already in use")
+	}
+
+	stmt, err = db.Prepare("UPDATE users SET email = ? WHERE id = ?")
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	_, err = stmt.Exec(email, userID)
 	if err != nil {
 		log.Println(err)
 		return err

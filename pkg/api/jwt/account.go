@@ -1,6 +1,7 @@
 package jwt
 
 import (
+	"log"
 	"net/http"
 
 	"bus.zcauldron.com/pkg/operations"
@@ -12,7 +13,49 @@ import (
 
 // UpdateProfile updates user profile information
 func UpdateProfile(c *gin.Context) {
-	// POST /api/v1/account/profile
+	// POST /api/v1/jwt/account/profile
+	user, err := utils.GetAuthenticatedUser(c)
+
+	if err != nil {
+		log.Println(err)
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"ok":    false,
+			"error": "User not found",
+		})
+		return
+	}
+
+	var body struct {
+		Email string `json:"email"`
+	}
+	if err := c.BindJSON(&body); err != nil {
+		log.Println(err)
+		c.JSON(http.StatusBadRequest, gin.H{
+			"ok":    false,
+			"error": "Invalid request body",
+		})
+		return
+	}
+	email := body.Email
+	if email == "" {
+		log.Println("Email is required")
+		c.JSON(http.StatusBadRequest, gin.H{
+			"ok":    false,
+			"error": "Email is required",
+		})
+		return
+	}
+
+	err = operations.UpdateUserEmail(user.ID, email)
+	if err != nil {
+		log.Println(err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"ok":    false,
+			"error": "Failed to update email",
+		})
+		return
+	}
+
 	// Request body: { email: string }
 	c.JSON(http.StatusOK, gin.H{"message": "Profile updated", "ok": true})
 }
@@ -47,28 +90,8 @@ func ExportData(c *gin.Context) {
 
 // DeleteAccount permanently deletes the user account
 func DeleteAccount(c *gin.Context) {
-	// Retrieve the JWT from the cookie
-	tokenString, err := c.Cookie("jwt")
-	if err != nil || tokenString == "" {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"ok": false,
-		})
-		return
-	}
-
-	// Verify the JWT and get the user ID and expiration status
-	userID, _, err := utils.VerifyJWT(tokenString)
+	user, err := utils.GetAuthenticatedUser(c)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"ok":    false,
-			"error": "Invalid token",
-		})
-		return
-	}
-
-	// Check if user exists in the database
-	user, err := operations.GetUserWithRoleByID(userID)
-	if err != nil || user == nil {
 		c.JSON(http.StatusUnauthorized, gin.H{
 			"ok":    false,
 			"error": "User not found",
@@ -77,7 +100,7 @@ func DeleteAccount(c *gin.Context) {
 	}
 
 	// Delete the user from the database
-	err = operations.DeleteUser(userID)
+	err = operations.DeleteUser(user.ID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"ok":    false,
