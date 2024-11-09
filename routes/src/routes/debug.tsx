@@ -22,9 +22,9 @@ export const Route = createFileRoute("/debug")({
 function DebugComponent() {
   const useLogout = useAuthStore((state) => state.useLogout);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-  const isSecurityQuestionsAnswered = useAuthStore(
-    (state) => state.isSecurityQuestionsAnswered
-  );
+  // const isSecurityQuestionsAnswered = useAuthStore(
+  //   (state) => state.isSecurityQuestionsAnswered
+  // );
   const user = useAuthStore((state) => state.user);
   const checkAuth = useAuthStore((state) => state.checkAuth);
 
@@ -44,8 +44,9 @@ function DebugComponent() {
             </li>
             <li>
               <strong>Security questions answered:</strong>{" "}
-              {isSecurityQuestionsAnswered ? "Yes" : "No"}
-              {isAuthenticated && !isSecurityQuestionsAnswered && (
+              {/* {JSON.stringify(isSecurityQuestionsAnswered)} */}
+              {user?.securityQuestionsAnswered ? "Yes" : "No"}
+              {isAuthenticated && !user?.securityQuestionsAnswered && (
                 <a
                   href="/security-questions"
                   className="pl-1 text-blue-500 dark:text-blue-400 hover:underline"

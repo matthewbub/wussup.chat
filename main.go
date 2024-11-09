@@ -27,12 +27,12 @@ func main() {
 
 	router.POST("/api/v1/account/sign-up", api.SignUpHandler)
 	router.POST("/api/v1/account/login", api.LoginHandler)
+	router.POST("/api/v1/account/security-questions", middleware.JWTAuthMiddleware(), api.SecurityQuestionsHandler)
 
 	router.POST("/api/v1/jwt/logout", jwt.Logout)
 	router.POST("/api/v1/jwt/forgot-password", jwt.ForgotPasswordHandler)
 	router.GET("/api/v1/jwt/auth-check", jwt.AuthCheckHandler)
 	router.GET("/api/v1/example/jwt", middleware.JWTAuthMiddleware(), api.ExampleAuthEndpoint)
-	router.POST("/api/v1/jwt/security-questions", middleware.JWTAuthMiddleware(), jwt.SecurityQuestionsHandler)
 	router.POST("/api/v1/jwt/reset-password", middleware.JWTAuthMiddleware(), jwt.ResetPasswordHandler)
 	router.POST("/api/v1/jwt/account/profile", middleware.JWTAuthMiddleware(), jwt.UpdateProfile)
 	router.POST("/api/v1/account/security", middleware.JWTAuthMiddleware(), jwt.UpdateSecurity)

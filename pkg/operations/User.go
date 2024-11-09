@@ -9,66 +9,7 @@ import (
 	"time"
 
 	"bus.zcauldron.com/pkg/utils"
-	"github.com/google/uuid"
 )
-
-func InsertUserIntoDatabase(username, hashedPassword, email string) (string, error) {
-	db := utils.Db()
-	defer db.Close()
-
-	// Use a prepared statement to prevent SQL injection
-	stmt, err := db.Prepare("INSERT INTO users (id, username, password, email, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)")
-	if err != nil {
-		log.Println(err)
-		return "", fmt.Errorf("failed to prepare statement: %w", err)
-	}
-	defer stmt.Close()
-
-	var uuid string = uuid.New().String()
-	_, err = stmt.Exec(uuid, username, hashedPassword, email, time.Now(), time.Now())
-	if err != nil {
-		log.Println(err)
-		return "", fmt.Errorf("failed to execute statement: %w", err)
-	}
-
-	// Insert the password into the password history
-	stmt, err = db.Prepare("INSERT INTO password_history (user_id, password) VALUES (?, ?)")
-	if err != nil {
-		log.Println(err)
-		return "", fmt.Errorf("failed to prepare password history statement: %w", err)
-	}
-	defer stmt.Close()
-
-	_, err = stmt.Exec(uuid, hashedPassword)
-	if err != nil {
-		log.Println(err)
-		return "", fmt.Errorf("failed to insert password into history: %w", err)
-	}
-
-	return uuid, nil
-}
-
-func UpdateUserSecurityQuestionsAnswered(userID interface{}) error {
-	db := utils.Db()
-	defer db.Close()
-
-	stmt, err := db.Prepare("UPDATE users SET security_questions_answered = ? WHERE id = ?")
-	if err != nil {
-		log.Println(err)
-		return err
-	}
-	defer stmt.Close()
-
-	_, err = stmt.Exec(true, userID)
-	if err != nil {
-		log.Println(err)
-		return err
-	}
-
-	log.Printf("[UpdateUserSecurityQuestionsAnswered] Security questions answered updated for user %v", userID)
-
-	return nil
-}
 
 func GetUserWithPasswordByID(userID string) (*utils.UserWithRole, error) {
 	db := utils.Db()
@@ -91,7 +32,7 @@ func GetUserWithPasswordByID(userID string) (*utils.UserWithRole, error) {
 		&user.ApplicationEnvironmentRole,
 	)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			return nil, fmt.Errorf("user not found")
 		}
 		log.Println(err)

@@ -98,7 +98,7 @@ const handleSignup = async () => {
 
 ### `useSecurityQuestions`
 
-Submits security questions and answers for the user. Sends a POST request to `/api/v1/jwt/security-questions`.
+Submits security questions and answers for the user. Sends a POST request to `/api/v1/account/security-questions`.
 
 ```tsx
 const { useSecurityQuestions } = useAuthStore();
