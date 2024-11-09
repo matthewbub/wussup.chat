@@ -7,6 +7,7 @@ import (
 	"os"
 	"time"
 
+	"bus.zcauldron.com/pkg/api/response"
 	"bus.zcauldron.com/pkg/constants"
 	"bus.zcauldron.com/pkg/utils"
 	"github.com/gin-gonic/gin"
@@ -25,21 +26,19 @@ func SignUpHandler(c *gin.Context) {
 	}
 
 	if err := c.ShouldBindJSON(&body); err != nil {
-		c.JSON(http.StatusBadRequest, utils.JR(utils.JsonResponse{
-			Ok:      false,
-			Message: "Invalid request data",
-			Code:    "INVALID_REQUEST_DATA",
-		}))
+		c.JSON(http.StatusBadRequest, response.Error(
+			"Invalid request data",
+			"INVALID_REQUEST_DATA",
+		))
 		return
 	}
 
 	// BEGIN DATA VALIDATION
 	if err := validateSignUpData(&body); err != nil {
-		c.JSON(http.StatusBadRequest, utils.JR(utils.JsonResponse{
-			Ok:      false,
-			Message: err.Error(),
-			Code:    "INVALID_REQUEST_DATA",
-		}))
+		c.JSON(http.StatusBadRequest, response.Error(
+			"Invalid request data",
+			"INVALID_REQUEST_DATA",
+		))
 		return
 	}
 
@@ -47,36 +46,30 @@ func SignUpHandler(c *gin.Context) {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(body.Password), bcrypt.DefaultCost)
 	if err != nil {
 		log.Printf("Error hashing password: %v", err)
-		c.JSON(http.StatusInternalServerError, utils.JR(utils.JsonResponse{
-			Ok:      false,
-			Message: "Server error",
-			Code:    "PASSWORD_HASH_ERROR",
-			Error:   err.Error(),
-		}))
+		c.JSON(http.StatusInternalServerError, response.Error(
+			"Server error",
+			"PASSWORD_HASH_ERROR",
+		))
 		return
 	}
 
 	// Insert user into the database
 	userID, err := insertUserIntoDatabase(body.Username, string(hashedPassword), body.Email)
 	if err != nil {
-		c.JSON(http.StatusConflict, utils.JR(utils.JsonResponse{
-			Ok:      false,
-			Message: "Username or email already exists",
-			Code:    "USER_ALREADY_EXISTS",
-			Error:   err.Error(),
-		}))
+		c.JSON(http.StatusConflict, response.Error(
+			"Username or email already exists",
+			"USER_ALREADY_EXISTS",
+		))
 		return
 	}
 
 	// Generate and set JWT
 	token, err := utils.GenerateJWT(userID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, utils.JR(utils.JsonResponse{
-			Ok:      false,
-			Message: "Failed to generate token",
-			Code:    "FAILED_TO_GENERATE_TOKEN",
-			Error:   "Error generating JWT during registration process",
-		}))
+		c.JSON(http.StatusInternalServerError, response.Error(
+			"Failed to generate token",
+			"FAILED_TO_GENERATE_TOKEN",
+		))
 		return
 	}
 
@@ -91,12 +84,10 @@ func SignUpHandler(c *gin.Context) {
 	}
 	env := os.Getenv("ENV")
 	if env == "" {
-		c.JSON(http.StatusInternalServerError, utils.JR(utils.JsonResponse{
-			Ok:      false,
-			Message: "Env not set",
-			Code:    "ENV_NOT_SET",
-			Error:   "Error generating JWT during registration process",
-		}))
+		c.JSON(http.StatusInternalServerError, response.Error(
+			"Env not set",
+			"ENV_NOT_SET",
+		))
 		return
 	}
 	if env == "production" {
@@ -108,10 +99,9 @@ func SignUpHandler(c *gin.Context) {
 	}
 
 	c.SetCookie("jwt", token, int(cookieConfig.Expiration.Seconds()), "/", cookieConfig.Domain, cookieConfig.Secure, true)
-	c.JSON(http.StatusOK, utils.JR(utils.JsonResponse{
-		Ok:      true,
-		Message: "Account registration completed successfully",
-	}))
+	c.JSON(http.StatusOK, response.SuccessMessage(
+		"Account registration completed successfully",
+	))
 }
 
 func validateSignUpData(body *struct {

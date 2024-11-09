@@ -77,6 +77,8 @@ function SignUpForm() {
             <Label htmlFor="username">Username</Label>
             <Input
               id="username"
+              type="text"
+              placeholder="Enter your username"
               {...register("username", {
                 required: "Username is required",
                 minLength: {
@@ -116,6 +118,7 @@ function SignUpForm() {
             <Input
               id="password"
               type="password"
+              placeholder="Enter your password"
               {...register("password", {
                 required: "Password is required",
                 minLength: {
@@ -137,6 +140,7 @@ function SignUpForm() {
             <Input
               id="confirm-password"
               type="password"
+              placeholder="Confirm your password"
               {...register("confirmPassword", {
                 required: "Please confirm your password",
                 validate: (value) =>
@@ -159,12 +163,28 @@ function SignUpForm() {
             />
             <Label htmlFor="terms" className="text-sm">
               I agree to the{" "}
-              <Link href="/terms-of-service">Terms of Service</Link> and{" "}
-              <Link href="/privacy-policy">Privacy Policy</Link>
+              <Link
+                href="/terms-of-service"
+                className="text-blue-600 hover:underline"
+              >
+                Terms of Service
+              </Link>{" "}
+              and{" "}
+              <Link
+                href="/privacy-policy"
+                className="text-blue-600 hover:underline"
+              >
+                Privacy Policy
+              </Link>
             </Label>
           </div>
           {error && <p className="text-sm text-red-500">{error}</p>}
-          <Button type="submit" className="w-full" disabled={isLoading}>
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={isLoading}
+            color="teal"
+          >
             {isLoading ? "Signing Up..." : "Sign Up"}
           </Button>
         </form>
