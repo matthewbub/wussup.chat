@@ -73,6 +73,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
           });
           return false;
         }
+        console.log(json?.user);
 
         set({
           isAuthenticated: true,
@@ -83,10 +84,10 @@ export const useAuthStore = create<AuthStore>((set) => ({
             applicationEnvironmentRole:
               json?.user?.applicationEnvironmentRole ?? "",
             securityQuestionsAnswered:
-              json?.user?.securityQuestionsAnswered ?? false,
+              json?.user?.securityQuestionsAnswered || false,
             inactiveAt: {
-              isValid: json?.user?.inactiveAt?.Valid ?? false,
-              value: json?.user?.inactiveAt?.value ?? null,
+              valid: json?.user?.inactiveAt?.Valid || false,
+              time: json?.user?.inactiveAt?.value || null,
             },
           },
           error: null,
@@ -253,11 +254,14 @@ export const useAuthStore = create<AuthStore>((set) => ({
   ) => {
     try {
       set({ isLoading: true, error: null });
-      const response = await fetchWithAuth("/api/v1/jwt/security-questions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ questions }),
-      });
+      const response = await fetchWithAuth(
+        "/api/v1/account/security-questions",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ questions }),
+        }
+      );
       const json = await response.json();
       if (json.ok) {
         set({
