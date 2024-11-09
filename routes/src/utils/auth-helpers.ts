@@ -22,6 +22,5 @@ export async function fetchSecureTest() {
   const response = await fetchWithAuth("/api/v1/example/jwt");
   if (response.ok) {
     const data = await response.json();
-    console.log("User data:", data);
   }
 }
