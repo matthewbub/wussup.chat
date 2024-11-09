@@ -164,7 +164,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
   useLogout: async () => {
     try {
       set({ isLoading: true });
-      const response = await fetch("/api/v1/jwt/logout", {
+      const response = await fetch("/api/v1/account/logout", {
         method: "POST",
         credentials: "include",
       });
