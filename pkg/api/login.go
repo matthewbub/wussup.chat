@@ -1,43 +1,45 @@
-package jwt
+package api
 
 import (
+	"database/sql"
+	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"time"
 
 	"bus.zcauldron.com/pkg/constants"
-	"bus.zcauldron.com/pkg/operations"
 	"bus.zcauldron.com/pkg/utils"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
 )
 
-func LoginWithJWTHandler(c *gin.Context) {
+func LoginHandler(c *gin.Context) {
 	var body struct {
 		Username   string `json:"username"`
 		Password   string `json:"password"`
 		RememberMe bool   `json:"rememberMe"`
 	}
-	c.BindJSON(&body)
+	err := c.BindJSON(&body)
+	if err != nil {
+		return
+	}
 	username := utils.SanitizeInput(body.Username)
 	password := utils.SanitizeInput(body.Password)
 
-	// Existing user validation logic
-	user, err := operations.GetUserWithPasswordByUserName(username)
+	user, err := getUserForLogin(username)
 
 	// Basic validation
 	if err != nil || user == nil || bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)) != nil {
 		c.JSON(http.StatusUnauthorized, utils.JR(utils.JsonResponse{
 			Ok:      false,
 			Message: "Invalid username or password",
-			Code:    "LOGIN_INVALID_CREDENTIALS",
+			Code:    "INVALID_REQUEST_DATA",
 			Error:   "Invalid username or password",
 		}))
 		return
 	}
-
-	log.Println(user.InactiveAt)
 
 	// Check if user is inactive
 	if user.InactiveAt.Valid {
@@ -45,7 +47,7 @@ func LoginWithJWTHandler(c *gin.Context) {
 		c.JSON(http.StatusUnauthorized, utils.JR(utils.JsonResponse{
 			Ok:      false,
 			Message: "Invalid username or password",
-			Code:    "LOGIN_INACTIVE_USER",
+			Code:    "INVALID_REQUEST_DATA",
 			Error:   "User is inactive",
 		}))
 		return
@@ -57,7 +59,7 @@ func LoginWithJWTHandler(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, utils.JR(utils.JsonResponse{
 			Ok:      false,
 			Message: "Failed to generate token",
-			Code:    "LOGIN_JWT_GENERATION_FAILED",
+			Code:    "FAILED_TO_GENERATE_TOKEN",
 			Error:   "Failed to generate token",
 		}))
 		return
@@ -79,7 +81,7 @@ func LoginWithJWTHandler(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, utils.JR(utils.JsonResponse{
 			Ok:      false,
 			Message: "ENV is not set",
-			Code:    "LOGIN_ENV_NOT_SET",
+			Code:    "ENV_NOT_SET",
 			Error:   "ENV is not set",
 		}))
 		return
@@ -104,4 +106,35 @@ func LoginWithJWTHandler(c *gin.Context) {
 			SecurityQuestionsAnswered: user.SecurityQuestionsAnswered,
 		},
 	}))
+}
+
+func getUserForLogin(username string) (*utils.UserWithRole, error) {
+	db := utils.Db()
+	defer db.Close()
+
+	user := utils.UserWithRole{}
+	stmt, err := db.Prepare("SELECT id, username, email, security_questions_answered, password, inactive_at FROM active_users WHERE username = ?")
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+	defer stmt.Close()
+
+	err = stmt.QueryRow(username).Scan(
+		&user.ID,
+		&user.Username,
+		&user.Email,
+		&user.SecurityQuestionsAnswered,
+		&user.Password,
+		&user.InactiveAt,
+	)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, fmt.Errorf("user not found")
+		}
+		log.Println(err)
+		return nil, err
+	}
+
+	return &user, nil
 }
