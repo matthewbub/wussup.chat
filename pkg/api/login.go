@@ -9,6 +9,7 @@ import (
 	"os"
 	"time"
 
+	"bus.zcauldron.com/pkg/api/response"
 	"bus.zcauldron.com/pkg/constants"
 	"bus.zcauldron.com/pkg/utils"
 	"github.com/gin-gonic/gin"
@@ -23,45 +24,42 @@ func LoginHandler(c *gin.Context) {
 	}
 	err := c.BindJSON(&body)
 	if err != nil {
+		c.JSON(http.StatusBadRequest, response.Error(
+			"Invalid request body",
+			"INVALID_REQUEST_BODY",
+		))
 		return
 	}
 	username := utils.SanitizeInput(body.Username)
 	password := utils.SanitizeInput(body.Password)
-
 	user, err := getUserForLogin(username)
 
 	// Basic validation
 	if err != nil || user == nil || bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)) != nil {
-		c.JSON(http.StatusUnauthorized, utils.JR(utils.JsonResponse{
-			Ok:      false,
-			Message: "Invalid username or password",
-			Code:    "INVALID_REQUEST_DATA",
-			Error:   "Invalid username or password",
-		}))
+		c.JSON(http.StatusUnauthorized, response.Error(
+			"Invalid username or password",
+			"INVALID_REQUEST_DATA",
+		))
 		return
 	}
 
 	// Check if user is inactive
 	if user.InactiveAt.Valid {
 		log.Println("User is inactive", user.ID)
-		c.JSON(http.StatusUnauthorized, utils.JR(utils.JsonResponse{
-			Ok:      false,
-			Message: "Invalid username or password",
-			Code:    "INVALID_REQUEST_DATA",
-			Error:   "User is inactive",
-		}))
+		c.JSON(http.StatusUnauthorized, response.Error(
+			"User is inactive",
+			"INVALID_REQUEST_DATA",
+		))
 		return
 	}
 
 	// Generate JWT after successful login
 	jwtToken, err := utils.GenerateJWT(user.ID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, utils.JR(utils.JsonResponse{
-			Ok:      false,
-			Message: "Failed to generate token",
-			Code:    "FAILED_TO_GENERATE_TOKEN",
-			Error:   "Failed to generate token",
-		}))
+		c.JSON(http.StatusInternalServerError, response.Error(
+			"Failed to generate token",
+			"FAILED_TO_GENERATE_TOKEN",
+		))
 		return
 	}
 
@@ -78,12 +76,10 @@ func LoginHandler(c *gin.Context) {
 
 	env := os.Getenv("ENV")
 	if env == "" {
-		c.JSON(http.StatusInternalServerError, utils.JR(utils.JsonResponse{
-			Ok:      false,
-			Message: "ENV is not set",
-			Code:    "ENV_NOT_SET",
-			Error:   "ENV is not set",
-		}))
+		c.JSON(http.StatusInternalServerError, response.Error(
+			"ENV is not set",
+			"ENV_NOT_SET",
+		))
 		return
 	}
 
@@ -97,15 +93,14 @@ func LoginHandler(c *gin.Context) {
 	}
 
 	c.SetCookie("jwt", jwtToken, int(cookieConfig.Expiration.Seconds()), "/", cookieConfig.Domain, cookieConfig.Secure, true)
-	c.JSON(http.StatusOK, utils.JR(utils.JsonResponse{
-		Ok:      true,
-		Message: "Logged in successfully",
-		Data: struct {
+	c.JSON(http.StatusOK, response.Success(
+		struct {
 			SecurityQuestionsAnswered bool `json:"securityQuestionsAnswered"`
 		}{
 			SecurityQuestionsAnswered: user.SecurityQuestionsAnswered,
 		},
-	}))
+		"Logged in successfully",
+	))
 }
 
 func getUserForLogin(username string) (*utils.UserWithRole, error) {
