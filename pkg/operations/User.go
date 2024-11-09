@@ -2,6 +2,7 @@ package operations
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"log"
 	"strings"
@@ -67,36 +68,6 @@ func UpdateUserSecurityQuestionsAnswered(userID interface{}) error {
 	log.Printf("[UpdateUserSecurityQuestionsAnswered] Security questions answered updated for user %v", userID)
 
 	return nil
-}
-
-func GetUserFromDatabase(username string) (*utils.UserWithRole, error) {
-	db := utils.Db()
-	defer db.Close()
-
-	user := utils.UserWithRole{}
-	stmt, err := db.Prepare("SELECT id, username, email, security_questions_answered, application_environment_role FROM active_users WHERE username = ?")
-	if err != nil {
-		log.Println(err)
-		return nil, err
-	}
-	defer stmt.Close()
-
-	err = stmt.QueryRow(username).Scan(
-		&user.ID,
-		&user.Username,
-		&user.Email,
-		&user.SecurityQuestionsAnswered,
-		&user.ApplicationEnvironmentRole,
-	)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, fmt.Errorf("user not found")
-		}
-		log.Println(err)
-		return nil, err
-	}
-
-	return &user, nil
 }
 
 func GetUserWithPasswordByID(userID string) (*utils.UserWithRole, error) {
@@ -196,37 +167,6 @@ func UpdateUserPassword(userID, hashedPassword string) error {
 	return nil
 }
 
-func GetUserWithPasswordByUserName(username string) (*utils.UserWithRole, error) {
-	db := utils.Db()
-	defer db.Close()
-
-	user := utils.UserWithRole{}
-	stmt, err := db.Prepare("SELECT id, username, email, security_questions_answered, password, inactive_at FROM active_users WHERE username = ?")
-	if err != nil {
-		log.Println(err)
-		return nil, err
-	}
-	defer stmt.Close()
-
-	err = stmt.QueryRow(username).Scan(
-		&user.ID,
-		&user.Username,
-		&user.Email,
-		&user.SecurityQuestionsAnswered,
-		&user.Password,
-		&user.InactiveAt,
-	)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, fmt.Errorf("user not found")
-		}
-		log.Println(err)
-		return nil, err
-	}
-
-	return &user, nil
-}
-
 func DeleteUser(userID string) error {
 	db := utils.Db()
 	defer db.Close()
@@ -262,7 +202,7 @@ func UpdateUserEmail(userID, email string) error {
 		return err
 	}
 	err = stmt.QueryRow(email, userID).Scan(&existingUserID)
-	if err != nil && err != sql.ErrNoRows {
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		log.Println(err)
 		return err
 	}

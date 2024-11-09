@@ -50,7 +50,7 @@ useEffect(() => {
 
 ### `useLogin`
 
-Logs in the user by sending a POST request to `/api/v1/jwt/login`. Updates state based on the response.
+Logs in the user by sending a POST request to `/api/v1/account/login`. Updates state based on the response.
 
 ```tsx
 const { useLogin } = useAuthStore();
