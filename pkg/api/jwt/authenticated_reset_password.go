@@ -44,7 +44,7 @@ func ResetPasswordHandler(c *gin.Context) {
 	}
 
 	// Validate new password strength
-	if err := validatePassword(body.NewPassword); err != nil {
+	if err := utils.ValidatePasswordStrength(body.NewPassword); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"ok": false, "message": err.Error()})
 		return
 	}
@@ -70,7 +70,7 @@ func ResetPasswordHandler(c *gin.Context) {
 	}
 
 	// Update the user's password in the database
-	if err := operations.UpdateUserPassword(userID, string(newPasswordHash)); err != nil {
+	if err := operations.UpdateUserPassword(userID, newPasswordHash); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"ok": false, "message": "Error saving new password"})
 		return
 	}

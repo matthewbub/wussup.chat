@@ -204,7 +204,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
   ) => {
     try {
       set({ isLoading: true, error: null });
-      const response = await fetch("/api/v1/jwt/sign-up", {
+      const response = await fetch("/api/v1/account/sign-up", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

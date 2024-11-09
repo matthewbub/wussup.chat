@@ -11,7 +11,7 @@ import (
 	"github.com/google/uuid"
 )
 
-func InsertUserIntoDatabase(username, hashedPassword, email string) error {
+func InsertUserIntoDatabase(username, hashedPassword, email string) (string, error) {
 	db := utils.Db()
 	defer db.Close()
 
@@ -19,7 +19,7 @@ func InsertUserIntoDatabase(username, hashedPassword, email string) error {
 	stmt, err := db.Prepare("INSERT INTO users (id, username, password, email, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)")
 	if err != nil {
 		log.Println(err)
-		return fmt.Errorf("failed to prepare statement: %w", err)
+		return "", fmt.Errorf("failed to prepare statement: %w", err)
 	}
 	defer stmt.Close()
 
@@ -27,24 +27,24 @@ func InsertUserIntoDatabase(username, hashedPassword, email string) error {
 	_, err = stmt.Exec(uuid, username, hashedPassword, email, time.Now(), time.Now())
 	if err != nil {
 		log.Println(err)
-		return fmt.Errorf("failed to execute statement: %w", err)
+		return "", fmt.Errorf("failed to execute statement: %w", err)
 	}
 
 	// Insert the password into the password history
 	stmt, err = db.Prepare("INSERT INTO password_history (user_id, password) VALUES (?, ?)")
 	if err != nil {
 		log.Println(err)
-		return fmt.Errorf("failed to prepare password history statement: %w", err)
+		return "", fmt.Errorf("failed to prepare password history statement: %w", err)
 	}
 	defer stmt.Close()
 
 	_, err = stmt.Exec(uuid, hashedPassword)
 	if err != nil {
 		log.Println(err)
-		return fmt.Errorf("failed to insert password into history: %w", err)
+		return "", fmt.Errorf("failed to insert password into history: %w", err)
 	}
 
-	return nil
+	return uuid, nil
 }
 
 func UpdateUserSecurityQuestionsAnswered(userID interface{}) error {

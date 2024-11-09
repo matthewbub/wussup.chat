@@ -79,7 +79,7 @@ const handleLogout = async () => {
 
 ### `useSignup`
 
-Registers a new user with username, email, password, confirm password, and terms accepted. Sends a POST request to `/api/v1/jwt/sign-up`
+Registers a new user with username, email, password, confirm password, and terms accepted. Sends a POST request to `/api/v1/account/sign-up`
 
 ```tsx
 const { useSignup } = useAuthStore();

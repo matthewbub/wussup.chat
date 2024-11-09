@@ -25,11 +25,12 @@ func main() {
 	router.Use(sessions.Sessions("session", store))
 	router.Use(middleware.Recovery("Something went wrong"))
 
+	router.POST("/api/v1/account/sign-up", api.SignUpHandler)
+
 	router.POST("/api/v1/jwt/login", jwt.LoginWithJWTHandler)
 	router.POST("/api/v1/jwt/logout", jwt.Logout)
 	router.POST("/api/v1/jwt/forgot-password", jwt.ForgotPasswordHandler)
 	router.GET("/api/v1/jwt/auth-check", jwt.AuthCheckHandler)
-	router.POST("/api/v1/jwt/sign-up", jwt.SignUpHandler)
 	router.GET("/api/v1/example/jwt", middleware.JWTAuthMiddleware(), api.ExampleAuthEndpoint)
 	router.POST("/api/v1/jwt/security-questions", middleware.JWTAuthMiddleware(), jwt.SecurityQuestionsHandler)
 	router.POST("/api/v1/jwt/reset-password", middleware.JWTAuthMiddleware(), jwt.ResetPasswordHandler)
