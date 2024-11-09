@@ -50,22 +50,24 @@ export const useAuthStore = create<AuthStore>((set) => ({
       });
       const json = (await response.json()) as {
         ok: boolean;
-        user?: {
-          id: string;
-          username: string;
-          email: string;
-          applicationEnvironmentRole?: string;
-          securityQuestionsAnswered?: boolean;
-          inactiveAt?: {
-            Valid: boolean;
-            value: Date;
+        data?: {
+          user?: {
+            id: string;
+            username: string;
+            email: string;
+            applicationEnvironmentRole?: string;
+            securityQuestionsAnswered?: boolean;
+            inactiveAt?: {
+              Valid: boolean;
+              value: Date;
+            };
           };
         };
         error?: string;
       };
 
       if (json.ok) {
-        if (json?.user?.inactiveAt?.Valid) {
+        if (json?.data?.user?.inactiveAt?.Valid) {
           set({
             error: "This account has been deactivated. Please contact support.",
             isAuthenticated: false,
@@ -73,21 +75,21 @@ export const useAuthStore = create<AuthStore>((set) => ({
           });
           return false;
         }
-        console.log(json?.user);
+        console.log(json?.data?.user);
 
         set({
           isAuthenticated: true,
           user: {
-            id: json?.user?.id ?? "",
-            username: json?.user?.username ?? "",
-            email: json?.user?.email ?? "",
+            id: json?.data?.user?.id ?? "",
+            username: json?.data?.user?.username ?? "",
+            email: json?.data?.user?.email ?? "",
             applicationEnvironmentRole:
-              json?.user?.applicationEnvironmentRole ?? "",
+              json?.data?.user?.applicationEnvironmentRole ?? "",
             securityQuestionsAnswered:
-              json?.user?.securityQuestionsAnswered || false,
+              json?.data?.user?.securityQuestionsAnswered || false,
             inactiveAt: {
-              valid: json?.user?.inactiveAt?.Valid || false,
-              time: json?.user?.inactiveAt?.value || null,
+              valid: json?.data?.user?.inactiveAt?.Valid || false,
+              time: json?.data?.user?.inactiveAt?.value || null,
             },
           },
           error: null,

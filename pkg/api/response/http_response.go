@@ -11,11 +11,7 @@ type Response[T any] struct {
 }
 
 // Success response helper
-func Success[T any](data *T, message string) gin.H {
-	if data == nil {
-		return SuccessMessage(message)
-	}
-
+func Success[T any](data T, message string) gin.H {
 	return gin.H{
 		"ok":      true,
 		"message": message,

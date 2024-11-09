@@ -50,12 +50,14 @@ func AuthCheckHandler(c *gin.Context) {
 
 	c.JSON(http.StatusOK, response.Success(
 		gin.H{
-			"id":                         user.ID,
-			"username":                   user.Username,
-			"email":                      user.Email,
-			"securityQuestionsAnswered":  user.SecurityQuestionsAnswered,
-			"applicationEnvironmentRole": user.ApplicationEnvironmentRole,
-			"inactiveAt":                 user.InactiveAt,
+			"user": gin.H{
+				"id":                         user.ID,
+				"username":                   user.Username,
+				"email":                      user.Email,
+				"securityQuestionsAnswered":  user.SecurityQuestionsAnswered,
+				"applicationEnvironmentRole": user.ApplicationEnvironmentRole,
+				"inactiveAt":                 user.InactiveAt,
+			},
 		},
 		"Authentication successful",
 	))

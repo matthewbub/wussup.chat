@@ -1,7 +1,11 @@
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "@tanstack/react-router";
+import { useNavigate, createFileRoute } from "@tanstack/react-router";
 
-export default function ErrorPage() {
+export const Route = createFileRoute("/error")({
+  component: ErrorPage,
+});
+
+function ErrorPage() {
   const navigate = useNavigate();
 
   return (
