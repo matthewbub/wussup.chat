@@ -548,7 +548,6 @@ function UpdateProfileInformation() {
   } = useForm({ defaultValues });
 
   const onSubmit = async (data: { email: string }) => {
-    console.log(data);
     const response = await fetch("/api/v1/jwt/account/profile", {
       method: "POST",
       body: JSON.stringify(data),

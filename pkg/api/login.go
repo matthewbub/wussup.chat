@@ -23,6 +23,12 @@ func LoginHandler(c *gin.Context) {
 	}
 	err := c.BindJSON(&body)
 	if err != nil {
+		c.JSON(http.StatusBadRequest, utils.JR(utils.JsonResponse{
+			Ok:      false,
+			Message: "Invalid request body",
+			Code:    "INVALID_REQUEST_BODY",
+			Error:   err.Error(),
+		}))
 		return
 	}
 	username := utils.SanitizeInput(body.Username)
