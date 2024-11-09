@@ -15,8 +15,8 @@ Watch this 5 minute getting started video here: https://www.youtube.com/watch?v=
 7. Launch the local server. `go run main.go`
 8. _In a separate terminal session_, navigate to the `routes/` directory and install the project dependencies using npm - `npm install`
 9. Launch the client dev server `npm run dev`
-10. (Optional) In a 3rd terminal session, navigate to the `docs/` directory and install the project dependencies using npm -`npm install`
-11. (Optional) Launch the documentation server `npm run start`
+
+See more documentation in the `/docs` directory
 
 ## Hosting with Docker (Running the Application Production)
 
@@ -39,3 +39,30 @@ docker build -t zcauldron .
 ```sh
 docker run --env-file .env -p 8080:8080 zcauldron
 ```
+
+## Project Requirements
+
+If you plan on running the project locally, you're going to need the following installed on your machine. The versions defined are what I am explicitly running right now, if I had to take a guess in the dark I'd say you're good to run with and version greater than or equal to whats defined below.
+
+- [Node.js](https://nodejs.org/en/download/) version 18.0
+- [Go](https://go.dev/) version 1.23.1
+- [SQLite](https://www.sqlite.org/download.html) version 3.43.2
+- Optional [Docker](https://www.docker.com/) version 25.0.2
+
+## About the core stack
+
+This is like a point to chat about for me, these technologies are making for a really fun DX
+
+Backend
+
+- [Go](https://go.dev/) - Server side programming language
+- [Gin](https://gin-gonic.com/) - HTTP framework
+- [SQLite](https://www.sqlite.org/) - Database that's easy to work with
+
+Client
+
+- [React](https://react.dev/) - Web library
+- [TanStack Router](https://tanstack.com/router) - Web routing system
+- [Vite](https://vite.dev/) - JavaScript build tool
+- [TypeScript](https://www.typescriptlang.org/) - Type safe javascript
+- [TailwindCSS + TailwindUI](https://tailwindui.com) - Prototype friendly component system
