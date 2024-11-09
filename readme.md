@@ -15,8 +15,8 @@ Watch this 5 minute getting started video here: https://www.youtube.com/watch?v=
 7. Launch the local server. `go run main.go`
 8. _In a separate terminal session_, navigate to the `routes/` directory and install the project dependencies using npm - `npm install`
 9. Launch the client dev server `npm run dev`
-10. (Optional) In a 3rd terminal session, navigate to the `docs/` directory and install the project dependencies using npm -`npm install`
-11. (Optional) Launch the documentation server `npm run start`
+
+See more documentation in the `/docs` directory
 
 ## Hosting with Docker (Running the Application Production)
 
