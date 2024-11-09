@@ -66,7 +66,7 @@ const handleLogin = async () => {
 
 ### `useLogout`
 
-Logs out the user by sending a POST request to `/api/v1/jwt/logout`. Clears user state on success.
+Logs out the user by sending a POST request to `/api/v1/account/logout`. Clears user state on success.
 
 ```tsx
 const { useLogout } = useAuthStore();
