@@ -45,7 +45,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
   checkAuth: async () => {
     try {
       set({ isLoading: true, error: null });
-      const response = await fetch("/api/v1/jwt/auth-check", {
+      const response = await fetch("/api/v1/pulse", {
         credentials: "include",
       });
       const json = (await response.json()) as {
