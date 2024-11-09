@@ -122,7 +122,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
   useLogin: async (username: string, password: string) => {
     try {
       set({ isLoading: true, error: null });
-      const response = await fetch("/api/v1/jwt/login", {
+      const response = await fetch("/api/v1/account/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
