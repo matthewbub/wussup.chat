@@ -38,27 +38,3 @@ var AppConfig = Config{
     },
 }
 ```
-
-## Best Practices
-
-1. **Environment Separation**
-
-   - Maintain strict separation between development and production CORS rules
-   - Never allow development origins in production
-
-2. **Security**
-
-   - Always validate origins against a whitelist
-   - Use HTTPS in production
-   - Minimize the number of allowed origins
-
-3. **Monitoring**
-
-   - Log CORS violations
-   - Monitor for unusual patterns
-   - Set up alerts for repeated violations
-
-4. **Configuration**
-   - Keep CORS configuration easily updatable
-   - Document all allowed origins
-   - Regular review of CORS policies

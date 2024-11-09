@@ -39,3 +39,30 @@ docker build -t zcauldron .
 ```sh
 docker run --env-file .env -p 8080:8080 zcauldron
 ```
+
+## Project Requirements
+
+If you plan on running the project locally, you're going to need the following installed on your machine. The versions defined are what I am explicitly running right now, if I had to take a guess in the dark I'd say you're good to run with and version greater than or equal to whats defined below.
+
+- [Node.js](https://nodejs.org/en/download/) version 18.0
+- [Go](https://go.dev/) version 1.23.1
+- [SQLite](https://www.sqlite.org/download.html) version 3.43.2
+- Optional [Docker](https://www.docker.com/) version 25.0.2
+
+## About the core stack
+
+This is like a point to chat about for me, these technologies are making for a really fun DX
+
+Backend
+
+- [Go](https://go.dev/) - Server side programming language
+- [Gin](https://gin-gonic.com/) - HTTP framework
+- [SQLite](https://www.sqlite.org/) - Database that's easy to work with
+
+Client
+
+- [React](https://react.dev/) - Web library
+- [TanStack Router](https://tanstack.com/router) - Web routing system
+- [Vite](https://vite.dev/) - JavaScript build tool
+- [TypeScript](https://www.typescriptlang.org/) - Type safe javascript
+- [TailwindCSS + TailwindUI](https://tailwindui.com) - Prototype friendly component system
