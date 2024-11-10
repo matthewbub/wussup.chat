@@ -3,6 +3,7 @@ import { Link, Outlet, createRootRoute } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/router-devtools";
 import { useAuthStore } from "@/stores/auth";
 import { DebugInfoBar } from "@/components/DebugInfoBar";
+import { Toaster } from "@/components/ui/toaster";
 
 export const Route = createRootRoute({
   component: RootComponent,
@@ -53,6 +54,7 @@ function RootComponent() {
       </div> */}
       {/* <hr /> */}
       <Outlet />
+      <Toaster />
       {/* <TanStackRouterDevtools position="bottom-right" /> */}
     </>
   );
