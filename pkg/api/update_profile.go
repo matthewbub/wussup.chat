@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"time"
 
 	"bus.zcauldron.com/pkg/utils"
 	"github.com/gin-gonic/gin"
@@ -87,13 +88,13 @@ func updateUserEmail(userID, email string) error {
 		return fmt.Errorf("email already in use")
 	}
 
-	stmt, err = db.Prepare("UPDATE users SET email = ? WHERE id = ?")
+	stmt, err = db.Prepare("UPDATE users SET email = ?, updated_at = ? WHERE id = ?")
 	if err != nil {
 		log.Println(err)
 		return err
 	}
 
-	_, err = stmt.Exec(email, userID)
+	_, err = stmt.Exec(email, time.Now().Format(time.RFC3339), userID)
 	if err != nil {
 		log.Println(err)
 		return err
