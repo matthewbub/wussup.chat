@@ -10,7 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// DeleteAccount permanently deletes the user account
+// DeleteAccountHandler permanently deletes the user account
 func DeleteAccountHandler(c *gin.Context) {
 	user, err := utils.GetAuthenticatedUser(c)
 	if err != nil {
