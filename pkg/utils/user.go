@@ -2,6 +2,7 @@ package utils
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"log"
 
@@ -29,7 +30,7 @@ func GetUserWithRoleByID(userID string) (*UserWithRole, error) {
 		&user.Password,
 	)
 	if err != nil {
-		if err == sql.ErrNoRows {
+		if errors.Is(err, sql.ErrNoRows) {
 			return nil, fmt.Errorf("user not found")
 		}
 		log.Println(err)

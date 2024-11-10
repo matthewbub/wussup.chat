@@ -16,6 +16,7 @@ import { Route as SecurityQuestionsImport } from './routes/security-questions'
 import { Route as MeImport } from './routes/me'
 import { Route as LoginImport } from './routes/login'
 import { Route as ForgotPasswordImport } from './routes/forgot-password'
+import { Route as ErrorImport } from './routes/error'
 import { Route as DebugImport } from './routes/debug'
 import { Route as DashboardImport } from './routes/dashboard'
 import { Route as IndexImport } from './routes/index'
@@ -51,6 +52,12 @@ const LoginRoute = LoginImport.update({
 const ForgotPasswordRoute = ForgotPasswordImport.update({
   id: '/forgot-password',
   path: '/forgot-password',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const ErrorRoute = ErrorImport.update({
+  id: '/error',
+  path: '/error',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -107,6 +114,13 @@ declare module '@tanstack/react-router' {
       path: '/debug'
       fullPath: '/debug'
       preLoaderRoute: typeof DebugImport
+      parentRoute: typeof rootRoute
+    }
+    '/error': {
+      id: '/error'
+      path: '/error'
+      fullPath: '/error'
+      preLoaderRoute: typeof ErrorImport
       parentRoute: typeof rootRoute
     }
     '/forgot-password': {
@@ -167,6 +181,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
   '/debug': typeof DebugRoute
+  '/error': typeof ErrorRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/me': typeof MeRoute
@@ -180,6 +195,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
   '/debug': typeof DebugRoute
+  '/error': typeof ErrorRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/me': typeof MeRoute
@@ -194,6 +210,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
   '/debug': typeof DebugRoute
+  '/error': typeof ErrorRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/me': typeof MeRoute
@@ -209,6 +226,7 @@ export interface FileRouteTypes {
     | '/'
     | '/dashboard'
     | '/debug'
+    | '/error'
     | '/forgot-password'
     | '/login'
     | '/me'
@@ -221,6 +239,7 @@ export interface FileRouteTypes {
     | '/'
     | '/dashboard'
     | '/debug'
+    | '/error'
     | '/forgot-password'
     | '/login'
     | '/me'
@@ -233,6 +252,7 @@ export interface FileRouteTypes {
     | '/'
     | '/dashboard'
     | '/debug'
+    | '/error'
     | '/forgot-password'
     | '/login'
     | '/me'
@@ -247,6 +267,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   DashboardRoute: typeof DashboardRoute
   DebugRoute: typeof DebugRoute
+  ErrorRoute: typeof ErrorRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   LoginRoute: typeof LoginRoute
   MeRoute: typeof MeRoute
@@ -260,6 +281,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DashboardRoute: DashboardRoute,
   DebugRoute: DebugRoute,
+  ErrorRoute: ErrorRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
   LoginRoute: LoginRoute,
   MeRoute: MeRoute,
@@ -284,6 +306,7 @@ export const routeTree = rootRoute
         "/",
         "/dashboard",
         "/debug",
+        "/error",
         "/forgot-password",
         "/login",
         "/me",
@@ -301,6 +324,9 @@ export const routeTree = rootRoute
     },
     "/debug": {
       "filePath": "debug.tsx"
+    },
+    "/error": {
+      "filePath": "error.tsx"
     },
     "/forgot-password": {
       "filePath": "forgot-password.tsx"

@@ -4,7 +4,6 @@ import (
 	"log"
 
 	"bus.zcauldron.com/pkg/api"
-	"bus.zcauldron.com/pkg/api/jwt"
 	"bus.zcauldron.com/pkg/middleware"
 	"bus.zcauldron.com/pkg/utils"
 	"github.com/gin-contrib/sessions"
@@ -28,18 +27,16 @@ func main() {
 	router.POST("/api/v1/account/sign-up", api.SignUpHandler)
 	router.POST("/api/v1/account/login", api.LoginHandler)
 	router.POST("/api/v1/account/security-questions", middleware.JWTAuthMiddleware(), api.SecurityQuestionsHandler)
-	router.POST("/api/v1/account/logout", api.Logout)
+	router.POST("/api/v1/account/logout", api.LogoutHandler)
 	router.POST("/api/v1/account/in/reset-password", middleware.JWTAuthMiddleware(), api.AuthenticatedResetPasswordHandler)
-
-
-	router.POST("/api/v1/jwt/forgot-password", jwt.ForgotPasswordHandler)
-	router.GET("/api/v1/jwt/auth-check", jwt.AuthCheckHandler)
+	router.GET("/api/v1/pulse", api.AuthCheckHandler)
+	router.POST("/api/v1/account/forgot-password", api.ForgotPasswordHandler)
 	router.GET("/api/v1/example/jwt", middleware.JWTAuthMiddleware(), api.ExampleAuthEndpoint)
-	router.POST("/api/v1/jwt/account/profile", middleware.JWTAuthMiddleware(), jwt.UpdateProfile)
-	router.POST("/api/v1/account/security", middleware.JWTAuthMiddleware(), jwt.UpdateSecurity)
-	router.POST("/api/v1/account/preferences", middleware.JWTAuthMiddleware(), jwt.UpdatePreferences)
-	router.POST("/api/v1/account/export", middleware.JWTAuthMiddleware(), jwt.ExportData)
-	router.DELETE("/api/v1/jwt/account", middleware.JWTAuthMiddleware(), jwt.DeleteAccount)
+	router.POST("/api/v1/account/profile", middleware.JWTAuthMiddleware(), api.UpdateProfileHandler)
+	router.DELETE("/api/v1/account/delete", middleware.JWTAuthMiddleware(), api.DeleteAccountHandler)
+
+	// router.POST("/api/v1/account/security", middleware.JWTAuthMiddleware(), api.UpdateSecurityHandler)
+	// router.POST("/api/v1/account/preferences", middleware.JWTAuthMiddleware(), jwt.UpdatePreferences)
 
 	//router.NoRoute(handlers.NotFound404)
 

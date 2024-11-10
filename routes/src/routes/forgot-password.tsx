@@ -52,7 +52,7 @@ function ForgotPasswordForm() {
     setMessage({ type: "", content: "" });
 
     try {
-      const response = await fetch("/api/v1/jwt/forgot-password", {
+      const response = await fetch("/api/v1/account/forgot-password", {
         method: "POST",
         body: JSON.stringify({ username: data.username }),
       });
