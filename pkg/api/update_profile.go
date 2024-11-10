@@ -68,40 +68,48 @@ func updateUserEmail(userID, email string) error {
 	db := utils.Db()
 	defer db.Close()
 
+	// Input validation
 	if email == "" || len(email) > 255 {
 		return fmt.Errorf("invalid email: empty or too long")
 	}
-
 	if _, err := mail.ParseAddress(email); err != nil {
 		return fmt.Errorf("invalid email: %w", err)
 	}
 
+	// Start transaction
+	tx, err := db.Begin()
+	if err != nil {
+		return fmt.Errorf("failed to start transaction: %w", err)
+	}
+	defer tx.Rollback() // Rollback if not committed
+
 	// Check if email is already in use by another user
 	var existingUserID string
-	stmt, err := db.Prepare("SELECT id FROM users WHERE email = ? AND id != ?")
+	stmt, err := tx.Prepare("SELECT id FROM users WHERE email = ? AND id != ?")
 	if err != nil {
-		log.Println(err)
-		return err
+		return fmt.Errorf("failed to prepare select statement: %w", err)
 	}
 	err = stmt.QueryRow(email, userID).Scan(&existingUserID)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
-		log.Println(err)
-		return err
+		return fmt.Errorf("failed to check existing email: %w", err)
 	}
 	if existingUserID != "" {
 		return fmt.Errorf("email already in use")
 	}
 
-	stmt, err = db.Prepare("UPDATE users SET email = ?, updated_at = ? WHERE id = ?")
+	// Update the email
+	stmt, err = tx.Prepare("UPDATE users SET email = ?, updated_at = ? WHERE id = ?")
 	if err != nil {
-		log.Println(err)
-		return err
+		return fmt.Errorf("failed to prepare update statement: %w", err)
 	}
-
 	_, err = stmt.Exec(email, time.Now().Format(time.RFC3339), userID)
 	if err != nil {
-		log.Println(err)
-		return err
+		return fmt.Errorf("failed to update email: %w", err)
+	}
+
+	// Commit the transaction
+	if err = tx.Commit(); err != nil {
+		return fmt.Errorf("failed to commit transaction: %w", err)
 	}
 
 	return nil
