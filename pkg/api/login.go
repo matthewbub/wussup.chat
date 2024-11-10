@@ -107,7 +107,14 @@ func getUserForLogin(username string) (*utils.UserWithRole, error) {
 	db := utils.GetDB()
 
 	user := utils.UserWithRole{}
-	stmt, err := db.Prepare("SELECT id, username, email, security_questions_answered, password, inactive_at FROM active_users WHERE username = ?")
+	tx, err := db.Begin()
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+	defer tx.Rollback()
+
+	stmt, err := tx.Prepare("SELECT id, username, email, security_questions_answered, password, inactive_at FROM active_users WHERE username = ?")
 	if err != nil {
 		log.Println(err)
 		return nil, err
@@ -126,6 +133,23 @@ func getUserForLogin(username string) (*utils.UserWithRole, error) {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, fmt.Errorf("user not found")
 		}
+		log.Println(err)
+		return nil, err
+	}
+
+	// update the user's last login
+	stmt, err = tx.Prepare("UPDATE active_users SET last_login = CURRENT_TIMESTAMP WHERE id = ?")
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+	_, err = stmt.Exec(user.ID)
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
+	if err = tx.Commit(); err != nil {
 		log.Println(err)
 		return nil, err
 	}

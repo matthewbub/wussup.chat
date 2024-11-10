@@ -140,7 +140,33 @@ func getUserForAuthenticatedResetPassword(userID string) (*utils.UserWithRole, e
 func updateUserPasswordForAuthenticatedResetPassword(userID, hashedPassword string) error {
 	db := utils.GetDB()
 
-	stmt, err := db.Prepare("UPDATE active_users SET password = ? WHERE id = ?")
+	tx, err := db.Begin()
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+	defer tx.Rollback()
+
+	// user cant reuse passwords
+	stmt, err := tx.Prepare("SELECT COUNT(*) FROM password_history WHERE user_id = ? AND password = ?")
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	var count int
+	err = stmt.QueryRow(userID, hashedPassword).Scan(&count)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	if count > 0 {
+		return fmt.Errorf("password cannot be reused")
+	}
+
+	// Update the user's password
+	stmt, err = tx.Prepare("UPDATE active_users SET password = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?")
 	if err != nil {
 		log.Println(err)
 		return err
@@ -153,7 +179,7 @@ func updateUserPasswordForAuthenticatedResetPassword(userID, hashedPassword stri
 	}
 
 	// Insert the password into the password history
-	stmt, err = db.Prepare("INSERT INTO password_history (user_id, password) VALUES (?, ?)")
+	stmt, err = tx.Prepare("INSERT INTO password_history (user_id, password) VALUES (?, ?)")
 	if err != nil {
 		log.Println(err)
 		return err
@@ -163,6 +189,10 @@ func updateUserPasswordForAuthenticatedResetPassword(userID, hashedPassword stri
 	if err != nil {
 		log.Println(err)
 		return err
+	}
+
+	if err = tx.Commit(); err != nil {
+		return fmt.Errorf("failed to commit transaction: %w", err)
 	}
 
 	return nil
