@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"strings"
+	"net/mail"
 	"time"
 
 	"bus.zcauldron.com/pkg/utils"
@@ -68,8 +68,12 @@ func updateUserEmail(userID, email string) error {
 	db := utils.Db()
 	defer db.Close()
 
-	if email == "" || !strings.Contains(email, "@") || len(email) > 255 {
-		return fmt.Errorf("invalid email")
+	if email == "" || len(email) > 255 {
+		return fmt.Errorf("invalid email: empty or too long")
+	}
+
+	if _, err := mail.ParseAddress(email); err != nil {
+		return fmt.Errorf("invalid email: %w", err)
 	}
 
 	// Check if email is already in use by another user
