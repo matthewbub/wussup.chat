@@ -1,4 +1,5 @@
 import { fetchWithAuth } from "@/utils/auth-helpers";
+import { validateResponse } from "@/utils/schema-validator";
 import { create } from "zustand";
 
 interface NullTime {
@@ -45,29 +46,32 @@ export const useAuthStore = create<AuthStore>((set) => ({
   checkAuth: async () => {
     try {
       set({ isLoading: true, error: null });
-      const response = await fetch("/api/v1/pulse", {
+      const response = await fetch("/api/v1/auth-check", {
         credentials: "include",
       });
-      const json = (await response.json()) as {
-        ok: boolean;
-        data?: {
-          user?: {
-            id: string;
-            username: string;
-            email: string;
-            applicationEnvironmentRole?: string;
-            securityQuestionsAnswered?: boolean;
-            inactiveAt?: {
-              Valid: boolean;
-              value: Date;
-            };
-          };
-        };
-        error?: string;
-      };
+
+      // Idk i still want type safety during development - gonna leave this hear for now
+      // const json = (await response.json()) as {
+      //   ok: boolean;
+      //   data?: {
+      //     user?: {
+      //       id: string;
+      //       username: string;
+      //       email: string;
+      //       applicationEnvironmentRole?: string;
+      //       securityQuestionsAnswered?: boolean;
+      //       inactiveAt?: {
+      //         Valid: boolean;
+      //         value: Date;
+      //       };
+      //     };
+      //   };
+      //   error?: string;
+      // };
+      const json = await validateResponse(response);
 
       if (json.ok) {
-        if (json?.data?.user?.inactiveAt?.Valid) {
+        if (json?.data?.inactiveAt?.Valid) {
           set({
             error: "This account has been deactivated. Please contact support.",
             isAuthenticated: false,
@@ -75,21 +79,20 @@ export const useAuthStore = create<AuthStore>((set) => ({
           });
           return false;
         }
-        console.log(json?.data?.user);
 
         set({
           isAuthenticated: true,
           user: {
-            id: json?.data?.user?.id ?? "",
-            username: json?.data?.user?.username ?? "",
-            email: json?.data?.user?.email ?? "",
+            id: json?.data?.id ?? "",
+            username: json?.data?.username ?? "",
+            email: json?.data?.email ?? "",
             applicationEnvironmentRole:
-              json?.data?.user?.applicationEnvironmentRole ?? "",
+              json?.data?.applicationEnvironmentRole ?? "",
             securityQuestionsAnswered:
-              json?.data?.user?.securityQuestionsAnswered || false,
+              json?.data?.securityQuestionsAnswered || false,
             inactiveAt: {
-              valid: json?.data?.user?.inactiveAt?.Valid || false,
-              time: json?.data?.user?.inactiveAt?.value || null,
+              valid: json?.data?.inactiveAt?.Valid || false,
+              time: json?.data?.inactiveAt?.value || null,
             },
           },
           error: null,

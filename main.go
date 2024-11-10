@@ -24,12 +24,15 @@ func main() {
 	router.Use(sessions.Sessions("session", store))
 	router.Use(middleware.Recovery("Something went wrong"))
 
+	// schema - keep me above other routes
+	router.GET("/api/v1/schema/:type", api.SchemaHandler)
+
 	router.POST("/api/v1/account/sign-up", api.SignUpHandler)
 	router.POST("/api/v1/account/login", api.LoginHandler)
 	router.POST("/api/v1/account/security-questions", middleware.JWTAuthMiddleware(), api.SecurityQuestionsHandler)
 	router.POST("/api/v1/account/logout", api.LogoutHandler)
 	router.POST("/api/v1/account/in/reset-password", middleware.JWTAuthMiddleware(), api.AuthenticatedResetPasswordHandler)
-	router.GET("/api/v1/pulse", api.AuthCheckHandler)
+	router.GET("/api/v1/auth-check", api.AuthCheckHandler)
 	router.POST("/api/v1/account/forgot-password", api.ForgotPasswordHandler)
 	router.GET("/api/v1/example/jwt", middleware.JWTAuthMiddleware(), api.ExampleAuthEndpoint)
 	router.POST("/api/v1/account/profile", middleware.JWTAuthMiddleware(), api.UpdateProfileHandler)
