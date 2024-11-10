@@ -13,12 +13,15 @@ import {
   Printer,
   Download,
 } from "lucide-react";
+import { useAuthStore } from "@/stores/auth";
 
 export const Route = createFileRoute("/")({
   component: LandingPageComponent,
 });
 
 export function LandingPageComponent() {
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+
   return (
     <div className="flex flex-col min-h-screen mx-auto">
       <header className="px-4 lg:px-6 h-14 flex items-center">
@@ -27,18 +30,37 @@ export function LandingPageComponent() {
           <span className="ml-2 text-lg font-semibold">DocuMaster</span>
         </a>
         <nav className="ml-auto flex gap-4 sm:gap-6">
-          <a
-            className="text-sm font-medium hover:underline underline-offset-4"
-            href="#features"
-          >
-            Features
-          </a>
-          <a
-            className="text-sm font-medium hover:underline underline-offset-4"
-            href="#get-started"
-          >
-            Get Started
-          </a>
+          {!isAuthenticated ? (
+            <>
+              <a
+                className="text-sm font-medium hover:underline underline-offset-4 px-4 py-2"
+                href="#features"
+              >
+                Sign up
+              </a>
+              <a
+                className="text-sm font-medium hover:underline underline-offset-4 px-4 py-2"
+                href="/login"
+              >
+                Login
+              </a>
+            </>
+          ) : (
+            <>
+              <a
+                className="text-sm font-medium hover:underline underline-offset-4 px-4 py-2"
+                href="/me"
+              >
+                Me
+              </a>
+              <a
+                className="text-sm font-medium hover:underline underline-offset-4 px-4 py-2"
+                href="/logout"
+              >
+                Logout
+              </a>
+            </>
+          )}
         </nav>
       </header>
       <main className="flex-1 mx-auto">
