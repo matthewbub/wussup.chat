@@ -65,8 +65,7 @@ func UpdateProfileHandler(c *gin.Context) {
 }
 
 func updateUserEmail(userID, email string) error {
-	db := utils.Db()
-	defer db.Close()
+	db := utils.GetDB()
 
 	// Input validation
 	if email == "" || len(email) > 255 {

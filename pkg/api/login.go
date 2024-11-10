@@ -104,8 +104,7 @@ func LoginHandler(c *gin.Context) {
 }
 
 func getUserForLogin(username string) (*utils.UserWithRole, error) {
-	db := utils.Db()
-	defer db.Close()
+	db := utils.GetDB()
 
 	user := utils.UserWithRole{}
 	stmt, err := db.Prepare("SELECT id, username, email, security_questions_answered, password, inactive_at FROM active_users WHERE username = ?")

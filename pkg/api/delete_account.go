@@ -36,8 +36,7 @@ func DeleteAccountHandler(c *gin.Context) {
 }
 
 func deleteUser(userID string) error {
-	db := utils.Db()
-	defer db.Close()
+	db := utils.GetDB()
 
 	stmt, err := db.Prepare("UPDATE users SET inactive_at = ?, updated_at = ? WHERE id = ?")
 	if err != nil {

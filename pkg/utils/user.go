@@ -10,8 +10,7 @@ import (
 )
 
 func GetUserWithRoleByID(userID string) (*UserWithRole, error) {
-	db := Db()
-	defer db.Close()
+	db := GetDB()
 
 	user := UserWithRole{}
 

@@ -90,8 +90,7 @@ func validateSecurityQuestions(questions []SecurityQuestion) error {
 }
 
 func insertSecurityQuestionsIntoDatabase(userID string, question1, answer1, question2, answer2, question3, answer3 string) error {
-	db := utils.Db()
-	defer db.Close()
+	db := utils.GetDB()
 
 	tx, err := db.Begin()
 	if err != nil {

@@ -130,8 +130,7 @@ func validateSignUpData(body *struct {
 }
 
 func insertUserIntoDatabase(username, hashedPassword, email string) (string, error) {
-	db := utils.Db()
-	// defer db.Close()
+	db := utils.GetDB()
 
 	// Use a prepared statement to prevent SQL injection
 	stmt, err := db.Prepare("INSERT INTO users (id, username, password, email, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)")

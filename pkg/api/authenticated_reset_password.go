@@ -108,8 +108,7 @@ func AuthenticatedResetPasswordHandler(c *gin.Context) {
 }
 
 func getUserForAuthenticatedResetPassword(userID string) (*utils.UserWithRole, error) {
-	db := utils.Db()
-	defer db.Close()
+	db := utils.GetDB()
 
 	user := utils.UserWithRole{}
 	stmt, err := db.Prepare("SELECT id, username, email, security_questions_answered, password, application_environment_role FROM active_users WHERE id = ?")
@@ -139,8 +138,7 @@ func getUserForAuthenticatedResetPassword(userID string) (*utils.UserWithRole, e
 }
 
 func updateUserPasswordForAuthenticatedResetPassword(userID, hashedPassword string) error {
-	db := utils.Db()
-	defer db.Close()
+	db := utils.GetDB()
 
 	stmt, err := db.Prepare("UPDATE active_users SET password = ? WHERE id = ?")
 	if err != nil {

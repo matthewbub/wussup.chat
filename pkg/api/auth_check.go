@@ -66,8 +66,7 @@ func AuthCheckHandler(c *gin.Context) {
 }
 
 func getUserForAuthChecker(userID string) (*UserForAuthCheck, error) {
-	db := utils.Db()
-	defer db.Close()
+	db := utils.GetDB()
 
 	user := UserForAuthCheck{}
 	stmt, err := db.Prepare("SELECT id, username, email, security_questions_answered, application_environment_role, inactive_at FROM active_users WHERE id = ?")
