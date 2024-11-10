@@ -25,7 +25,7 @@ The Authorized component conditionally renders its children based on the user’
 
 #### `checkAuth`
 
-Checks if the user is authenticated by making a request to `/api/v1/pulse`. Updates the state based on the response.
+Checks if the user is authenticated by making a request to `/api/v1/auth-check`. Updates the state based on the response.
 
 ```tsx
 const { checkAuth } = useAuthStore();

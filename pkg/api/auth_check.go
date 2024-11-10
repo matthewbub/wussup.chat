@@ -48,27 +48,29 @@ func AuthCheckHandler(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, response.Success(
-		gin.H{
-			"user": gin.H{
-				"id":                         user.ID,
-				"username":                   user.Username,
-				"email":                      user.Email,
-				"securityQuestionsAnswered":  user.SecurityQuestionsAnswered,
-				"applicationEnvironmentRole": user.ApplicationEnvironmentRole,
-				"inactiveAt":                 user.InactiveAt,
-			},
-		},
-		"Authentication successful",
-	))
+	userData := UserForAuthCheck{
+		ID:                         user.ID,
+		Username:                   user.Username,
+		Email:                      user.Email,
+		SecurityQuestionsAnswered:  user.SecurityQuestionsAnswered,
+		ApplicationEnvironmentRole: user.ApplicationEnvironmentRole,
+		InactiveAt:                 user.InactiveAt,
+	}
+
+	resp := response.New[UserForAuthCheck]()
+	resp.WithData(userData).
+		WithMessage("Authentication successful")
+
+	c.Header("Link", "</api/v1/schema/auth_check>; rel=describedby")
+	c.JSON(http.StatusOK, resp.ToGinH())
 }
 
-func getUserForAuthChecker(userID string) (*utils.UserWithRole, error) {
+func getUserForAuthChecker(userID string) (*UserForAuthCheck, error) {
 	db := utils.Db()
 	defer db.Close()
 
-	user := utils.UserWithRole{}
-	stmt, err := db.Prepare("SELECT id, username, email, security_questions_answered, application_environment_role, password, inactive_at FROM active_users WHERE id = ?")
+	user := UserForAuthCheck{}
+	stmt, err := db.Prepare("SELECT id, username, email, security_questions_answered, application_environment_role, inactive_at FROM active_users WHERE id = ?")
 	if err != nil {
 		return nil, fmt.Errorf("failed to prepare statement: %w", err)
 	}
@@ -80,7 +82,6 @@ func getUserForAuthChecker(userID string) (*utils.UserWithRole, error) {
 		&user.Email,
 		&user.SecurityQuestionsAnswered,
 		&user.ApplicationEnvironmentRole,
-		&user.Password,
 		&user.InactiveAt,
 	)
 	if err != nil {
@@ -92,4 +93,17 @@ func getUserForAuthChecker(userID string) (*utils.UserWithRole, error) {
 	}
 
 	return &user, nil
+}
+
+type AuthCheckResponse struct {
+	response.Response[UserForAuthCheck]
+}
+
+type UserForAuthCheck struct {
+	ID                         string       `json:"id"`
+	Username                   string       `json:"username"`
+	Email                      string       `json:"email"`
+	SecurityQuestionsAnswered  bool         `json:"securityQuestionsAnswered"`
+	ApplicationEnvironmentRole string       `json:"applicationEnvironmentRole"`
+	InactiveAt                 sql.NullTime `json:"inactiveAt"`
 }
