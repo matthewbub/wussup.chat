@@ -1,34 +1,59 @@
+"use client";
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Checkbox } from "@/components/ui/checkbox";
 import ReactMarkdown from "react-markdown";
+import {
+  ChevronUp,
+  ChevronDown,
+  GripVertical,
+  Copy,
+  Check,
+  Trash2,
+} from "lucide-react";
 import { createFileRoute } from "@tanstack/react-router";
 
-export const Route = createFileRoute("/documents/$id")({
-  component: DocumentViewer,
-});
-
 interface Sheet {
+  id: string;
   label: string;
   content: string;
+  includeTitle: boolean;
 }
 
-export function DocumentViewer({
+interface DocumentState {
+  title: string;
+  sheets: Sheet[];
+}
+
+export const Route = createFileRoute("/documents/$id")({
+  component: DocumentComponent,
+});
+
+export default function DocumentComponent({
   initialTitle = "Document",
 }: {
   initialTitle?: string;
 }) {
   const [title, setTitle] = useState(initialTitle);
   const [sheets, setSheets] = useState<Sheet[]>([
-    { label: "Sheet 1", content: "" },
+    { id: "1", label: "Sheet 1", content: "", includeTitle: true },
   ]);
   const [viewMode, setViewMode] = useState<"web" | "pages">("web");
   const [currentPage, setCurrentPage] = useState(0);
   const [previewMode, setPreviewMode] = useState(false);
   const [isDesktop, setIsDesktop] = useState(false);
+  const [joinedMarkdown, setJoinedMarkdown] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isCopied, setIsCopied] = useState(false);
 
   useEffect(() => {
     const checkIfDesktop = () => setIsDesktop(window.innerWidth >= 1024);
@@ -37,70 +62,201 @@ export function DocumentViewer({
     return () => window.removeEventListener("resize", checkIfDesktop);
   }, []);
 
+  useEffect(() => {
+    const savedState = localStorage.getItem("documentState");
+    if (savedState) {
+      const { title, sheets } = JSON.parse(savedState) as DocumentState;
+      setTitle(title);
+      setSheets(sheets);
+    }
+  }, []);
+
+  useEffect(() => {
+    const state: DocumentState = { title, sheets };
+    localStorage.setItem("documentState", JSON.stringify(state));
+  }, [title, sheets]);
+
   const addSheet = () => {
-    setSheets([
-      ...sheets,
-      { label: `Sheet ${sheets.length + 1}`, content: "" },
-    ]);
+    const newSheet = {
+      id: Date.now().toString(),
+      label: `Sheet ${sheets.length + 1}`,
+      content: "",
+      includeTitle: true,
+    };
+    setSheets([...sheets, newSheet]);
   };
 
-  const updateSheet = (index: number, field: keyof Sheet, value: string) => {
+  const updateSheet = (
+    id: string,
+    field: keyof Sheet,
+    value: string | boolean
+  ) => {
     setSheets(
-      sheets.map((sheet, i) =>
-        i === index ? { ...sheet, [field]: value } : sheet
+      sheets.map((sheet) =>
+        sheet.id === id ? { ...sheet, [field]: value } : sheet
       )
     );
   };
 
+  const removeSheet = (id: string) => {
+    setSheets(sheets.filter((sheet) => sheet.id !== id));
+    if (viewMode === "pages") {
+      setCurrentPage((prev) => Math.min(prev, sheets.length - 2));
+    }
+  };
+
+  const moveSheet = (fromIndex: number, toIndex: number) => {
+    const newSheets = Array.from(sheets);
+    const [reorderedItem] = newSheets.splice(fromIndex, 1);
+    newSheets.splice(toIndex, 0, reorderedItem);
+    setSheets(newSheets);
+  };
+
+  const joinPagesIntoMarkdown = () => {
+    const titleMd = `# ${title}\n\n`;
+    const sheetsMd = sheets
+      .map(
+        (sheet) =>
+          `${sheet.includeTitle ? `## ${sheet.label}\n\n` : ""}${sheet.content}\n\n`
+      )
+      .join("");
+    const fullMd = titleMd + sheetsMd;
+    setJoinedMarkdown(fullMd);
+    setIsModalOpen(true);
+  };
+
+  const copyToClipboard = async () => {
+    if (joinedMarkdown) {
+      await navigator.clipboard.writeText(joinedMarkdown);
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
+    }
+  };
+
   const renderSheets = () => {
     if (viewMode === "web") {
-      return sheets.map((sheet, index) => (
-        <div
-          key={index}
-          className="mb-4 p-4 border border-stone-200 border-gray-200 dark:border-stone-800"
-        >
-          <div className="mb-2">
-            {previewMode ? (
-              <div className="text-sm text-gray-400 mb-2">{sheet.label}</div>
-            ) : (
-              <Input
-                value={sheet.label}
-                onChange={(e) => updateSheet(index, "label", e.target.value)}
-                className="font-bold text-lg"
-              />
-            )}
-          </div>
-          <div>
-            {previewMode ? (
-              <div className="prose max-w-none">
-                <ReactMarkdown>{sheet.content}</ReactMarkdown>
+      return (
+        <div>
+          {sheets.map((sheet, index) => (
+            <div key={sheet.id} className="mb-8">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex-grow flex items-center gap-2">
+                  {previewMode ? (
+                    <h2 className="text-2xl font-bold">{sheet.label}</h2>
+                  ) : (
+                    <input
+                      type="text"
+                      value={sheet.label}
+                      onChange={(e) =>
+                        updateSheet(sheet.id, "label", e.target.value)
+                      }
+                      className="text-2xl font-bold w-full bg-transparent border-none focus:outline-none focus:ring-0"
+                    />
+                  )}
+                  {!previewMode && (
+                    <div className="flex items-center gap-2">
+                      <Checkbox
+                        id={`include-title-${sheet.id}`}
+                        checked={sheet.includeTitle}
+                        onCheckedChange={(checked) =>
+                          updateSheet(sheet.id, "includeTitle", checked)
+                        }
+                      />
+                      <label
+                        htmlFor={`include-title-${sheet.id}`}
+                        className="text-sm text-gray-500"
+                      >
+                        Include title in join
+                      </label>
+                    </div>
+                  )}
+                </div>
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() => moveSheet(index, Math.max(0, index - 1))}
+                    disabled={index === 0}
+                    className="p-1 hover:bg-gray-100 rounded"
+                  >
+                    <ChevronUp className="h-4 w-4" />
+                  </button>
+                  <button
+                    onClick={() =>
+                      moveSheet(index, Math.min(sheets.length - 1, index + 1))
+                    }
+                    disabled={index === sheets.length - 1}
+                    className="p-1 hover:bg-gray-100 rounded"
+                  >
+                    <ChevronDown className="h-4 w-4" />
+                  </button>
+                  <button
+                    onClick={() => removeSheet(sheet.id)}
+                    className="p-1 hover:bg-gray-100 rounded text-red-500"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </button>
+                </div>
               </div>
-            ) : (
-              <Textarea
-                className="w-full min-h-[200px]"
-                value={sheet.content}
-                onChange={(e) => updateSheet(index, "content", e.target.value)}
-              />
-            )}
-          </div>
+              <div>
+                {previewMode ? (
+                  <div className="prose max-w-none">
+                    <ReactMarkdown>{sheet.content}</ReactMarkdown>
+                  </div>
+                ) : (
+                  <textarea
+                    value={sheet.content}
+                    onChange={(e) =>
+                      updateSheet(sheet.id, "content", e.target.value)
+                    }
+                    className="w-full min-h-[200px] p-2 bg-gray-50 rounded resize-y"
+                  />
+                )}
+              </div>
+            </div>
+          ))}
         </div>
-      ));
+      );
     } else {
       const sheet = sheets[currentPage];
       return sheet ? (
-        <div className="p-4 border border-stone-200 border-gray-200 dark:border-stone-800">
-          <div className="mb-2">
-            {previewMode ? (
-              <div className="text-sm text-gray-400 mb-2">{sheet.label}</div>
-            ) : (
-              <Input
-                value={sheet.label}
-                onChange={(e) =>
-                  updateSheet(currentPage, "label", e.target.value)
-                }
-                className="font-bold text-lg"
-              />
-            )}
+        <div>
+          <div className="mb-2 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              {previewMode ? (
+                <h2 className="text-2xl font-bold">{sheet.label}</h2>
+              ) : (
+                <input
+                  type="text"
+                  value={sheet.label}
+                  onChange={(e) =>
+                    updateSheet(sheet.id, "label", e.target.value)
+                  }
+                  className="text-2xl font-bold w-full bg-transparent border-none focus:outline-none focus:ring-0"
+                />
+              )}
+              {!previewMode && (
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id={`include-title-${sheet.id}`}
+                    checked={sheet.includeTitle}
+                    onCheckedChange={(checked) =>
+                      updateSheet(sheet.id, "includeTitle", checked)
+                    }
+                  />
+                  <label
+                    htmlFor={`include-title-${sheet.id}`}
+                    className="text-sm text-gray-500"
+                  >
+                    Include title in join
+                  </label>
+                </div>
+              )}
+            </div>
+            <button
+              onClick={() => removeSheet(sheet.id)}
+              className="p-1 hover:bg-gray-100 rounded text-red-500"
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
           </div>
           <div>
             {previewMode ? (
@@ -108,12 +264,12 @@ export function DocumentViewer({
                 <ReactMarkdown>{sheet.content}</ReactMarkdown>
               </div>
             ) : (
-              <Textarea
-                className="w-full min-h-[400px]"
+              <textarea
                 value={sheet.content}
                 onChange={(e) =>
-                  updateSheet(currentPage, "content", e.target.value)
+                  updateSheet(sheet.id, "content", e.target.value)
                 }
+                className="w-full min-h-[400px] p-2 bg-gray-50 rounded resize-y"
               />
             )}
           </div>
@@ -123,24 +279,24 @@ export function DocumentViewer({
   };
 
   const TableOfContents = () => (
-    <ScrollArea className="h-[calc(100vh-2rem)] w-64 border">
-      <div className="p-4">
-        <h2 className="mb-4 text-lg font-semibold">Table of Contents</h2>
+    <div className="w-64 pr-4">
+      <h2 className="text-lg font-semibold mb-4">Table of Contents</h2>
+      <div className="space-y-2">
         {sheets.map((sheet, index) => (
           <button
-            key={index}
-            className={`block w-full text-left px-2 py-1 ${
+            key={sheet.id}
+            className={`block w-full text-left px-2 py-1 rounded ${
               (viewMode === "pages" && currentPage === index) ||
-              (viewMode === "web" && isElementInViewport(`sheet-${index}`))
-                ? "bg-gray-200 dark:bg-gray-700"
-                : "hover:bg-gray-100 dark:hover:bg-gray-800"
+              (viewMode === "web" && isElementInViewport(`sheet-${sheet.id}`))
+                ? "bg-gray-100"
+                : "hover:bg-gray-50"
             }`}
             onClick={() => {
               if (viewMode === "pages") {
                 setCurrentPage(index);
               } else {
                 document
-                  .getElementById(`sheet-${index}`)
+                  .getElementById(`sheet-${sheet.id}`)
                   ?.scrollIntoView({ behavior: "smooth" });
               }
             }}
@@ -149,7 +305,7 @@ export function DocumentViewer({
           </button>
         ))}
       </div>
-    </ScrollArea>
+    </div>
   );
 
   const isElementInViewport = (id: string) => {
@@ -167,15 +323,16 @@ export function DocumentViewer({
 
   return (
     <div className="container mx-auto p-4">
-      <div className="mb-4 p-4 border border-stone-200 border-gray-200 dark:border-stone-800">
-        <Input
+      <div className="mb-8">
+        <input
+          type="text"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          className="text-2xl font-bold"
+          className="text-4xl font-bold w-full bg-transparent border-none focus:outline-none focus:ring-0"
         />
       </div>
 
-      <div className="flex justify-between items-center mb-4">
+      <div className="flex justify-between items-center mb-8">
         <Tabs
           value={viewMode}
           onValueChange={(value) => setViewMode(value as "web" | "pages")}
@@ -185,27 +342,39 @@ export function DocumentViewer({
             <TabsTrigger value="pages">Pages View</TabsTrigger>
           </TabsList>
         </Tabs>
-        <Button onClick={() => setPreviewMode(!previewMode)}>
-          {previewMode ? "Edit Mode" : "Preview Mode"}
-        </Button>
+        <div className="space-x-2">
+          <Button
+            variant="outline"
+            onClick={() => setPreviewMode(!previewMode)}
+          >
+            {previewMode ? "Edit Mode" : "Preview Mode"}
+          </Button>
+          <Button variant="outline" onClick={joinPagesIntoMarkdown}>
+            Join Pages into Markdown
+          </Button>
+        </div>
       </div>
 
-      <div className="flex gap-4">
+      <div className="flex gap-8">
         {isDesktop && <TableOfContents />}
         <div className="flex-grow">
-          <div>{renderSheets()}</div>
+          <div className="mb-8">{renderSheets()}</div>
 
-          <div className="flex gap-2 mt-4">
-            <Button onClick={addSheet}>Add Sheet</Button>
+          <div className="flex gap-4">
+            <Button variant="outline" onClick={addSheet}>
+              Add Sheet
+            </Button>
             {viewMode === "pages" && (
               <>
                 <Button
+                  variant="outline"
                   onClick={() => setCurrentPage(Math.max(0, currentPage - 1))}
                   disabled={currentPage === 0}
                 >
                   Previous
                 </Button>
                 <Button
+                  variant="outline"
                   onClick={() =>
                     setCurrentPage(Math.min(sheets.length - 1, currentPage + 1))
                   }
@@ -215,10 +384,35 @@ export function DocumentViewer({
                 </Button>
               </>
             )}
-            <Button>Save</Button>
           </div>
         </div>
       </div>
+
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogContent className="max-w-4xl max-h-[80vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle>Joined Markdown</DialogTitle>
+          </DialogHeader>
+          <div className="flex-grow overflow-auto">
+            <pre className="bg-gray-100 p-4 rounded whitespace-pre-wrap">
+              <code>{joinedMarkdown}</code>
+            </pre>
+          </div>
+          <div className="mt-4 flex justify-end">
+            <Button
+              onClick={copyToClipboard}
+              className="flex items-center gap-2"
+            >
+              {isCopied ? (
+                <Check className="h-4 w-4" />
+              ) : (
+                <Copy className="h-4 w-4" />
+              )}
+              {isCopied ? "Copied!" : "Copy to Clipboard"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
