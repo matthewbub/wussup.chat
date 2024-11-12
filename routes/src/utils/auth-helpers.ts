@@ -12,7 +12,7 @@ export async function fetchWithAuth(
   if (response.status === 401) {
     // Handle 401 Unauthorized by calling the logout function
     console.log("Unauthorized, logging out");
-    useAuthStore.getState().logout();
+    useAuthStore.getState().useLogout();
   }
 
   return response;

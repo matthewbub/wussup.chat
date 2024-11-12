@@ -56,7 +56,7 @@ export function LandingPageComponent() {
               <button
                 className="text-sm font-medium hover:underline underline-offset-4 px-4 py-2"
                 onClick={() => {
-                  useAuthStore.getState().logout();
+                  useAuthStore.getState().useLogout();
                 }}
               >
                 Logout

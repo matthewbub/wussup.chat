@@ -77,7 +77,7 @@ function AccountSettings() {
     if (response.ok) {
       console.log("Account deleted");
 
-      useAuthStore.getState().logout();
+      useAuthStore.getState().useLogout();
       window.location.href = "/";
     } else {
       console.error("Failed to delete account");
