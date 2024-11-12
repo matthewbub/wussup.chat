@@ -98,7 +98,7 @@ func updateUserEmail(userID, email string) error {
 		return fmt.Errorf("email already in use")
 	}
 
-	stmt.Close()
+	defer stmt.Close()
 
 	// Update the email
 	stmt, err = tx.Prepare("UPDATE users SET email = ?, updated_at = ? WHERE id = ?")

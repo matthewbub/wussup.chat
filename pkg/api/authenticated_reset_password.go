@@ -165,7 +165,7 @@ func updateUserPasswordForAuthenticatedResetPassword(userID, hashedPassword stri
 		return fmt.Errorf("password cannot be reused")
 	}
 
-	stmt.Close()
+	defer stmt.Close()
 
 	// Update the user's password
 	stmt, err = tx.Prepare("UPDATE users SET password = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?")
@@ -180,7 +180,7 @@ func updateUserPasswordForAuthenticatedResetPassword(userID, hashedPassword stri
 		return err
 	}
 
-	stmt.Close()
+	defer stmt.Close()
 
 	// Insert the password into the password history
 	stmt, err = tx.Prepare("INSERT INTO password_history (user_id, password) VALUES (?, ?)")
