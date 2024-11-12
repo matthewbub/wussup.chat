@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/gin-gonic/gin"
 )
@@ -47,6 +48,15 @@ func GetAuthenticatedUser(c *gin.Context) (*UserWithRole, error) {
 		return nil, fmt.Errorf("no token provided")
 	}
 
+	env := os.Getenv("ENV")
+
+	// Verify cookie is secure in production
+	if env == "production" {
+		if !c.Request.Cookies()[0].Secure || !c.Request.Cookies()[0].HttpOnly {
+			return nil, fmt.Errorf("invalid cookie settings")
+		}
+	}
+
 	// Verify the JWT and get the user ID
 	userID, _, err := VerifyJWT(tokenString)
 	if err != nil {
@@ -57,6 +67,10 @@ func GetAuthenticatedUser(c *gin.Context) (*UserWithRole, error) {
 	user, err := GetUserWithRoleByID(userID)
 	if err != nil || user == nil {
 		return nil, fmt.Errorf("user not found")
+	}
+
+	if user.InactiveAt.Valid {
+		return nil, fmt.Errorf("user account is inactive")
 	}
 
 	return user, nil
