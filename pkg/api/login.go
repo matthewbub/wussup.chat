@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 	"time"
 
 	"bus.zcauldron.com/pkg/api/response"
@@ -74,22 +73,13 @@ func LoginHandler(c *gin.Context) {
 		Secure:     true,
 	}
 
-	env := os.Getenv("ENV")
-	if env == "" {
-		c.JSON(http.StatusInternalServerError, response.Error(
-			"ENV is not set",
-			response.OPERATION_FAILED,
-		))
-		return
-	}
-
+	env := utils.GetEnv()
 	if env == "production" {
 		cookieConfig.Domain = constants.AppConfig.ProductionDomain
 	}
 
 	if env == "development" {
 		cookieConfig.Domain = constants.AppConfig.DevelopmentDomain
-		cookieConfig.Secure = false
 	}
 
 	c.SetCookie("jwt", jwtToken, int(cookieConfig.Expiration.Seconds()), "/", cookieConfig.Domain, cookieConfig.Secure, true)

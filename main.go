@@ -12,6 +12,11 @@ import (
 )
 
 func main() {
+	err := utils.ValidateEnvironment()
+	if err != nil {
+		log.Fatalf("Environment validation failed: %v", err)
+	}
+
 	router := gin.Default()
 	router.Use(middleware.Cors)
 
@@ -44,8 +49,8 @@ func main() {
 	//router.NoRoute(handlers.NotFound404)
 
 	log.Println("Server is running on port 8080")
-	err := router.Run(":8080")
+	err = router.Run(":8080")
 	if err != nil {
-		return
+		log.Fatalf("Failed to run server: %v", err)
 	}
 }

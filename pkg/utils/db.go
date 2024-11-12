@@ -40,10 +40,11 @@ func initDB() *sql.DB {
 	}
 
 	var dbPath string
-	if os.Getenv("ENV") == "development" {
+	env := GetEnv()
+	if env == "development" {
 		dbPath = filepath.Join(cwd, "pkg", "database", "dev.db")
 		fmt.Println("Using development database:", dbPath)
-	} else if os.Getenv("ENV") == "production" {
+	} else if env == "production" {
 		dbPath = filepath.Join(cwd, "pkg", "database", "prod.db")
 		fmt.Println("Using production database:", dbPath)
 	} else {

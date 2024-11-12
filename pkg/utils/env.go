@@ -2,6 +2,7 @@ package utils
 
 import (
 	"encoding/base64"
+	"fmt"
 	"log"
 	"os"
 
@@ -31,4 +32,16 @@ func GetEnv() string {
 		log.Printf("ENV environment variable is not set")
 	}
 	return env
+}
+
+func ValidateEnvironment() error {
+	env := GetEnv()
+	if env == "" {
+		return fmt.Errorf("ENV is not set")
+	}
+	if env != "production" && env != "development" {
+		return fmt.Errorf("ENV is not valid")
+	}
+	// Add other environment checks here
+	return nil
 }

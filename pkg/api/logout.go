@@ -2,24 +2,20 @@ package api
 
 import (
 	"net/http"
-	"os"
 
 	"bus.zcauldron.com/pkg/api/response"
 	"bus.zcauldron.com/pkg/constants"
+	"bus.zcauldron.com/pkg/utils"
 	"github.com/gin-gonic/gin"
 )
 
 func LogoutHandler(c *gin.Context) {
-	env := os.Getenv("ENV")
-	if env == "" {
-		c.JSON(http.StatusInternalServerError, response.Error(
-			"Server error",
-			response.OPERATION_FAILED,
-		))
-		return
-	}
+	env := utils.GetEnv()
 
-	domain := constants.AppConfig.ProductionDomain
+	var domain string
+	if env == "production" {
+		domain = constants.AppConfig.ProductionDomain
+	}
 	if env == "development" {
 		domain = constants.AppConfig.DevelopmentDomain
 	}

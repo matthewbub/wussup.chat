@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"os"
 
 	"github.com/gin-gonic/gin"
 )
@@ -48,7 +47,7 @@ func GetAuthenticatedUser(c *gin.Context) (*UserWithRole, error) {
 		return nil, fmt.Errorf("no token provided")
 	}
 
-	env := os.Getenv("ENV")
+	env := GetEnv()
 
 	// Verify cookie is secure in production
 	if env == "production" {

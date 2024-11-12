@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 	"time"
 
 	"bus.zcauldron.com/pkg/api/response"
@@ -91,14 +90,7 @@ func SignUpHandler(c *gin.Context) {
 		Domain:     "",
 		Secure:     true,
 	}
-	env := os.Getenv("ENV")
-	if env == "" {
-		c.JSON(http.StatusInternalServerError, response.Error(
-			"Env not set",
-			response.OPERATION_FAILED,
-		))
-		return
-	}
+	env := utils.GetEnv()
 	if env == "production" {
 		cookieConfig.Domain = constants.AppConfig.ProductionDomain
 	}
