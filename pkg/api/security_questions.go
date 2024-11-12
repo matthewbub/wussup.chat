@@ -110,6 +110,8 @@ func insertSecurityQuestionsIntoDatabase(userID string, question1, answer1, ques
 		return fmt.Errorf("failed to insert security questions: %w", err)
 	}
 
+	stmt.Close()
+
 	// Update user status within the same transaction
 	stmt, err = tx.Prepare("UPDATE users SET security_questions_answered = ? WHERE id = ?")
 	if err != nil {
