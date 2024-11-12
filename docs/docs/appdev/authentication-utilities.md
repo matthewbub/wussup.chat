@@ -38,7 +38,7 @@ The Authorized component conditionally renders its children based on the user’
 
 ### `checkAuth`
 
-Checks if the user is authenticated by making a request to `/api/v1/auth-check`. Updates the state based on the response.
+Checks if the user is authenticated by making a request to `/api/v1/account/auth-check`. Updates the state based on the response.
 
 ```tsx
 const { checkAuth } = useAuthStore();
@@ -50,7 +50,7 @@ useEffect(() => {
 
 ### `useLogin`
 
-Logs in the user by sending a POST request to `/api/v1/account/login`. Updates state based on the response.
+Logs in the user by sending a POST request to `/api/v1/public/login`. Updates state based on the response.
 
 ```tsx
 const { useLogin } = useAuthStore();
@@ -79,7 +79,7 @@ const handleLogout = async () => {
 
 ### `useSignup`
 
-Registers a new user with username, email, password, confirm password, and terms accepted. Sends a POST request to `/api/v1/account/sign-up`
+Registers a new user with username, email, password, confirm password, and terms accepted. Sends a POST request to `/api/v1/public/sign-up`
 
 ```tsx
 const { useSignup } = useAuthStore();
