@@ -17,7 +17,9 @@ function ErrorPage() {
         </p>
         <div className="space-x-4">
           <Button
-            onClick={() => navigate({ to: "/", search: { _replace: true } })}
+            onClick={() => {
+              window.history.back();
+            }}
             variant="outline"
           >
             Go Back
