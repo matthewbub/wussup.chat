@@ -26,7 +26,7 @@ func LoginHandler(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusBadRequest, response.Error(
 			"Invalid request body",
-			"INVALID_REQUEST_BODY",
+			response.INVALID_REQUEST_DATA,
 		))
 		return
 	}
@@ -38,7 +38,7 @@ func LoginHandler(c *gin.Context) {
 	if err != nil || user == nil || bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)) != nil {
 		c.JSON(http.StatusUnauthorized, response.Error(
 			"Invalid username or password",
-			"INVALID_REQUEST_DATA",
+			response.AUTHENTICATION_FAILED,
 		))
 		return
 	}
@@ -48,7 +48,7 @@ func LoginHandler(c *gin.Context) {
 		log.Println("User is inactive", user.ID)
 		c.JSON(http.StatusUnauthorized, response.Error(
 			"User is inactive",
-			"INVALID_REQUEST_DATA",
+			response.AUTHENTICATION_FAILED,
 		))
 		return
 	}
@@ -58,7 +58,7 @@ func LoginHandler(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, response.Error(
 			"Failed to generate token",
-			"FAILED_TO_GENERATE_TOKEN",
+			response.OPERATION_FAILED,
 		))
 		return
 	}
@@ -78,7 +78,7 @@ func LoginHandler(c *gin.Context) {
 	if env == "" {
 		c.JSON(http.StatusInternalServerError, response.Error(
 			"ENV is not set",
-			"ENV_NOT_SET",
+			response.OPERATION_FAILED,
 		))
 		return
 	}

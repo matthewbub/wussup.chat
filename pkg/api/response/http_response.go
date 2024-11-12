@@ -4,6 +4,21 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+const (
+	// Generic error codes for sensitive operations
+	AUTHENTICATION_FAILED = "AUTHENTICATION_FAILED" // Replace UNAUTHORIZED, INVALID_TOKEN, USER_NOT_FOUND
+	OPERATION_FAILED      = "OPERATION_FAILED"      // For database/internal errors
+
+	// Specific error codes for input validation (these are okay to keep)
+	INVALID_REQUEST_DATA = "INVALID_REQUEST_DATA"
+	PASSWORD_MISMATCH    = "PASSWORD_MISMATCH"
+	WEAK_PASSWORD        = "WEAK_PASSWORD"
+
+	// Business rule error codes
+	PASSWORD_REUSE = "PASSWORD_REUSE"
+	USER_INACTIVE  = "USER_INACTIVE"
+)
+
 type Response[T any] struct {
 	Ok      bool   `json:"ok" jsonschema:"description=Indicates if the request was successful"`
 	Message string `json:"message" jsonschema:"description=Human-readable message about the response"`

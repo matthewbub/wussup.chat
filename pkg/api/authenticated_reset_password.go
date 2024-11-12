@@ -20,7 +20,7 @@ func AuthenticatedResetPasswordHandler(c *gin.Context) {
 	if err != nil || tokenString == "" {
 		c.JSON(http.StatusUnauthorized, response.Error(
 			"User not authenticated",
-			"UNAUTHORIZED",
+			response.AUTHENTICATION_FAILED,
 		))
 		return
 	}
@@ -30,7 +30,7 @@ func AuthenticatedResetPasswordHandler(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, response.Error(
 			"Invalid token",
-			"INVALID_TOKEN",
+			response.AUTHENTICATION_FAILED,
 		))
 		return
 	}
@@ -44,7 +44,7 @@ func AuthenticatedResetPasswordHandler(c *gin.Context) {
 	if err := c.ShouldBindJSON(&body); err != nil {
 		c.JSON(http.StatusBadRequest, response.Error(
 			"Invalid request data",
-			"INVALID_REQUEST_DATA",
+			response.INVALID_REQUEST_DATA,
 		))
 		return
 	}
@@ -52,7 +52,7 @@ func AuthenticatedResetPasswordHandler(c *gin.Context) {
 	if body.NewPassword != body.ConfirmNewPassword {
 		c.JSON(http.StatusBadRequest, response.Error(
 			"Passwords do not match",
-			"PASSWORD_MISMATCH",
+			response.INVALID_REQUEST_DATA,
 		))
 		return
 	}
@@ -61,7 +61,7 @@ func AuthenticatedResetPasswordHandler(c *gin.Context) {
 	if err := utils.ValidatePasswordStrength(body.NewPassword); err != nil {
 		c.JSON(http.StatusBadRequest, response.Error(
 			"Weak password",
-			"WEAK_PASSWORD",
+			response.WEAK_PASSWORD,
 		))
 		return
 	}
@@ -71,7 +71,7 @@ func AuthenticatedResetPasswordHandler(c *gin.Context) {
 	if err != nil || user == nil {
 		c.JSON(http.StatusUnauthorized, response.Error(
 			"User not found",
-			"USER_NOT_FOUND",
+			response.AUTHENTICATION_FAILED,
 		))
 		return
 	}
@@ -80,7 +80,7 @@ func AuthenticatedResetPasswordHandler(c *gin.Context) {
 	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(body.OldPassword)); err != nil {
 		c.JSON(http.StatusUnauthorized, response.Error(
 			"Old password is incorrect",
-			"INVALID_PASSWORD",
+			response.AUTHENTICATION_FAILED,
 		))
 		return
 	}
@@ -90,7 +90,7 @@ func AuthenticatedResetPasswordHandler(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, response.Error(
 			"Error updating password",
-			"PASSWORD_HASH_ERROR",
+			response.OPERATION_FAILED,
 		))
 		return
 	}
@@ -99,7 +99,7 @@ func AuthenticatedResetPasswordHandler(c *gin.Context) {
 	if err := updateUserPasswordForAuthenticatedResetPassword(userID, newPasswordHash); err != nil {
 		c.JSON(http.StatusInternalServerError, response.Error(
 			"Error saving new password",
-			"DATABASE_ERROR",
+			response.OPERATION_FAILED,
 		))
 		return
 	}

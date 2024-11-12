@@ -16,8 +16,8 @@ func AuthCheckHandler(c *gin.Context) {
 	tokenString, err := c.Cookie("jwt")
 	if err != nil || tokenString == "" {
 		c.JSON(http.StatusUnauthorized, response.Error(
-			"Unauthorized",
-			"UNAUTHORIZED",
+			"Authentication failed",
+			response.AUTHENTICATION_FAILED,
 		))
 		return
 	}
@@ -26,7 +26,7 @@ func AuthCheckHandler(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, response.Error(
 			"Invalid token",
-			"INVALID_TOKEN",
+			response.AUTHENTICATION_FAILED,
 		))
 		return
 	}
@@ -35,7 +35,7 @@ func AuthCheckHandler(c *gin.Context) {
 	if err != nil || user == nil {
 		c.JSON(http.StatusUnauthorized, response.Error(
 			"User not found",
-			"USER_NOT_FOUND",
+			response.AUTHENTICATION_FAILED,
 		))
 		return
 	}
@@ -43,7 +43,7 @@ func AuthCheckHandler(c *gin.Context) {
 	if user.InactiveAt.Valid {
 		c.JSON(http.StatusUnauthorized, response.Error(
 			"User is inactive",
-			"USER_INACTIVE",
+			response.USER_INACTIVE,
 		))
 		return
 	}

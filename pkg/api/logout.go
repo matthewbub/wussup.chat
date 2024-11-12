@@ -14,7 +14,7 @@ func LogoutHandler(c *gin.Context) {
 	if env == "" {
 		c.JSON(http.StatusInternalServerError, response.Error(
 			"Server error",
-			"ENV_NOT_SET",
+			response.OPERATION_FAILED,
 		))
 		return
 	}

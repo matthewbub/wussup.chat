@@ -15,8 +15,8 @@ func DeleteAccountHandler(c *gin.Context) {
 	user, err := utils.GetAuthenticatedUser(c)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, response.Error(
-			"Unauthorized",
-			"UNAUTHORIZED",
+			"Authentication failed",
+			response.AUTHENTICATION_FAILED,
 		))
 		return
 	}
@@ -24,8 +24,8 @@ func DeleteAccountHandler(c *gin.Context) {
 	err = deleteUser(user.ID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, response.Error(
-			"Failed to delete account",
-			"FAILED_TO_DELETE_ACCOUNT",
+			"Operation failed",
+			response.OPERATION_FAILED,
 		))
 		return
 	}

@@ -9,6 +9,7 @@ import (
 	"net/mail"
 	"time"
 
+	"bus.zcauldron.com/pkg/api/response"
 	"bus.zcauldron.com/pkg/utils"
 	"github.com/gin-gonic/gin"
 )
@@ -22,10 +23,10 @@ func UpdateProfileHandler(c *gin.Context) {
 
 	if err != nil {
 		log.Println(err)
-		c.JSON(http.StatusUnauthorized, gin.H{
-			"ok":    false,
-			"error": "User not found",
-		})
+		c.JSON(http.StatusUnauthorized, response.Error(
+			"User not found",
+			response.AUTHENTICATION_FAILED,
+		))
 		return
 	}
 
@@ -34,34 +35,35 @@ func UpdateProfileHandler(c *gin.Context) {
 	}
 	if err := c.BindJSON(&body); err != nil {
 		log.Println(err)
-		c.JSON(http.StatusBadRequest, gin.H{
-			"ok":    false,
-			"error": "Invalid request body",
-		})
+		c.JSON(http.StatusBadRequest, response.Error(
+			"Invalid request body",
+			response.INVALID_REQUEST_DATA,
+		))
 		return
 	}
 	email := body.Email
 	if email == "" {
 		log.Println("Email is required")
-		c.JSON(http.StatusBadRequest, gin.H{
-			"ok":    false,
-			"error": "Email is required",
-		})
+		c.JSON(http.StatusBadRequest, response.Error(
+			"Email is required",
+			response.INVALID_REQUEST_DATA,
+		))
 		return
 	}
 
 	err = updateUserEmail(user.ID, email)
 	if err != nil {
 		log.Println(err)
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"ok":    false,
-			"error": "Failed to update email",
-		})
+		c.JSON(http.StatusInternalServerError, response.Error(
+			"Failed to update email",
+			response.OPERATION_FAILED,
+		))
 		return
 	}
 
-	// Request body: { email: string }
-	c.JSON(http.StatusOK, gin.H{"message": "Profile updated", "ok": true})
+	c.JSON(http.StatusOK, response.SuccessMessage(
+		"Profile updated",
+	))
 }
 
 func updateUserEmail(userID, email string) error {

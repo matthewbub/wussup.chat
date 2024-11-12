@@ -28,16 +28,25 @@ func SignUpHandler(c *gin.Context) {
 	if err := c.ShouldBindJSON(&body); err != nil {
 		c.JSON(http.StatusBadRequest, response.Error(
 			"Invalid request data",
-			"INVALID_REQUEST_DATA",
+			response.INVALID_REQUEST_DATA,
 		))
 		return
 	}
 
 	// BEGIN DATA VALIDATION
 	if err := validateSignUpData(&body); err != nil {
+		var errorCode string
+		switch err.Error() {
+		case "weak password":
+			errorCode = response.WEAK_PASSWORD
+		case "passwords do not match":
+			errorCode = response.PASSWORD_MISMATCH
+		default:
+			errorCode = response.INVALID_REQUEST_DATA
+		}
 		c.JSON(http.StatusBadRequest, response.Error(
-			"Invalid request data",
-			"INVALID_REQUEST_DATA",
+			err.Error(),
+			errorCode,
 		))
 		return
 	}
@@ -48,7 +57,7 @@ func SignUpHandler(c *gin.Context) {
 		log.Printf("Error hashing password: %v", err)
 		c.JSON(http.StatusInternalServerError, response.Error(
 			"Server error",
-			"PASSWORD_HASH_ERROR",
+			response.OPERATION_FAILED,
 		))
 		return
 	}
@@ -58,7 +67,7 @@ func SignUpHandler(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusConflict, response.Error(
 			"Username or email already exists",
-			"USER_ALREADY_EXISTS",
+			response.OPERATION_FAILED,
 		))
 		return
 	}
@@ -68,7 +77,7 @@ func SignUpHandler(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, response.Error(
 			"Failed to generate token",
-			"FAILED_TO_GENERATE_TOKEN",
+			response.AUTHENTICATION_FAILED,
 		))
 		return
 	}
@@ -86,7 +95,7 @@ func SignUpHandler(c *gin.Context) {
 	if env == "" {
 		c.JSON(http.StatusInternalServerError, response.Error(
 			"Env not set",
-			"ENV_NOT_SET",
+			response.OPERATION_FAILED,
 		))
 		return
 	}
