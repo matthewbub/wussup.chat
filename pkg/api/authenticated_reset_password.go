@@ -166,7 +166,7 @@ func updateUserPasswordForAuthenticatedResetPassword(userID, hashedPassword stri
 	}
 
 	// Update the user's password
-	stmt, err = tx.Prepare("UPDATE active_users SET password = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?")
+	stmt, err = tx.Prepare("UPDATE users SET password = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?")
 	if err != nil {
 		log.Println(err)
 		return err

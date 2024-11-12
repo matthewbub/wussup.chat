@@ -10,7 +10,23 @@ const ajv = new Ajv({
 // Add support for formats like email, date-time, etc.
 addFormats(ajv);
 
+const SCHEMA_PATH_PREFIX = "/api/v1/schema/";
+
+function isValidSchemaPath(path: string): boolean {
+  return (
+    path.startsWith(SCHEMA_PATH_PREFIX) &&
+    // Ensure there's an ID after the prefix and no additional slashes or dots
+    /^\/api\/v1\/schema\/[\w-]+$/.test(path)
+  );
+}
+
 export async function getSchema(schemaUrl: string): Promise<any> {
+  if (!isValidSchemaPath(schemaUrl)) {
+    throw new Error(
+      `Invalid schema path. Must start with ${SCHEMA_PATH_PREFIX} and contain a valid ID`
+    );
+  }
+
   const response = await fetch(schemaUrl);
   if (!response.ok) {
     throw new Error("Failed to fetch schema");

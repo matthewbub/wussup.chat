@@ -138,16 +138,16 @@ func getUserForLogin(username string) (*utils.UserWithRole, error) {
 	}
 
 	// update the user's last login
-	stmt, err = tx.Prepare("UPDATE active_users SET last_login = CURRENT_TIMESTAMP WHERE id = ?")
-	if err != nil {
-		log.Println(err)
-		return nil, err
-	}
-	_, err = stmt.Exec(user.ID)
-	if err != nil {
-		log.Println(err)
-		return nil, err
-	}
+	// stmt, err = tx.Prepare("UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = ?")
+	// if err != nil {
+	// 	log.Println(err)
+	// 	return nil, err
+	// }
+	// _, err = stmt.Exec(user.ID)
+	// if err != nil {
+	// 	log.Println(err)
+	// 	return nil, err
+	// }
 
 	if err = tx.Commit(); err != nil {
 		log.Println(err)
