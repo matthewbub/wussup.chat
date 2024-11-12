@@ -47,7 +47,7 @@ export async function validateResponse(response: Response): Promise<any> {
 
   const validate = ajv.compile(schema);
   if (!validate(data)) {
-    throw new Error("Response does not match schema");
+    throw new Error("Response validation failed");
   }
 
   return data;
