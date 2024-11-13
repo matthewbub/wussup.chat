@@ -1,14 +1,25 @@
 import React, { useState } from "react";
 import { useAuth } from "../hooks/useAuth"; // Assuming you have an auth hook
 
-interface ExtractResponse {
-  text: string;
-  error?: string;
+interface Transaction {
+  date: string;
+  description: string;
+  amount: string;
+  type: "credit" | "debit";
+  balance: string;
+}
+
+interface StatementData {
+  accountNumber: string;
+  bankName: string;
+  statementDate: string;
+  transactions: Transaction[];
+  balance: string;
 }
 
 const PDFExtractor: React.FC = () => {
   const [file, setFile] = useState<File | null>(null);
-  const [extractedText, setExtractedText] = useState<string>("");
+  const [statement, setStatement] = useState<StatementData | null>(null);
   const [error, setError] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
   // const { token } = useAuth(); // Get JWT token from your auth context
@@ -30,7 +41,7 @@ const PDFExtractor: React.FC = () => {
 
     setIsLoading(true);
     setError("");
-    setExtractedText("");
+    setStatement(null);
 
     const formData = new FormData();
     formData.append("file", file);
@@ -44,13 +55,13 @@ const PDFExtractor: React.FC = () => {
         body: formData,
       });
 
-      const data: ExtractResponse = await response.json();
+      const data: StatementData = await response.json();
 
       if (!response.ok) {
         throw new Error(data.error || "Failed to extract PDF text");
       }
 
-      setExtractedText(data.text);
+      setStatement(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
@@ -59,7 +70,7 @@ const PDFExtractor: React.FC = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-4">
+    <div className="max-w-6xl mx-auto p-4">
       <h2 className="text-2xl font-bold mb-4">PDF Text Extractor</h2>
 
       <form onSubmit={handleSubmit} className="mb-6">
@@ -97,10 +108,55 @@ const PDFExtractor: React.FC = () => {
         </div>
       )}
 
-      {extractedText && (
+      {statement && (
         <div className="mt-6">
-          <h3 className="text-xl font-semibold mb-2">Extracted Text</h3>
-          <pre className="whitespace-pre-wrap">{extractedText}</pre>
+          <div className="bg-white shadow-md rounded-lg p-6">
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold">Statement Details</h3>
+              <p>Bank: {statement.bankName}</p>
+              <p>Account: {statement.accountNumber}</p>
+              <p>Date: {statement.statementDate}</p>
+              <p>Balance: {statement.balance}</p>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="min-w-full">
+                <thead>
+                  <tr className="bg-gray-100">
+                    <th className="px-4 py-2">Date</th>
+                    <th className="px-4 py-2">Description</th>
+                    <th className="px-4 py-2">Amount</th>
+                    <th className="px-4 py-2">Type</th>
+                    <th className="px-4 py-2">Balance</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {statement.transactions.map((tx, index) => (
+                    <tr
+                      key={index}
+                      className={index % 2 === 0 ? "bg-gray-50" : ""}
+                    >
+                      <td className="px-4 py-2">{tx.date}</td>
+                      <td className="px-4 py-2">{tx.description}</td>
+                      <td className="px-4 py-2 text-right">{tx.amount}</td>
+                      <td className="px-4 py-2 text-right">
+                        <span
+                          className={`px-2 py-1 rounded text-xs ${
+                            tx.type === "credit"
+                              ? "bg-green-100 text-green-800"
+                              : "bg-red-100 text-red-800"
+                          }`}
+                        >
+                          {tx.type}
+                        </span>
+                      </td>
+                      <td className="px-4 py-2 text-right">{tx.balance}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       )}
     </div>
