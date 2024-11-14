@@ -7,9 +7,6 @@ import {
   Layout,
   List,
   Eye,
-  Plus,
-  Search,
-  SortAsc,
   Printer,
   Download,
 } from "lucide-react";
@@ -25,7 +22,6 @@ export function LandingPageComponent() {
 
   return (
     <div className="flex flex-col min-h-screen mx-auto">
-      <ImportBankStatement />
       <header className="px-4 lg:px-6 h-14 flex items-center">
         <a className="flex items-center justify-center" href="#">
           <FileText className="h-6 w-6" />

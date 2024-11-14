@@ -24,7 +24,6 @@ type Transaction struct {
 	Description string `json:"description"`
 	Amount      string `json:"amount"`
 	Type        string `json:"type"`
-	Balance     string `json:"balance"`
 }
 
 type StatementData struct {
@@ -32,7 +31,6 @@ type StatementData struct {
 	BankName      string        `json:"bankName"`
 	StatementDate string        `json:"statementDate"`
 	Transactions  []Transaction `json:"transactions"`
-	Balance       string        `json:"balance"`
 }
 
 func ExtractPDFText(c *gin.Context) {
