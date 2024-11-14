@@ -9,9 +9,7 @@ import {
 } from "@/components/catalyst/dropdown";
 import {
   Navbar,
-  NavbarDivider,
   NavbarItem,
-  NavbarLabel,
   NavbarSection,
   NavbarSpacer,
 } from "@/components/catalyst/navbar";
@@ -38,38 +36,8 @@ import { InboxIcon, MagnifyingGlassIcon } from "@heroicons/react/20/solid";
 
 const navItems = [
   { label: "Home", url: "/" },
-  { label: "Documents", url: "/documents" },
-  { label: "Settings", url: "/settings" },
+  { label: "Dashboard", url: "/dashboard" },
 ];
-
-function TeamDropdownMenu() {
-  return (
-    <DropdownMenu className="min-w-80 lg:min-w-64" anchor="bottom start">
-      <DropdownItem href="/teams/1/settings">
-        <Cog8ToothIcon />
-        <DropdownLabel>Settings</DropdownLabel>
-      </DropdownItem>
-      <DropdownDivider />
-      <DropdownItem href="/teams/1">
-        <Avatar slot="icon" src="/tailwind-logo.svg" />
-        <DropdownLabel>Tailwind Labs</DropdownLabel>
-      </DropdownItem>
-      <DropdownItem href="/teams/2">
-        <Avatar
-          slot="icon"
-          initials="WC"
-          className="bg-purple-500 text-white"
-        />
-        <DropdownLabel>Workcation</DropdownLabel>
-      </DropdownItem>
-      <DropdownDivider />
-      <DropdownItem href="/teams/create">
-        <PlusIcon />
-        <DropdownLabel>New team&hellip;</DropdownLabel>
-      </DropdownItem>
-    </DropdownMenu>
-  );
-}
 
 export function DashboardWrapper({ children }: { children: React.ReactNode }) {
   return (
@@ -134,7 +102,6 @@ export function DashboardWrapper({ children }: { children: React.ReactNode }) {
                 <SidebarLabel>ZCauldron</SidebarLabel>
                 <ChevronDownIcon />
               </DropdownButton>
-              <TeamDropdownMenu />
             </Dropdown>
           </SidebarHeader>
           <SidebarBody>
