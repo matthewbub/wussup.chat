@@ -26,8 +26,17 @@ interface StatementData {
   transactions: Transaction[];
 }
 
+interface PageSelection {
+  fileId: string;
+  numPages: number;
+  selectedPages: number[];
+}
+
 const ImportBankStatement: React.FC = () => {
   const [file, setFile] = useState<File | null>(null);
+  const [pageSelection, setPageSelection] = useState<PageSelection | null>(
+    null
+  );
   const [statement, setStatement] = useState<StatementData | null>(null);
   const [error, setError] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
@@ -86,42 +95,73 @@ const ImportBankStatement: React.FC = () => {
     getCoreRowModel: getCoreRowModel(),
   });
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const selectedFile = event.target.files?.[0];
     if (selectedFile && selectedFile.type === "application/pdf") {
       setFile(selectedFile);
       setError("");
+
+      // Get page count
+      const formData = new FormData();
+      formData.append("file", selectedFile);
+
+      try {
+        const response = await fetch("/api/v1/pdf/page-count", {
+          method: "POST",
+          body: formData,
+        });
+
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error);
+
+        setPageSelection({
+          fileId: data.fileId,
+          numPages: data.numPages,
+          selectedPages: [],
+        });
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "An error occurred");
+      }
     } else {
       setError("Please select a valid PDF file");
       setFile(null);
     }
   };
 
+  const handlePageSelection = (pageNum: number) => {
+    if (!pageSelection) return;
+
+    setPageSelection((prev) => {
+      if (!prev) return prev;
+      const selected = prev.selectedPages.includes(pageNum)
+        ? prev.selectedPages.filter((p) => p !== pageNum)
+        : [...prev.selectedPages, pageNum];
+      return { ...prev, selectedPages: selected };
+    });
+  };
+
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (!file) return;
+    if (!pageSelection || pageSelection.selectedPages.length === 0) return;
 
     setIsLoading(true);
     setError("");
     setStatement(null);
 
     const formData = new FormData();
-    formData.append("file", file);
+    formData.append("fileId", pageSelection.fileId);
+    formData.append("pages", pageSelection.selectedPages.join(","));
 
     try {
       const response = await fetch("/api/v1/pdf/extract", {
         method: "POST",
-        // headers: {
-        //   Authorization: `Bearer ${token}`,
-        // },
         body: formData,
       });
 
-      const data: StatementData = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to extract PDF text");
-      }
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error);
 
       setStatement(data);
     } catch (err) {
@@ -155,24 +195,45 @@ const ImportBankStatement: React.FC = () => {
               hover:file:bg-blue-100"
             />
           </div>
-
-          <button
-            type="submit"
-            disabled={!file || isLoading}
-            className={`px-4 py-2 rounded-md text-white font-medium
-            ${
-              !file || isLoading
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-blue-600 hover:bg-blue-700"
-            }`}
-          >
-            {isLoading ? "Processing..." : "Extract Text"}
-          </button>
         </form>
 
         {error && (
           <div className="mb-4 p-4 bg-red-50 text-red-700 rounded-md">
             {error}
+          </div>
+        )}
+
+        {pageSelection && (
+          <div className="mt-4">
+            <h3 className="text-lg font-semibold mb-2">
+              Select Pages to Import
+            </h3>
+            <div className="flex flex-wrap gap-2">
+              {Array.from(
+                { length: pageSelection.numPages },
+                (_, i) => i + 1
+              ).map((pageNum) => (
+                <button
+                  key={pageNum}
+                  onClick={() => handlePageSelection(pageNum)}
+                  className={`px-4 py-2 rounded ${
+                    pageSelection.selectedPages.includes(pageNum)
+                      ? "bg-blue-600 text-white"
+                      : "bg-gray-200"
+                  }`}
+                >
+                  Page {pageNum}
+                </button>
+              ))}
+            </div>
+
+            <button
+              onClick={handleSubmit}
+              disabled={pageSelection.selectedPages.length === 0 || isLoading}
+              className="mt-4 px-4 py-2 bg-blue-600 text-white rounded disabled:bg-gray-400"
+            >
+              {isLoading ? "Processing..." : "Process Selected Pages"}
+            </button>
           </div>
         )}
 

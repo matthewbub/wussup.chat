@@ -79,7 +79,7 @@ func main() {
 	router.GET("/api/v1/example/jwt", middleware.JWTAuthMiddleware(), api.ExampleAuthEndpoint)
 
 	router.POST("/api/v1/pdf/extract", api.ExtractPDFText)
-
+	router.POST("/api/v1/pdf/page-count", api.GetPDFPageCount)
 	//router.NoRoute(handlers.NotFound404)
 
 	log.Println("Server is running on port 8080")

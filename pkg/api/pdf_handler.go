@@ -9,8 +9,11 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 type PythonResponse struct {
@@ -33,47 +36,63 @@ type StatementData struct {
 	Transactions  []Transaction `json:"transactions"`
 }
 
+type PDFPageCount struct {
+	NumPages int    `json:"numPages"`
+	FileID   string `json:"fileId"`
+}
+
+var tempFiles = make(map[string]string)
+
 func ExtractPDFText(c *gin.Context) {
-	// Get the uploaded file
-	file, err := c.FormFile("file")
-	if err != nil {
-		c.JSON(400, gin.H{"error": "No file uploaded"})
+	fileID := c.PostForm("fileId")
+	pagesStr := c.PostForm("pages")
+
+	tmpDir, exists := tempFiles[fileID]
+	if !exists {
+		c.JSON(400, gin.H{"error": "Invalid file ID"})
 		return
 	}
+	defer func() {
+		delete(tempFiles, fileID)
+		os.RemoveAll(tmpDir)
+	}()
 
-	// Create a temporary directory for the uploaded file
-	tmpDir, err := os.MkdirTemp("", "pdf_processing")
-	if err != nil {
-		c.JSON(500, gin.H{"error": "Failed to create temp directory"})
-		return
-	}
-	defer os.RemoveAll(tmpDir) // Clean up after we're done
-
-	// Save the uploaded file
 	pdfPath := filepath.Join(tmpDir, "statement.pdf")
-	if err := c.SaveUploadedFile(file, pdfPath); err != nil {
-		c.JSON(500, gin.H{"error": "Failed to save file"})
-		return
+
+	var pages []int
+	for _, p := range strings.Split(pagesStr, ",") {
+		page, err := strconv.Atoi(strings.TrimSpace(p))
+		if err != nil {
+			c.JSON(400, gin.H{"error": "Invalid page number"})
+			return
+		}
+		pages = append(pages, page)
 	}
 
-	// Run Python script
-	cmd := exec.Command("python3", "scripts/pdf_extractor.py", pdfPath)
-	output, err := cmd.Output()
-	if err != nil {
-		c.JSON(500, gin.H{"error": "Failed to process PDF: " + err.Error()})
-		return
-	}
+	extractedText := ""
 
-	// Parse the JSON response from Python
-	var response PythonResponse
-	if err := json.Unmarshal(output, &response); err != nil {
-		c.JSON(500, gin.H{"error": "Failed to parse Python output"})
-		return
-	}
+	// Run Python script for each page
+	for _, page := range pages {
+		cmd := exec.Command("python3", "scripts/pdf_extractor.py", pdfPath, strconv.Itoa(page))
+		output, err := cmd.Output()
+		if err != nil {
+			c.JSON(500, gin.H{"error": "Failed to process PDF: " + err.Error()})
+			return
+		}
 
-	if !response.Success {
-		c.JSON(500, gin.H{"error": response.Error})
-		return
+		// Parse the JSON response from Python
+		var response PythonResponse
+		if err := json.Unmarshal(output, &response); err != nil {
+			c.JSON(500, gin.H{"error": "Failed to parse Python output"})
+			return
+		}
+
+		if !response.Success {
+			c.JSON(500, gin.H{"error": response.Error})
+			return
+		}
+
+		extractedText += response.Text
 	}
 	// Define the JSON schema for the response
 	jsonSchema := map[string]interface{}{
@@ -125,15 +144,12 @@ func ExtractPDFText(c *gin.Context) {
 					"Please extract the following information from this bank statement text: "+
 						"account number, bank name, statement date, and all transactions. "+
 						"Format the response according to the schema. Here's the text:\n\n%s",
-					response.Text,
+					extractedText,
 				),
 			},
 		},
 		"temperature": 0.7,
 		"max_tokens":  16384,
-		// "response_format": map[string]interface{}{
-		// 	"type": "json_object",
-		// },
 		"response_format": map[string]interface{}{
 			"type": "json_schema",
 			"json_schema": map[string]interface{}{
@@ -207,4 +223,54 @@ func ExtractPDFText(c *gin.Context) {
 	}
 
 	c.JSON(200, statement)
+}
+
+func GetPDFPageCount(c *gin.Context) {
+	file, err := c.FormFile("file")
+	if err != nil {
+		c.JSON(400, gin.H{"error": "No file uploaded"})
+		return
+	}
+
+	// Create a temporary directory for the uploaded file
+	tmpDir, err := os.MkdirTemp("", "pdf_processing")
+	if err != nil {
+		c.JSON(500, gin.H{"error": "Failed to create temp directory"})
+		return
+	}
+
+	// Save the uploaded file
+	pdfPath := filepath.Join(tmpDir, "statement.pdf")
+	if err := c.SaveUploadedFile(file, pdfPath); err != nil {
+		c.JSON(500, gin.H{"error": "Failed to save file"})
+		return
+	}
+
+	// Run Python script to get page count
+	cmd := exec.Command("python3", "scripts/pdf_page_count.py", pdfPath)
+	output, err := cmd.Output()
+	if err != nil {
+		c.JSON(500, gin.H{"error": "Failed to process PDF: " + err.Error()})
+		return
+	}
+
+	var response struct {
+		NumPages int `json:"numPages"`
+	}
+	if err := json.Unmarshal(output, &response); err != nil {
+		c.JSON(500, gin.H{"error": "Failed to parse Python output"})
+		return
+	}
+
+	// Generate a unique ID for this file
+	fileID := uuid.New().String()
+
+	// Store the temp directory path (you might want to use Redis or similar in production)
+	// For now, we'll use an in-memory map
+	tempFiles[fileID] = tmpDir
+
+	c.JSON(200, PDFPageCount{
+		NumPages: response.NumPages,
+		FileID:   fileID,
+	})
 }
