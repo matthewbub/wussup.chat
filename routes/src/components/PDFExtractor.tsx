@@ -1,5 +1,13 @@
 import React, { useState } from "react";
-import { useAuth } from "../hooks/useAuth"; // Assuming you have an auth hook
+import {
+  ColumnDef,
+  HeaderGroup,
+  Header,
+  Row,
+  useReactTable,
+  getCoreRowModel,
+  flexRender,
+} from "@tanstack/react-table";
 
 interface Transaction {
   date: string;
@@ -23,6 +31,69 @@ const PDFExtractor: React.FC = () => {
   const [error, setError] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
   // const { token } = useAuth(); // Get JWT token from your auth context
+
+  const columns: ColumnDef<Transaction>[] = [
+    {
+      id: "select",
+      header: ({ table }) => (
+        <input
+          type="checkbox"
+          checked={table.getIsAllRowsSelected()}
+          onChange={table.getToggleAllRowsSelectedHandler()}
+        />
+      ),
+      cell: ({ row }) => (
+        <input
+          type="checkbox"
+          checked={row.getIsSelected()}
+          onChange={row.getToggleSelectedHandler()}
+        />
+      ),
+    },
+    {
+      accessorKey: "date",
+      header: "Date",
+    },
+    {
+      accessorKey: "description",
+      header: "Description",
+    },
+    {
+      accessorKey: "amount",
+      header: "Amount",
+      cell: ({ getValue }) => (
+        <span className="text-right">{getValue() as string}</span>
+      ),
+    },
+    {
+      accessorKey: "type",
+      header: "Type",
+      cell: ({ getValue }) => (
+        <span
+          className={`px-2 py-1 rounded text-xs ${
+            getValue() === "credit"
+              ? "bg-green-100 text-green-800"
+              : "bg-red-100 text-red-800"
+          }`}
+        >
+          {getValue() as string}
+        </span>
+      ),
+    },
+    {
+      accessorKey: "balance",
+      header: "Balance",
+      cell: ({ getValue }) => (
+        <span className="text-right">{getValue() as string}</span>
+      ),
+    },
+  ];
+
+  const table = useReactTable({
+    data: statement ? statement.transactions : [],
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+  });
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = event.target.files?.[0];
@@ -122,35 +193,37 @@ const PDFExtractor: React.FC = () => {
             <div className="overflow-x-auto">
               <table className="min-w-full">
                 <thead>
-                  <tr className="bg-gray-100">
-                    <th className="px-4 py-2">Date</th>
-                    <th className="px-4 py-2">Description</th>
-                    <th className="px-4 py-2">Amount</th>
-                    <th className="px-4 py-2">Type</th>
-                    <th className="px-4 py-2">Balance</th>
-                  </tr>
+                  {table
+                    .getHeaderGroups()
+                    .map((headerGroup: HeaderGroup<Transaction>) => (
+                      <tr key={headerGroup.id} className="bg-gray-100">
+                        {headerGroup.headers.map(
+                          (header: Header<Transaction, unknown>) => (
+                            <th key={header.id} className="px-4 py-2">
+                              {flexRender(
+                                header.column.columnDef.header,
+                                header.getContext()
+                              )}
+                            </th>
+                          )
+                        )}
+                      </tr>
+                    ))}
                 </thead>
                 <tbody>
-                  {statement.transactions.map((tx, index) => (
+                  {table.getRowModel().rows.map((row: Row<Transaction>) => (
                     <tr
-                      key={index}
-                      className={index % 2 === 0 ? "bg-gray-50" : ""}
+                      key={row.id}
+                      className={row.index % 2 === 0 ? "bg-gray-50" : ""}
                     >
-                      <td className="px-4 py-2">{tx.date}</td>
-                      <td className="px-4 py-2">{tx.description}</td>
-                      <td className="px-4 py-2 text-right">{tx.amount}</td>
-                      <td className="px-4 py-2 text-right">
-                        <span
-                          className={`px-2 py-1 rounded text-xs ${
-                            tx.type === "credit"
-                              ? "bg-green-100 text-green-800"
-                              : "bg-red-100 text-red-800"
-                          }`}
-                        >
-                          {tx.type}
-                        </span>
-                      </td>
-                      <td className="px-4 py-2 text-right">{tx.balance}</td>
+                      {row.getVisibleCells().map((cell) => (
+                        <td key={cell.id} className="px-4 py-2">
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext()
+                          )}
+                        </td>
+                      ))}
                     </tr>
                   ))}
                 </tbody>
