@@ -9,6 +9,8 @@ import {
   flexRender,
 } from "@tanstack/react-table";
 import { DashboardWrapper } from "./DashboardWrapper";
+import { Button } from "@/components/catalyst/button";
+import { Checkbox } from "@/components/catalyst/checkbox";
 
 interface Transaction {
   date: string;
@@ -34,15 +36,13 @@ const ImportBankStatement: React.FC = () => {
     {
       id: "select",
       header: ({ table }) => (
-        <input
-          type="checkbox"
+        <Checkbox
           checked={table.getIsAllRowsSelected()}
           onChange={table.getToggleAllRowsSelectedHandler()}
         />
       ),
       cell: ({ row }) => (
-        <input
-          type="checkbox"
+        <Checkbox
           checked={row.getIsSelected()}
           onChange={row.getToggleSelectedHandler()}
         />
@@ -226,12 +226,9 @@ const ImportBankStatement: React.FC = () => {
                 </table>
 
                 <div className="flex justify-end">
-                  <button
-                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-                    onClick={handleSave}
-                  >
+                  <Button color="teal" onClick={handleSave}>
                     Save
-                  </button>
+                  </Button>
                 </div>
               </div>
             </div>
