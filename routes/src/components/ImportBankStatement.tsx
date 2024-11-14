@@ -144,14 +144,15 @@ const ImportBankStatement: React.FC = () => {
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (!pageSelection || pageSelection.selectedPages.length === 0) return;
+    if (!pageSelection || pageSelection.selectedPages.length === 0 || !file)
+      return;
 
     setIsLoading(true);
     setError("");
     setStatement(null);
 
     const formData = new FormData();
-    formData.append("fileId", pageSelection.fileId);
+    formData.append("file", file);
     formData.append("pages", pageSelection.selectedPages.join(","));
 
     try {

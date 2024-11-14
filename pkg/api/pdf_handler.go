@@ -44,20 +44,25 @@ type PDFPageCount struct {
 var tempFiles = make(map[string]string)
 
 func ExtractPDFText(c *gin.Context) {
-	fileID := c.PostForm("fileId")
-	pagesStr := c.PostForm("pages")
-
-	tmpDir, exists := tempFiles[fileID]
-	if !exists {
-		c.JSON(400, gin.H{"error": "Invalid file ID"})
+	file, err := c.FormFile("file")
+	if err != nil {
+		c.JSON(400, gin.H{"error": "No file uploaded"})
 		return
 	}
-	defer func() {
-		delete(tempFiles, fileID)
-		os.RemoveAll(tmpDir)
-	}()
+	pagesStr := c.PostForm("pages")
+
+	tmpDir, err := os.MkdirTemp("", "pdf_processing")
+	if err != nil {
+		c.JSON(500, gin.H{"error": "Failed to create temp directory"})
+		return
+	}
+	defer os.RemoveAll(tmpDir)
 
 	pdfPath := filepath.Join(tmpDir, "statement.pdf")
+	if err := c.SaveUploadedFile(file, pdfPath); err != nil {
+		c.JSON(500, gin.H{"error": "Failed to save file"})
+		return
+	}
 
 	var pages []int
 	for _, p := range strings.Split(pagesStr, ",") {
