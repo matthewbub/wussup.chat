@@ -14,7 +14,6 @@ interface Transaction {
   description: string;
   amount: string;
   type: "credit" | "debit";
-  balance: string;
 }
 
 interface StatementData {
@@ -22,15 +21,13 @@ interface StatementData {
   bankName: string;
   statementDate: string;
   transactions: Transaction[];
-  balance: string;
 }
 
-const PDFExtractor: React.FC = () => {
+const ImportBankStatement: React.FC = () => {
   const [file, setFile] = useState<File | null>(null);
   const [statement, setStatement] = useState<StatementData | null>(null);
   const [error, setError] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
-  // const { token } = useAuth(); // Get JWT token from your auth context
 
   const columns: ColumnDef<Transaction>[] = [
     {
@@ -78,13 +75,6 @@ const PDFExtractor: React.FC = () => {
         >
           {getValue() as string}
         </span>
-      ),
-    },
-    {
-      accessorKey: "balance",
-      header: "Balance",
-      cell: ({ getValue }) => (
-        <span className="text-right">{getValue() as string}</span>
       ),
     },
   ];
@@ -140,6 +130,11 @@ const PDFExtractor: React.FC = () => {
     }
   };
 
+  const handleSave = () => {
+    console.log("Save");
+    console.log(table.getSelectedRowModel().rows);
+  };
+
   return (
     <div className="max-w-6xl mx-auto p-4">
       <h2 className="text-2xl font-bold mb-4">PDF Text Extractor</h2>
@@ -187,7 +182,6 @@ const PDFExtractor: React.FC = () => {
               <p>Bank: {statement.bankName}</p>
               <p>Account: {statement.accountNumber}</p>
               <p>Date: {statement.statementDate}</p>
-              <p>Balance: {statement.balance}</p>
             </div>
 
             <div className="overflow-x-auto">
@@ -228,6 +222,15 @@ const PDFExtractor: React.FC = () => {
                   ))}
                 </tbody>
               </table>
+
+              <div className="flex justify-end">
+                <button
+                  className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                  onClick={handleSave}
+                >
+                  Save
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -236,4 +239,4 @@ const PDFExtractor: React.FC = () => {
   );
 };
 
-export default PDFExtractor;
+export default ImportBankStatement;

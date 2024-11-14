@@ -90,9 +90,6 @@ func ExtractPDFText(c *gin.Context) {
 			"statementDate": map[string]interface{}{
 				"type": "string",
 			},
-			"balance": map[string]interface{}{
-				"type": "string",
-			},
 			"transactions": map[string]interface{}{
 				"type": "array",
 				"items": map[string]interface{}{
@@ -111,16 +108,13 @@ func ExtractPDFText(c *gin.Context) {
 							"type": "string",
 							"enum": []string{"credit", "debit"},
 						},
-						"balance": map[string]interface{}{
-							"type": "string",
-						},
 					},
-					"required":             []string{"date", "description", "amount", "type", "balance"},
+					"required":             []string{"date", "description", "amount", "type"},
 					"additionalProperties": false,
 				},
 			},
 		},
-		"required":             []string{"accountNumber", "bankName", "statementDate", "transactions", "balance"},
+		"required":             []string{"accountNumber", "bankName", "statementDate", "transactions"},
 		"additionalProperties": false,
 	}
 	// Prepare OpenAI request with the extracted text
@@ -131,7 +125,7 @@ func ExtractPDFText(c *gin.Context) {
 				"role": "user",
 				"content": fmt.Sprintf(
 					"Please extract the following information from this bank statement text: "+
-						"account number, bank name, statement date, current balance, and all transactions. "+
+						"account number, bank name, statement date, and all transactions. "+
 						"Format the response according to the schema. Here's the text:\n\n%s",
 					response.Text,
 				),
