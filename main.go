@@ -16,9 +16,14 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-// TODO create production config for migrations
 func runMigrations() {
-	dbPath := "sqlite3://pkg/database/dev.db?cache=shared&mode=rwc"
+	env := utils.GetEnv()
+	var dbPath string
+	if env == "production" {
+		dbPath = "sqlite3://pkg/database/prod.db?cache=shared&mode=rwc"
+	} else if env == "development" {
+		dbPath = "sqlite3://pkg/database/dev.db?cache=shared&mode=rwc"
+	}
 	m, err := migrate.New(
 		"file://pkg/database/migrations",
 		dbPath)
