@@ -6,21 +6,33 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/joho/godotenv"
 	_ "github.com/mattn/go-sqlite3"
 )
 
-func init() {
+var (
+	db *sql.DB
+	// once sync.Once
+)
+
+// GetDB returns a singleton database connection
+func GetDB() *sql.DB {
+	once.Do(func() {
+		db = initDB()
+	})
+	return db
+}
+
+func initDB() *sql.DB {
 	// Load .env file if it exists
 	err := godotenv.Load()
 	if err != nil {
 		log.Printf("Failed to init the env")
-		return
+		return nil
 	}
-}
 
-func Db() *sql.DB {
 	// Get the current working directory
 	cwd, err := os.Getwd()
 	if err != nil {
@@ -28,12 +40,16 @@ func Db() *sql.DB {
 	}
 
 	var dbPath string
-	if os.Getenv("ENV") == "development" {
+	env := GetEnv()
+	if env == "development" {
 		dbPath = filepath.Join(cwd, "pkg", "database", "dev.db")
 		fmt.Println("Using development database:", dbPath)
-	} else {
+	} else if env == "production" {
 		dbPath = filepath.Join(cwd, "pkg", "database", "prod.db")
 		fmt.Println("Using production database:", dbPath)
+	} else {
+		fmt.Println("Unknown environment. Using development database.")
+		dbPath = filepath.Join(cwd, "pkg", "database", "dev.db")
 	}
 	db, err := sql.Open("sqlite3", dbPath)
 
@@ -41,5 +57,11 @@ func Db() *sql.DB {
 		fmt.Println("Error opening database. Are you sure it exists?")
 		log.Fatal(err)
 	}
+
+	// Configure the connection pool
+	db.SetMaxOpenConns(25) // Adjust based on your needs
+	db.SetMaxIdleConns(5)
+	db.SetConnMaxLifetime(5 * time.Minute)
+
 	return db
 }

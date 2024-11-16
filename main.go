@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"time"
 
 	"bus.zcauldron.com/pkg/api"
 	"bus.zcauldron.com/pkg/middleware"
@@ -12,6 +13,11 @@ import (
 )
 
 func main() {
+	err := utils.ValidateEnvironment()
+	if err != nil {
+		log.Fatalf("Environment validation failed: %v", err)
+	}
+
 	router := gin.Default()
 	router.Use(middleware.Cors)
 
@@ -27,25 +33,30 @@ func main() {
 	// schema - keep me above other routes
 	router.GET("/api/v1/schema/:type", api.SchemaHandler)
 
-	router.POST("/api/v1/account/sign-up", api.SignUpHandler)
-	router.POST("/api/v1/account/login", api.LoginHandler)
-	router.POST("/api/v1/account/security-questions", middleware.JWTAuthMiddleware(), api.SecurityQuestionsHandler)
-	router.POST("/api/v1/account/logout", api.LogoutHandler)
-	router.POST("/api/v1/account/in/reset-password", middleware.JWTAuthMiddleware(), api.AuthenticatedResetPasswordHandler)
-	router.GET("/api/v1/auth-check", api.AuthCheckHandler)
-	router.POST("/api/v1/account/forgot-password", api.ForgotPasswordHandler)
-	router.GET("/api/v1/example/jwt", middleware.JWTAuthMiddleware(), api.ExampleAuthEndpoint)
-	router.POST("/api/v1/account/profile", middleware.JWTAuthMiddleware(), api.UpdateProfileHandler)
-	router.DELETE("/api/v1/account/delete", middleware.JWTAuthMiddleware(), api.DeleteAccountHandler)
+	publicRoutes := router.Group("/api/v1/public", middleware.RateLimit(5*time.Second))
+	{
+		publicRoutes.POST("/sign-up", api.SignUpHandler)
+		publicRoutes.POST("/login", api.LoginHandler)
+	}
 
-	// router.POST("/api/v1/account/security", middleware.JWTAuthMiddleware(), api.UpdateSecurityHandler)
-	// router.POST("/api/v1/account/preferences", middleware.JWTAuthMiddleware(), jwt.UpdatePreferences)
+	accountRoutes := router.Group("/api/v1/account", middleware.JWTAuthMiddleware())
+	{
+		accountRoutes.GET("/auth-check", api.AuthCheckHandler)
+		accountRoutes.POST("/forgot-password", api.ForgotPasswordHandler)
+		accountRoutes.POST("/security-questions", api.SecurityQuestionsHandler)
+		accountRoutes.POST("/logout", api.LogoutHandler)
+		accountRoutes.POST("/in/reset-password", api.AuthenticatedResetPasswordHandler)
+		accountRoutes.POST("/profile", api.UpdateProfileHandler)
+		accountRoutes.DELETE("/delete", api.DeleteAccountHandler)
+	}
+
+	router.GET("/api/v1/example/jwt", middleware.JWTAuthMiddleware(), api.ExampleAuthEndpoint)
 
 	//router.NoRoute(handlers.NotFound404)
 
 	log.Println("Server is running on port 8080")
-	err := router.Run(":8080")
+	err = router.Run(":8080")
 	if err != nil {
-		return
+		log.Fatalf("Failed to run server: %v", err)
 	}
 }

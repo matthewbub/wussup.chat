@@ -27,7 +27,7 @@ func SecurityQuestionsHandler(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, response.Error(
 			"Unauthorized",
-			"UNAUTHORIZED",
+			response.AUTHENTICATION_FAILED,
 		))
 		return
 	}
@@ -37,7 +37,7 @@ func SecurityQuestionsHandler(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, response.Error(
 			"Invalid or expired token",
-			"INVALID_TOKEN",
+			response.AUTHENTICATION_FAILED,
 		))
 		return
 	}
@@ -46,7 +46,7 @@ func SecurityQuestionsHandler(c *gin.Context) {
 	if err := c.ShouldBindJSON(&payload); err != nil {
 		c.JSON(http.StatusBadRequest, response.Error(
 			"Invalid request data",
-			"INVALID_REQUEST_DATA",
+			response.INVALID_REQUEST_DATA,
 		))
 		return
 	}
@@ -55,7 +55,7 @@ func SecurityQuestionsHandler(c *gin.Context) {
 	if err := validateSecurityQuestions(payload.Questions); err != nil {
 		c.JSON(http.StatusBadRequest, response.Error(
 			err.Error(),
-			"INVALID_SECURITY_QUESTIONS",
+			response.INVALID_REQUEST_DATA,
 		))
 		return
 	}
@@ -65,7 +65,7 @@ func SecurityQuestionsHandler(c *gin.Context) {
 		payload.Questions[1].Question, payload.Questions[1].Answer, payload.Questions[2].Question, payload.Questions[2].Answer); err != nil {
 		c.JSON(http.StatusInternalServerError, response.Error(
 			"Failed to save security questions",
-			"FAILED_TO_SAVE_QUESTIONS",
+			response.OPERATION_FAILED,
 		))
 		return
 	}
@@ -90,8 +90,7 @@ func validateSecurityQuestions(questions []SecurityQuestion) error {
 }
 
 func insertSecurityQuestionsIntoDatabase(userID string, question1, answer1, question2, answer2, question3, answer3 string) error {
-	db := utils.Db()
-	defer db.Close()
+	db := utils.GetDB()
 
 	tx, err := db.Begin()
 	if err != nil {
@@ -110,6 +109,8 @@ func insertSecurityQuestionsIntoDatabase(userID string, question1, answer1, ques
 	if err != nil {
 		return fmt.Errorf("failed to insert security questions: %w", err)
 	}
+
+	defer stmt.Close()
 
 	// Update user status within the same transaction
 	stmt, err = tx.Prepare("UPDATE users SET security_questions_answered = ? WHERE id = ?")

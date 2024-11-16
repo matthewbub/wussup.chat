@@ -34,7 +34,7 @@ export function LandingPageComponent() {
             <>
               <a
                 className="text-sm font-medium hover:underline underline-offset-4 px-4 py-2"
-                href="#features"
+                href="/sign-up"
               >
                 Sign up
               </a>
@@ -53,12 +53,14 @@ export function LandingPageComponent() {
               >
                 Me
               </a>
-              <a
+              <button
                 className="text-sm font-medium hover:underline underline-offset-4 px-4 py-2"
-                href="/logout"
+                onClick={() => {
+                  useAuthStore.getState().useLogout();
+                }}
               >
                 Logout
-              </a>
+              </button>
             </>
           )}
         </nav>

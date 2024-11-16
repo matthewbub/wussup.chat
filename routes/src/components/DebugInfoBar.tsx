@@ -39,12 +39,12 @@ export function DebugInfoBar() {
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4 text-xs">
             <span className="font-bold">Debug Info:</span>
-            <span>Auth: {debugInfo.isAuthenticated.toString()}</span>
+            <span>Auth: {debugInfo?.isAuthenticated?.toString()}</span>
             <span>
-              Security Q: {debugInfo.isSecurityQuestionsAnswered.toString()}
+              Security Q: {debugInfo?.isSecurityQuestionsAnswered?.toString()}
             </span>
-            <span>User ID: {debugInfo.userId}</span>
-            <span>Username: {debugInfo.username}</span>
+            <span>User ID: {debugInfo?.userId}</span>
+            <span>Username: {debugInfo?.username}</span>
           </div>
           <div className="flex items-center space-x-2">
             <Button
@@ -75,36 +75,36 @@ export function DebugInfoBar() {
           <ScrollArea className="h-[200px] mt-2">
             <div className="space-y-2 text-xs">
               <p>
-                <strong>Email:</strong> {debugInfo.email}
+                <strong>Email:</strong> {debugInfo?.email}
               </p>
               <p>
                 <strong>Application Environment Role:</strong>{" "}
-                {debugInfo.applicationEnvironmentRole}
+                {debugInfo?.applicationEnvironmentRole}
               </p>
               <p>
                 <strong>Security Questions Answered:</strong>{" "}
-                {debugInfo.securityQuestionsAnswered.toString()}
+                {debugInfo?.securityQuestionsAnswered?.toString()}
               </p>
               <p>
-                <strong>Session ID:</strong> {debugInfo.sessionId}
+                <strong>Session ID:</strong> {debugInfo?.sessionId}
               </p>
               <p>
-                <strong>Last Login:</strong> {debugInfo.lastLogin}
+                <strong>Last Login:</strong> {debugInfo?.lastLogin}
               </p>
               <p>
-                <strong>User Agent:</strong> {debugInfo.userAgent}
+                <strong>User Agent:</strong> {debugInfo?.userAgent}
               </p>
               <p>
-                <strong>Current URL:</strong> {debugInfo.currentUrl}
+                <strong>Current URL:</strong> {debugInfo?.currentUrl}
               </p>
               <p>
-                <strong>API Version:</strong> {debugInfo.apiVersion}
+                <strong>API Version:</strong> {debugInfo?.apiVersion}
               </p>
               <p>
-                <strong>Build Number:</strong> {debugInfo.buildNumber}
+                <strong>Build Number:</strong> {debugInfo?.buildNumber}
               </p>
               <p>
-                <strong>Environment:</strong> {debugInfo.environment}
+                <strong>Environment:</strong> {debugInfo?.environment}
               </p>
             </div>
           </ScrollArea>

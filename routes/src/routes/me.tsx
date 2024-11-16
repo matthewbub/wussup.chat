@@ -45,6 +45,8 @@ import { Text } from "@/components/catalyst/text";
 import { DashboardWrapper } from "@/components/DashboardWrapper";
 import { SelectItem } from "@/components/ui/select";
 import { Authorized } from "@/components/Authorized";
+import { fetchWithAuth } from "@/utils/auth-helpers";
+import { useToast } from "@/hooks/use-toast";
 
 interface FormData {
   questions: { question: string; answer: string }[];
@@ -74,6 +76,9 @@ function AccountSettings() {
 
     if (response.ok) {
       console.log("Account deleted");
+
+      useAuthStore.getState().useLogout();
+      window.location.href = "/";
     } else {
       console.error("Failed to delete account");
     }
@@ -456,6 +461,7 @@ function SecurityQuestionsForm() {
 }
 
 function UpdateProfileInformation() {
+  const { toast } = useToast();
   const user = useAuthStore((state) => state.user);
   const defaultValues = {
     email: user?.email || "",
@@ -466,20 +472,32 @@ function UpdateProfileInformation() {
     formState: { errors },
   } = useForm({ defaultValues });
 
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
   const onSubmit = async (data: { email: string }) => {
-    const response = await fetch("/api/v1/account/profile", {
+    setIsLoading(true);
+
+    const response = await fetchWithAuth("/api/v1/account/profile", {
       method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify(data),
     });
     const json = await response.json();
     if (!json.ok) {
+      toast({
+        title: "Failed to update email.",
+        description: json.message,
+      });
       throw new Error("Failed to update email.");
     }
 
-    // setMessage({
-    //   type: "success",
-    //   content: "Email updated successfully.",
-    // });
+    toast({
+      title: "Email updated successfully.",
+      description: "Your email has been updated.",
+    });
+    setIsLoading(false);
   };
 
   return (
@@ -500,6 +518,10 @@ function UpdateProfileInformation() {
                 type="email"
                 {...register("email", {
                   required: "Email is required",
+                  pattern: {
+                    value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                    message: "Invalid email address",
+                  },
                   maxLength: {
                     value: config.__PRIVATE__.MAX_EMAIL_LENGTH,
                     message: `Email must be less than ${config.__PRIVATE__.MAX_EMAIL_LENGTH} characters`,
@@ -507,13 +529,16 @@ function UpdateProfileInformation() {
                 })}
                 placeholder="Enter your new email"
               />
-              {errors.email && (
-                <Text className="text-red-500">{errors.email.message}</Text>
-              )}
+              <div className="space-y-2 gap-2 flex flex-col">
+                {errors.email && (
+                  <Text className="text-red-500">{errors.email.message}</Text>
+                )}
+              </div>
             </div>
           </div>
           <Button type="submit" color="teal">
-            <Mail className="mr-2 h-4 w-4" /> Update Email
+            <Mail className="mr-2 h-4 w-4" />{" "}
+            {isLoading ? "Updating..." : "Update Email"}
           </Button>
         </form>
       </CardContent>

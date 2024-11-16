@@ -1,6 +1,7 @@
 package api
 
 import (
+	"bus.zcauldron.com/pkg/api/response"
 	"github.com/gin-gonic/gin"
 	"github.com/invopop/jsonschema"
 )
@@ -14,7 +15,10 @@ func SchemaHandler(c *gin.Context) {
 	case "auth_check":
 		schema = jsonschema.Reflect(&AuthCheckResponse{})
 	default:
-		c.JSON(404, gin.H{"error": "Schema not found"})
+		c.JSON(404, response.Error(
+			"Schema not found",
+			response.INVALID_REQUEST_DATA,
+		))
 		return
 	}
 

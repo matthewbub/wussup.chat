@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 	"time"
 
 	"bus.zcauldron.com/pkg/api/response"
@@ -28,16 +27,25 @@ func SignUpHandler(c *gin.Context) {
 	if err := c.ShouldBindJSON(&body); err != nil {
 		c.JSON(http.StatusBadRequest, response.Error(
 			"Invalid request data",
-			"INVALID_REQUEST_DATA",
+			response.INVALID_REQUEST_DATA,
 		))
 		return
 	}
 
 	// BEGIN DATA VALIDATION
 	if err := validateSignUpData(&body); err != nil {
+		var errorCode string
+		switch err.Error() {
+		case "weak password":
+			errorCode = response.WEAK_PASSWORD
+		case "passwords do not match":
+			errorCode = response.PASSWORD_MISMATCH
+		default:
+			errorCode = response.INVALID_REQUEST_DATA
+		}
 		c.JSON(http.StatusBadRequest, response.Error(
-			"Invalid request data",
-			"INVALID_REQUEST_DATA",
+			err.Error(),
+			errorCode,
 		))
 		return
 	}
@@ -48,7 +56,7 @@ func SignUpHandler(c *gin.Context) {
 		log.Printf("Error hashing password: %v", err)
 		c.JSON(http.StatusInternalServerError, response.Error(
 			"Server error",
-			"PASSWORD_HASH_ERROR",
+			response.OPERATION_FAILED,
 		))
 		return
 	}
@@ -58,7 +66,7 @@ func SignUpHandler(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusConflict, response.Error(
 			"Username or email already exists",
-			"USER_ALREADY_EXISTS",
+			response.OPERATION_FAILED,
 		))
 		return
 	}
@@ -68,7 +76,7 @@ func SignUpHandler(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, response.Error(
 			"Failed to generate token",
-			"FAILED_TO_GENERATE_TOKEN",
+			response.AUTHENTICATION_FAILED,
 		))
 		return
 	}
@@ -82,14 +90,7 @@ func SignUpHandler(c *gin.Context) {
 		Domain:     "",
 		Secure:     true,
 	}
-	env := os.Getenv("ENV")
-	if env == "" {
-		c.JSON(http.StatusInternalServerError, response.Error(
-			"Env not set",
-			"ENV_NOT_SET",
-		))
-		return
-	}
+	env := utils.GetEnv()
 	if env == "production" {
 		cookieConfig.Domain = constants.AppConfig.ProductionDomain
 	}
@@ -130,8 +131,7 @@ func validateSignUpData(body *struct {
 }
 
 func insertUserIntoDatabase(username, hashedPassword, email string) (string, error) {
-	db := utils.Db()
-	// defer db.Close()
+	db := utils.GetDB()
 
 	// Use a prepared statement to prevent SQL injection
 	stmt, err := db.Prepare("INSERT INTO users (id, username, password, email, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)")

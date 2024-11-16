@@ -46,7 +46,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
   checkAuth: async () => {
     try {
       set({ isLoading: true, error: null });
-      const response = await fetch("/api/v1/auth-check", {
+      const response = await fetch("/api/v1/account/auth-check", {
         credentials: "include",
       });
 
@@ -128,7 +128,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
   useLogin: async (username: string, password: string) => {
     try {
       set({ isLoading: true, error: null });
-      const response = await fetch("/api/v1/account/login", {
+      const response = await fetch("/api/v1/public/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -210,7 +210,7 @@ export const useAuthStore = create<AuthStore>((set) => ({
   ) => {
     try {
       set({ isLoading: true, error: null });
-      const response = await fetch("/api/v1/account/sign-up", {
+      const response = await fetch("/api/v1/public/sign-up", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
