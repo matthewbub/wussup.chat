@@ -80,6 +80,7 @@ func main() {
 
 	router.POST("/api/v1/pdf/extract", api.ExtractPDFText)
 	router.POST("/api/v1/pdf/page-count", api.GetPDFPageCount)
+	router.POST("/api/v1/pdf/save", api.SaveStatement)
 	//router.NoRoute(handlers.NotFound404)
 
 	log.Println("Server is running on port 8080")

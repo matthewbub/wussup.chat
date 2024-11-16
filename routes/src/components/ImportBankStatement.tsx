@@ -11,6 +11,7 @@ import {
 import { DashboardWrapper } from "./DashboardWrapper";
 import { Button } from "@/components/catalyst/button";
 import { Checkbox } from "@/components/catalyst/checkbox";
+import FileUploader from "./FileUploader";
 
 interface Transaction {
   date: string;
@@ -20,9 +21,6 @@ interface Transaction {
 }
 
 interface StatementData {
-  accountNumber: string;
-  bankName: string;
-  statementDate: string;
   transactions: Transaction[];
 }
 
@@ -40,18 +38,25 @@ const ImportBankStatement: React.FC = () => {
   const [statement, setStatement] = useState<StatementData | null>(null);
   const [error, setError] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
+  const [rowSelection, setRowSelection] = useState({});
 
   const columns: ColumnDef<Transaction>[] = [
     {
       id: "select",
       header: ({ table }) => (
-        <Checkbox
+        // TODO: Replace with catalyst checkbox
+        // don;t know why it isnt working
+        <input
+          type="checkbox"
+          name="select-all"
           checked={table.getIsAllRowsSelected()}
           onChange={table.getToggleAllRowsSelectedHandler()}
         />
       ),
       cell: ({ row }) => (
         <Checkbox
+          color="green"
+          name={`select-${row.id}`}
           checked={row.getIsSelected()}
           onChange={row.getToggleSelectedHandler()}
         />
@@ -93,19 +98,24 @@ const ImportBankStatement: React.FC = () => {
     data: statement ? statement.transactions : [],
     columns,
     getCoreRowModel: getCoreRowModel(),
+    enableRowSelection: true,
+    state: {
+      rowSelection,
+    },
+    onRowSelectionChange: setRowSelection,
   });
 
   const handleFileChange = async (
-    event: React.ChangeEvent<HTMLInputElement>
+    file: File
+    // event: React.ChangeEvent<HTMLInputElement>
   ) => {
-    const selectedFile = event.target.files?.[0];
-    if (selectedFile && selectedFile.type === "application/pdf") {
-      setFile(selectedFile);
+    if (file && file.type === "application/pdf") {
+      setFile(file);
       setError("");
 
       // Get page count
       const formData = new FormData();
-      formData.append("file", selectedFile);
+      formData.append("file", file);
 
       try {
         const response = await fetch("/api/v1/pdf/page-count", {
@@ -173,16 +183,38 @@ const ImportBankStatement: React.FC = () => {
   };
 
   const handleSave = () => {
-    console.log("Save");
-    console.log(table.getSelectedRowModel().rows.map((row) => row.original));
+    const transactions = table
+      .getSelectedRowModel()
+      .rows.map((row) => row.original);
+
+    fetch("/api/v1/pdf/save", {
+      method: "POST",
+      body: JSON.stringify({ transactions }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        console.log(data);
+      })
+      .catch((err) => {
+        console.error(err);
+      });
   };
 
   return (
     <DashboardWrapper>
       <div className=" p-4">
-        <h2 className="text-2xl font-bold mb-4">PDF Text Extractor</h2>
+        <h2 className="text-2xl font-bold mb-4">Import Bank Statement</h2>
 
-        <form onSubmit={handleSubmit} className="mb-6">
+        <FileUploader
+          onFileDrop={(files) => {
+            // console.log("files", files);
+            handleFileChange(files[0]);
+          }}
+          buttonLabel="Select PDF file"
+          acceptedFileTypes={["application/pdf"]}
+        />
+
+        {/* <form onSubmit={handleSubmit} className="mb-6">
           <div className="mb-4">
             <input
               type="file"
@@ -196,7 +228,7 @@ const ImportBankStatement: React.FC = () => {
               hover:file:bg-blue-100"
             />
           </div>
-        </form>
+        </form> */}
 
         {error && (
           <div className="mb-4 p-4 bg-red-50 text-red-700 rounded-md">
@@ -240,14 +272,7 @@ const ImportBankStatement: React.FC = () => {
 
         {statement && (
           <div className="mt-6">
-            <div className="bg-white shadow-md rounded-lg p-6">
-              <div className="mb-4">
-                <h3 className="text-lg font-semibold">Statement Details</h3>
-                <p>Bank: {statement.bankName}</p>
-                <p>Account: {statement.accountNumber}</p>
-                <p>Date: {statement.statementDate}</p>
-              </div>
-
+            <div className="bg-white shadow-md rounded-lg">
               <div className="overflow-x-auto">
                 <table className="min-w-full">
                   <thead>
@@ -286,7 +311,6 @@ const ImportBankStatement: React.FC = () => {
                     ))}
                   </tbody>
                 </table>
-
                 <div className="flex justify-end">
                   <Button color="teal" onClick={handleSave}>
                     Save

@@ -15,6 +15,7 @@ import (
 func AuthCheckHandler(c *gin.Context) {
 	tokenString, err := c.Cookie("jwt")
 	if err != nil || tokenString == "" {
+		log.Printf("No JWT cookie found: %v", err)
 		c.JSON(http.StatusUnauthorized, response.Error(
 			"Authentication failed",
 			response.AUTHENTICATION_FAILED,
@@ -24,6 +25,7 @@ func AuthCheckHandler(c *gin.Context) {
 
 	userID, _, err := utils.VerifyJWT(tokenString)
 	if err != nil {
+		log.Printf("JWT verification failed: %v", err)
 		c.JSON(http.StatusUnauthorized, response.Error(
 			"Invalid token",
 			response.AUTHENTICATION_FAILED,

@@ -11,7 +11,9 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 
+	"bus.zcauldron.com/pkg/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
@@ -30,10 +32,7 @@ type Transaction struct {
 }
 
 type StatementData struct {
-	AccountNumber string        `json:"accountNumber"`
-	BankName      string        `json:"bankName"`
-	StatementDate string        `json:"statementDate"`
-	Transactions  []Transaction `json:"transactions"`
+	Transactions []Transaction `json:"transactions"`
 }
 
 type PDFPageCount struct {
@@ -103,29 +102,14 @@ func ExtractPDFText(c *gin.Context) {
 	jsonSchema := map[string]interface{}{
 		"type": "object",
 		"properties": map[string]interface{}{
-			"accountNumber": map[string]interface{}{
-				"type": "string",
-			},
-			"bankName": map[string]interface{}{
-				"type": "string",
-			},
-			"statementDate": map[string]interface{}{
-				"type": "string",
-			},
 			"transactions": map[string]interface{}{
 				"type": "array",
 				"items": map[string]interface{}{
 					"type": "object",
 					"properties": map[string]interface{}{
-						"date": map[string]interface{}{
-							"type": "string",
-						},
-						"description": map[string]interface{}{
-							"type": "string",
-						},
-						"amount": map[string]interface{}{
-							"type": "string",
-						},
+						"date":        map[string]interface{}{"type": "string"},
+						"description": map[string]interface{}{"type": "string"},
+						"amount":      map[string]interface{}{"type": "string"},
 						"type": map[string]interface{}{
 							"type": "string",
 							"enum": []string{"credit", "debit"},
@@ -136,7 +120,7 @@ func ExtractPDFText(c *gin.Context) {
 				},
 			},
 		},
-		"required":             []string{"accountNumber", "bankName", "statementDate", "transactions"},
+		"required":             []string{"transactions"},
 		"additionalProperties": false,
 	}
 	// Prepare OpenAI request with the extracted text
@@ -213,14 +197,11 @@ func ExtractPDFText(c *gin.Context) {
 		} `json:"choices"`
 	}
 
-	fmt.Println(openAIResp)
-
 	if err := json.Unmarshal(respBody, &openAIResp); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to parse OpenAI response"})
 		return
 	}
 
-	// Parse the content into your statement structure
 	var statement StatementData
 	if err := json.Unmarshal([]byte(openAIResp.Choices[0].Message.Content), &statement); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to parse statement data"})
@@ -278,4 +259,108 @@ func GetPDFPageCount(c *gin.Context) {
 		NumPages: response.NumPages,
 		FileID:   fileID,
 	})
+}
+
+func SaveStatement(c *gin.Context) {
+	tokenString, err := c.Cookie("jwt")
+	if err != nil || tokenString == "" {
+		c.JSON(401, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	userID, _, err := utils.VerifyJWT(tokenString)
+	if err != nil {
+		c.JSON(401, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	// Dump JSON body to file
+	body, err := io.ReadAll(c.Request.Body)
+	if err != nil {
+		fmt.Println(err)
+		c.JSON(500, gin.H{"error": "Failed to read request body"})
+		return
+	}
+
+	type Statement struct {
+		Transactions []Transaction `json:"transactions"`
+	}
+
+	var statement Statement
+	err = json.Unmarshal(body, &statement)
+
+	if err != nil {
+		fmt.Println(err)
+		c.JSON(500, gin.H{"error": "Failed to parse statement data"})
+		return
+	}
+
+	db := utils.GetDB()
+	tx, err := db.Begin()
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to start transaction"})
+		return
+	}
+
+	defer tx.Rollback()
+
+	stmt, err := tx.Prepare("INSERT INTO transactions (id, user_id, date, description, amount, type) VALUES (?, ?, ?, ?, ?, ?)")
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to prepare statement"})
+		return
+	}
+
+	defer stmt.Close()
+
+	// Insert each transaction
+	for _, t := range statement.Transactions {
+		// Parse date string to timestamp
+		date, err := parseDate(t.Date)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid date format"})
+			return
+		}
+
+		_, err = stmt.Exec(
+			uuid.New().String(),
+			userID,
+			date,
+			t.Description,
+			t.Amount,
+			t.Type,
+		)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save transaction"})
+			return
+		}
+	}
+
+	if err := tx.Commit(); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to commit transaction"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message": fmt.Sprintf("Successfully saved %d transactions", len(statement.Transactions)),
+	})
+}
+
+func parseDate(dateStr string) (time.Time, error) {
+	// Try parsing with different layouts
+	layouts := []string{
+		"1/2/2006",   // for single digit month/day
+		"01/02/2006", // for double digit month/day
+	}
+
+	var parseErr error
+	for _, layout := range layouts {
+		t, err := time.Parse(layout, dateStr)
+		if err == nil {
+			return t, nil
+		}
+		parseErr = err
+	}
+	return time.Time{}, parseErr
 }

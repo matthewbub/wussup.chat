@@ -27,7 +27,7 @@ export function LandingPageComponent() {
           <FileText className="h-6 w-6" />
           <span className="ml-2 text-lg font-semibold">DocuMaster</span>
         </a>
-        <nav className="ml-auto flex gap-4 sm:gap-6">
+        <nav className="ml-auto flex gap-4">
           {!isAuthenticated ? (
             <>
               <a
@@ -46,13 +46,13 @@ export function LandingPageComponent() {
           ) : (
             <>
               <a
-                className="text-sm font-medium hover:underline underline-offset-4 px-4 py-2"
-                href="/me"
+                className="text-sm font-medium hover:underline underline-offset-4"
+                href="/dashboard"
               >
-                Me
+                Dashboard
               </a>
               <button
-                className="text-sm font-medium hover:underline underline-offset-4 px-4 py-2"
+                className="text-sm font-medium hover:underline underline-offset-4"
                 onClick={() => {
                   useAuthStore.getState().useLogout();
                 }}
