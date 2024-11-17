@@ -45,14 +45,11 @@ func main() {
 		accountRoutes.POST("/forgot-password", api.ForgotPasswordHandler)
 		accountRoutes.POST("/security-questions", api.SecurityQuestionsHandler)
 		accountRoutes.POST("/logout", api.LogoutHandler)
+		accountRoutes.POST("/renew-session", api.RenewSessionHandler)
 		accountRoutes.POST("/in/reset-password", api.AuthenticatedResetPasswordHandler)
 		accountRoutes.POST("/profile", api.UpdateProfileHandler)
 		accountRoutes.DELETE("/delete", api.DeleteAccountHandler)
 	}
-
-	router.GET("/api/v1/example/jwt", middleware.JWTAuthMiddleware(), api.ExampleAuthEndpoint)
-
-	//router.NoRoute(handlers.NotFound404)
 
 	log.Println("Server is running on port 8080")
 	err = router.Run(":8080")

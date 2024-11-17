@@ -4,12 +4,13 @@ import (
 	"errors"
 	"time"
 
+	"bus.zcauldron.com/pkg/constants"
 	"github.com/golang-jwt/jwt/v5"
 )
 
 func GenerateJWT(userID string) (string, error) {
 	jwtSecret := GetSecretKeyFromEnv()
-	expiration := time.Minute * 10
+	expiration := constants.AppConfig.DefaultJWTExpiration
 
 	claims := jwt.MapClaims{
 		"user_id": userID,

@@ -2,6 +2,7 @@ import * as React from "react";
 import { useAuthStore } from "@/stores/auth";
 import { Navigate } from "@tanstack/react-router";
 import { config } from "@/app_config";
+
 export function useAuthCheck() {
   const { checkAuth } = useAuthStore();
 
@@ -20,7 +21,7 @@ export function useAuthCheck() {
 
     // Cleanup on unmount
     return () => clearInterval(intervalId);
-  }, [checkAuth, useAuthCheck]);
+  }, [checkAuth]);
 }
 
 export function Authorized({ children }: { children: React.ReactNode }) {
