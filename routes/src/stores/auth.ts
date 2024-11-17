@@ -34,6 +34,10 @@ type AuthStore = {
   useSecurityQuestions: (
     questions: { question: string; answer: string }[]
   ) => Promise<void>;
+  isSessionExpiring: boolean;
+  sessionTimeRemaining: number;
+  renewSession: () => Promise<void>;
+  setSessionExpiring: (expiring: boolean, timeRemaining?: number) => void;
 };
 
 export const useAuthStore = create<AuthStore>((set) => ({
@@ -68,9 +72,11 @@ export const useAuthStore = create<AuthStore>((set) => ({
       //   };
       //   error?: string;
       // };
-      const json = await validateResponse(response);
+      const json = await response.json();
+      // const json = await validateResponse(response);
 
-      if (json.ok) {
+      console.log("json", json);
+      if (json.ok && json?.data?.tokenExpiresIn > 0) {
         if (json?.data?.inactiveAt?.Valid) {
           set({
             error: "This account has been deactivated. Please contact support.",
@@ -97,6 +103,14 @@ export const useAuthStore = create<AuthStore>((set) => ({
           },
           error: null,
         });
+
+        if (json?.data?.tokenExpiresIn && json?.data?.tokenExpiresIn < 300) {
+          // 5 minutes
+          set({
+            isSessionExpiring: true,
+            sessionTimeRemaining: json?.data?.tokenExpiresIn,
+          });
+        }
 
         return true;
       } else {
@@ -280,6 +294,50 @@ export const useAuthStore = create<AuthStore>((set) => ({
       }
     } catch (error) {
       set({ error: "An error occurred during security questions" });
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  isSessionExpiring: false,
+  sessionTimeRemaining: 0,
+
+  setSessionExpiring: (isExpiring: boolean, timeRemaining: number = 60) => {
+    set({
+      isSessionExpiring: isExpiring,
+      sessionTimeRemaining: timeRemaining,
+    });
+  },
+
+  renewSession: async () => {
+    try {
+      set({ isLoading: true, error: null });
+      const response = await fetch("/api/v1/account/renew-session", {
+        method: "POST",
+        credentials: "include",
+      });
+
+      const json = await validateResponse(response);
+
+      if (json.ok) {
+        set({
+          isSessionExpiring: false,
+          sessionTimeRemaining: 0,
+          error: null,
+        });
+      } else {
+        set({
+          error: json.message || "Failed to renew session",
+          isAuthenticated: false,
+          user: null,
+        });
+      }
+    } catch (error) {
+      set({
+        error: "An error occurred while renewing session",
+        isAuthenticated: false,
+        user: null,
+      });
     } finally {
       set({ isLoading: false });
     }

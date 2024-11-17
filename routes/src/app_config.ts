@@ -6,5 +6,5 @@ export const config = {
     MAX_EMAIL_LENGTH: 255,
     MAX_SECRET_QUESTION_LENGTH: 1000,
   },
-  AUTH_CHECK_INTERVAL: 1000 * 60 * 5, // 5 minutes
+  AUTH_CHECK_INTERVAL: 1000 * 60, // 1 minute
 };

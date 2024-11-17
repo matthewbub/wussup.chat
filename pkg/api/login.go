@@ -67,10 +67,12 @@ func LoginHandler(c *gin.Context) {
 		Expiration time.Duration
 		Domain     string
 		Secure     bool
+		HttpOnly   bool
 	}{
 		Expiration: constants.AppConfig.DefaultJWTExpiration,
 		Domain:     "",
 		Secure:     true,
+		HttpOnly:   true,
 	}
 
 	env := utils.GetEnv()
@@ -82,7 +84,7 @@ func LoginHandler(c *gin.Context) {
 		cookieConfig.Domain = constants.AppConfig.DevelopmentDomain
 	}
 
-	c.SetCookie("jwt", jwtToken, int(cookieConfig.Expiration.Seconds()), "/", cookieConfig.Domain, cookieConfig.Secure, true)
+	c.SetCookie("jwt", jwtToken, int(cookieConfig.Expiration.Seconds()), "/", cookieConfig.Domain, cookieConfig.Secure, cookieConfig.HttpOnly)
 	c.JSON(http.StatusOK, response.Success(
 		struct {
 			SecurityQuestionsAnswered bool `json:"securityQuestionsAnswered"`

@@ -4,6 +4,7 @@ import { TanStackRouterDevtools } from "@tanstack/router-devtools";
 import { useAuthStore } from "@/stores/auth";
 import { DebugInfoBar } from "@/components/DebugInfoBar";
 import { Toaster } from "@/components/ui/toaster";
+import { SessionManager } from "@/components/SessionManager";
 
 export const Route = createRootRoute({
   component: RootComponent,
@@ -55,6 +56,7 @@ function RootComponent() {
       {/* <hr /> */}
       <Outlet />
       <Toaster />
+      <SessionManager />
       {/* <TanStackRouterDevtools position="bottom-right" /> */}
     </>
   );
