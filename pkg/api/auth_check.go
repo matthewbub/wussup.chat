@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 
 	"bus.zcauldron.com/pkg/api/response"
 	"bus.zcauldron.com/pkg/utils"
@@ -23,7 +24,7 @@ func AuthCheckHandler(c *gin.Context) {
 		return
 	}
 
-	userID, _, err := utils.VerifyJWT(tokenString)
+	userID, expirationTime, err := utils.VerifyJWT(tokenString)
 	if err != nil {
 		log.Printf("JWT verification failed: %v", err)
 		c.JSON(http.StatusUnauthorized, response.Error(
@@ -50,6 +51,8 @@ func AuthCheckHandler(c *gin.Context) {
 		return
 	}
 
+	timeUntilExpiry := time.Until(expirationTime)
+
 	userData := UserForAuthCheck{
 		ID:                         user.ID,
 		Username:                   user.Username,
@@ -57,6 +60,7 @@ func AuthCheckHandler(c *gin.Context) {
 		SecurityQuestionsAnswered:  user.SecurityQuestionsAnswered,
 		ApplicationEnvironmentRole: user.ApplicationEnvironmentRole,
 		InactiveAt:                 user.InactiveAt,
+		TokenExpiresIn:             int(timeUntilExpiry.Seconds()),
 	}
 
 	resp := response.New[UserForAuthCheck]()
@@ -107,4 +111,5 @@ type UserForAuthCheck struct {
 	SecurityQuestionsAnswered  bool         `json:"securityQuestionsAnswered"`
 	ApplicationEnvironmentRole string       `json:"applicationEnvironmentRole"`
 	InactiveAt                 sql.NullTime `json:"inactiveAt"`
+	TokenExpiresIn             int          `json:"tokenExpiresIn"`
 }

@@ -27,7 +27,8 @@ var AppConfig = Config{
 		Frontend: 3001,
 		Backend:  8080,
 	},
-	DefaultJWTExpiration: time.Hour * 24,
+	DefaultJWTExpiration: time.Minute * 30,
+
 	// TODO: Implement ExtendJWTExpiration
 	// ExtendJWTExpiration:  time.Hour * 24,
 

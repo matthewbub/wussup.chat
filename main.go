@@ -71,12 +71,11 @@ func main() {
 		accountRoutes.POST("/forgot-password", api.ForgotPasswordHandler)
 		accountRoutes.POST("/security-questions", api.SecurityQuestionsHandler)
 		accountRoutes.POST("/logout", api.LogoutHandler)
+		accountRoutes.POST("/renew-session", api.RenewSessionHandler)
 		accountRoutes.POST("/in/reset-password", api.AuthenticatedResetPasswordHandler)
 		accountRoutes.POST("/profile", api.UpdateProfileHandler)
 		accountRoutes.DELETE("/delete", api.DeleteAccountHandler)
 	}
-
-	router.GET("/api/v1/example/jwt", middleware.JWTAuthMiddleware(), api.ExampleAuthEndpoint)
 
 	router.POST("/api/v1/pdf/extract", api.ExtractPDFText)
 	router.POST("/api/v1/pdf/page-count", api.GetPDFPageCount)
