@@ -10,39 +10,10 @@ import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
-	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/sqlite3"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	_ "github.com/mattn/go-sqlite3"
 )
-
-func runMigrations() {
-	env := utils.GetEnv()
-	var dbPath string
-
-	log.Println("Running migrations")
-
-	if env == "production" {
-		dbPath = "sqlite3://pkg/database/prod.db?cache=shared&mode=rwc"
-	} else if env == "development" {
-		dbPath = "sqlite3://pkg/database/dev.db?cache=shared&mode=rwc"
-	} else if env == "test" {
-		dbPath = "sqlite3://pkg/database/test.db?cache=shared&mode=rwc"
-	}
-
-	m, err := migrate.New(
-		"file://pkg/database/migrations",
-		dbPath)
-	if err != nil {
-		log.Fatalf("Failed to create migrate instance: %v", err)
-	}
-
-	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
-		log.Fatalf("Failed to run migrations: %v", err)
-	}
-
-	log.Println("Migrations completed")
-}
 
 func main() {
 	err := utils.ValidateEnvironment()
@@ -50,7 +21,7 @@ func main() {
 		log.Fatalf("Environment validation failed: %v", err)
 	}
 
-	runMigrations()
+	utils.RunMigrations()
 
 	router := gin.Default()
 	router.Use(middleware.Cors)

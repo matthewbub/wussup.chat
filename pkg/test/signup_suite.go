@@ -3,6 +3,7 @@ package test
 import (
 	"bytes"
 	"encoding/json"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -12,14 +13,17 @@ import (
 )
 
 func RegisterUserAtSignup(router *gin.Engine, t *testing.T) {
+	username, email := GetNextUser()
+	log.Printf("username: %s, email: %s", username, email)
 	signUpBody := map[string]interface{}{
-		"email":           "test@example.com",
-		"password":        "Password123!",
-		"confirmPassword": "Password123!",
+		"email":           email,
+		"password":        TestConfig.Password,
+		"confirmPassword": TestConfig.Password,
 		"termsAccepted":   true,
-		"username":        "testuser",
+		"username":        username,
 	}
 
+	log.Printf("signUpBody: %v", signUpBody)
 	jsonBody, _ := json.Marshal(signUpBody)
 
 	w := httptest.NewRecorder()

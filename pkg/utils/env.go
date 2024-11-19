@@ -48,5 +48,5 @@ func ValidateEnvironment() error {
 
 func SetTestEnvironment() {
 	os.Setenv("ENV", "test")
-	os.Setenv("SECRET_KEY", os.Getenv("TEST_SESSION_SECRET_KEY"))
+	os.Setenv("SESSION_SECRET_KEY", os.Getenv("TEST_SESSION_SECRET_KEY"))
 }
