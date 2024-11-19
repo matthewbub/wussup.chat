@@ -84,6 +84,11 @@ func LoginHandler(c *gin.Context) {
 		cookieConfig.Domain = constants.AppConfig.DevelopmentDomain
 	}
 
+	if env == "test" {
+		cookieConfig.Domain = constants.AppConfig.TestDomain
+		cookieConfig.Secure = false
+	}
+
 	c.SetCookie("jwt", jwtToken, int(cookieConfig.Expiration.Seconds()), "/", cookieConfig.Domain, cookieConfig.Secure, cookieConfig.HttpOnly)
 	c.JSON(http.StatusOK, response.Success(
 		struct {

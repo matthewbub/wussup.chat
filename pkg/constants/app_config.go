@@ -5,6 +5,7 @@ import "time"
 type Config struct {
 	ProductionDomain  string
 	DevelopmentDomain string
+	TestDomain        string
 	DevelopmentPorts  struct {
 		Frontend int
 		Backend  int
@@ -20,6 +21,7 @@ type Config struct {
 var AppConfig = Config{
 	ProductionDomain:  "zcauldron.com",
 	DevelopmentDomain: "localhost",
+	TestDomain:        "localhost",
 	DevelopmentPorts: struct {
 		Frontend int
 		Backend  int

@@ -39,9 +39,14 @@ func ValidateEnvironment() error {
 	if env == "" {
 		return fmt.Errorf("ENV is not set")
 	}
-	if env != "production" && env != "development" {
+	if env != "production" && env != "development" && env != "test" {
 		return fmt.Errorf("ENV is not valid")
 	}
 	// Add other environment checks here
 	return nil
+}
+
+func SetTestEnvironment() {
+	os.Setenv("ENV", "test")
+	os.Setenv("SECRET_KEY", os.Getenv("TEST_SESSION_SECRET_KEY"))
 }
