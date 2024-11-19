@@ -19,6 +19,9 @@ import (
 func runMigrations() {
 	env := utils.GetEnv()
 	var dbPath string
+
+	log.Println("Running migrations")
+
 	if env == "production" {
 		dbPath = "sqlite3://pkg/database/prod.db?cache=shared&mode=rwc"
 	} else if env == "development" {
@@ -34,6 +37,8 @@ func runMigrations() {
 	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
 		log.Fatalf("Failed to run migrations: %v", err)
 	}
+
+	log.Println("Migrations completed")
 }
 
 func main() {
