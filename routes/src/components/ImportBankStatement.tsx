@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   ColumnDef,
   HeaderGroup,
@@ -28,7 +28,7 @@ interface PageSelection {
   fileId: string;
   numPages: number;
   selectedPages: number[];
-  previewUrl: string | null;
+  previews: { [pageNum: number]: string | null };
 }
 
 const ImportBankStatement: React.FC = () => {
@@ -40,6 +40,7 @@ const ImportBankStatement: React.FC = () => {
   const [error, setError] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
   const [rowSelection, setRowSelection] = useState({});
+  const [previewsLoading, setPreviewsLoading] = useState<boolean>(false);
 
   const columns: ColumnDef<Transaction>[] = [
     {
@@ -106,25 +107,15 @@ const ImportBankStatement: React.FC = () => {
     onRowSelectionChange: setRowSelection,
   });
 
-  const handleFileChange = async (
-    file: File
-    // event: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  const handleFileChange = async (file: File) => {
     if (file && file.type === "application/pdf") {
       setFile(file);
       setError("");
 
-      // Get page count
       const formData = new FormData();
       formData.append("file", file);
 
       try {
-        const test = await fetch("http://127.0.0.1:5000", {
-          method: "GET",
-        });
-        // const testData = await test.json();
-        console.log("test", test);
-        // Get page count
         const pageCountResponse = await fetch("/api/v1/pdf/page-count", {
           method: "POST",
           body: formData,
@@ -133,29 +124,11 @@ const ImportBankStatement: React.FC = () => {
         const pageCountData = await pageCountResponse.json();
         if (!pageCountResponse.ok) throw new Error(pageCountData.error);
 
-        // Get preview image
-        const previewFormData = new FormData();
-        previewFormData.append("file", file);
-        const previewResponse = await fetch(
-          "http://127.0.0.1:5000/api/v1/image/upload-pdf",
-          {
-            method: "POST",
-            body: previewFormData,
-            headers: {
-              Accept: "application/json",
-            },
-          }
-        );
-
-        if (!previewResponse.ok) throw new Error("Failed to generate preview");
-        const previewBlob = await previewResponse.blob();
-        const previewUrl = URL.createObjectURL(previewBlob);
-
         setPageSelection({
           fileId: pageCountData.fileId,
           numPages: pageCountData.numPages,
           selectedPages: [],
-          previewUrl, // Add the preview URL
+          previews: {},
         });
       } catch (err) {
         setError(err instanceof Error ? err.message : "An error occurred");
@@ -165,6 +138,62 @@ const ImportBankStatement: React.FC = () => {
       setFile(null);
     }
   };
+
+  useEffect(() => {
+    if (!file || !pageSelection) return;
+
+    const loadPreviews = async () => {
+      setPreviewsLoading(true);
+
+      for (let pageNum = 1; pageNum <= pageSelection.numPages; pageNum++) {
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("page", pageNum.toString());
+
+        try {
+          const previewResponse = await fetch(
+            "http://127.0.0.1:5000/api/v1/image/upload-pdf",
+            {
+              method: "POST",
+              body: formData,
+              headers: {
+                Accept: "application/json",
+              },
+            }
+          );
+
+          if (!previewResponse.ok) continue;
+
+          const previewBlob = await previewResponse.blob();
+          const previewUrl = URL.createObjectURL(previewBlob);
+
+          setPageSelection((prev) => {
+            if (!prev) return prev;
+            return {
+              ...prev,
+              previews: {
+                ...prev.previews,
+                [pageNum]: previewUrl,
+              },
+            };
+          });
+        } catch (error) {
+          console.error(`Failed to load preview for page ${pageNum}:`, error);
+        }
+      }
+      setPreviewsLoading(false);
+    };
+
+    loadPreviews();
+
+    return () => {
+      if (pageSelection?.previews) {
+        Object.values(pageSelection.previews).forEach((url) => {
+          if (url) URL.revokeObjectURL(url);
+        });
+      }
+    };
+  }, [file, pageSelection?.numPages]);
 
   const handlePageSelection = (pageNum: number) => {
     if (!pageSelection) return;
@@ -264,37 +293,38 @@ const ImportBankStatement: React.FC = () => {
 
         {pageSelection && (
           <div className="mt-4">
-            {/* Add preview image */}
-            {pageSelection.previewUrl && (
-              <div className="mb-4">
-                <h3 className="text-lg font-semibold mb-2">Preview</h3>
-                <img
-                  src={pageSelection.previewUrl}
-                  alt="PDF Preview"
-                  className="max-w-md rounded-lg shadow-md"
-                />
-              </div>
-            )}
-
-            <h3 className="text-lg font-semibold mb-2">
-              Select Pages to Import
-            </h3>
-            <div className="flex flex-wrap gap-2">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-4">
               {Array.from(
                 { length: pageSelection.numPages },
                 (_, i) => i + 1
               ).map((pageNum) => (
-                <button
-                  key={pageNum}
-                  onClick={() => handlePageSelection(pageNum)}
-                  className={`px-4 py-2 rounded ${
-                    pageSelection.selectedPages.includes(pageNum)
-                      ? "bg-blue-600 text-white"
-                      : "bg-gray-200"
-                  }`}
-                >
-                  Page {pageNum}
-                </button>
+                <div key={pageNum} className="relative">
+                  {pageSelection.previews[pageNum] ? (
+                    <img
+                      src={pageSelection.previews[pageNum] || ""}
+                      alt={`Page ${pageNum}`}
+                      className="max-w-full rounded-lg shadow-md"
+                    />
+                  ) : (
+                    <div className="aspect-[3/4] bg-gray-100 rounded-lg flex items-center justify-center">
+                      {previewsLoading ? (
+                        <span>Loading...</span>
+                      ) : (
+                        <span>Preview failed</span>
+                      )}
+                    </div>
+                  )}
+                  <button
+                    onClick={() => handlePageSelection(pageNum)}
+                    className={`absolute bottom-2 right-2 px-2 py-1 rounded ${
+                      pageSelection.selectedPages.includes(pageNum)
+                        ? "bg-blue-600 text-white"
+                        : "bg-gray-200"
+                    }`}
+                  >
+                    Page {pageNum}
+                  </button>
+                </div>
               ))}
             </div>
 
