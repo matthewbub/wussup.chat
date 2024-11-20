@@ -12,6 +12,7 @@ import { DashboardWrapper } from "./DashboardWrapper";
 import { Button } from "@/components/catalyst/button";
 import { Checkbox } from "@/components/catalyst/checkbox";
 import FileUploader from "./FileUploader";
+import PDFDrawingCanvas from "./PDFDrawingCanvas";
 
 interface Transaction {
   date: string;
@@ -41,6 +42,10 @@ const ImportBankStatement: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [rowSelection, setRowSelection] = useState({});
   const [previewsLoading, setPreviewsLoading] = useState<boolean>(false);
+  const [isDrawingMode, setIsDrawingMode] = useState(false);
+  const [selectedPageForDrawing, setSelectedPageForDrawing] = useState<
+    number | null
+  >(null);
 
   const columns: ColumnDef<Transaction>[] = [
     {
@@ -140,7 +145,13 @@ const ImportBankStatement: React.FC = () => {
   };
 
   useEffect(() => {
-    if (!file || !pageSelection) return;
+    if (
+      !file ||
+      !pageSelection ||
+      Object.keys(pageSelection.previews).length > 0
+    )
+      return;
+    // if (!file || !pageSelection) return;
 
     const loadPreviews = async () => {
       setPreviewsLoading(true);
@@ -255,6 +266,81 @@ const ImportBankStatement: React.FC = () => {
       });
   };
 
+  const handleSaveDrawing = async (drawingData: string) => {
+    if (!file || selectedPageForDrawing === null) return;
+
+    try {
+      // First save the drawing
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("page", selectedPageForDrawing.toString());
+      formData.append("drawing", drawingData);
+
+      const response = await fetch(
+        "http://127.0.0.1:5000/api/v1/pdf/apply-drawing",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+
+      if (!response.ok) throw new Error("Failed to save drawing");
+
+      // Get the modified PDF as a blob
+      const modifiedPdfBlob = await response.blob();
+
+      // Create a new File object from the blob
+      const modifiedFile = new File([modifiedPdfBlob], file.name, {
+        type: "application/pdf",
+      });
+
+      // Update the file state with the modified version
+      setFile(modifiedFile);
+
+      // Refresh the preview
+      const previewFormData = new FormData();
+      previewFormData.append("file", modifiedFile); // Use the modified file
+      previewFormData.append("page", selectedPageForDrawing.toString());
+
+      const previewResponse = await fetch(
+        "http://127.0.0.1:5000/api/v1/image/upload-pdf",
+        {
+          method: "POST",
+          body: previewFormData,
+        }
+      );
+
+      if (!previewResponse.ok) throw new Error("Failed to update preview");
+
+      const previewBlob = await previewResponse.blob();
+      const previewUrl = URL.createObjectURL(previewBlob);
+
+      // Revoke old preview URL to prevent memory leaks
+      if (pageSelection?.previews[selectedPageForDrawing]) {
+        URL.revokeObjectURL(pageSelection.previews[selectedPageForDrawing]!);
+      }
+
+      setPageSelection((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          previews: {
+            ...prev.previews,
+            [selectedPageForDrawing]: previewUrl,
+          },
+        };
+      });
+
+      setIsDrawingMode(false);
+      setSelectedPageForDrawing(null);
+    } catch (error) {
+      console.error("Error saving drawing:", error);
+      setError(
+        error instanceof Error ? error.message : "Failed to save drawing"
+      );
+    }
+  };
+
   return (
     <DashboardWrapper>
       <div className=" p-4">
@@ -293,6 +379,16 @@ const ImportBankStatement: React.FC = () => {
 
         {pageSelection && (
           <div className="mt-4">
+            <div>
+              <h3 className="text-lg font-bold">Select Pages</h3>
+              <p className="text-sm text-gray-500">
+                {pageSelection.selectedPages.length} of {pageSelection.numPages}
+                pages selected
+              </p>
+              <p className="text-sm text-gray-500">
+                Your information has not been saved yet.
+              </p>
+            </div>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-4">
               {Array.from(
                 { length: pageSelection.numPages },
@@ -314,6 +410,15 @@ const ImportBankStatement: React.FC = () => {
                       )}
                     </div>
                   )}
+                  <button
+                    onClick={() => {
+                      setIsDrawingMode(true);
+                      setSelectedPageForDrawing(pageNum);
+                    }}
+                    className="absolute top-2 right-2 px-2 py-1 rounded bg-gray-200 hover:bg-gray-300"
+                  >
+                    Edit
+                  </button>
                   <button
                     onClick={() => handlePageSelection(pageNum)}
                     className={`absolute bottom-2 right-2 px-2 py-1 rounded ${
@@ -388,6 +493,21 @@ const ImportBankStatement: React.FC = () => {
             </div>
           </div>
         )}
+
+        {isDrawingMode &&
+          selectedPageForDrawing &&
+          pageSelection?.previews[selectedPageForDrawing] && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+              <PDFDrawingCanvas
+                backgroundImage={pageSelection.previews[selectedPageForDrawing]}
+                onSave={handleSaveDrawing}
+                onClose={() => {
+                  setIsDrawingMode(false);
+                  setSelectedPageForDrawing(null);
+                }}
+              />
+            </div>
+          )}
       </div>
     </DashboardWrapper>
   );

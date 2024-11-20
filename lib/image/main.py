@@ -3,6 +3,9 @@ import fitz  # PyMuPDF
 from io import BytesIO
 from flask_cors import CORS
 import PIL.Image
+import base64
+from PIL import Image
+import io
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {
@@ -96,6 +99,81 @@ def split_pages():
 
     except Exception as e:
         print(e)  # For debugging
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/v1/pdf/apply-drawing', methods=['POST'])
+def apply_drawing():
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file provided'}), 400
+    
+    file = request.files['file']
+    page_num = int(request.form.get('page', 1)) - 1
+    drawing_data = request.form.get('drawing')
+    
+    if not drawing_data:
+        return jsonify({'error': 'No drawing data provided'}), 400
+    
+    try:
+        # Read PDF
+        pdf_bytes = file.read()
+        doc = fitz.open(stream=pdf_bytes, filetype="pdf")
+        page = doc[page_num]
+        
+        # Convert drawing data to image with high DPI
+        drawing_data = drawing_data.split(',')[1]
+        drawing_bytes = base64.b64decode(drawing_data)
+        drawing_image = Image.open(io.BytesIO(drawing_bytes))
+        
+        # Convert to RGBA with high quality
+        if drawing_image.mode != 'RGBA':
+            drawing_image = drawing_image.convert('RGBA')
+        
+        # Get page dimensions at 300 DPI for better quality
+        zoom = 3  # 300 DPI (3 x 96 DPI)
+        mat = fitz.Matrix(zoom, zoom)
+        pix = page.get_pixmap(matrix=mat)
+        base_image = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
+        
+        # Resize drawing to match high-res PDF page
+        drawing_image = drawing_image.resize((pix.width, pix.height), Image.Resampling.LANCZOS)
+        
+        # Composite images
+        base_image.paste(drawing_image, (0, 0), drawing_image)
+        
+        # Create new PDF with original dimensions
+        new_doc = fitz.open()
+        new_page = new_doc.new_page(width=page.rect.width, height=page.rect.height)
+        
+        # Convert edited image to bytes with high quality
+        img_bytes = io.BytesIO()
+        base_image.save(img_bytes, format='PNG', optimize=False, quality=100)
+        img_bytes.seek(0)
+        
+        # Insert image into new PDF with proper scaling
+        rect = new_page.rect
+        new_page.insert_image(rect, stream=img_bytes, keep_proportion=True)
+        
+        # Save to bytes with high quality settings
+        output = io.BytesIO()
+        new_doc.save(output, 
+                    garbage=4,  # Maximum garbage collection
+                    deflate=True,  # Use deflate compression
+                    clean=True)  # Clean unused elements
+        output.seek(0)
+        
+        # Clean up
+        doc.close()
+        new_doc.close()
+        
+        return send_file(
+            output,
+            mimetype='application/pdf',
+            as_attachment=True,
+            download_name=f'edited_page_{page_num + 1}.pdf'
+        )
+
+    except Exception as e:
+        print(e)
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
