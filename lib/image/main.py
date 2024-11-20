@@ -114,7 +114,7 @@ def apply_drawing():
         return jsonify({'error': 'No drawing data provided'}), 400
     
     try:
-        # Read PDF
+        # Read original PDF just to get the page
         pdf_bytes = file.read()
         doc = fitz.open(stream=pdf_bytes, filetype="pdf")
         page = doc[page_num]
@@ -124,7 +124,6 @@ def apply_drawing():
         drawing_bytes = base64.b64decode(drawing_data)
         drawing_image = Image.open(io.BytesIO(drawing_bytes))
         
-        # Convert to RGBA with high quality
         if drawing_image.mode != 'RGBA':
             drawing_image = drawing_image.convert('RGBA')
         
@@ -140,7 +139,7 @@ def apply_drawing():
         # Composite images
         base_image.paste(drawing_image, (0, 0), drawing_image)
         
-        # Create new PDF with original dimensions
+        # Create new single-page PDF with the same dimensions as original page
         new_doc = fitz.open()
         new_page = new_doc.new_page(width=page.rect.width, height=page.rect.height)
         
@@ -150,30 +149,30 @@ def apply_drawing():
         img_bytes.seek(0)
         
         # Insert image into new PDF with proper scaling
-        rect = new_page.rect
-        new_page.insert_image(rect, stream=img_bytes, keep_proportion=True)
+        new_page.insert_image(new_page.rect, stream=img_bytes, keep_proportion=True)
         
         # Save to bytes with high quality settings
         output = io.BytesIO()
         new_doc.save(output, 
-                    garbage=4,  # Maximum garbage collection
-                    deflate=True,  # Use deflate compression
-                    clean=True)  # Clean unused elements
+                    garbage=4,
+                    deflate=True,
+                    clean=True)
         output.seek(0)
         
         # Clean up
         doc.close()
         new_doc.close()
         
+        # Return the modified single page with the original page number
         return send_file(
             output,
             mimetype='application/pdf',
             as_attachment=True,
-            download_name=f'edited_page_{page_num + 1}.pdf'
+            download_name=f'page_{page_num + 1}.pdf'  # Keep original page numbering
         )
 
     except Exception as e:
-        print(e)
+        print(e)  # For debugging
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':

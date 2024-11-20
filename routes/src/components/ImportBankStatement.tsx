@@ -286,21 +286,16 @@ const ImportBankStatement: React.FC = () => {
 
       if (!response.ok) throw new Error("Failed to save drawing");
 
-      // Get the modified PDF as a blob
-      const modifiedPdfBlob = await response.blob();
+      // Get the modified page as a blob
+      const modifiedPageBlob = await response.blob();
 
-      // Create a new File object from the blob
-      const modifiedFile = new File([modifiedPdfBlob], file.name, {
-        type: "application/pdf",
-      });
-
-      // Update the file state with the modified version
-      setFile(modifiedFile);
-
-      // Refresh the preview
+      // Create a new FormData with the modified page
       const previewFormData = new FormData();
-      previewFormData.append("file", modifiedFile); // Use the modified file
-      previewFormData.append("page", selectedPageForDrawing.toString());
+      previewFormData.append(
+        "file",
+        new File([modifiedPageBlob], "temp.pdf", { type: "application/pdf" })
+      );
+      previewFormData.append("page", "1"); // Always page 1 since it's a single-page PDF
 
       const previewResponse = await fetch(
         "http://127.0.0.1:5000/api/v1/image/upload-pdf",
@@ -315,13 +310,20 @@ const ImportBankStatement: React.FC = () => {
       const previewBlob = await previewResponse.blob();
       const previewUrl = URL.createObjectURL(previewBlob);
 
-      // Revoke old preview URL to prevent memory leaks
+      // Revoke old preview URL if it exists
       if (pageSelection?.previews[selectedPageForDrawing]) {
         URL.revokeObjectURL(pageSelection.previews[selectedPageForDrawing]!);
       }
 
+      // Update the preview in state
       setPageSelection((prev) => {
         if (!prev) return prev;
+        console.log(
+          "Updating preview for page",
+          selectedPageForDrawing,
+          "with URL",
+          previewUrl
+        );
         return {
           ...prev,
           previews: {
