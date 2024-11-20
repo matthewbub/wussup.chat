@@ -37,21 +37,29 @@ const PDFDrawingCanvas: React.FC<PDFDrawingCanvasProps> = ({
     // Load background image
     const img = new Image();
     img.onload = () => {
+      // Calculate scale to fit the container while maintaining aspect ratio
+      const scale = Math.min(
+        containerWidth / img.width,
+        containerHeight / img.height
+      );
+
       const fabricImage = new fabric.FabricImage(img, {
-        scaleX: Math.min(
-          canvas.width! / img.width,
-          canvas.height! / img.height
-        ),
-        scaleY: Math.min(
-          canvas.width! / img.width,
-          canvas.height! / img.height
-        ),
-        originX: "center",
-        originY: "center",
-        left: canvas.width! / 2,
-        top: canvas.height! / 2,
+        scaleX: scale,
+        scaleY: scale,
+        left: 0,
+        top: 0,
+        originX: "left",
+        originY: "top",
         selectable: false,
         evented: false,
+      });
+
+      // Set canvas size to match scaled image size
+      const scaledWidth = img.width * scale;
+      const scaledHeight = img.height * scale;
+      canvas.setDimensions({
+        width: scaledWidth,
+        height: scaledHeight,
       });
 
       canvas.backgroundImage = fabricImage;

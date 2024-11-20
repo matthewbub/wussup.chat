@@ -114,12 +114,17 @@ def apply_drawing():
         return jsonify({'error': 'No drawing data provided'}), 400
     
     try:
-        # Read original PDF just to get the page
+        # Read original PDF
         pdf_bytes = file.read()
         doc = fitz.open(stream=pdf_bytes, filetype="pdf")
         page = doc[page_num]
         
-        # Convert drawing data to image with high DPI
+        # Get original page dimensions
+        page_rect = page.rect
+        page_width = page_rect.width
+        page_height = page_rect.height
+        
+        # Convert drawing data to image
         drawing_data = drawing_data.split(',')[1]
         drawing_bytes = base64.b64decode(drawing_data)
         drawing_image = Image.open(io.BytesIO(drawing_bytes))
@@ -127,33 +132,39 @@ def apply_drawing():
         if drawing_image.mode != 'RGBA':
             drawing_image = drawing_image.convert('RGBA')
         
-        # Get page dimensions at 300 DPI for better quality
-        zoom = 3  # 300 DPI (3 x 96 DPI)
-        mat = fitz.Matrix(zoom, zoom)
-        pix = page.get_pixmap(matrix=mat)
-        base_image = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
-        
-        # Resize drawing to match high-res PDF page
-        drawing_image = drawing_image.resize((pix.width, pix.height), Image.Resampling.LANCZOS)
-        
-        # Composite images
-        base_image.paste(drawing_image, (0, 0), drawing_image)
-        
-        # Create new single-page PDF with the same dimensions as original page
+        # Create new document with exact same dimensions
         new_doc = fitz.open()
-        new_page = new_doc.new_page(width=page.rect.width, height=page.rect.height)
+        new_page = new_doc.new_page(width=page_width, height=page_height)
         
-        # Convert edited image to bytes with high quality
+        # Copy original content
+        new_page.show_pdf_page(
+            new_page.rect,  # target rectangle
+            doc,            # source document
+            page_num,       # source page number
+            clip=None      # don't clip
+        )
+        
+        # Convert drawing to proper size
+        drawing_image = drawing_image.resize(
+            (int(page_width), int(page_height)),
+            Image.Resampling.LANCZOS
+        )
+        
+        # Convert to bytes
         img_bytes = io.BytesIO()
-        base_image.save(img_bytes, format='PNG', optimize=False, quality=100)
+        drawing_image.save(img_bytes, format='PNG', optimize=False, quality=100)
         img_bytes.seek(0)
         
-        # Insert image into new PDF with proper scaling
-        new_page.insert_image(new_page.rect, stream=img_bytes, keep_proportion=True)
+        # Overlay drawing on top
+        new_page.insert_image(
+            new_page.rect,
+            stream=img_bytes,
+            overlay=True    # overlay on top of existing content
+        )
         
-        # Save to bytes with high quality settings
+        # Save with high quality
         output = io.BytesIO()
-        new_doc.save(output, 
+        new_doc.save(output,
                     garbage=4,
                     deflate=True,
                     clean=True)
@@ -163,12 +174,11 @@ def apply_drawing():
         doc.close()
         new_doc.close()
         
-        # Return the modified single page with the original page number
         return send_file(
             output,
             mimetype='application/pdf',
             as_attachment=True,
-            download_name=f'page_{page_num + 1}.pdf'  # Keep original page numbering
+            download_name=f'page_{page_num + 1}.pdf'
         )
 
     except Exception as e:
