@@ -32,6 +32,16 @@ interface PageSelection {
   previews: { [pageNum: number]: string | null };
 }
 
+interface DrawingData {
+  type: "rect";
+  left: number;
+  top: number;
+  width: number;
+  height: number;
+  color: string;
+  opacity: number;
+}
+
 const ImportBankStatement: React.FC = () => {
   const [file, setFile] = useState<File | null>(null);
   const [pageSelection, setPageSelection] = useState<PageSelection | null>(
@@ -266,15 +276,14 @@ const ImportBankStatement: React.FC = () => {
       });
   };
 
-  const handleSaveDrawing = async (drawingData: string) => {
+  const handleSaveDrawing = async (vectorData: DrawingData[]) => {
     if (!file || selectedPageForDrawing === null) return;
 
     try {
-      // First save the drawing
       const formData = new FormData();
       formData.append("file", file);
       formData.append("page", selectedPageForDrawing.toString());
-      formData.append("drawing", drawingData);
+      formData.append("drawing", JSON.stringify(vectorData));
 
       const response = await fetch(
         "http://127.0.0.1:5000/api/v1/pdf/apply-drawing",
@@ -286,16 +295,14 @@ const ImportBankStatement: React.FC = () => {
 
       if (!response.ok) throw new Error("Failed to save drawing");
 
-      // Get the modified page as a blob
-      const modifiedPageBlob = await response.blob();
-
-      // Create a new FormData with the modified page
+      // Update preview with the modified PDF
+      const modifiedPdfBlob = await response.blob();
       const previewFormData = new FormData();
       previewFormData.append(
         "file",
-        new File([modifiedPageBlob], "temp.pdf", { type: "application/pdf" })
+        new File([modifiedPdfBlob], "temp.pdf", { type: "application/pdf" })
       );
-      previewFormData.append("page", "1"); // Always page 1 since it's a single-page PDF
+      previewFormData.append("page", selectedPageForDrawing.toString());
 
       const previewResponse = await fetch(
         "http://127.0.0.1:5000/api/v1/image/upload-pdf",
@@ -349,29 +356,11 @@ const ImportBankStatement: React.FC = () => {
         <h2 className="text-2xl font-bold mb-4">Import Bank Statement</h2>
 
         <FileUploader
-          onFileDrop={(files) => {
-            // console.log("files", files);
-            handleFileChange(files[0]);
-          }}
+          onFileChange={(files) => handleFileChange(files[0])}
+          onFileDrop={(files) => handleFileChange(files[0])}
           buttonLabel="Select PDF file"
           acceptedFileTypes={["application/pdf"]}
         />
-
-        {/* <form onSubmit={handleSubmit} className="mb-6">
-          <div className="mb-4">
-            <input
-              type="file"
-              accept=".pdf"
-              onChange={handleFileChange}
-              className="block w-full text-sm text-gray-500
-              file:mr-4 file:py-2 file:px-4
-              file:rounded-md file:border-0
-              file:text-sm file:font-semibold
-              file:bg-blue-50 file:text-blue-700
-              hover:file:bg-blue-100"
-            />
-          </div>
-        </form> */}
 
         {error && (
           <div className="mb-4 p-4 bg-red-50 text-red-700 rounded-md">

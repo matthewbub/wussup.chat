@@ -3,8 +3,18 @@ import * as fabric from "fabric";
 
 interface PDFDrawingCanvasProps {
   backgroundImage: string;
-  onSave: (drawingData: string) => void;
+  onSave: (drawingData: DrawingData[]) => void;
   onClose: () => void;
+}
+
+interface DrawingData {
+  type: "rect";
+  left: number;
+  top: number;
+  width: number;
+  height: number;
+  color: string;
+  opacity: number;
 }
 
 const PDFDrawingCanvas: React.FC<PDFDrawingCanvasProps> = ({
@@ -90,8 +100,8 @@ const PDFDrawingCanvas: React.FC<PDFDrawingCanvasProps> = ({
     const rect = new fabric.Rect({
       left: 100,
       top: 100,
-      width: 100,
-      height: 100,
+      width: 400,
+      height: 40,
       fill: boxColor,
       opacity: 0.5,
       strokeWidth: 2,
@@ -105,8 +115,43 @@ const PDFDrawingCanvas: React.FC<PDFDrawingCanvasProps> = ({
 
   const handleSave = () => {
     if (!fabricCanvasRef.current) return;
-    const drawingData = fabricCanvasRef.current.toDataURL();
-    onSave(drawingData);
+
+    // Convert canvas objects to vector data
+    const vectorData: DrawingData[] = fabricCanvasRef.current
+      .getObjects()
+      .map((obj) => {
+        const scaled = getScaledCoordinates(obj);
+        return {
+          type: "rect",
+          left: scaled.left,
+          top: scaled.top,
+          width: scaled.width,
+          height: scaled.height,
+          color: obj.fill as string,
+          opacity: obj.opacity || 0.5,
+        };
+      });
+
+    onSave(vectorData);
+  };
+
+  // Helper to convert canvas coordinates to PDF coordinates
+  const getScaledCoordinates = (obj: fabric.Object) => {
+    const canvas = fabricCanvasRef.current!;
+    const canvasWidth = canvas.width!;
+    const canvasHeight = canvas.height!;
+
+    // Get original PDF dimensions from the background image
+    const bgImage = canvas.backgroundImage as fabric.Image;
+    const pdfWidth = bgImage.width!;
+    const pdfHeight = bgImage.height!;
+
+    return {
+      left: (obj.left! / canvasWidth) * pdfWidth,
+      top: (obj.top! / canvasHeight) * pdfHeight,
+      width: ((obj.width! * obj.scaleX!) / canvasWidth) * pdfWidth,
+      height: ((obj.height! * obj.scaleY!) / canvasHeight) * pdfHeight,
+    };
   };
 
   return (

@@ -6,6 +6,8 @@ import PIL.Image
 import base64
 from PIL import Image
 import io
+import json
+from fitz import Rect, PDF_ANNOT_SQUARE
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {
@@ -101,6 +103,15 @@ def split_pages():
         print(e)  # For debugging
         return jsonify({'error': str(e)}), 500
 
+def hex_to_rgb(hex_color: str) -> tuple:
+    """Convert hex color (#FF0000) to normalized RGB tuple (0-1)"""
+    # Remove the '#' if present
+    hex_color = hex_color.lstrip('#')
+    # Convert hex to RGB (0-255)
+    rgb = tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
+    # Normalize to 0-1 range
+    return tuple(v / 255 for v in rgb)
+
 @app.route('/api/v1/pdf/apply-drawing', methods=['POST'])
 def apply_drawing():
     if 'file' not in request.files:
@@ -114,53 +125,40 @@ def apply_drawing():
         return jsonify({'error': 'No drawing data provided'}), 400
     
     try:
+        vector_shapes = json.loads(drawing_data)
+        
         # Read original PDF
         pdf_bytes = file.read()
         doc = fitz.open(stream=pdf_bytes, filetype="pdf")
-        page = doc[page_num]
         
-        # Get original page dimensions
-        page_rect = page.rect
-        page_width = page_rect.width
-        page_height = page_rect.height
-        
-        # Convert drawing data to image
-        drawing_data = drawing_data.split(',')[1]
-        drawing_bytes = base64.b64decode(drawing_data)
-        drawing_image = Image.open(io.BytesIO(drawing_bytes))
-        
-        if drawing_image.mode != 'RGBA':
-            drawing_image = drawing_image.convert('RGBA')
-        
-        # Create new document with exact same dimensions
+        # Create new document
         new_doc = fitz.open()
-        new_page = new_doc.new_page(width=page_width, height=page_height)
         
-        # Copy original content
-        new_page.show_pdf_page(
-            new_page.rect,  # target rectangle
-            doc,            # source document
-            page_num,       # source page number
-            clip=None      # don't clip
-        )
+        # Copy all pages
+        for i in range(doc.page_count):
+            new_doc.insert_pdf(doc, from_page=i, to_page=i)
         
-        # Convert drawing to proper size
-        drawing_image = drawing_image.resize(
-            (int(page_width), int(page_height)),
-            Image.Resampling.LANCZOS
-        )
+        # Get the page we want to modify
+        page = new_doc[page_num]
         
-        # Convert to bytes
-        img_bytes = io.BytesIO()
-        drawing_image.save(img_bytes, format='PNG', optimize=False, quality=100)
-        img_bytes.seek(0)
-        
-        # Overlay drawing on top
-        new_page.insert_image(
-            new_page.rect,
-            stream=img_bytes,
-            overlay=True    # overlay on top of existing content
-        )
+        # Add vector annotations
+        for shape in vector_shapes:
+            if shape['type'] == 'rect':
+                rect = Rect(
+                    shape['left'],
+                    shape['top'],
+                    shape['left'] + shape['width'],
+                    shape['top'] + shape['height']
+                )
+                
+                annot = page.add_rect_annot(rect)
+                
+                # Black color (0, 0, 0) with 100% opacity
+                annot.set_colors(
+                    stroke=(0, 0, 0),  # RGB black
+                    fill=(0, 0, 0, 1)  # RGBA black with 100% opacity for fill
+                )
+                annot.update()
         
         # Save with high quality
         output = io.BytesIO()
