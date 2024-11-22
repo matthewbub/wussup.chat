@@ -81,6 +81,26 @@ function SignUpForm() {
               placeholder="Enter your username"
               {...register("username", {
                 required: "Username is required",
+                pattern: {
+                  value: /^[a-zA-Z0-9._-]{3,30}$/,
+                  message: "Username must be 3-30 characters and can only contain letters, numbers, dots, hyphens, and underscores"
+                },
+                validate: {
+                  noConsecutiveSpecials: (value) => {
+                    // Prevent consecutive special characters
+                    if (/[._-]{2,}/.test(value)) {
+                      return "Special characters (. _ -) cannot be consecutive";
+                    }
+                    return true;
+                  },
+                  noSpecialsAtEnds: (value) => {
+                    // Prevent special characters at start/end
+                    if (/^[._-]|[._-]$/.test(value)) {
+                      return "Username cannot start or end with special characters";
+                    }
+                    return true;
+                  }
+                },
                 minLength: {
                   value: 3,
                   message: "Username must be at least 3 characters long",
@@ -153,30 +173,37 @@ function SignUpForm() {
               </p>
             )}
           </div>
-          <div className="space-y-2 flex items-baseline gap-2">
-            <input
-              type="checkbox"
-              id="terms"
-              {...register("termsAccepted", {
-                required: "You must accept the terms and conditions",
-              })}
-            />
-            <Label htmlFor="terms" className="text-sm">
-              I agree to the{" "}
-              <Link
-                href="/terms-of-service"
-                className="text-blue-600 hover:underline"
-              >
-                Terms of Service
-              </Link>{" "}
-              and{" "}
-              <Link
-                href="/privacy-policy"
-                className="text-blue-600 hover:underline"
-              >
-                Privacy Policy
-              </Link>
-            </Label>
+          <div className="space-y-2 flex flex-col">
+            <div className="flex items-baseline gap-2">
+              <input
+                type="checkbox"
+                id="terms"
+                {...register("termsAccepted", {
+                  required: "You must accept the terms and conditions",
+                })}
+              />
+              <Label htmlFor="terms" className="text-sm">
+                I agree to the{" "}
+                <Link
+                  href="/terms-of-service"
+                  className="text-blue-600 hover:underline"
+                >
+                  Terms of Service
+                </Link>{" "}
+                and{" "}
+                <Link
+                  href="/privacy-policy"
+                  className="text-blue-600 hover:underline"
+                >
+                  Privacy Policy
+                </Link>
+              </Label>
+            </div>
+            {errors.termsAccepted && (
+              <p className="text-sm text-red-500">
+                {errors.termsAccepted.message}
+              </p>
+            )}
           </div>
           {error && <p className="text-sm text-red-500">{error}</p>}
           <Button
