@@ -33,7 +33,7 @@ func SanitizeInput(input string) string {
 
 func IsValidUsername(username string) bool {
 	// Example validation: username must be alphanumeric and 3-20 characters long
-	re := regexp.MustCompile(`^[a-zA-Z0-9]{3,20}$`)
+	re := regexp.MustCompile(`^[a-zA-Z0-9._-]{3,30}$`)
 	return re.MatchString(username)
 }
 
