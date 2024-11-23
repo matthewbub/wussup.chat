@@ -32,6 +32,7 @@ type Action = {
   setSelectedPageForDrawing: (selectedPageForDrawing: number | null) => void;
   submitSelectedPages: () => Promise<void>;
   handleFileChange: (file: File) => Promise<void>;
+  loadPreviews: () => Promise<void>;
 };
 
 const importBankStatementStore = create<State & Action>((set) => ({
@@ -196,6 +197,51 @@ const importBankStatementStore = create<State & Action>((set) => ({
         file: null,
       });
     }
+  },
+  loadPreviews: async () => {
+    const { file, pageSelection } = get();
+    if (!file || !pageSelection) return;
+
+    set({ previewsLoading: true });
+
+    for (let pageNum = 1; pageNum <= pageSelection.numPages; pageNum++) {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("page", pageNum.toString());
+
+      try {
+        const previewResponse = await fetch(
+          "http://127.0.0.1:5000/api/v1/image/upload-pdf",
+          {
+            method: "POST",
+            body: formData,
+            headers: {
+              Accept: "application/json",
+            },
+          }
+        );
+
+        if (!previewResponse.ok) continue;
+
+        const previewBlob = await previewResponse.blob();
+        const previewUrl = URL.createObjectURL(previewBlob);
+
+        set((state) => ({
+          pageSelection: state.pageSelection
+            ? {
+                ...state.pageSelection,
+                previews: {
+                  ...state.pageSelection.previews,
+                  [pageNum]: previewUrl,
+                },
+              }
+            : null,
+        }));
+      } catch (error) {
+        console.error(`Failed to load preview for page ${pageNum}:`, error);
+      }
+    }
+    set({ previewsLoading: false });
   },
 }));
 
