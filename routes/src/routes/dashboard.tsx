@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
-import ImportBankStatement from "@/components/ImportBankStatement";
+import ImportBankStatementMVP from "@/components/ImportBankStatement";
 import { Authorized } from "@/components/Authorized";
+import ImportBankStatement from "@/components/ImportBankStatementApp/ImportBankStatement";
 
 export const Route = createFileRoute("/dashboard")({
   component: DashboardComponent,
@@ -9,6 +10,7 @@ export const Route = createFileRoute("/dashboard")({
 export function DashboardComponent() {
   return (
     <Authorized>
+      {/* <ImportBankStatementMVP /> */}
       <ImportBankStatement />
     </Authorized>
   );

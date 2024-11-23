@@ -42,7 +42,7 @@ interface DrawingData {
   opacity: number;
 }
 
-const ImportBankStatement: React.FC = () => {
+const ImportBankStatementMVP: React.FC = () => {
   const [file, setFile] = useState<File | null>(null);
   const [pageSelection, setPageSelection] = useState<PageSelection | null>(
     null
@@ -504,4 +504,4 @@ const ImportBankStatement: React.FC = () => {
   );
 };
 
-export default ImportBankStatement;
+export default ImportBankStatementMVP;
