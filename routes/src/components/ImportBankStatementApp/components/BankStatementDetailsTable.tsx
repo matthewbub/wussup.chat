@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   ColumnDef,
   HeaderGroup,
@@ -10,19 +10,62 @@ import {
   OnChangeFn,
   RowSelectionState,
 } from "@tanstack/react-table";
-import { Button } from "@/components/catalyst/button";
+import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/catalyst/checkbox";
 import { Transaction } from "../ImportBankStatement.types";
 import importBankStatementStore from "../ImportBankStatement.store";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
+import { format } from "date-fns";
+import { CalendarIcon, EllipsisVertical } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Input, CurrencyInput } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 const BankStatementDetailsTable: React.FC = () => {
   const { toast } = useToast();
   // prefer state over store row selection state
   // https://tanstack.com/table/latest/docs/guide/row-selection
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
+  const [focusedRow, setFocusedRow] = useState<string | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
 
   const statement = importBankStatementStore((state) => state.statement);
+  const adjustTransaction = importBankStatementStore(
+    (state) => state.adjustTransaction
+  );
+  const mergeStatement = importBankStatementStore(
+    (state) => state.mergeStatement
+  );
+  const statement_copy = importBankStatementStore(
+    (state) => state.statement_copy
+  );
+  const resetStatementCopy = importBankStatementStore(
+    (state) => state.resetStatementCopy
+  );
 
   const columns: ColumnDef<Transaction>[] = [
     {
@@ -51,37 +94,136 @@ const BankStatementDetailsTable: React.FC = () => {
     {
       accessorKey: "date",
       header: "Date",
+      cell: ({ row, getValue }) => {
+        return isEditing ? (
+          <DatePicker
+            date={getValue() as Date}
+            setDate={(date) => {
+              adjustTransaction({
+                id: row.original.id,
+                date: date.toISOString(),
+                type: row.original.type,
+                amount: row.original.amount,
+                description: row.original.description,
+              });
+            }}
+          />
+        ) : (
+          <span>{getValue() as string}</span>
+        );
+      },
     },
     {
       accessorKey: "description",
       header: "Description",
+      cell: ({ row, getValue }) => {
+        return isEditing ? (
+          <Input
+            className="w-full px-2 py-1 border rounded"
+            defaultValue={getValue() as string}
+            onBlur={(e) => {
+              adjustTransaction({
+                id: row.original.id,
+                date: row.original.date,
+                type: row.original.type,
+                amount: row.original.amount,
+                description: e.target.value,
+              });
+            }}
+          />
+        ) : (
+          <span className="text-left">{getValue() as string}</span>
+        );
+      },
     },
     {
       accessorKey: "amount",
       header: "Amount",
-      cell: ({ getValue }) => (
-        <span className="text-right">{getValue() as string}</span>
-      ),
+      cell: ({ row, getValue }) => {
+        return isEditing ? (
+          <CurrencyInput
+            defaultValue={getValue() as string}
+            onBlur={(e) => {
+              adjustTransaction({
+                id: row.original.id,
+                date: row.original.date,
+                type: row.original.type,
+                amount: e.target.value.replace("$", ""),
+                description: row.original.description,
+              });
+            }}
+            decimalsLimit={2}
+          />
+        ) : (
+          <span className="text-right">
+            <span>$</span>
+            <span>{getValue() as string}</span>
+          </span>
+        );
+      },
     },
     {
       accessorKey: "type",
       header: "Type",
-      cell: ({ getValue }) => (
-        <span
-          className={`px-2 py-1 rounded text-xs ${
-            getValue() === "credit"
-              ? "bg-green-100 text-green-800"
-              : "bg-red-100 text-red-800"
-          }`}
-        >
-          {getValue() as string}
-        </span>
-      ),
+      cell: ({ row, getValue }) => {
+        return isEditing ? (
+          <Select
+            onValueChange={(value) => {
+              console.log("onValueChange", value);
+              adjustTransaction({
+                id: row.original.id,
+                date: row.original.date,
+                type: value as "credit" | "debit",
+                amount: row.original.amount,
+                description: row.original.description,
+              });
+            }}
+            defaultValue={getValue() as string}
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select a type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                <SelectItem value="credit">credit</SelectItem>
+                <SelectItem value="debit">debit</SelectItem>
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+        ) : (
+          <span
+            className={`px-2 py-1 rounded text-xs ${
+              getValue() === "credit"
+                ? "bg-green-100 text-green-800"
+                : "bg-red-100 text-red-800"
+            }`}
+          >
+            {getValue() as string}
+          </span>
+        );
+      },
+    },
+    {
+      accessorKey: "action",
+      header: "Action",
+      cell: ({ row, getValue }) => {
+        return isEditing ? (
+          <Button variant="ghost" onClick={() => setFocusedRow(null)}>
+            Save
+          </Button>
+        ) : (
+          <Button variant="ghost" onClick={() => setFocusedRow(row.id)}>
+            <EllipsisVertical className="w-4 h-4" />
+          </Button>
+        );
+      },
     },
   ];
 
   const table = useReactTable({
-    data: statement ? statement.transactions : [],
+    data: isEditing /* We modify the statement copy, when the user saves we replace the statement with the copy */
+      ? statement_copy?.transactions || []
+      : statement?.transactions || [],
     columns,
     getCoreRowModel: getCoreRowModel(),
     enableRowSelection: true,
@@ -119,11 +261,62 @@ const BankStatementDetailsTable: React.FC = () => {
       });
   };
 
+  const handleEdit = () => {
+    if (isEditing) {
+      const uSure = window.confirm("Are you sure you want to save?");
+      if (uSure) {
+        mergeStatement();
+        setIsEditing(false);
+      }
+    } else {
+      setIsEditing(true);
+    }
+  };
+
+  const handleCancel = () => {
+    setIsEditing(false);
+  };
+  const handleMergeTransactions = () => {
+    mergeStatement();
+    resetStatementCopy();
+    setIsEditing(false);
+  };
+
   if (!statement) return null;
 
   return (
     <div className="mt-6">
-      <div className="bg-white shadow-md rounded-lg">
+      <div className="flex justify-end">
+        {isEditing ? (
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="outline">Save Edits</Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. This will permanently delete
+                  your account and remove your data from our servers.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel onClick={handleCancel}>
+                  Cancel
+                </AlertDialogCancel>
+                <AlertDialogAction onClick={handleMergeTransactions}>
+                  Yes, merge transactions
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        ) : (
+          <Button variant="outline" onClick={handleEdit}>
+            Modify Transactions
+          </Button>
+        )}
+      </div>
+      <div className="bg-white shadow-md my-10">
         <div className="overflow-x-auto">
           <table className="min-w-full">
             <thead>
@@ -132,8 +325,14 @@ const BankStatementDetailsTable: React.FC = () => {
                 .map((headerGroup: HeaderGroup<Transaction>) => (
                   <tr key={headerGroup.id} className="bg-gray-100">
                     {headerGroup.headers.map(
-                      (header: Header<Transaction, unknown>) => (
-                        <th key={header.id} className="px-4 py-2">
+                      (header: Header<Transaction, unknown>, index) => (
+                        <th
+                          key={header.id}
+                          className={cn("px-4 py-2", {
+                            "text-left": [0, 1, 2].includes(index),
+                            "text-right": [3, 4, 5].includes(index),
+                          })}
+                        >
                           {flexRender(
                             header.column.columnDef.header,
                             header.getContext()
@@ -148,10 +347,19 @@ const BankStatementDetailsTable: React.FC = () => {
               {table.getRowModel().rows.map((row: Row<Transaction>) => (
                 <tr
                   key={row.id}
-                  className={row.index % 2 === 0 ? "bg-gray-50" : ""}
+                  className={cn(
+                    row.index % 2 === 0 ? "bg-gray-50" : "",
+                    focusedRow !== row.id && "hover:bg-gray-100 cursor-pointer"
+                  )}
                 >
-                  {row.getVisibleCells().map((cell) => (
-                    <td key={cell.id} className="px-4 py-2">
+                  {row.getVisibleCells().map((cell, index) => (
+                    <td
+                      key={cell.id}
+                      className={cn("px-4 py-2", {
+                        "text-left": [0, 1, 2].includes(index),
+                        "text-right": [3, 4, 5].includes(index),
+                      })}
+                    >
                       {flexRender(
                         cell.column.columnDef.cell,
                         cell.getContext()
@@ -162,15 +370,75 @@ const BankStatementDetailsTable: React.FC = () => {
               ))}
             </tbody>
           </table>
-          <div className="flex justify-end">
-            <Button color="teal" onClick={handleSave}>
-              Save
-            </Button>
-          </div>
         </div>
+      </div>
+      <div className="flex justify-end">
+        <Button
+          variant="primary"
+          onClick={handleSave}
+          disabled={!table.getRowCount() || isEditing}
+        >
+          Store Transactions
+        </Button>
       </div>
     </div>
   );
 };
 
 export default BankStatementDetailsTable;
+
+export function DatePicker({
+  date,
+  setDate,
+}: {
+  date: Date;
+  setDate: (date: Date) => void;
+}) {
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button
+          variant={"outline"}
+          className={cn(
+            "w-[240px] justify-start text-left font-normal",
+            !date && "text-muted-foreground"
+          )}
+        >
+          <CalendarIcon />
+          {date ? format(date, "PPP") : <span>Pick a date</span>}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-auto p-0" align="start">
+        <Calendar
+          mode="single"
+          selected={date}
+          onSelect={(date) => setDate(date as Date)}
+          initialFocus
+        />
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+export function ConfirmSaveDialog() {
+  return (
+    <AlertDialog>
+      <AlertDialogTrigger asChild>
+        <Button variant="outline">Show Dialog</Button>
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+          <AlertDialogDescription>
+            This action cannot be undone. This will permanently delete your
+            account and remove your data from our servers.
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction>Continue</AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+}

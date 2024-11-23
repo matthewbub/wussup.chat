@@ -25,10 +25,10 @@ type PythonResponse struct {
 }
 
 type Transaction struct {
-	Date        string `json:"date"`
-	Description string `json:"description"`
-	Amount      string `json:"amount"`
-	Type        string `json:"type"`
+	Date        string  `json:"date"`
+	Description string  `json:"description"`
+	Amount      float64 `json:"amount"`
+	Type        string  `json:"type"`
 }
 
 type StatementData struct {
@@ -109,7 +109,7 @@ func ExtractPDFText(c *gin.Context) {
 					"properties": map[string]interface{}{
 						"date":        map[string]interface{}{"type": "string"},
 						"description": map[string]interface{}{"type": "string"},
-						"amount":      map[string]interface{}{"type": "string"},
+						"amount":      map[string]interface{}{"type": "number"},
 						"type": map[string]interface{}{
 							"type": "string",
 							"enum": []string{"credit", "debit"},
@@ -132,6 +132,9 @@ func ExtractPDFText(c *gin.Context) {
 				"content": fmt.Sprintf(
 					"Please extract the following information from this bank statement text: "+
 						"account number, bank name, statement date, and all transactions. "+
+						"For each transaction:\n"+
+						"1. Convert all currency amounts to positive numbers with exactly 2 decimal places (e.g., '$14.99' or '-$14.99' should become 14.99, '$0.3' should become 0.30)\n"+
+						"2. Mark the transaction type as 'debit' for expenses/withdrawals and 'credit' for deposits/incoming funds\n"+
 						"Format the response according to the schema. Here's the text:\n\n%s",
 					extractedText,
 				),
@@ -179,8 +182,6 @@ func ExtractPDFText(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to read response"})
 		return
 	}
-
-	fmt.Println(string(respBody))
 
 	// Unmarshal the OpenAI API response
 	var openAIResp struct {
