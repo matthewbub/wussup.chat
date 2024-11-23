@@ -19,6 +19,8 @@ const ImportBankStatement: React.FC = () => {
         <div className=" p-4">
           <h2 className="text-2xl font-bold mb-4">Import Bank Statement</h2>
 
+          {/* This is hard coded to only accept a single PDF file */}
+          {/* TODO: Make this accept multiple files */}
           <FileUploader
             onFileChange={(files) => handleFileChange(files[0])}
             onFileDrop={(files) => handleFileChange(files[0])}
