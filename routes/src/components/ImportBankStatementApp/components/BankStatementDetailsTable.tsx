@@ -14,8 +14,10 @@ import { Button } from "@/components/catalyst/button";
 import { Checkbox } from "@/components/catalyst/checkbox";
 import { Transaction } from "../ImportBankStatement.types";
 import importBankStatementStore from "../ImportBankStatement.store";
+import { useToast } from "@/hooks/use-toast";
 
 const BankStatementDetailsTable: React.FC = () => {
+  const { toast } = useToast();
   // prefer state over store row selection state
   // https://tanstack.com/table/latest/docs/guide/row-selection
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
@@ -101,6 +103,16 @@ const BankStatementDetailsTable: React.FC = () => {
       .then((res) => res.json())
       .then((data) => {
         console.log(data);
+        if (data.error) {
+          toast({
+            title: "Error",
+            description: data.error,
+          });
+        } else if (data.message) {
+          toast({
+            title: data.message,
+          });
+        }
       })
       .catch((err) => {
         console.error(err);
