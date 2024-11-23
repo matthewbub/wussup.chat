@@ -8,54 +8,19 @@ import PdfSafetyMarker from "./components/PdfSafetyMarker";
 
 const ImportBankStatement: React.FC = () => {
   const file = importBankStatementStore((state) => state.file);
-  const setFile = importBankStatementStore((state) => state.setFile);
   const pageSelection = importBankStatementStore(
     (state) => state.pageSelection
   );
-  const setPageSelection = importBankStatementStore(
-    (state) => state.setPageSelection
-  );
   const error = importBankStatementStore((state) => state.error);
-  const setError = importBankStatementStore((state) => state.setError);
   const setPreviewsLoading = importBankStatementStore(
     (state) => state.setPreviewsLoading
   );
   const setPagePreviews = importBankStatementStore(
     (state) => state.setPagePreviews
   );
-
-  const handleFileChange = async (file: File) => {
-    if (file && file.type === "application/pdf") {
-      setFile(file);
-      setError("");
-
-      const formData = new FormData();
-      formData.append("file", file);
-
-      try {
-        const pageCountResponse = await fetch("/api/v1/pdf/page-count", {
-          method: "POST",
-          body: formData,
-        });
-
-        const pageCountData = await pageCountResponse.json();
-        if (!pageCountResponse.ok) throw new Error(pageCountData.error);
-
-        setPageSelection({
-          fileId: pageCountData.fileId,
-          numPages: pageCountData.numPages,
-          selectedPages: [],
-          previews: {},
-        });
-        console.log("Page selection has been initialized");
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "An error occurred");
-      }
-    } else {
-      setError("Please select a valid PDF file");
-      setFile(null);
-    }
-  };
+  const handleFileChange = importBankStatementStore(
+    (state) => state.handleFileChange
+  );
 
   useEffect(() => {
     if (

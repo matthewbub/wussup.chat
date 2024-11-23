@@ -31,6 +31,7 @@ type Action = {
   setIsDrawingMode: (isDrawingMode: boolean) => void;
   setSelectedPageForDrawing: (selectedPageForDrawing: number | null) => void;
   submitSelectedPages: () => Promise<void>;
+  handleFileChange: (file: File) => Promise<void>;
 };
 
 const importBankStatementStore = create<State & Action>((set) => ({
@@ -157,6 +158,43 @@ const importBankStatementStore = create<State & Action>((set) => ({
       });
     } finally {
       importBankStatementStore.setState({ isLoading: false });
+    }
+  },
+  handleFileChange: async (file: File) => {
+    if (file?.type === "application/pdf") {
+      set({ file, error: "" });
+
+      const formData = new FormData();
+      formData.append("file", file);
+
+      try {
+        const pageCountResponse = await fetch("/api/v1/pdf/page-count", {
+          method: "POST",
+          body: formData,
+        });
+
+        const pageCountData = await pageCountResponse.json();
+        if (!pageCountResponse.ok) throw new Error(pageCountData.error);
+
+        set({
+          pageSelection: {
+            fileId: pageCountData.fileId,
+            numPages: pageCountData.numPages,
+            selectedPages: [],
+            previews: {},
+          },
+        });
+      } catch (err) {
+        set({
+          error: err instanceof Error ? err.message : "An error occurred",
+          file: null,
+        });
+      }
+    } else {
+      set({
+        error: "Please select a valid PDF file",
+        file: null,
+      });
     }
   },
 }));
