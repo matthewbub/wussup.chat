@@ -1,19 +1,14 @@
-import React, { useEffect } from "react";
-import { DrawingData } from "../ImportBankStatement.types";
+import React from "react";
 import importBankStatementStore from "../ImportBankStatement.store";
 
 const PdfPageSelector: React.FC = () => {
-  const file = importBankStatementStore((state) => state.file);
   const pageSelection = importBankStatementStore(
     (state) => state.pageSelection
   );
   const togglePageSelection = importBankStatementStore(
     (state) => state.togglePageSelection
   );
-  const setStatement = importBankStatementStore((state) => state.setStatement);
-  const setError = importBankStatementStore((state) => state.setError);
   const isLoading = importBankStatementStore((state) => state.isLoading);
-  const setIsLoading = importBankStatementStore((state) => state.setIsLoading);
   const previewsLoading = importBankStatementStore(
     (state) => state.previewsLoading
   );
@@ -27,40 +22,18 @@ const PdfPageSelector: React.FC = () => {
   const handlePageSelection = (pageNum: number) => {
     togglePageSelection(pageNum);
   };
+  const submitSelectedPages = importBankStatementStore(
+    (state) => state.submitSelectedPages
+  );
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    if (!pageSelection || pageSelection.selectedPages.length === 0 || !file)
-      return;
-
-    setIsLoading(true);
-    setError("");
-    setStatement(null);
-
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("pages", pageSelection.selectedPages.join(","));
-
-    try {
-      const response = await fetch("/api/v1/pdf/extract", {
-        method: "POST",
-        body: formData,
-      });
-
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.error);
-
-      setStatement(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred");
-    } finally {
-      setIsLoading(false);
-    }
+    await submitSelectedPages();
+    return;
   };
 
   if (!pageSelection) return null;
 
-  console.log(pageSelection);
   return (
     <div className="mt-4">
       <div>

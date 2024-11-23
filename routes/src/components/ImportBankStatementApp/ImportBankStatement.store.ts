@@ -5,7 +5,7 @@ import {
   StatementData,
 } from "./ImportBankStatement.types";
 
-interface ImportBankStatementState {
+type State = {
   file: File | null;
   pageSelection: PageSelection | null;
   statement: StatementData | null;
@@ -15,8 +15,9 @@ interface ImportBankStatementState {
   previewsLoading: boolean;
   isDrawingMode: boolean;
   selectedPageForDrawing: number | null;
+};
 
-  // Actions
+type Action = {
   setFile: (file: File | null) => void;
   setPageSelection: (pageSelection: PageSelection | null) => void;
   setPagePreviews: (pagePreviews: PagePreviews) => void;
@@ -29,9 +30,10 @@ interface ImportBankStatementState {
   setPreviewsLoading: (previewsLoading: boolean) => void;
   setIsDrawingMode: (isDrawingMode: boolean) => void;
   setSelectedPageForDrawing: (selectedPageForDrawing: number | null) => void;
-}
+  submitSelectedPages: () => Promise<void>;
+};
 
-const importBankStatementStore = create<ImportBankStatementState>((set) => ({
+const importBankStatementStore = create<State & Action>((set) => ({
   // State
   file: null,
   pageSelection: null,
@@ -120,6 +122,43 @@ const importBankStatementStore = create<ImportBankStatementState>((set) => ({
   setIsDrawingMode: (isDrawingMode) => set({ isDrawingMode }),
   setSelectedPageForDrawing: (selectedPageForDrawing) =>
     set({ selectedPageForDrawing }),
+
+  submitSelectedPages: async () => {
+    const state = importBankStatementStore.getState();
+    const { pageSelection, file } = state;
+
+    if (!pageSelection || pageSelection.selectedPages.length === 0 || !file) {
+      return;
+    }
+
+    importBankStatementStore.setState({
+      isLoading: true,
+      error: "",
+      statement: null,
+    });
+
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("pages", pageSelection.selectedPages.join(","));
+
+    try {
+      const response = await fetch("/api/v1/pdf/extract", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error);
+
+      importBankStatementStore.setState({ statement: data });
+    } catch (err) {
+      importBankStatementStore.setState({
+        error: err instanceof Error ? err.message : "An error occurred",
+      });
+    } finally {
+      importBankStatementStore.setState({ isLoading: false });
+    }
+  },
 }));
 
 export default importBankStatementStore;

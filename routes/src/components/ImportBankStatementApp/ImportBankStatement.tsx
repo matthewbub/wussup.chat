@@ -1,11 +1,10 @@
 import React, { useEffect } from "react";
 import { DashboardWrapper } from "../DashboardWrapper";
 import FileUploader from "../FileUploader";
-import { DrawingData } from "./ImportBankStatement.types";
-import PDFDrawingCanvas from "../PDFDrawingCanvas";
 import importBankStatementStore from "./ImportBankStatement.store";
 import BankStatementDetailsTable from "./components/BankStatementDetailsTable";
 import PdfPageSelector from "./components/PdfPageSelector";
+import PdfSafetyMarker from "./components/PdfSafetyMarker";
 
 const ImportBankStatement: React.FC = () => {
   const file = importBankStatementStore((state) => state.file);
@@ -16,25 +15,11 @@ const ImportBankStatement: React.FC = () => {
   const setPageSelection = importBankStatementStore(
     (state) => state.setPageSelection
   );
-
   const error = importBankStatementStore((state) => state.error);
   const setError = importBankStatementStore((state) => state.setError);
   const setPreviewsLoading = importBankStatementStore(
     (state) => state.setPreviewsLoading
   );
-  const isDrawingMode = importBankStatementStore(
-    (state) => state.isDrawingMode
-  );
-  const setIsDrawingMode = importBankStatementStore(
-    (state) => state.setIsDrawingMode
-  );
-  const selectedPageForDrawing = importBankStatementStore(
-    (state) => state.selectedPageForDrawing
-  );
-  const setSelectedPageForDrawing = importBankStatementStore(
-    (state) => state.setSelectedPageForDrawing
-  );
-
   const setPagePreviews = importBankStatementStore(
     (state) => state.setPagePreviews
   );
@@ -79,7 +64,6 @@ const ImportBankStatement: React.FC = () => {
       Object.keys(pageSelection.previews).length > 0
     )
       return;
-    // if (!file || !pageSelection) return;
 
     const loadPreviews = async () => {
       setPreviewsLoading(true);
@@ -127,67 +111,6 @@ const ImportBankStatement: React.FC = () => {
     };
   }, [file, pageSelection?.numPages]);
 
-  const handleSaveDrawing = async (vectorData: DrawingData[]) => {
-    if (!file || selectedPageForDrawing === null) return;
-
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("page", selectedPageForDrawing.toString());
-      formData.append("drawing", JSON.stringify(vectorData));
-
-      const response = await fetch(
-        "http://127.0.0.1:5000/api/v1/pdf/apply-drawing",
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
-
-      if (!response.ok) throw new Error("Failed to save drawing");
-
-      // Update preview with the modified PDF
-      const modifiedPdfBlob = await response.blob();
-      const previewFormData = new FormData();
-      previewFormData.append(
-        "file",
-        new File([modifiedPdfBlob], "temp.pdf", { type: "application/pdf" })
-      );
-      previewFormData.append("page", selectedPageForDrawing.toString());
-
-      const previewResponse = await fetch(
-        "http://127.0.0.1:5000/api/v1/image/upload-pdf",
-        {
-          method: "POST",
-          body: previewFormData,
-        }
-      );
-
-      if (!previewResponse.ok) throw new Error("Failed to update preview");
-
-      const previewBlob = await previewResponse.blob();
-      const previewUrl = URL.createObjectURL(previewBlob);
-
-      // Revoke old preview URL if it exists
-      if (pageSelection?.previews[selectedPageForDrawing]) {
-        URL.revokeObjectURL(pageSelection.previews[selectedPageForDrawing]!);
-      }
-
-      // Update the preview in state
-      setPagePreviews({
-        [selectedPageForDrawing]: previewUrl,
-      });
-
-      setIsDrawingMode(false);
-      setSelectedPageForDrawing(null);
-    } catch (error) {
-      console.error("Error saving drawing:", error);
-      setError(
-        error instanceof Error ? error.message : "Failed to save drawing"
-      );
-    }
-  };
-
   return (
     <DashboardWrapper>
       <div className=" p-4">
@@ -206,23 +129,12 @@ const ImportBankStatement: React.FC = () => {
           </div>
         )}
 
+        {/* 1. After a file is uploaded, the user can select pages to import */}
         <PdfPageSelector />
+        {/* 2. (Optional) The user can then draw over the pages to prevent sensitive data from being OCR'd */}
+        <PdfSafetyMarker />
+        {/* 3. Table view of the data after the user has processed the selected pages */}
         <BankStatementDetailsTable />
-
-        {isDrawingMode &&
-          selectedPageForDrawing &&
-          pageSelection?.previews[selectedPageForDrawing] && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-              <PDFDrawingCanvas
-                backgroundImage={pageSelection.previews[selectedPageForDrawing]}
-                onSave={handleSaveDrawing}
-                onClose={() => {
-                  setIsDrawingMode(false);
-                  setSelectedPageForDrawing(null);
-                }}
-              />
-            </div>
-          )}
       </div>
     </DashboardWrapper>
   );
