@@ -199,10 +199,11 @@ const importBankStatementStore = create<State & Action>((set) => ({
     }
   },
   loadPreviews: async () => {
-    const { file, pageSelection } = get();
+    const state = importBankStatementStore.getState();
+    const { file, pageSelection } = state;
     if (!file || !pageSelection) return;
 
-    set({ previewsLoading: true });
+    importBankStatementStore.setState({ previewsLoading: true });
 
     for (let pageNum = 1; pageNum <= pageSelection.numPages; pageNum++) {
       const formData = new FormData();
@@ -226,7 +227,7 @@ const importBankStatementStore = create<State & Action>((set) => ({
         const previewBlob = await previewResponse.blob();
         const previewUrl = URL.createObjectURL(previewBlob);
 
-        set((state) => ({
+        importBankStatementStore.setState((state) => ({
           pageSelection: state.pageSelection
             ? {
                 ...state.pageSelection,
@@ -241,7 +242,7 @@ const importBankStatementStore = create<State & Action>((set) => ({
         console.error(`Failed to load preview for page ${pageNum}:`, error);
       }
     }
-    set({ previewsLoading: false });
+    importBankStatementStore.setState({ previewsLoading: false });
   },
 }));
 

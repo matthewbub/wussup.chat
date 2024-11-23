@@ -20,7 +20,8 @@ const ImportBankStatement: React.FC = () => {
           <h2 className="text-2xl font-bold mb-4">Import Bank Statement</h2>
 
           {/* This is hard coded to only accept a single PDF file */}
-          {/* TODO: Make this accept multiple files */}
+          {/* TODO: New Feature - Make this accept multiple files */}
+          {/* DX Flow - User Uploads a Bank Statement: https://utfs.io/f/5DbNgXh2h3Mzjo7aymrZuVKHWiU458GMeOYaqmCp6BXb0R7S */}
           <FileUploader
             onFileChange={(files) => handleFileChange(files[0])}
             onFileDrop={(files) => handleFileChange(files[0])}
