@@ -11,7 +11,6 @@ type State = {
   statement: StatementData | null;
   error: string;
   isLoading: boolean;
-  rowSelection: Record<string, boolean>;
   previewsLoading: boolean;
   isDrawingMode: boolean;
   selectedPageForDrawing: number | null;
@@ -26,7 +25,6 @@ type Action = {
   setStatement: (statement: StatementData | null) => void;
   setError: (error: string) => void;
   setIsLoading: (isLoading: boolean) => void;
-  setRowSelection: (rowSelection: Record<string, boolean>) => void;
   setPreviewsLoading: (previewsLoading: boolean) => void;
   setIsDrawingMode: (isDrawingMode: boolean) => void;
   setSelectedPageForDrawing: (selectedPageForDrawing: number | null) => void;
@@ -42,7 +40,6 @@ const importBankStatementStore = create<State & Action>((set) => ({
   statement: null,
   error: "",
   isLoading: false,
-  rowSelection: {},
   previewsLoading: false,
   isDrawingMode: false,
   selectedPageForDrawing: null,
@@ -119,7 +116,6 @@ const importBankStatementStore = create<State & Action>((set) => ({
   setStatement: (statement) => set({ statement }),
   setError: (error) => set({ error }),
   setIsLoading: (isLoading) => set({ isLoading }),
-  setRowSelection: (rowSelection) => set({ rowSelection }),
   setPreviewsLoading: (previewsLoading) => set({ previewsLoading }),
   setIsDrawingMode: (isDrawingMode) => set({ isDrawingMode }),
   setSelectedPageForDrawing: (selectedPageForDrawing) =>

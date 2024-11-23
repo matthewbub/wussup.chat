@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   ColumnDef,
   HeaderGroup,
@@ -16,10 +16,9 @@ import { Transaction } from "../ImportBankStatement.types";
 import importBankStatementStore from "../ImportBankStatement.store";
 
 const BankStatementDetailsTable: React.FC = () => {
-  const rowSelection = importBankStatementStore((state) => state.rowSelection);
-  const setRowSelection = importBankStatementStore(
-    (state) => state.setRowSelection
-  );
+  // prefer state over store row selection state
+  // https://tanstack.com/table/latest/docs/guide/row-selection
+  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
 
   const statement = importBankStatementStore((state) => state.statement);
 
@@ -27,21 +26,25 @@ const BankStatementDetailsTable: React.FC = () => {
     {
       id: "select",
       header: ({ table }) => (
-        <input
-          type="checkbox"
-          name="select-all"
-          checked={table.getIsAllRowsSelected()}
-          onChange={table.getToggleAllRowsSelectedHandler()}
-        />
-      ),
-      cell: ({ row }) => (
         <Checkbox
           color="green"
-          name={`select-${row.id}`}
-          checked={row.getIsSelected()}
-          onChange={row.getToggleSelectedHandler()}
+          name="select-all"
+          checked={table.getIsAllRowsSelected()}
+          onChange={(checked) => table.toggleAllRowsSelected(checked)}
         />
       ),
+      cell: ({ row }) => {
+        return (
+          <Checkbox
+            color="green"
+            name={`select-${row.id}`}
+            checked={row.getIsSelected()}
+            onChange={(checked) => {
+              row.toggleSelected(checked);
+            }}
+          />
+        );
+      },
     },
     {
       accessorKey: "date",
