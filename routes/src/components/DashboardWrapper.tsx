@@ -31,6 +31,7 @@ import {
   ChevronUpIcon,
   Cog8ToothIcon,
   LightBulbIcon,
+  LockClosedIcon,
   PlusIcon,
   ShieldCheckIcon,
   UserIcon,
@@ -62,7 +63,7 @@ export function DashboardWrapper({ children }: { children: React.ReactNode }) {
             </NavbarItem>
             <Dropdown>
               <DropdownButton as={NavbarItem}>
-                <Avatar src="/profile-photo.jpg" square />
+                <Avatar square initials="MB" />
               </DropdownButton>
               <DropdownMenu className="min-w-64" anchor="bottom end">
                 <DropdownItem href="/my-profile">
@@ -97,7 +98,7 @@ export function DashboardWrapper({ children }: { children: React.ReactNode }) {
           <SidebarHeader>
             <Dropdown>
               <DropdownButton as={SidebarItem} className="lg:mb-2.5">
-                <Avatar src="/tailwind-logo.svg" />
+                <Avatar initials="TL" />
                 <SidebarLabel>Tailwind Labs</SidebarLabel>
                 <ChevronDownIcon />
               </DropdownButton>
@@ -111,7 +112,7 @@ export function DashboardWrapper({ children }: { children: React.ReactNode }) {
                 </DropdownItem>
                 <DropdownDivider />
                 <DropdownItem href="/teams/1">
-                  <Avatar slot="icon" src="/tailwind-logo.svg" />
+                  <Avatar slot="icon" initials="TL" />
                   <DropdownLabel>Tailwind Labs</DropdownLabel>
                 </DropdownItem>
                 <DropdownItem href="/teams/2">
@@ -146,22 +147,22 @@ export function DashboardWrapper({ children }: { children: React.ReactNode }) {
                 <HomeIcon />
                 <SidebarLabel>Home</SidebarLabel>
               </SidebarItem>
-              <SidebarItem href="/app/bank-statements">
+              <SidebarItem href="/app/transactions">
                 <Square2StackIcon />
-                <SidebarLabel>Bank Statements</SidebarLabel>
+                <SidebarLabel>My Transactions</SidebarLabel>
               </SidebarItem>
-              <SidebarItem href="/orders">
-                <TicketIcon />
-                <SidebarLabel>Orders</SidebarLabel>
+              <SidebarItem href="/app/secure-media">
+                <LockClosedIcon />
+                <SidebarLabel>My Documents</SidebarLabel>
               </SidebarItem>
               <SidebarItem href="/settings">
                 <Cog6ToothIcon />
                 <SidebarLabel>Settings</SidebarLabel>
               </SidebarItem>
-              <SidebarItem href="/broadcasts">
+              {/* <SidebarItem href="/broadcasts">
                 <MegaphoneIcon />
                 <SidebarLabel>Broadcasts</SidebarLabel>
-              </SidebarItem>
+              </SidebarItem> */}
             </SidebarSection>
             <SidebarSection className="max-lg:hidden">
               <SidebarHeading>Upcoming Events</SidebarHeading>
@@ -188,12 +189,7 @@ export function DashboardWrapper({ children }: { children: React.ReactNode }) {
             <Dropdown>
               <DropdownButton as={SidebarItem}>
                 <span className="flex min-w-0 items-center gap-3">
-                  <Avatar
-                    src="/profile-photo.jpg"
-                    className="size-10"
-                    square
-                    alt=""
-                  />
+                  <Avatar className="size-10" square alt="" />
                   <span className="min-w-0">
                     <span className="block truncate text-sm/5 font-medium text-zinc-950 dark:text-white">
                       Erica
