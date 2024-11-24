@@ -292,7 +292,7 @@ const BankStatementDetailsTable: React.FC<{
       <div className="flex justify-end gap-4">
         {withImportStatementsButton && (
           <Link
-            href="/app/bank-statements/new"
+            href="/app/transactions/new"
             className={cn(buttonVariants({ variant: "primary" }))}
           >
             Import Statements
