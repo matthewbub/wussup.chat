@@ -1,6 +1,6 @@
 Tomorrow I want to 
 - [x] finish the editable state in the import flow (Just do "Edit All")
-- create a view for viewing the data (essentially the BankStatementDetailsTable)
+- [x] create a view for viewing the data (essentially the BankStatementDetailsTable)
 - create a system for tracking how many pages a user has uploaded
 - create the billing system with Stripe (Details in Notion)
 - deploy!

@@ -98,6 +98,7 @@ func ExtractPDFText(c *gin.Context) {
 
 		extractedText += response.Text
 	}
+
 	// Define the JSON schema for the response
 	jsonSchema := map[string]interface{}{
 		"type": "object",
@@ -208,6 +209,9 @@ func ExtractPDFText(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to parse statement data"})
 		return
 	}
+
+	// Print page count
+	fmt.Println("Page count:", pages)
 
 	c.JSON(200, statement)
 }

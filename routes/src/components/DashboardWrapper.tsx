@@ -159,21 +159,9 @@ export function DashboardWrapper({ children }: { children: React.ReactNode }) {
                 <Cog6ToothIcon />
                 <SidebarLabel>Settings</SidebarLabel>
               </SidebarItem>
-              {/* <SidebarItem href="/broadcasts">
-                <MegaphoneIcon />
-                <SidebarLabel>Broadcasts</SidebarLabel>
-              </SidebarItem> */}
             </SidebarSection>
-            <SidebarSection className="max-lg:hidden">
-              <SidebarHeading>Upcoming Events</SidebarHeading>
-              <SidebarItem href="/events/1">
-                Bear Hug: Live in Concert
-              </SidebarItem>
-              <SidebarItem href="/events/2">Viking People</SidebarItem>
-              <SidebarItem href="/events/3">Six Fingers — DJ Set</SidebarItem>
-              <SidebarItem href="/events/4">We All Look The Same</SidebarItem>
-            </SidebarSection>
-            <SidebarSpacer />
+
+            {/* <SidebarSpacer />
             <SidebarSection>
               <SidebarItem href="/support">
                 <QuestionMarkCircleIcon />
@@ -183,7 +171,7 @@ export function DashboardWrapper({ children }: { children: React.ReactNode }) {
                 <SparklesIcon />
                 <SidebarLabel>Changelog</SidebarLabel>
               </SidebarItem>
-            </SidebarSection>
+            </SidebarSection> */}
           </SidebarBody>
           <SidebarFooter className="max-lg:hidden">
             <Dropdown>
