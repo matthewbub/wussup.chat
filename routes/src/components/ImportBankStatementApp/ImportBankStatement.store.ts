@@ -38,6 +38,8 @@ type Action = {
   adjustTransaction: (transaction: Transaction) => void;
   mergeStatement: () => void;
   resetStatementCopy: () => void;
+  getUserTransactions: () => Promise<void>;
+  reset: () => void;
 };
 
 const importBankStatementStore = create<State & Action>()(
@@ -373,6 +375,44 @@ const importBankStatementStore = create<State & Action>()(
           }),
           false,
           "ImportBankStatementStore/ResetStatementCopy"
+        );
+      },
+      getUserTransactions: async () => {
+        const state = importBankStatementStore.getState();
+
+        const response = await fetch("/api/v1/transactions");
+        const json = await response.json();
+
+        set(
+          {
+            statement: {
+              ...state.statement,
+              transactions: json.data.transactions,
+            },
+            statement_copy: {
+              ...state.statement_copy,
+              transactions: json.data.transactions,
+            },
+          },
+          undefined,
+          "ImportBankStatementStore/GetUserTransactions"
+        );
+      },
+      reset: () => {
+        set(
+          {
+            statement: null,
+            statement_copy: null,
+            pageSelection: null,
+            file: null,
+            error: "",
+            isLoading: false,
+            previewsLoading: false,
+            isDrawingMode: false,
+            selectedPageForDrawing: null,
+          },
+          undefined,
+          "ImportBankStatementStore/Reset"
         );
       },
     }),

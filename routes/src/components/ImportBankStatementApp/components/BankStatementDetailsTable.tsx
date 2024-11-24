@@ -10,7 +10,7 @@ import {
   OnChangeFn,
   RowSelectionState,
 } from "@tanstack/react-table";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Checkbox } from "@/components/catalyst/checkbox";
 import { Transaction } from "../ImportBankStatement.types";
 import importBankStatementStore from "../ImportBankStatement.store";
@@ -44,8 +44,11 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Link } from "@tanstack/react-router";
 
-const BankStatementDetailsTable: React.FC = () => {
+const BankStatementDetailsTable: React.FC<{
+  withImportStatementsButton?: boolean;
+}> = ({ withImportStatementsButton = false }) => {
   const { toast } = useToast();
   // prefer state over store row selection state
   // https://tanstack.com/table/latest/docs/guide/row-selection
@@ -282,11 +285,19 @@ const BankStatementDetailsTable: React.FC = () => {
     setIsEditing(false);
   };
 
-  if (!statement) return null;
+  if (!statement_copy) return null;
 
   return (
     <div className="mt-6">
-      <div className="flex justify-end">
+      <div className="flex justify-end gap-4">
+        {withImportStatementsButton && (
+          <Link
+            href="/app/bank-statements/new"
+            className={cn(buttonVariants({ variant: "primary" }))}
+          >
+            Import Statements
+          </Link>
+        )}
         {isEditing ? (
           <AlertDialog>
             <AlertDialogTrigger asChild>

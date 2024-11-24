@@ -20,8 +20,8 @@ import { Route as ErrorImport } from './routes/error'
 import { Route as DebugImport } from './routes/debug'
 import { Route as DashboardImport } from './routes/dashboard'
 import { Route as IndexImport } from './routes/index'
-import { Route as DocumentsIndexImport } from './routes/documents/index'
-import { Route as DocumentsIdImport } from './routes/documents/$id'
+import { Route as AppBankStatementsIndexImport } from './routes/app/bank-statements/index'
+import { Route as AppBankStatementsNewImport } from './routes/app/bank-statements/new'
 
 // Create/Update Routes
 
@@ -79,15 +79,15 @@ const IndexRoute = IndexImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
-const DocumentsIndexRoute = DocumentsIndexImport.update({
-  id: '/documents/',
-  path: '/documents/',
+const AppBankStatementsIndexRoute = AppBankStatementsIndexImport.update({
+  id: '/app/bank-statements/',
+  path: '/app/bank-statements/',
   getParentRoute: () => rootRoute,
 } as any)
 
-const DocumentsIdRoute = DocumentsIdImport.update({
-  id: '/documents/$id',
-  path: '/documents/$id',
+const AppBankStatementsNewRoute = AppBankStatementsNewImport.update({
+  id: '/app/bank-statements/new',
+  path: '/app/bank-statements/new',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -158,18 +158,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SignUpImport
       parentRoute: typeof rootRoute
     }
-    '/documents/$id': {
-      id: '/documents/$id'
-      path: '/documents/$id'
-      fullPath: '/documents/$id'
-      preLoaderRoute: typeof DocumentsIdImport
+    '/app/bank-statements/new': {
+      id: '/app/bank-statements/new'
+      path: '/app/bank-statements/new'
+      fullPath: '/app/bank-statements/new'
+      preLoaderRoute: typeof AppBankStatementsNewImport
       parentRoute: typeof rootRoute
     }
-    '/documents/': {
-      id: '/documents/'
-      path: '/documents'
-      fullPath: '/documents'
-      preLoaderRoute: typeof DocumentsIndexImport
+    '/app/bank-statements/': {
+      id: '/app/bank-statements/'
+      path: '/app/bank-statements'
+      fullPath: '/app/bank-statements'
+      preLoaderRoute: typeof AppBankStatementsIndexImport
       parentRoute: typeof rootRoute
     }
   }
@@ -187,8 +187,8 @@ export interface FileRoutesByFullPath {
   '/me': typeof MeRoute
   '/security-questions': typeof SecurityQuestionsRoute
   '/sign-up': typeof SignUpRoute
-  '/documents/$id': typeof DocumentsIdRoute
-  '/documents': typeof DocumentsIndexRoute
+  '/app/bank-statements/new': typeof AppBankStatementsNewRoute
+  '/app/bank-statements': typeof AppBankStatementsIndexRoute
 }
 
 export interface FileRoutesByTo {
@@ -201,8 +201,8 @@ export interface FileRoutesByTo {
   '/me': typeof MeRoute
   '/security-questions': typeof SecurityQuestionsRoute
   '/sign-up': typeof SignUpRoute
-  '/documents/$id': typeof DocumentsIdRoute
-  '/documents': typeof DocumentsIndexRoute
+  '/app/bank-statements/new': typeof AppBankStatementsNewRoute
+  '/app/bank-statements': typeof AppBankStatementsIndexRoute
 }
 
 export interface FileRoutesById {
@@ -216,8 +216,8 @@ export interface FileRoutesById {
   '/me': typeof MeRoute
   '/security-questions': typeof SecurityQuestionsRoute
   '/sign-up': typeof SignUpRoute
-  '/documents/$id': typeof DocumentsIdRoute
-  '/documents/': typeof DocumentsIndexRoute
+  '/app/bank-statements/new': typeof AppBankStatementsNewRoute
+  '/app/bank-statements/': typeof AppBankStatementsIndexRoute
 }
 
 export interface FileRouteTypes {
@@ -232,8 +232,8 @@ export interface FileRouteTypes {
     | '/me'
     | '/security-questions'
     | '/sign-up'
-    | '/documents/$id'
-    | '/documents'
+    | '/app/bank-statements/new'
+    | '/app/bank-statements'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -245,8 +245,8 @@ export interface FileRouteTypes {
     | '/me'
     | '/security-questions'
     | '/sign-up'
-    | '/documents/$id'
-    | '/documents'
+    | '/app/bank-statements/new'
+    | '/app/bank-statements'
   id:
     | '__root__'
     | '/'
@@ -258,8 +258,8 @@ export interface FileRouteTypes {
     | '/me'
     | '/security-questions'
     | '/sign-up'
-    | '/documents/$id'
-    | '/documents/'
+    | '/app/bank-statements/new'
+    | '/app/bank-statements/'
   fileRoutesById: FileRoutesById
 }
 
@@ -273,8 +273,8 @@ export interface RootRouteChildren {
   MeRoute: typeof MeRoute
   SecurityQuestionsRoute: typeof SecurityQuestionsRoute
   SignUpRoute: typeof SignUpRoute
-  DocumentsIdRoute: typeof DocumentsIdRoute
-  DocumentsIndexRoute: typeof DocumentsIndexRoute
+  AppBankStatementsNewRoute: typeof AppBankStatementsNewRoute
+  AppBankStatementsIndexRoute: typeof AppBankStatementsIndexRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
@@ -287,8 +287,8 @@ const rootRouteChildren: RootRouteChildren = {
   MeRoute: MeRoute,
   SecurityQuestionsRoute: SecurityQuestionsRoute,
   SignUpRoute: SignUpRoute,
-  DocumentsIdRoute: DocumentsIdRoute,
-  DocumentsIndexRoute: DocumentsIndexRoute,
+  AppBankStatementsNewRoute: AppBankStatementsNewRoute,
+  AppBankStatementsIndexRoute: AppBankStatementsIndexRoute,
 }
 
 export const routeTree = rootRoute
@@ -312,8 +312,8 @@ export const routeTree = rootRoute
         "/me",
         "/security-questions",
         "/sign-up",
-        "/documents/$id",
-        "/documents/"
+        "/app/bank-statements/new",
+        "/app/bank-statements/"
       ]
     },
     "/": {
@@ -343,11 +343,11 @@ export const routeTree = rootRoute
     "/sign-up": {
       "filePath": "sign-up.tsx"
     },
-    "/documents/$id": {
-      "filePath": "documents/$id.tsx"
+    "/app/bank-statements/new": {
+      "filePath": "app/bank-statements/new.tsx"
     },
-    "/documents/": {
-      "filePath": "documents/index.tsx"
+    "/app/bank-statements/": {
+      "filePath": "app/bank-statements/index.tsx"
     }
   }
 }
