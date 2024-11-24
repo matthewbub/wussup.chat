@@ -176,11 +176,11 @@ const importBankStatementStore = create<State & Action>()(
           return;
         }
 
-        importBankStatementStore.setState({
-          isLoading: true,
-          error: "",
-          statement: null,
-        });
+        set(
+          { isLoading: true, error: "", statement: null },
+          undefined,
+          "ImportBankStatementStore/SubmitSelectedPages"
+        );
 
         const formData = new FormData();
         formData.append("file", file);
@@ -200,22 +200,35 @@ const importBankStatementStore = create<State & Action>()(
             id: generateId("transaction-"),
           }));
 
-          importBankStatementStore.setState({
-            statement: { ...data, transactions },
-            // Make a copy of the initial statement for a basic "cancel" button
-            statement_copy: { ...data, transactions },
-          });
+          set(
+            {
+              statement: { ...data, transactions },
+              statement_copy: { ...data, transactions },
+            },
+            undefined,
+            "ImportBankStatementStore/SubmitSelectedPages"
+          );
         } catch (err) {
-          importBankStatementStore.setState({
-            error: err instanceof Error ? err.message : "An error occurred",
-          });
+          set(
+            { error: err instanceof Error ? err.message : "An error occurred" },
+            undefined,
+            "ImportBankStatementStore/SubmitSelectedPages"
+          );
         } finally {
-          importBankStatementStore.setState({ isLoading: false });
+          set(
+            { isLoading: false },
+            undefined,
+            "ImportBankStatementStore/SubmitSelectedPages"
+          );
         }
       },
       handleFileChange: async (file: File) => {
         if (file?.type === "application/pdf") {
-          set({ file, error: "" });
+          set(
+            { file, error: "" },
+            undefined,
+            "ImportBankStatementStore/HandleFileChange"
+          );
 
           const formData = new FormData();
           formData.append("file", file);
@@ -229,25 +242,37 @@ const importBankStatementStore = create<State & Action>()(
             const pageCountData = await pageCountResponse.json();
             if (!pageCountResponse.ok) throw new Error(pageCountData.error);
 
-            set({
-              pageSelection: {
-                fileId: pageCountData.fileId,
-                numPages: pageCountData.numPages,
-                selectedPages: [],
-                previews: {},
+            set(
+              {
+                pageSelection: {
+                  fileId: pageCountData.fileId,
+                  numPages: pageCountData.numPages,
+                  selectedPages: [],
+                  previews: {},
+                },
               },
-            });
+              undefined,
+              "ImportBankStatementStore/HandleFileChange"
+            );
           } catch (err) {
-            set({
-              error: err instanceof Error ? err.message : "An error occurred",
-              file: null,
-            });
+            set(
+              {
+                error: err instanceof Error ? err.message : "An error occurred",
+                file: null,
+              },
+              undefined,
+              "ImportBankStatementStore/HandleFileChange"
+            );
           }
         } else {
-          set({
-            error: "Please select a valid PDF file",
-            file: null,
-          });
+          set(
+            {
+              error: "Please select a valid PDF file",
+              file: null,
+            },
+            undefined,
+            "ImportBankStatementStore/HandleFileChange"
+          );
         }
       },
       loadPreviews: async () => {
@@ -255,7 +280,11 @@ const importBankStatementStore = create<State & Action>()(
         const { file, pageSelection } = state;
         if (!file || !pageSelection) return;
 
-        importBankStatementStore.setState({ previewsLoading: true });
+        set(
+          { previewsLoading: true },
+          undefined,
+          "ImportBankStatementStore/LoadPreviews"
+        );
 
         for (let pageNum = 1; pageNum <= pageSelection.numPages; pageNum++) {
           const formData = new FormData();
@@ -279,22 +308,30 @@ const importBankStatementStore = create<State & Action>()(
             const previewBlob = await previewResponse.blob();
             const previewUrl = URL.createObjectURL(previewBlob);
 
-            importBankStatementStore.setState((state) => ({
-              pageSelection: state.pageSelection
-                ? {
-                    ...state.pageSelection,
-                    previews: {
-                      ...state.pageSelection.previews,
-                      [pageNum]: previewUrl,
-                    },
-                  }
-                : null,
-            }));
+            set(
+              (state) => ({
+                pageSelection: state.pageSelection
+                  ? {
+                      ...state.pageSelection,
+                      previews: {
+                        ...state.pageSelection.previews,
+                        [pageNum]: previewUrl,
+                      },
+                    }
+                  : null,
+              }),
+              undefined,
+              "ImportBankStatementStore/LoadPreviews"
+            );
           } catch (error) {
             console.error(`Failed to load preview for page ${pageNum}:`, error);
           }
         }
-        importBankStatementStore.setState({ previewsLoading: false });
+        set(
+          { previewsLoading: false },
+          undefined,
+          "ImportBankStatementStore/LoadPreviews"
+        );
       },
       adjustTransaction: (transaction) => {
         console.log("Adjusting transaction", transaction);
