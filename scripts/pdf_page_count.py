@@ -24,14 +24,32 @@ def get_page_count(pdf_path):
         return len(pdf.pages)
 
 if __name__ == "__main__":
-    pdf_path = sys.argv[1]
+    if len(sys.argv) != 2:
+        print(json.dumps({
+            "error": "Usage: python pdf_page_count.py <pdf_path>"
+        }))
+        sys.exit(1)
+
+    pdf_path = os.path.abspath(sys.argv[1])
     
     try:
         num_pages = get_page_count(pdf_path)
         print(json.dumps({
             "numPages": num_pages
         }))
+        sys.exit(0)
+    except FileNotFoundError as e:
+        print(json.dumps({
+            "error": f"File not found: {e}"
+        }))
+        sys.exit(2)
+    except ValueError as e:
+        print(json.dumps({
+            "error": f"Invalid file: {e}"
+        }))
+        sys.exit(3)
     except Exception as e:
         print(json.dumps({
-            "error": str(e)
-        })) 
+            "error": f"Unexpected error: {e}"
+        }))
+        sys.exit(4) 
