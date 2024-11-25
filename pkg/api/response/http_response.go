@@ -78,7 +78,6 @@ func (r *Response[T]) ToGinH() gin.H {
 	return h
 }
 
-// Legacy helper functions (for backward compatibility)
 func Success[T any](data T, message string) gin.H {
 	return New[T]().
 		WithData(data).

@@ -40,8 +40,6 @@ type PDFPageCount struct {
 	FileID   string `json:"fileId"`
 }
 
-var tempFiles = make(map[string]string)
-
 func ExtractPDFText(c *gin.Context) {
 	file, err := c.FormFile("file")
 	if err != nil {
@@ -210,9 +208,6 @@ func ExtractPDFText(c *gin.Context) {
 		return
 	}
 
-	// Print page count
-	fmt.Println("Page count:", pages)
-
 	c.JSON(200, statement)
 }
 
@@ -241,14 +236,17 @@ func GetPDFPageCount(c *gin.Context) {
 	cmd := exec.Command("python3", "scripts/pdf_page_count.py", pdfPath)
 	output, err := cmd.Output()
 	if err != nil {
+		fmt.Println("err", err)
 		c.JSON(500, gin.H{"error": "Failed to process PDF: " + err.Error()})
 		return
 	}
 
-	var response struct {
-		NumPages int `json:"numPages"`
+	type response struct {
+		NumPages int    `json:"numPages,omitempty"`
+		Error    string `json:"error,omitempty"`
 	}
-	if err := json.Unmarshal(output, &response); err != nil {
+	var resp response
+	if err := json.Unmarshal(output, &resp); err != nil {
 		c.JSON(500, gin.H{"error": "Failed to parse Python output"})
 		return
 	}
@@ -256,12 +254,13 @@ func GetPDFPageCount(c *gin.Context) {
 	// Generate a unique ID for this file
 	fileID := uuid.New().String()
 
-	// Store the temp directory path (you might want to use Redis or similar in production)
-	// For now, we'll use an in-memory map
-	tempFiles[fileID] = tmpDir
+	if resp.Error != "" {
+		c.JSON(500, gin.H{"error": resp.Error})
+		return
+	}
 
 	c.JSON(200, PDFPageCount{
-		NumPages: response.NumPages,
+		NumPages: resp.NumPages,
 		FileID:   fileID,
 	})
 }
