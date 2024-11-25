@@ -1,29 +1,30 @@
-import { DashboardWrapper } from '@/components/DashboardWrapper'
-import BankStatementDetailsTable from '@/components/ImportBankStatementApp/components/BankStatementDetailsTable'
-import importBankStatementStore from '@/components/ImportBankStatementApp/ImportBankStatement.store'
-import { createFileRoute } from '@tanstack/react-router'
-import { useEffect } from 'react'
+import { DashboardWrapper } from "@/components/DashboardWrapper";
+import BankStatementDetailsTable from "@/components/ImportBankStatementApp/components/BankStatementDetailsTable";
+import importBankStatementStore from "@/components/ImportBankStatementApp/ImportBankStatement.store";
+import { createFileRoute } from "@tanstack/react-router";
+import { useEffect } from "react";
 
-export const Route = createFileRoute('/app/transactions/')({
+export const Route = createFileRoute("/app/transactions/")({
   component: BankStatements,
-})
+});
 
 function BankStatements() {
   const getUserTransactions = importBankStatementStore(
-    (state) => state.getUserTransactions,
-  )
-  const reset = importBankStatementStore((state) => state.reset)
+    (state) => state.getUserTransactions
+  );
+  const reset = importBankStatementStore((state) => state.reset);
 
   useEffect(() => {
-    reset()
+    reset();
 
     // Fetch transactions from the database
-    getUserTransactions()
-  }, [])
+    getUserTransactions();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <DashboardWrapper>
       <BankStatementDetailsTable withImportStatementsButton />
     </DashboardWrapper>
-  )
+  );
 }
