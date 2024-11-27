@@ -5,6 +5,16 @@ import pdfplumber
 
 # Constants
 MAX_FILE_SIZE = 50 * 1024 * 1024  # 50MB
+SENSITIVE_PATTERNS = [
+    "Account Number",
+    "Routing Number",
+    "SSN",
+    "Social Security",
+    "Credit Card",
+    "Password",
+    "DOB",
+    "Date of Birth",
+]
 
 def extract_text(pdf_path: str, pages_to_extract: list[int]) -> str:
     # Validate inputs
@@ -43,13 +53,28 @@ if __name__ == "__main__":
     pages_to_extract = [int(page) for page in sys.argv[2:]]
     try:
         text = extract_text(pdf_path, pages_to_extract)
+
+        # Enhanced sensitive data detection
+        found_patterns = []
+        for pattern in SENSITIVE_PATTERNS:
+            if pattern.lower() in text.lower():  # Case-insensitive matching
+                found_patterns.append(pattern)
+        
+        if found_patterns:
+            raise ValueError(f"Sensitive data found in file: {', '.join(found_patterns)}")
+    
         # Output as JSON for easy parsing in Go
         print(json.dumps({
             "success": True,
             "text": text
         }))
     except Exception as e:
+        # Ensure we're not leaking sensitive data in error messages
+        error_msg = str(e)
+        if "Sensitive data found" in error_msg:
+            error_msg = "Document contains sensitive information and cannot be processed"
+            
         print(json.dumps({
             "success": False,
-            "error": str(e)
+            "error": error_msg
         })) 
