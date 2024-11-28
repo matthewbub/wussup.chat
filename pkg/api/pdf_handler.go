@@ -225,6 +225,12 @@ func GetPDFPageCount(c *gin.Context) {
 		return
 	}
 
+	defer func() {
+		if err := os.RemoveAll(tmpDir); err != nil {
+			fmt.Printf("Failed to cleanup temporary directory %s: %v\n", tmpDir, err)
+		}
+	}()
+
 	// Save the uploaded file
 	pdfPath := filepath.Join(tmpDir, "statement.pdf")
 	if err := c.SaveUploadedFile(file, pdfPath); err != nil {
