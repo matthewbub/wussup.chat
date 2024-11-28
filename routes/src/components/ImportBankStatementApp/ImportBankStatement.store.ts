@@ -380,23 +380,40 @@ const importBankStatementStore = create<State & Action>()(
       getUserTransactions: async () => {
         const state = importBankStatementStore.getState();
 
-        const response = await fetch("/api/v1/transactions");
-        const json = await response.json();
+        try {
+          const response = await fetch("/api/v1/transactions");
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          const json = await response.json();
 
-        set(
-          {
-            statement: {
-              ...state.statement,
-              transactions: json.data.transactions,
+          set(
+            {
+              statement: {
+                ...state.statement,
+                transactions: json.data.transactions,
+              },
+              statement_copy: {
+                ...state.statement_copy,
+                transactions: json.data.transactions,
+              },
             },
-            statement_copy: {
-              ...state.statement_copy,
-              transactions: json.data.transactions,
+            undefined,
+            "ImportBankStatementStore/GetUserTransactions"
+          );
+        } catch (err) {
+          set(
+            {
+              error:
+                err instanceof Error
+                  ? err.message
+                  : "Failed to fetch transactions",
             },
-          },
-          undefined,
-          "ImportBankStatementStore/GetUserTransactions"
-        );
+            undefined,
+            "ImportBankStatementStore/GetUserTransactions"
+          );
+          console.error("Failed to fetch transactions:", err);
+        }
       },
       reset: () => {
         set(
