@@ -74,14 +74,6 @@ const PdfSafetyMarker: React.FC = () => {
     };
 
     loadPreviews();
-
-    return () => {
-      if (pageSelection?.previews) {
-        Object.values(pageSelection.previews).forEach((url) => {
-          if (url) URL.revokeObjectURL(url);
-        });
-      }
-    };
   }, [file, pageSelection?.numPages]);
 
   const handleSaveDrawing = async (vectorData: DrawingData[]) => {

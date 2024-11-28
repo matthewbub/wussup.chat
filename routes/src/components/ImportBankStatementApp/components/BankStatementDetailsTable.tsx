@@ -243,6 +243,9 @@ const BankStatementDetailsTable: React.FC<{
 
     fetch("/api/v1/pdf/save", {
       method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({ transactions }),
     })
       .then((res) => res.json())
@@ -265,20 +268,13 @@ const BankStatementDetailsTable: React.FC<{
   };
 
   const handleEdit = () => {
-    if (isEditing) {
-      const uSure = window.confirm("Are you sure you want to save?");
-      if (uSure) {
-        mergeStatement();
-        setIsEditing(false);
-      }
-    } else {
-      setIsEditing(true);
-    }
+    setIsEditing(true);
   };
 
   const handleCancel = () => {
     setIsEditing(false);
   };
+
   const handleMergeTransactions = () => {
     mergeStatement();
     resetStatementCopy();
@@ -307,8 +303,8 @@ const BankStatementDetailsTable: React.FC<{
               <AlertDialogHeader>
                 <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  This action cannot be undone. This will permanently delete
-                  your account and remove your data from our servers.
+                  This action will save your changes to the transactions. Please
+                  confirm that you want to proceed.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
@@ -423,33 +419,10 @@ export function DatePicker({
         <Calendar
           mode="single"
           selected={date}
-          onSelect={(date) => setDate(date as Date)}
+          onSelect={(date) => date && setDate(date as Date)}
           initialFocus
         />
       </PopoverContent>
     </Popover>
-  );
-}
-
-export function ConfirmSaveDialog() {
-  return (
-    <AlertDialog>
-      <AlertDialogTrigger asChild>
-        <Button variant="outline">Show Dialog</Button>
-      </AlertDialogTrigger>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-          <AlertDialogDescription>
-            This action cannot be undone. This will permanently delete your
-            account and remove your data from our servers.
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction>Continue</AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
   );
 }
