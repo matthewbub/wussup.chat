@@ -25,7 +25,14 @@ const ImportBankStatementLifecycle: React.FC<{ children: React.ReactNode }> = ({
     return () => {
       if (pageSelection?.previews) {
         Object.values(pageSelection.previews).forEach((url) => {
-          if (url) URL.revokeObjectURL(url);
+          if (url) {
+            try {
+              URL.revokeObjectURL(url);
+            } catch (err) {
+              console.error("Failed to revoke object URL:", err);
+              // Continue cleanup even if one URL fails
+            }
+          }
         });
       }
     };
