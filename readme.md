@@ -68,20 +68,6 @@ docker build -t pdf-service -f lib/image/Dockerfile lib/image/
 docker build --no-cache -t pdf-service -f lib/image/Dockerfile lib/image/
 ```
 
-If the build fails:
-
-1. Check Docker daemon status: `docker info`
-2. Verify file permissions in `lib/image/`
-3. Review Docker logs: `docker logs pdf-service`
-4. Ensure all required files exist:
-   ```sh
-   ls lib/image/
-   # Should show:
-   # - Dockerfile
-   # - main.py
-   # - requirements.txt
-   ```
-
 ### Run the `lib/image` Python container
 
 The service will listen on port 8082 for PDF upload requests.
