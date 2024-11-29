@@ -51,6 +51,49 @@ docker build -t zcauldron .
 docker run --env-file .env -p 8080:8080 zcauldron
 ```
 
+### Build the `lib/image` Python image
+
+### Build the `lib/image` Python Service
+
+Prerequisites:
+
+- Ensure Docker daemon is running
+- Navigate to the project root directory
+- Verify `lib/image/Dockerfile` exists
+
+```sh
+# Standard build (recommended)
+docker build -t pdf-service -f lib/image/Dockerfile lib/image/
+
+# OR...
+# Force a clean build (useful for dependency updates or troubleshooting)
+docker build --no-cache -t pdf-service -f lib/image/Dockerfile lib/image/
+```
+
+If the build fails:
+
+1. Check Docker daemon status: `docker info`
+2. Verify file permissions in `lib/image/`
+3. Review Docker logs: `docker logs pdf-service`
+4. Ensure all required files exist:
+   ```sh
+   ls lib/image/
+   # Should show:
+   # - Dockerfile
+   # - main.py
+   # - requirements.txt
+   ```
+
+### Run the `lib/image` Python container
+
+The service will listen on port 8082 for PDF upload requests.
+
+Basic usage:
+
+```sh
+docker run -p 8082:8082 pdf-service
+```
+
 ## Project Requirements
 
 If you plan on running the project locally, you're going to need the following installed on your machine. The versions defined are what I am explicitly running right now, if I had to take a guess in the dark I'd say you're good to run with and version greater than or equal to whats defined below.

@@ -48,7 +48,7 @@ const PdfSafetyMarker: React.FC = () => {
 
         try {
           const previewResponse = await fetch(
-            "http://127.0.0.1:5000/api/v1/image/upload-pdf",
+            "http://localhost:8082/api/v1/pdf/upload-pdf",
             {
               method: "POST",
               body: formData,
@@ -86,7 +86,7 @@ const PdfSafetyMarker: React.FC = () => {
       formData.append("drawing", JSON.stringify(vectorData));
 
       const response = await fetch(
-        "http://127.0.0.1:5000/api/v1/pdf/apply-drawing",
+        "http://localhost:8082/api/v1/pdf/apply-drawing",
         {
           method: "POST",
           body: formData,
@@ -105,7 +105,7 @@ const PdfSafetyMarker: React.FC = () => {
       previewFormData.append("page", selectedPageForDrawing.toString());
 
       const previewResponse = await fetch(
-        "http://127.0.0.1:5000/api/v1/image/upload-pdf",
+        "http://localhost:8082/api/v1/pdf/upload-pdf",
         {
           method: "POST",
           body: previewFormData,

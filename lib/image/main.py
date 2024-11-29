@@ -1,3 +1,4 @@
+import os
 from flask import Flask, request, jsonify, send_file
 import fitz  # PyMuPDF
 from io import BytesIO
@@ -6,6 +7,11 @@ import PIL.Image
 import io
 import json
 from fitz import Rect
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Constants
 MAX_FILE_SIZE = 10 * 1024 * 1024  # 10 MB limit
@@ -19,7 +25,7 @@ CORS(app, resources={r"/*": {
 }})
 
 
-@app.route('/api/v1/image/upload-pdf', methods=['POST'])
+@app.route('/api/v1/pdf/upload-pdf', methods=['POST'])
 def upload_pdf():
     if 'file' not in request.files:
         return jsonify({'error': 'No file provided'}), 400
@@ -146,5 +152,13 @@ def apply_drawing():
         print(e)  # For debugging
         return jsonify({'error': 'An internal error occurred'}), 500
 
+@app.route('/health', methods=['GET'])
+def health_check():
+    return jsonify({'status': 'healthy'}), 200
+
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(
+        host='0.0.0.0',
+        port=8082,
+        debug=os.getenv('FLASK_ENV', 'production') == 'development'
+    )
