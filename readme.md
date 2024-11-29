@@ -96,6 +96,7 @@ docker run -p 8082:8082 pdf-service
 
 If you plan on running the project locally, you're going to need the following installed on your machine. The versions defined are what I am explicitly running right now, if I had to take a guess in the dark I'd say you're good to run with and version greater than or equal to whats defined below.
 
+- [Docker](https://www.docker.com/) version 25.0.2
 - [Node.js](https://nodejs.org/en/download/) version 18.0
 - [Go](https://go.dev/) version 1.23.1
 - [SQLite](https://www.sqlite.org/download.html) version 3.43.2
