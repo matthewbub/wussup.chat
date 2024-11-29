@@ -15,7 +15,7 @@ Watch this 5 minute getting started video here: https://www.youtube.com/watch?v=
 7. Launch the local server. `go run main.go`
 8. _In a separate terminal session_, navigate to the `routes/` directory and install the project dependencies using npm - `npm install`
 9. Launch the client dev server `npm run dev`
-10. TEMPORARY (Sorry) _In a separate (3 total) terminal session_, navigate to the `/lib/image` directory and install the project dependencies
+10. _In a separate terminal session (3 terminals total)_, navigate to the `/lib/image` directory and install the project dependencies. (OR [JUST RUN THE DOCKER IMAGE IF YOU AREN'T DEVELOPING IN THIS SERVER](#build-the-libimage-python-service))
 
 ```sh
 # Create and activate a virtual environment (recommended)
@@ -50,8 +50,6 @@ docker build -t zcauldron .
 ```sh
 docker run --env-file .env -p 8080:8080 zcauldron
 ```
-
-### Build the `lib/image` Python image
 
 ### Build the `lib/image` Python Service
 
