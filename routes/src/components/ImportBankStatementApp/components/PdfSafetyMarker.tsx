@@ -139,7 +139,8 @@ const PdfSafetyMarker: React.FC = () => {
 
   if (
     !isDrawingMode ||
-    !selectedPageForDrawing ||
+    selectedPageForDrawing === null ||
+    selectedPageForDrawing === undefined ||
     !pageSelection?.previews[selectedPageForDrawing]
   )
     return null;

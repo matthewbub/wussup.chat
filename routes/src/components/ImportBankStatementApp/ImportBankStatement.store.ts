@@ -7,7 +7,6 @@ import {
 } from "./ImportBankStatement.types";
 import { generateId } from "@/utils/generateId";
 import { devtools } from "zustand/middleware";
-import { set } from "node_modules/react-hook-form/dist/utils";
 
 type State = {
   file: File | null;

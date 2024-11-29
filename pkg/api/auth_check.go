@@ -26,7 +26,7 @@ func AuthCheckHandler(c *gin.Context) {
 
 	userID, expirationTime, err := utils.VerifyJWT(tokenString)
 	if err != nil {
-		log.Printf("JWT verification failed: %v", err)
+		log.Printf("WARNING: JWT verification failed from IP %s - %s", c.ClientIP(), err)
 		c.JSON(http.StatusUnauthorized, response.Error(
 			"Invalid token",
 			response.AUTHENTICATION_FAILED,

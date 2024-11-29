@@ -1,5 +1,6 @@
 import React from "react";
 import importBankStatementStore from "../ImportBankStatement.store";
+import { useToast } from "@/components/ui/toast";
 
 const PdfPageSelector: React.FC = () => {
   const pageSelection = importBankStatementStore(
@@ -19,17 +20,26 @@ const PdfPageSelector: React.FC = () => {
     (state) => state.setSelectedPageForDrawing
   );
 
-  const handlePageSelection = (pageNum: number) => {
-    togglePageSelection(pageNum);
-  };
   const submitSelectedPages = importBankStatementStore(
     (state) => state.submitSelectedPages
   );
 
+  const handlePageSelection = (pageNum: number) => {
+    togglePageSelection(pageNum);
+  };
+
+  const { toast } = useToast();
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-    await submitSelectedPages();
-    return;
+    try {
+      await submitSelectedPages();
+    } catch (error) {
+      toast({
+        title: "Failed to process selected pages. Please try again.",
+        description: "Error processing pages:",
+        variant: "destructive",
+      });
+    }
   };
 
   if (!pageSelection) return null;
@@ -66,6 +76,8 @@ const PdfPageSelector: React.FC = () => {
                 </div>
               )}
               <button
+                aria-label={`Edit page ${pageNum}`}
+                role="button"
                 onClick={() => {
                   setIsDrawingMode(true);
                   setSelectedPageForDrawing(pageNum);
@@ -75,6 +87,9 @@ const PdfPageSelector: React.FC = () => {
                 Edit
               </button>
               <button
+                aria-label={`Select page ${pageNum}`}
+                aria-pressed={pageSelection.selectedPages.includes(pageNum)}
+                role="button"
                 onClick={() => handlePageSelection(pageNum)}
                 className={`absolute bottom-2 right-2 px-2 py-1 rounded ${
                   pageSelection.selectedPages.includes(pageNum)
@@ -90,6 +105,8 @@ const PdfPageSelector: React.FC = () => {
       </div>
 
       <button
+        aria-label="Process selected pages"
+        role="button"
         onClick={handleSubmit}
         disabled={pageSelection.selectedPages.length === 0 || isLoading}
         className="mt-4 px-4 py-2 bg-blue-600 text-white rounded disabled:bg-gray-400"

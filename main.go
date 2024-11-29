@@ -21,7 +21,9 @@ func main() {
 		log.Fatalf("Environment validation failed: %v", err)
 	}
 
-	utils.RunMigrations()
+	if err := utils.RunMigrations(); err != nil {
+		log.Fatalf("Failed to run migrations: %v", err)
+	}
 
 	router := gin.Default()
 	router.Use(middleware.Cors)
@@ -56,9 +58,13 @@ func main() {
 		accountRoutes.DELETE("/delete", api.DeleteAccountHandler)
 	}
 
-	router.POST("/api/v1/pdf/extract", api.ExtractPDFText)
-	router.POST("/api/v1/pdf/page-count", api.GetPDFPageCount)
-	router.POST("/api/v1/pdf/save", api.SaveStatement)
+	pdfRoutes := router.Group("/api/v1/pdf", middleware.JWTAuthMiddleware())
+	{
+		pdfRoutes.POST("/extract", api.ExtractPDFText)
+		pdfRoutes.POST("/page-count", api.GetPDFPageCount)
+		pdfRoutes.POST("/save", api.SaveStatement)
+	}
+
 	router.GET("/api/v1/transactions", middleware.JWTAuthMiddleware(), api.GetUserTransactionsHandler)
 	//router.NoRoute(handlers.NotFound404)
 

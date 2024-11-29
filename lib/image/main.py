@@ -3,11 +3,12 @@ import fitz  # PyMuPDF
 from io import BytesIO
 from flask_cors import CORS
 import PIL.Image
-import base64
-from PIL import Image
 import io
 import json
-from fitz import Rect, PDF_ANNOT_SQUARE
+from fitz import Rect
+
+# Constants
+MAX_FILE_SIZE = 10 * 1024 * 1024  # 10 MB limit
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {
@@ -24,6 +25,12 @@ def upload_pdf():
         return jsonify({'error': 'No file provided'}), 400
     
     file = request.files['file']
+    file.seek(0, io.SEEK_END)
+    file_length = file.tell()
+    file.seek(0)
+    if file_length > MAX_FILE_SIZE:
+        return jsonify({'error': 'File size exceeds the maximum limit of 10 MB'}), 400
+    
     page_num = int(request.form.get('page', 1)) - 1  # Default to first page if not specified
     
     if file.content_type != 'application/pdf':
@@ -51,7 +58,7 @@ def upload_pdf():
 
     except Exception as e:
         print(e)  # For debugging
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'error': 'An internal error occurred'}), 500
 
 def hex_to_rgb(hex_color: str) -> tuple:
     """Convert hex color (#FF0000) to normalized RGB tuple (0-1)"""
@@ -68,6 +75,12 @@ def apply_drawing():
         return jsonify({'error': 'No file provided'}), 400
     
     file = request.files['file']
+    file.seek(0, io.SEEK_END)
+    file_length = file.tell()
+    file.seek(0)
+    if file_length > MAX_FILE_SIZE:
+        return jsonify({'error': 'File size exceeds the maximum limit of 10 MB'}), 400
+    
     page_num = int(request.form.get('page', 1)) - 1
     drawing_data = request.form.get('drawing')
     
@@ -131,7 +144,7 @@ def apply_drawing():
 
     except Exception as e:
         print(e)  # For debugging
-        return jsonify({'error': str(e)}), 500
+        return jsonify({'error': 'An internal error occurred'}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)
