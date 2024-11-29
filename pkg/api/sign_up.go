@@ -97,7 +97,9 @@ func SignUpHandler(c *gin.Context) {
 	if env == "development" {
 		cookieConfig.Domain = constants.AppConfig.DevelopmentDomain
 		cookieConfig.Secure = false
-	} else if env == "test" {
+	}
+
+	if env == "test" {
 		cookieConfig.Domain = constants.AppConfig.TestDomain
 		cookieConfig.Secure = false
 	}

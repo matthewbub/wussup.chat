@@ -1,9 +1,12 @@
 package test
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
-	"log"
+	"os"
+
+	_ "github.com/mattn/go-sqlite3"
 )
 
 var TestConfig = struct {
@@ -20,23 +23,35 @@ var TestConfig = struct {
 	Password:       "Password123!", // Nobody should use this password in production
 }
 
-func GetNextUser() (string, string) {
-	db, err := sql.Open("sqlite3", "pkg/database/test.db")
+func GetNextUser() (string, string, error) {
+	ctx := context.Background()
+	dbPath := os.Getenv("TEST_DB_PATH")
+	if dbPath == "" {
+		dbPath = "pkg/database/test.db"
+	}
+
+	db, err := sql.Open("sqlite3", dbPath)
 	if err != nil {
-		log.Fatalf("Failed to open test database: %v", err)
+		return "", "", fmt.Errorf("failed to open test database: %w", err)
 	}
 	defer db.Close()
 
-	row := db.QueryRow("SELECT username, email, id FROM user_history ORDER BY id DESC LIMIT 1")
+	stmt, err := db.PrepareContext(ctx, "SELECT username, email, id FROM user_history ORDER BY id DESC LIMIT 1")
+	if err != nil {
+		return "", "", fmt.Errorf("failed to prepare statement: %w", err)
+	}
+	defer stmt.Close()
+
+	row := stmt.QueryRowContext(ctx)
 	var username string
 	var email string
 	var id int
 	err = row.Scan(&username, &email, &id)
 	if err != nil {
-		log.Fatalf("Failed to get next user: %v", err)
+		return "", "", fmt.Errorf("failed to get next user: %w", err)
 	}
 
-	return fmt.Sprintf("testuser%d", id+1), fmt.Sprintf("testuser%d@example.com", id+1)
+	return fmt.Sprintf("testuser%d", id+1), fmt.Sprintf("testuser%d@example.com", id+1), nil
 }
 
 func GetPrimaryUser() (string, string) {

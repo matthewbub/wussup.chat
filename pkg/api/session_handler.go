@@ -44,7 +44,9 @@ func RenewSessionHandler(c *gin.Context) {
 		domain = constants.AppConfig.DevelopmentDomain
 	} else if env == "production" {
 		domain = constants.AppConfig.ProductionDomain
-	} else if env == "test" {
+	}
+
+	if env == "test" {
 		domain = constants.AppConfig.TestDomain
 	}
 

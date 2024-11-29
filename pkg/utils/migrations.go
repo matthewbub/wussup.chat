@@ -2,6 +2,7 @@ package utils
 
 import (
 	"database/sql"
+	"fmt"
 	"log"
 	"os"
 
@@ -12,7 +13,7 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-func RunMigrations() {
+func RunMigrations() error {
 	env := GetEnv()
 	var dbPath string
 
@@ -22,8 +23,12 @@ func RunMigrations() {
 		dbPath = "sqlite3://pkg/database/prod.db?cache=shared&mode=rwc"
 	} else if env == "development" {
 		dbPath = "sqlite3://pkg/database/dev.db?cache=shared&mode=rwc"
-	} else if env == "test" {
+	}
+
+	if env == "test" {
 		dbPath = "sqlite3://pkg/database/test.db?cache=shared&mode=rwc"
+	} else {
+		return fmt.Errorf("invalid environment: %s", env)
 	}
 
 	m, err := migrate.New(
@@ -31,19 +36,20 @@ func RunMigrations() {
 		dbPath)
 	if err != nil {
 		log.Fatalf("Failed to create migrate instance: %v", err)
+		return err
 	}
 
 	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
 		log.Fatalf("Failed to run migrations: %v", err)
+		return err
 	}
 
 	log.Println("Migrations completed")
+	return nil
 }
 
-func RunMigrationsTest() {
+func RunMigrationsTest() error {
 	log.Println("Running migrations for test")
-
-	// DropTestDatabase()
 
 	db, err := sql.Open("sqlite3", "pkg/database/test.db")
 	if err != nil {
@@ -82,6 +88,7 @@ func RunMigrationsTest() {
 	}
 
 	log.Println("Test history table created")
+	return nil
 }
 
 // DropTestDatabase wipe clean for the next test

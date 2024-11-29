@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"os"
 	"testing"
 
@@ -14,9 +15,16 @@ import (
 )
 
 func TestMain(m *testing.M) {
-	utils.SetTestEnvironment()
-	utils.RunMigrations()
-	utils.RunMigrationsTest()
+	if err := utils.SetTestEnvironment(); err != nil {
+		log.Fatalf("Failed to set test environment: %v", err)
+	}
+	if err := utils.RunMigrations(); err != nil {
+		log.Fatalf("Failed to run migrations: %v", err)
+	}
+
+	if err := utils.RunMigrationsTest(); err != nil {
+		log.Fatalf("Failed to run migrations test: %v", err)
+	}
 	m.Run()
 	utils.DropTestDatabase()
 }

@@ -3,7 +3,6 @@ package test
 import (
 	"bytes"
 	"encoding/json"
-	"log"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -13,8 +12,13 @@ import (
 )
 
 func RegisterUserAtSignup(router *gin.Engine, t *testing.T) {
-	username, email := GetNextUser()
-	log.Printf("username: %s, email: %s", username, email)
+	username, email, err := GetNextUser()
+	if err != nil {
+		t.Fatalf("Failed to get next user: %v", err)
+	}
+	if username == "" || email == "" {
+		t.Fatalf("Failed to get next user")
+	}
 	signUpBody := map[string]interface{}{
 		"email":           email,
 		"password":        TestConfig.Password,

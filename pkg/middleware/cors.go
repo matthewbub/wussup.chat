@@ -29,7 +29,9 @@ func Cors(c *gin.Context) {
 	if env == "development" {
 		allowedOrigins = append(allowedOrigins, "http://"+constants.AppConfig.DevelopmentDomain+":"+strconv.Itoa(constants.AppConfig.DevelopmentPorts.Frontend))
 		allowedOrigins = append(allowedOrigins, "http://"+constants.AppConfig.DevelopmentDomain+":"+strconv.Itoa(constants.AppConfig.DevelopmentPorts.Backend))
-	} else if env == "test" {
+	}
+
+	if env == "test" {
 		allowedOrigins = append(allowedOrigins, "http://"+constants.AppConfig.TestDomain+":"+strconv.Itoa(constants.AppConfig.DevelopmentPorts.Frontend))
 		allowedOrigins = append(allowedOrigins, "http://"+constants.AppConfig.TestDomain+":"+strconv.Itoa(constants.AppConfig.DevelopmentPorts.Backend))
 	}
