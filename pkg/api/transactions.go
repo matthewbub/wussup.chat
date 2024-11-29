@@ -17,7 +17,7 @@ type TransactionFromDatabase struct {
 	UserID      string    `json:"user_id"`
 	Date        time.Time `json:"date"`
 	Description string    `json:"description"`
-	Amount      string    `json:"amount"`
+	Amount      float64   `json:"amount"`
 	Type        string    `json:"type"`
 	CreatedAt   time.Time `json:"created_at"`
 }
