@@ -19,7 +19,7 @@ CORS(app, resources={r"/*": {
 }})
 
 
-@app.route('/api/v1/image/upload-pdf', methods=['POST'])
+@app.route('/api/v1/pdf/upload-pdf', methods=['POST'])
 def upload_pdf():
     if 'file' not in request.files:
         return jsonify({'error': 'No file provided'}), 400
