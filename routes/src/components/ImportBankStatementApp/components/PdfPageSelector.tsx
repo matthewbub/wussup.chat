@@ -1,6 +1,6 @@
 import React from "react";
 import importBankStatementStore from "../ImportBankStatement.store";
-import { useToast } from "@/components/ui/toast";
+import { useToast } from "@/hooks/use-toast";
 
 const PdfPageSelector: React.FC = () => {
   const pageSelection = importBankStatementStore(
