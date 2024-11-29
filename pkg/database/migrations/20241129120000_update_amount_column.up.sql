@@ -3,7 +3,7 @@ ALTER TABLE transactions ADD COLUMN amount_cleaned REAL;
 
 -- Migrate data from the old column to the new column
 UPDATE transactions
-SET amount_cleaned = CAST(REPLACE(REPLACE(amount, '$', ''), ',', '') AS REAL);
+SET amount_cleaned = CAST(REPLACE(REPLACE(REPLACE(amount, '$', ''), ',', ''), '(', '-') AS REAL);
 
 -- Drop the old column
 ALTER TABLE transactions DROP COLUMN amount;

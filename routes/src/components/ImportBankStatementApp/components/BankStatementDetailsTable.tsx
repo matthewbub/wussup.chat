@@ -143,16 +143,15 @@ const BankStatementDetailsTable: React.FC<{
       accessorKey: "amount",
       header: "Amount",
       cell: ({ row, getValue }) => {
-        const defaultValue = (getValue() as number).toFixed(2);
+        const defaultValue = Math.abs(getValue() as number).toFixed(2);
 
         return isEditing ? (
           <CurrencyInput
             defaultValue={defaultValue}
             onBlur={(e) => {
-              const amount = parseFloat(
-                e.target.value.replace("$", "")
+              const amount = Math.abs(
+                parseFloat(e.target.value.replace("$", ""))
               ).toFixed(2);
-              console.log("amount", amount);
               adjustTransaction({
                 id: row.original.id,
                 date: row.original.date,
