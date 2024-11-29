@@ -7,6 +7,11 @@ import PIL.Image
 import io
 import json
 from fitz import Rect
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 # Constants
 MAX_FILE_SIZE = 10 * 1024 * 1024  # 10 MB limit
@@ -146,6 +151,10 @@ def apply_drawing():
     except Exception as e:
         print(e)  # For debugging
         return jsonify({'error': 'An internal error occurred'}), 500
+
+@app.route('/health', methods=['GET'])
+def health_check():
+    return jsonify({'status': 'healthy'}), 200
 
 if __name__ == '__main__':
     app.run(

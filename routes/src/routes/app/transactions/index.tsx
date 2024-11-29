@@ -24,7 +24,7 @@ function BankStatements() {
   // Use useEffect only for cleanup
   useEffect(() => {
     return () => reset();
-  }, [reset]);
+  }, []);
 
   // Use a separate effect to watch for errors
   useEffect(() => {
