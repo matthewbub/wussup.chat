@@ -112,7 +112,7 @@ const BankStatementDetailsTable: React.FC<{
             }}
           />
         ) : (
-          <span>{getValue() as string}</span>
+          <span>{format(getValue() as string, "PPP")}</span>
         );
       },
     },
