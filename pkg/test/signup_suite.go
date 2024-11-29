@@ -23,8 +23,10 @@ func RegisterUserAtSignup(router *gin.Engine, t *testing.T) {
 		"username":        username,
 	}
 
-	log.Printf("signUpBody: %v", signUpBody)
-	jsonBody, _ := json.Marshal(signUpBody)
+	jsonBody, err := json.Marshal(signUpBody)
+	if err != nil {
+		t.Fatalf("Failed to marshal signup body: %v", err)
+	}
 
 	w := httptest.NewRecorder()
 	req, _ := http.NewRequest("POST", "/api/v1/public/sign-up", bytes.NewBuffer(jsonBody))
