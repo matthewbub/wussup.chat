@@ -5,6 +5,8 @@ import { toast } from "@/hooks/use-toast";
 import { useToast } from "@/hooks/use-toast";
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect } from "react";
+import { useAuthStore } from "@/stores/auth";
+import { Authorized } from "@/components/Authorized";
 
 export const Route = createFileRoute("/app/transactions/")({
   component: BankStatements,
@@ -17,6 +19,7 @@ function BankStatements() {
   const error = importBankStatementStore((state) => state.error);
   const reset = importBankStatementStore((state) => state.reset);
   const toast = useToast();
+  const { isAuthenticated } = useAuthStore();
 
   // Use useEffect only for cleanup
   useEffect(() => {
@@ -35,6 +38,11 @@ function BankStatements() {
 
   // Load data on mount using a self-executing async function
   useEffect(() => {
+    if (!isAuthenticated) {
+      console.warn("User is not authenticated. Skipping transaction fetch.");
+      return;
+    }
+
     (async () => {
       try {
         await getUserTransactions();
@@ -46,11 +54,13 @@ function BankStatements() {
         });
       }
     })();
-  }, [getUserTransactions, toast]);
+  }, [getUserTransactions, toast, isAuthenticated]);
 
   return (
-    <DashboardWrapper>
-      <BankStatementDetailsTable withImportStatementsButton />
-    </DashboardWrapper>
+    <Authorized>
+      <DashboardWrapper>
+        <BankStatementDetailsTable withImportStatementsButton />
+      </DashboardWrapper>
+    </Authorized>
   );
 }

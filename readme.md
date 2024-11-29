@@ -51,6 +51,20 @@ docker build -t zcauldron .
 docker run --env-file .env -p 8080:8080 zcauldron
 ```
 
+### Build the `lib/image` Python image
+
+I prefer the `--no-cache` flag here, Docker was giving me a rough time trying to change ports between rebuilds
+
+```sh
+docker build --no-cache -t pdf-service -f lib/image/Dockerfile lib/image/
+```
+
+### Run the `lib/image` Python container
+
+```sh
+docker run -p 8082:8082 pdf-service
+```
+
 ## Project Requirements
 
 If you plan on running the project locally, you're going to need the following installed on your machine. The versions defined are what I am explicitly running right now, if I had to take a guess in the dark I'd say you're good to run with and version greater than or equal to whats defined below.

@@ -1,3 +1,4 @@
+import os
 from flask import Flask, request, jsonify, send_file
 import fitz  # PyMuPDF
 from io import BytesIO
@@ -147,4 +148,8 @@ def apply_drawing():
         return jsonify({'error': 'An internal error occurred'}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(
+        host='0.0.0.0',
+        port=8082,
+        debug=os.getenv('FLASK_ENV', 'production') == 'development'
+    )
