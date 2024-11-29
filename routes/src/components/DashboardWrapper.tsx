@@ -9,80 +9,50 @@ import {
 } from "@/components/catalyst/dropdown";
 import {
   Navbar,
-  NavbarDivider,
   NavbarItem,
-  NavbarLabel,
   NavbarSection,
   NavbarSpacer,
 } from "@/components/catalyst/navbar";
 import {
   Sidebar,
   SidebarBody,
+  SidebarFooter,
   SidebarHeader,
+  SidebarHeading,
   SidebarItem,
   SidebarLabel,
   SidebarSection,
+  SidebarSpacer,
 } from "@/components/catalyst/sidebar";
-import { StackedLayout } from "@/components/catalyst/stacked-layout";
-import { useAuthStore } from "@/stores/auth";
+import { SidebarLayout } from "@/components/catalyst/sidebar-layout";
 import {
   ArrowRightStartOnRectangleIcon,
   ChevronDownIcon,
+  ChevronUpIcon,
   Cog8ToothIcon,
   LightBulbIcon,
+  LockClosedIcon,
   PlusIcon,
   ShieldCheckIcon,
   UserIcon,
 } from "@heroicons/react/16/solid";
-import { InboxIcon, MagnifyingGlassIcon } from "@heroicons/react/20/solid";
-
-const navItems = [
-  { label: "Home", url: "/" },
-  { label: "Documents", url: "/documents" },
-  { label: "Settings", url: "/settings" },
-];
-
-function TeamDropdownMenu() {
-  return (
-    <DropdownMenu className="min-w-80 lg:min-w-64" anchor="bottom start">
-      <DropdownItem href="/teams/1/settings">
-        <Cog8ToothIcon />
-        <DropdownLabel>Settings</DropdownLabel>
-      </DropdownItem>
-      <DropdownDivider />
-      <DropdownItem href="/teams/1">
-        <Avatar slot="icon" src="/tailwind-logo.svg" />
-        <DropdownLabel>Tailwind Labs</DropdownLabel>
-      </DropdownItem>
-      <DropdownItem href="/teams/2">
-        <Avatar
-          slot="icon"
-          initials="WC"
-          className="bg-purple-500 text-white"
-        />
-        <DropdownLabel>Workcation</DropdownLabel>
-      </DropdownItem>
-      <DropdownDivider />
-      <DropdownItem href="/teams/create">
-        <PlusIcon />
-        <DropdownLabel>New team&hellip;</DropdownLabel>
-      </DropdownItem>
-    </DropdownMenu>
-  );
-}
+import {
+  Cog6ToothIcon,
+  HomeIcon,
+  InboxIcon,
+  MagnifyingGlassIcon,
+  MegaphoneIcon,
+  QuestionMarkCircleIcon,
+  SparklesIcon,
+  Square2StackIcon,
+  TicketIcon,
+} from "@heroicons/react/20/solid";
 
 export function DashboardWrapper({ children }: { children: React.ReactNode }) {
   return (
-    <StackedLayout
+    <SidebarLayout
       navbar={
         <Navbar>
-          <NavbarSection className="max-lg:hidden">
-            {navItems.map(({ label, url }) => (
-              <NavbarItem key={label} href={url}>
-                {label}
-              </NavbarItem>
-            ))}
-          </NavbarSection>
           <NavbarSpacer />
           <NavbarSection>
             <NavbarItem href="/search" aria-label="Search">
@@ -93,7 +63,7 @@ export function DashboardWrapper({ children }: { children: React.ReactNode }) {
             </NavbarItem>
             <Dropdown>
               <DropdownButton as={NavbarItem}>
-                <Avatar src="/profile-photo.jpg" square />
+                <Avatar square initials="MB" />
               </DropdownButton>
               <DropdownMenu className="min-w-64" anchor="bottom end">
                 <DropdownItem href="/my-profile">
@@ -114,9 +84,7 @@ export function DashboardWrapper({ children }: { children: React.ReactNode }) {
                   <DropdownLabel>Share feedback</DropdownLabel>
                 </DropdownItem>
                 <DropdownDivider />
-                <DropdownItem
-                  onClick={() => useAuthStore.getState().useLogout()}
-                >
+                <DropdownItem href="/logout">
                   <ArrowRightStartOnRectangleIcon />
                   <DropdownLabel>Sign out</DropdownLabel>
                 </DropdownItem>
@@ -130,26 +98,127 @@ export function DashboardWrapper({ children }: { children: React.ReactNode }) {
           <SidebarHeader>
             <Dropdown>
               <DropdownButton as={SidebarItem} className="lg:mb-2.5">
-                <Avatar src="/tailwind-logo.svg" />
-                <SidebarLabel>ZCauldron</SidebarLabel>
+                <Avatar initials="TL" />
+                <SidebarLabel>Tailwind Labs</SidebarLabel>
                 <ChevronDownIcon />
               </DropdownButton>
-              <TeamDropdownMenu />
+              <DropdownMenu
+                className="min-w-80 lg:min-w-64"
+                anchor="bottom start"
+              >
+                <DropdownItem href="/teams/1/settings">
+                  <Cog8ToothIcon />
+                  <DropdownLabel>Settings</DropdownLabel>
+                </DropdownItem>
+                <DropdownDivider />
+                <DropdownItem href="/teams/1">
+                  <Avatar slot="icon" initials="TL" />
+                  <DropdownLabel>Tailwind Labs</DropdownLabel>
+                </DropdownItem>
+                <DropdownItem href="/teams/2">
+                  <Avatar
+                    slot="icon"
+                    initials="WC"
+                    className="bg-purple-500 text-white"
+                  />
+                  <DropdownLabel>Workcation</DropdownLabel>
+                </DropdownItem>
+                <DropdownDivider />
+                <DropdownItem href="/teams/create">
+                  <PlusIcon />
+                  <DropdownLabel>New team&hellip;</DropdownLabel>
+                </DropdownItem>
+              </DropdownMenu>
             </Dropdown>
+            <SidebarSection className="max-lg:hidden">
+              <SidebarItem href="/search">
+                <MagnifyingGlassIcon />
+                <SidebarLabel>Search</SidebarLabel>
+              </SidebarItem>
+              <SidebarItem href="/inbox">
+                <InboxIcon />
+                <SidebarLabel>Inbox</SidebarLabel>
+              </SidebarItem>
+            </SidebarSection>
           </SidebarHeader>
           <SidebarBody>
             <SidebarSection>
-              {navItems.map(({ label, url }) => (
-                <SidebarItem key={label} href={url}>
-                  {label}
-                </SidebarItem>
-              ))}
+              <SidebarItem href="/">
+                <HomeIcon />
+                <SidebarLabel>Home</SidebarLabel>
+              </SidebarItem>
+              <SidebarItem href="/app/transactions">
+                <Square2StackIcon />
+                <SidebarLabel>My Transactions</SidebarLabel>
+              </SidebarItem>
+              <SidebarItem href="/app/secure-media">
+                <LockClosedIcon />
+                <SidebarLabel>My Documents</SidebarLabel>
+              </SidebarItem>
+              <SidebarItem href="/settings">
+                <Cog6ToothIcon />
+                <SidebarLabel>Settings</SidebarLabel>
+              </SidebarItem>
             </SidebarSection>
+
+            {/* <SidebarSpacer />
+            <SidebarSection>
+              <SidebarItem href="/support">
+                <QuestionMarkCircleIcon />
+                <SidebarLabel>Support</SidebarLabel>
+              </SidebarItem>
+              <SidebarItem href="/changelog">
+                <SparklesIcon />
+                <SidebarLabel>Changelog</SidebarLabel>
+              </SidebarItem>
+            </SidebarSection> */}
           </SidebarBody>
+          <SidebarFooter className="max-lg:hidden">
+            <Dropdown>
+              <DropdownButton as={SidebarItem}>
+                <span className="flex min-w-0 items-center gap-3">
+                  <Avatar className="size-10" square alt="" />
+                  <span className="min-w-0">
+                    <span className="block truncate text-sm/5 font-medium text-zinc-950 dark:text-white">
+                      Erica
+                    </span>
+                    <span className="block truncate text-xs/5 font-normal text-zinc-500 dark:text-zinc-400">
+                      erica@example.com
+                    </span>
+                  </span>
+                </span>
+                <ChevronUpIcon />
+              </DropdownButton>
+              <DropdownMenu className="min-w-64" anchor="top start">
+                <DropdownItem href="/my-profile">
+                  <UserIcon />
+                  <DropdownLabel>My profile</DropdownLabel>
+                </DropdownItem>
+                <DropdownItem href="/settings">
+                  <Cog8ToothIcon />
+                  <DropdownLabel>Settings</DropdownLabel>
+                </DropdownItem>
+                <DropdownDivider />
+                <DropdownItem href="/privacy-policy">
+                  <ShieldCheckIcon />
+                  <DropdownLabel>Privacy policy</DropdownLabel>
+                </DropdownItem>
+                <DropdownItem href="/share-feedback">
+                  <LightBulbIcon />
+                  <DropdownLabel>Share feedback</DropdownLabel>
+                </DropdownItem>
+                <DropdownDivider />
+                <DropdownItem href="/logout">
+                  <ArrowRightStartOnRectangleIcon />
+                  <DropdownLabel>Sign out</DropdownLabel>
+                </DropdownItem>
+              </DropdownMenu>
+            </Dropdown>
+          </SidebarFooter>
         </Sidebar>
       }
     >
       {children}
-    </StackedLayout>
+    </SidebarLayout>
   );
 }

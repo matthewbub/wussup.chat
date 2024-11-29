@@ -31,6 +31,11 @@ func Cors(c *gin.Context) {
 		allowedOrigins = append(allowedOrigins, "http://"+constants.AppConfig.DevelopmentDomain+":"+strconv.Itoa(constants.AppConfig.DevelopmentPorts.Backend))
 	}
 
+	if env == "test" {
+		allowedOrigins = append(allowedOrigins, "http://"+constants.AppConfig.TestDomain+":"+strconv.Itoa(constants.AppConfig.DevelopmentPorts.Frontend))
+		allowedOrigins = append(allowedOrigins, "http://"+constants.AppConfig.TestDomain+":"+strconv.Itoa(constants.AppConfig.DevelopmentPorts.Backend))
+	}
+
 	if origin == "" || utils.ContainsOrigin(allowedOrigins, origin) {
 		c.Writer.Header().Set("Access-Control-Allow-Origin", origin)
 		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")

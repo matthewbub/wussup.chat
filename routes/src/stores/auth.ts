@@ -53,29 +53,8 @@ export const useAuthStore = create<AuthStore>((set) => ({
       const response = await fetch("/api/v1/account/auth-check", {
         credentials: "include",
       });
-
-      // Idk i still want type safety during development - gonna leave this hear for now
-      // const json = (await response.json()) as {
-      //   ok: boolean;
-      //   data?: {
-      //     user?: {
-      //       id: string;
-      //       username: string;
-      //       email: string;
-      //       applicationEnvironmentRole?: string;
-      //       securityQuestionsAnswered?: boolean;
-      //       inactiveAt?: {
-      //         Valid: boolean;
-      //         value: Date;
-      //       };
-      //     };
-      //   };
-      //   error?: string;
-      // };
       const json = await response.json();
-      // const json = await validateResponse(response);
 
-      console.log("json", json);
       if (json.ok && json?.data?.tokenExpiresIn > 0) {
         if (json?.data?.inactiveAt?.Valid) {
           set({

@@ -7,13 +7,11 @@ import {
   Layout,
   List,
   Eye,
-  Plus,
-  Search,
-  SortAsc,
   Printer,
   Download,
 } from "lucide-react";
 import { useAuthStore } from "@/stores/auth";
+import ImportBankStatement from "@/components/ImportBankStatement";
 
 export const Route = createFileRoute("/")({
   component: LandingPageComponent,
@@ -25,11 +23,10 @@ export function LandingPageComponent() {
   return (
     <div className="flex flex-col min-h-screen mx-auto">
       <header className="px-4 lg:px-6 h-14 flex items-center">
-        <a className="flex items-center justify-center" href="#">
-          <FileText className="h-6 w-6" />
-          <span className="ml-2 text-lg font-semibold">DocuMaster</span>
+        <a className="flex items-center justify-center" href="/">
+          <span className="ml-2 text-lg font-semibold">ZCauldron</span>
         </a>
-        <nav className="ml-auto flex gap-4 sm:gap-6">
+        <nav className="ml-auto flex gap-4">
           {!isAuthenticated ? (
             <>
               <a
@@ -48,13 +45,13 @@ export function LandingPageComponent() {
           ) : (
             <>
               <a
-                className="text-sm font-medium hover:underline underline-offset-4 px-4 py-2"
-                href="/me"
+                className="text-sm font-medium hover:underline underline-offset-4"
+                href="/dashboard"
               >
-                Me
+                Dashboard
               </a>
               <button
-                className="text-sm font-medium hover:underline underline-offset-4 px-4 py-2"
+                className="text-sm font-medium hover:underline underline-offset-4"
                 onClick={() => {
                   useAuthStore.getState().useLogout();
                 }}
@@ -71,11 +68,11 @@ export function LandingPageComponent() {
             <div className="flex flex-col items-center space-y-4 text-center">
               <div className="space-y-2">
                 <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl lg:text-6xl/none">
-                  Manage Your Documents with Ease
+                  Professional Financial Management
                 </h1>
                 <p className="mx-auto max-w-[700px] text-gray-500 md:text-xl dark:text-gray-400">
-                  Create, edit, organize, and share multi-sheet documents in one
-                  place. Navigate your document collection effortlessly.
+                  Convert your financial documents into structured data
+                  effortlessly.
                 </p>
               </div>
               <div className="space-x-4">

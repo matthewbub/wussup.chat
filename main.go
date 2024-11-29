@@ -10,12 +10,19 @@ import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
+	_ "github.com/golang-migrate/migrate/v4/database/sqlite3"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 func main() {
 	err := utils.ValidateEnvironment()
 	if err != nil {
 		log.Fatalf("Environment validation failed: %v", err)
+	}
+
+	if err := utils.RunMigrations(); err != nil {
+		log.Fatalf("Failed to run migrations: %v", err)
 	}
 
 	router := gin.Default()
@@ -50,6 +57,16 @@ func main() {
 		accountRoutes.POST("/profile", api.UpdateProfileHandler)
 		accountRoutes.DELETE("/delete", api.DeleteAccountHandler)
 	}
+
+	pdfRoutes := router.Group("/api/v1/pdf", middleware.JWTAuthMiddleware())
+	{
+		pdfRoutes.POST("/extract", api.ExtractPDFText)
+		pdfRoutes.POST("/page-count", api.GetPDFPageCount)
+		pdfRoutes.POST("/save", api.SaveStatement)
+	}
+
+	router.GET("/api/v1/transactions", middleware.JWTAuthMiddleware(), api.GetUserTransactionsHandler)
+	//router.NoRoute(handlers.NotFound404)
 
 	log.Println("Server is running on port 8080")
 	err = router.Run(":8080")

@@ -45,6 +45,11 @@ func RenewSessionHandler(c *gin.Context) {
 	} else if env == "production" {
 		domain = constants.AppConfig.ProductionDomain
 	}
+
+	if env == "test" {
+		domain = constants.AppConfig.TestDomain
+	}
+
 	// Set new cookie
 	c.SetSameSite(http.SameSiteLaxMode)
 	c.SetCookie(

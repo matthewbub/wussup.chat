@@ -47,6 +47,11 @@ func initDB() *sql.DB {
 	} else if env == "production" {
 		dbPath = filepath.Join(cwd, "pkg", "database", "prod.db")
 		fmt.Println("Using production database:", dbPath)
+	}
+
+	if env == "test" {
+		dbPath = filepath.Join(cwd, "pkg", "database", "test.db")
+		fmt.Println("Using test database:", dbPath)
 	} else {
 		fmt.Println("Unknown environment. Using development database.")
 		dbPath = filepath.Join(cwd, "pkg", "database", "dev.db")

@@ -5,6 +5,7 @@ import "time"
 type Config struct {
 	ProductionDomain  string
 	DevelopmentDomain string
+	TestDomain        string
 	DevelopmentPorts  struct {
 		Frontend int
 		Backend  int
@@ -20,6 +21,7 @@ type Config struct {
 var AppConfig = Config{
 	ProductionDomain:  "zcauldron.com",
 	DevelopmentDomain: "localhost",
+	TestDomain:        "localhost",
 	DevelopmentPorts: struct {
 		Frontend int
 		Backend  int
@@ -27,7 +29,8 @@ var AppConfig = Config{
 		Frontend: 3001,
 		Backend:  8080,
 	},
-	DefaultJWTExpiration: time.Minute * 60 * 24,
+	DefaultJWTExpiration: time.Minute * 30,
+
 	// TODO: Implement ExtendJWTExpiration
 	// ExtendJWTExpiration:  time.Hour * 24,
 

@@ -19,6 +19,9 @@ func LogoutHandler(c *gin.Context) {
 	if env == "development" {
 		domain = constants.AppConfig.DevelopmentDomain
 	}
+	if env == "test" {
+		domain = constants.AppConfig.TestDomain
+	}
 
 	// Clear the JWT cookie by setting an expired cookie
 	c.SetCookie("jwt", "", -1, "/", domain, env == "production", true)

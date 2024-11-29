@@ -39,9 +39,25 @@ func ValidateEnvironment() error {
 	if env == "" {
 		return fmt.Errorf("ENV is not set")
 	}
-	if env != "production" && env != "development" {
+	if env != "production" && env != "development" && env != "test" {
 		return fmt.Errorf("ENV is not valid")
 	}
 	// Add other environment checks here
+	return nil
+}
+
+func SetTestEnvironment() error {
+	testKey := os.Getenv("TEST_SESSION_SECRET_KEY")
+	if testKey == "" {
+		return fmt.Errorf("TEST_SESSION_SECRET_KEY is not set")
+	}
+
+	// validate the test key format
+	if _, err := base64.StdEncoding.DecodeString(testKey); err != nil {
+		return fmt.Errorf("invalid TEST_SESSION_SECRET_KEY format: %w", err)
+	}
+
+	os.Setenv("ENV", "test")
+	os.Setenv("SESSION_SECRET_KEY", testKey)
 	return nil
 }

@@ -99,6 +99,11 @@ func SignUpHandler(c *gin.Context) {
 		cookieConfig.Secure = false
 	}
 
+	if env == "test" {
+		cookieConfig.Domain = constants.AppConfig.TestDomain
+		cookieConfig.Secure = false
+	}
+
 	c.SetCookie("jwt", token, int(cookieConfig.Expiration.Seconds()), "/", cookieConfig.Domain, cookieConfig.Secure, true)
 	c.JSON(http.StatusOK, response.SuccessMessage(
 		"Account registration completed successfully",
