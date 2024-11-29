@@ -53,7 +53,7 @@ docker run --env-file .env -p 8080:8080 zcauldron
 
 ### Build the `lib/image` Python image
 
-I prefer the `--no-cache` flag here, Docker was giving me a rough time trying to change ports between rebuilds
+I prefer the `--no-cache` flag here as a good sanity check
 
 ```sh
 docker build --no-cache -t pdf-service -f lib/image/Dockerfile lib/image/
