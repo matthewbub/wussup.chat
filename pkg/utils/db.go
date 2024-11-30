@@ -29,7 +29,7 @@ func initDB() *sql.DB {
 	// Load .env file if it exists
 	err := godotenv.Load()
 	if err != nil {
-		log.Printf("Failed to init the env")
+		log.Printf("Failed to init the env: %v", err)
 		return nil
 	}
 

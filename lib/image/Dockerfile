@@ -62,7 +62,7 @@ USER appuser
 # Expose the port your Flask app runs on
 EXPOSE 8082
 
-# Add health check
+# health check
 HEALTHCHECK --interval=30s --timeout=3s \
   CMD curl -f http://localhost:8082/health || exit 1
 

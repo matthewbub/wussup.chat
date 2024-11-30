@@ -48,7 +48,13 @@ docker build -t zcauldron .
 > TODO: This isn't going to use the prod db by default on our local machines, need to work that out
 
 ```sh
-docker run --env-file .env -p 8080:8080 zcauldron
+# docker run --env-file .env -p 8080:8080 zcauldron
+# Instead of using --env-file .env, directly specify each environment variable:
+docker run \
+  -e ENV=production
+  -e SESSION_SECRET_KEY=your_secret_key_here \
+  -e OPENAI_API_KEY=your_openai_key_here \
+  -p 8080:8080 zcauldron
 ```
 
 ### Build the `lib/image` Python Service

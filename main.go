@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"net/http"
 	"time"
 
 	"bus.zcauldron.com/pkg/api"
@@ -26,19 +27,24 @@ func main() {
 	}
 
 	router := gin.Default()
+	router.Static("/_assets/", "./routes/dist/_assets")
+	router.NoRoute(func(c *gin.Context) {
+		log.Println("No route found, serving index.html")
+		c.File("./routes/dist/index.html")
+	})
+
 	router.Use(middleware.Cors)
-
-	// React build assets
-	router.Static("/_assets", "./router/dist/_assets")
-
 	// session management
 	secretKey := utils.GetSecretKeyFromEnv()
 	store := cookie.NewStore(secretKey)
 	router.Use(sessions.Sessions("session", store))
 	router.Use(middleware.Recovery("Something went wrong"))
 
-	// schema - keep me above other routes
+	// API routes with auth below this point
 	router.GET("/api/v1/schema/:type", api.SchemaHandler)
+	router.GET("/health", func(c *gin.Context) {
+		c.Status(http.StatusOK)
+	})
 
 	publicRoutes := router.Group("/api/v1/public", middleware.RateLimit(5*time.Second))
 	{
@@ -66,7 +72,6 @@ func main() {
 	}
 
 	router.GET("/api/v1/transactions", middleware.JWTAuthMiddleware(), api.GetUserTransactionsHandler)
-	//router.NoRoute(handlers.NotFound404)
 
 	log.Println("Server is running on port 8080")
 	err = router.Run(":8080")
