@@ -10,7 +10,7 @@ services:
     env_file:
       - .env.${DOCKER_ENV:-staging}
     volumes:
-      - db_data:/app/data
+      - db_data:/app/pkg/database
     networks:
       - app-network
     depends_on:
