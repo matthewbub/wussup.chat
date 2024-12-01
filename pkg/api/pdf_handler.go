@@ -41,6 +41,18 @@ type PDFPageCount struct {
 }
 
 func ExtractPDFText(c *gin.Context) {
+	tokenString, err := c.Cookie("jwt")
+	if err != nil || tokenString == "" {
+		c.JSON(401, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	userID, _, err := utils.VerifyJWT(tokenString)
+	if err != nil {
+		c.JSON(401, gin.H{"error": "Unauthorized"})
+		return
+	}
+
 	file, err := c.FormFile("file")
 	if err != nil {
 		c.JSON(400, gin.H{"error": "No file uploaded"})
@@ -210,6 +222,18 @@ func ExtractPDFText(c *gin.Context) {
 	var statement StatementData
 	if err := json.Unmarshal([]byte(openAIResp.Choices[0].Message.Content), &statement); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to parse statement data"})
+		return
+	}
+
+	// Track the number of pages processed
+	pagesProcessed := len(pages)
+
+	// Insert into pdf_processing table
+	db := utils.GetDB()
+	_, err = db.Exec("INSERT INTO pdf_processing (id, user_id, pages_processed) VALUES (?, ?, ?)",
+		uuid.New().String(), userID, pagesProcessed)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to record PDF processing"})
 		return
 	}
 

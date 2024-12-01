@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"sync"
 	"time"
 
 	"bus.zcauldron.com/pkg/constants"
@@ -12,12 +13,13 @@ import (
 )
 
 var (
-	db *sql.DB
+	db     *sql.DB
+	doOnce sync.Once
 )
 
 // GetDB returns a singleton database connection
 func GetDB() *sql.DB {
-	once.Do(func() {
+	doOnce.Do(func() {
 		db = initDB()
 		if db == nil {
 			log.Fatal("Failed to initialize the database.")
@@ -51,14 +53,25 @@ func initDB() *sql.DB {
 		panic("An unrecognized environment was detected. Aborting.")
 	}
 
+	if _, err := os.Stat(dbPath); os.IsNotExist(err) {
+		logger.Fatalf("Database file does not exist at path: %s", dbPath)
+		return nil
+	}
+
 	db, err := sql.Open("sqlite3", dbPath)
 	if err != nil {
-		log.Fatalf("Error opening database. Are you sure it exists? %v", err)
+		logger.Fatalf("Error opening database. Are you sure it exists? %v", err)
+		return nil
+	}
+
+	// Test the database connection
+	if err := db.Ping(); err != nil {
+		logger.Fatalf("Failed to ping database: %v", err)
 		return nil
 	}
 
 	// Configure the connection pool
-	db.SetMaxOpenConns(25) // Adjust based on your needs
+	db.SetMaxOpenConns(25)
 	db.SetMaxIdleConns(5)
 	db.SetConnMaxLifetime(5 * time.Minute)
 

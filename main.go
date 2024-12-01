@@ -27,6 +27,12 @@ func main() {
 		logger.Fatalf("Failed to run migrations: %v", err)
 	}
 
+	// Initialize the database connection
+	db := utils.GetDB()
+	if db == nil {
+		logger.Fatal("Failed to initialize the database connection.")
+	}
+
 	router := gin.Default()
 	router.Static("/_assets/", "./routes/dist/_assets")
 	router.NoRoute(func(c *gin.Context) {
