@@ -29,8 +29,9 @@ func GetSecretKeyFromEnv() []byte {
 
 func GetEnv() string {
 	env := os.Getenv("ENV")
+	logger := GetLogger()
 	if env == "" {
-		log.Printf("ENV environment variable is not set")
+		logger.Printf("ENV environment variable is not set")
 	}
 	return env
 }

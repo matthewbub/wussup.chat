@@ -10,7 +10,7 @@ services:
     env_file:
       - .env.${DOCKER_ENV:-staging}
     volumes:
-      - ./data:/app/data
+      - db_data:/app/data
     networks:
       - app-network
     depends_on:
@@ -50,4 +50,5 @@ networks:
     driver: bridge
 
 volumes:
-  data:
+  db_data:
+    name: ${DOCKER_ENV:-staging}_db_data

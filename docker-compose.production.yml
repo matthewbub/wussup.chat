@@ -3,7 +3,8 @@ services:
     environment:
       - ENV=production
     volumes:
-      - ./data/production:/app/data
+      - db_data:
+        name: ${DOCKER_ENV:-production}_db_data
     deploy:
       replicas: 2
       restart_policy:
@@ -14,3 +15,17 @@ services:
       - FLASK_ENV=production
     deploy:
       replicas: 2
+
+  backup-cron:
+    image: alpine
+    volumes:
+      - ./scripts:/scripts
+      - ./backups:/backups
+    command: >
+      /bin/sh -c "
+        apk add --no-cache sqlite
+        echo '0 */6 * * * /scripts/backup.sh production' > /etc/crontabs/root
+        crond -f -d 8
+      "
+    depends_on:
+      - api
