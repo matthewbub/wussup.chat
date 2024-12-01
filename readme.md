@@ -108,3 +108,54 @@ Image (Micro Service)
 
 - [Python](https://www.python.org/downloads)
 - [PyMuPDF](https://pymupdf.readthedocs.io/en/latest/)
+
+## Database Management
+
+### Persistence
+
+The database is stored in a Docker named volume that persists between container restarts. Each environment (staging, production) has its own separate volume.
+
+### Backup
+
+To backup the database:
+
+```bash
+# Make scripts executable
+chmod +x scripts/backup.sh
+chmod +x scripts/restore.sh
+
+# Create a backup (defaults to staging environment)
+./scripts/backup.sh [environment]
+
+# Example:
+./scripts/backup.sh production
+```
+
+### Restore
+
+To restore from a backup:
+
+```bash
+./scripts/restore.sh [environment] path/to/backup/file.db
+
+# Example:
+./scripts/restore.sh production ./backups/production/backup_20241201_120000.db
+```
+
+### List All Backups
+
+```bash
+ls -l backups/[environment]/
+```
+
+### Database Initialization
+
+Before running backups, ensure your database is properly initialized:
+
+```bash
+# Start the containers first
+docker compose up -d
+
+# Now you can create your first backup
+./scripts/backup.sh [environment]
+```

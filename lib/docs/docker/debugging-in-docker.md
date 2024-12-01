@@ -1,5 +1,8 @@
 # Debugging in Docker
 
+> TODO: We need to create a valid env for these containers to run in isolation due to the breaking change at `utils.GetPDFServiceURL`
+> Docker Compose is the only way to work in staging
+
 ## TLDR
 
 These are the steps to launch the containers individually. We've since moved to docker-compose.
@@ -114,6 +117,6 @@ Why is this it's own Docker container you ask? As [mentioned above](#consider-th
 docker build -t pdf-service -f lib/image/Dockerfile lib/image/
 ```
 
-This
+This command is essentially the same things
 
 ## Debugging the Application in Docker
