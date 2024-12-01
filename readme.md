@@ -2,89 +2,9 @@
 
 "z cauldron"
 
-## Set up locally
+## Getting Started
 
-Watch this 5 minute getting started video here: https://www.youtube.com/watch?v=BhJ3JFsOh2g
-
-1. Clone repo
-2. Duplicate the `.env.example` > `.env`
-3. Navigate to the `cmd/generate_base64_key` directory and run `go run main.go` to generate a base64 encoded key.
-4. Add the key base64 encoded key to the `SESSION_SECRET_KEY`
-5. Navigate back to the root directory and run the SQLite3 schema `sqlite3 ./pkg/database/dev.db < ./pkg/database/schema.sql`
-6. Add your OpenAI Api key to the `.env` file - (Used to parse bank statements > structured data)
-7. Launch the local server. `go run main.go`
-8. _In a separate terminal session_, navigate to the `routes/` directory and install the project dependencies using npm - `npm install`
-9. Launch the client dev server `npm run dev`
-10. _In a separate terminal session (3 terminals total)_, navigate to the `/lib/image` directory and install the project dependencies. (OR [JUST RUN THE DOCKER IMAGE IF YOU AREN'T DEVELOPING IN THIS SERVER](#build-the-libimage-python-service))
-
-```sh
-# Create and activate a virtual environment (recommended)
-python -m venv venv
-source venv/bin/activate  # On Windows, use: venv\Scripts\activate
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Start the server
-python main.py
-```
-
-## Hosting with Docker (Running the Application Production)
-
-> These steps aren't finalized, there may be info missing atm
-
-This application is designed and built to be hosted from a single Docker image. I find DigitalOcean Droplets to be affordable hosting solutions that work nicely with Docker.
-
-To run the app on docker:
-
-### Build the Docker image
-
-```sh
-docker build -t zcauldron .
-```
-
-### Run the Docker container
-
-> TODO: This isn't going to use the prod db by default on our local machines, need to work that out
-
-```sh
-# docker run --env-file .env -p 8080:8080 zcauldron
-# Instead of using --env-file .env, directly specify each environment variable:
-docker run \
-  -e ENV=production
-  -e SESSION_SECRET_KEY=your_secret_key_here \
-  -e OPENAI_API_KEY=your_openai_key_here \
-  -p 8080:8080 zcauldron
-```
-
-### Build the `lib/image` Python Service
-
-Prerequisites:
-
-- Ensure Docker daemon is running
-- Navigate to the project root directory
-- Verify `lib/image/Dockerfile` exists
-
-```sh
-# Standard build (recommended)
-docker build -t pdf-service -f lib/image/Dockerfile lib/image/
-
-# OR...
-# Force a clean build (useful for dependency updates or troubleshooting)
-docker build --no-cache -t pdf-service -f lib/image/Dockerfile lib/image/
-```
-
-### Run the `lib/image` Python container
-
-The service will listen on port 8082 for PDF upload requests.
-
-Basic usage:
-
-```sh
-docker run -p 8082:8082 pdf-service
-```
-
-## Project Requirements
+### Project Requirements
 
 If you plan on running the project locally, you're going to need the following installed on your machine. The versions defined are what I am explicitly running right now, if I had to take a guess in the dark I'd say you're good to run with and version greater than or equal to whats defined below.
 
@@ -95,11 +15,86 @@ If you plan on running the project locally, you're going to need the following i
 - [SQLite](https://www.sqlite.org/download.html) version 3.43.2
 - [Python](https://www.python.org/downloads/) version 3.12
 
+## Set up locally
+
+Watch this 5 minute getting started video here: https://www.youtube.com/watch?v=BhJ3JFsOh2g
+
+1. **Clone the Repository**
+2. **Environment Configuration**
+   - Duplicate `.env.example` to `.env`
+3. **Generate Base64 Key**
+   - Navigate to `cmd/generate_base64_key` and run:
+     ```sh
+     go run main.go
+     ```
+   - Add the generated key to `SESSION_SECRET_KEY` in `.env`
+4. **Database Setup**
+   - Run the SQLite3 schema:
+     ```sh
+     sqlite3 ./pkg/database/dev.db < ./pkg/database/schema.sql
+     ```
+5. **Add OpenAI API Key**
+   - Update `.env` with your OpenAI API key
+
+### Running the Application
+
+1. **Start the Server**
+   - From the root directory, run:
+     ```sh
+     go run main.go
+     ```
+2. **Client Setup**
+   - In a separate terminal, navigate to `routes/` and install dependencies:
+     ```sh
+     npm install
+     ```
+   - Launch the client dev server:
+     ```sh
+     npm run dev
+     ```
+3. **Image Service Setup**
+   - In another terminal, navigate to `/lib/image` and install dependencies:
+     ```sh
+     python -m venv venv
+     source venv/bin/activate  # On Windows, use: venv\Scripts\activate
+     pip install -r requirements.txt
+     python main.py
+     ```
+   - Tip: If you don't need to change code in this server, you might just run the [Docker image](#build-the-libimage-python-service)
+
+## Hosting with Docker
+
+### Run the core application
+
+To run the app on docker:
+
+1. **Build the Image**
+   ```sh
+   docker build -t zcauldron .
+   ```
+2. **Run the Container**
+   ```sh
+   docker run \
+      -e ENV=staging \
+      -e SESSION_SECRET_KEY=your_secret_key_here \
+      -e OPENAI_API_KEY=your_openai_key_here \
+      -p 8080:8080 zcauldron
+   ```
+
+Next, we need to launch the lib/image micro service
+
+### Build the `lib/image` Python Service
+
+1. **Build the Image**
+   ```sh
+   docker build -t pdf-service -f lib/image/Dockerfile lib/image/
+   ```
+2. **Run the Container**
+   ```sh
+   docker run -p 8082:8082 pdf-service
+   ```
+
 ## About the core stack
-
-This is like a point to chat about for me, these technologies are making for a really fun DX
-
-> NOTICE: I introduced Python because I was unaware the Go ecosystem has perfectly capable libraries that can work with images and PDFs _without_ system level dependencies. Upon this discovery, I plan to replace the Python code with Go. Sorry.
 
 Backend
 
@@ -114,3 +109,8 @@ Client
 - [Vite](https://vite.dev/) - JavaScript build tool
 - [TypeScript](https://www.typescriptlang.org/) - Type safe javascript
 - [TailwindCSS + TailwindUI](https://tailwindui.com) - Prototype friendly component system
+
+Image (Micro Service)
+
+- [Python](https://www.python.org/downloads)
+- [PyMuPDF](https://pymupdf.readthedocs.io/en/latest/)

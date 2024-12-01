@@ -76,15 +76,20 @@ func LoginHandler(c *gin.Context) {
 	}
 
 	env := utils.GetEnv()
-	if env == "production" {
+	if env == constants.ENV_PRODUCTION {
 		cookieConfig.Domain = constants.AppConfig.ProductionDomain
 	}
 
-	if env == "development" {
-		cookieConfig.Domain = constants.AppConfig.DevelopmentDomain
+	if env == constants.ENV_STAGING {
+		cookieConfig.Domain = constants.AppConfig.StagingDomain
 	}
 
-	if env == "test" {
+	if env == constants.ENV_DEVELOPMENT {
+		cookieConfig.Domain = constants.AppConfig.DevelopmentDomain
+		cookieConfig.Secure = false
+	}
+
+	if env == constants.ENV_TEST {
 		cookieConfig.Domain = constants.AppConfig.TestDomain
 		cookieConfig.Secure = false
 	}

@@ -2,7 +2,6 @@ package api
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"time"
 
@@ -15,6 +14,8 @@ import (
 )
 
 func SignUpHandler(c *gin.Context) {
+	logger := utils.GetLogger()
+
 	// Parse request body as JSON
 	var body struct {
 		Username        string `json:"username"`
@@ -25,6 +26,7 @@ func SignUpHandler(c *gin.Context) {
 	}
 
 	if err := c.ShouldBindJSON(&body); err != nil {
+		logger.Printf("Invalid request data: %v", err)
 		c.JSON(http.StatusBadRequest, response.Error(
 			"Invalid request data",
 			response.INVALID_REQUEST_DATA,
@@ -34,6 +36,7 @@ func SignUpHandler(c *gin.Context) {
 
 	// BEGIN DATA VALIDATION
 	if err := validateSignUpData(&body); err != nil {
+		logger.Printf("Data validation error: %v", err)
 		var errorCode string
 		switch err.Error() {
 		case "weak password":
@@ -53,7 +56,7 @@ func SignUpHandler(c *gin.Context) {
 	// Hash password
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(body.Password), bcrypt.DefaultCost)
 	if err != nil {
-		log.Printf("Error hashing password: %v", err)
+		logger.Printf("Error hashing password: %v", err)
 		c.JSON(http.StatusInternalServerError, response.Error(
 			"Server error",
 			response.OPERATION_FAILED,
@@ -64,6 +67,7 @@ func SignUpHandler(c *gin.Context) {
 	// Insert user into the database
 	userID, err := insertUserIntoDatabase(body.Username, string(hashedPassword), body.Email)
 	if err != nil {
+		logger.Printf("Database insertion error: %v", err)
 		c.JSON(http.StatusConflict, response.Error(
 			"Username or email already exists",
 			response.OPERATION_FAILED,
@@ -74,6 +78,7 @@ func SignUpHandler(c *gin.Context) {
 	// Generate and set JWT
 	token, err := utils.GenerateJWT(userID)
 	if err != nil {
+		logger.Printf("JWT generation error: %v", err)
 		c.JSON(http.StatusInternalServerError, response.Error(
 			"Failed to generate token",
 			response.AUTHENTICATION_FAILED,
@@ -91,15 +96,21 @@ func SignUpHandler(c *gin.Context) {
 		Secure:     true,
 	}
 	env := utils.GetEnv()
-	if env == "production" {
+	if env == constants.ENV_PRODUCTION {
 		cookieConfig.Domain = constants.AppConfig.ProductionDomain
 	}
-	if env == "development" {
+
+	if env == constants.ENV_STAGING {
+		cookieConfig.Domain = constants.AppConfig.StagingDomain
+		cookieConfig.Secure = false
+	}
+
+	if env == constants.ENV_DEVELOPMENT {
 		cookieConfig.Domain = constants.AppConfig.DevelopmentDomain
 		cookieConfig.Secure = false
 	}
 
-	if env == "test" {
+	if env == constants.ENV_TEST {
 		cookieConfig.Domain = constants.AppConfig.TestDomain
 		cookieConfig.Secure = false
 	}
@@ -137,35 +148,39 @@ func validateSignUpData(body *struct {
 
 func insertUserIntoDatabase(username, hashedPassword, email string) (string, error) {
 	db := utils.GetDB()
+	logger := utils.GetLogger()
 
-	// Use a prepared statement to prevent SQL injection
+	if db == nil {
+		logger.Println("Database connection is nil")
+		return "", fmt.Errorf("database connection not established")
+	}
+
 	stmt, err := db.Prepare("INSERT INTO users (id, username, password, email, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)")
 	if err != nil {
-		log.Println(err)
+		logger.Printf("Failed to prepare user insert statement: %v", err)
 		return "", fmt.Errorf("failed to prepare statement: %w", err)
 	}
 	defer stmt.Close()
 
-	var uuid string = uuid.New().String()
-	_, err = stmt.Exec(uuid, username, hashedPassword, email, time.Now(), time.Now())
+	userID := uuid.New().String()
+	_, err = stmt.Exec(userID, username, hashedPassword, email, time.Now(), time.Now())
 	if err != nil {
-		log.Println(err)
-		return "", fmt.Errorf("failed to execute statement: %w", err)
+		logger.Printf("Failed to execute user insert statement: %v", err)
+		return "", fmt.Errorf("failed to insert user: %w", err)
 	}
 
-	// Insert the password into the password history
-	stmt, err = db.Prepare("INSERT INTO password_history (user_id, password) VALUES (?, ?)")
+	stmtHist, err := db.Prepare("INSERT INTO password_history (user_id, password) VALUES (?, ?)")
 	if err != nil {
-		log.Println(err)
+		logger.Printf("Failed to prepare password history statement: %v", err)
 		return "", fmt.Errorf("failed to prepare password history statement: %w", err)
 	}
-	defer stmt.Close()
+	defer stmtHist.Close()
 
-	_, err = stmt.Exec(uuid, hashedPassword)
+	_, err = stmtHist.Exec(userID, hashedPassword)
 	if err != nil {
-		log.Println(err)
+		logger.Printf("Failed to insert password into history: %v", err)
 		return "", fmt.Errorf("failed to insert password into history: %w", err)
 	}
 
-	return uuid, nil
+	return userID, nil
 }

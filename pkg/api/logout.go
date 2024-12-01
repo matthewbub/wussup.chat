@@ -13,13 +13,19 @@ func LogoutHandler(c *gin.Context) {
 	env := utils.GetEnv()
 
 	var domain string
-	if env == "production" {
+	if env == constants.ENV_PRODUCTION {
 		domain = constants.AppConfig.ProductionDomain
 	}
-	if env == "development" {
+
+	if env == constants.ENV_STAGING {
+		domain = constants.AppConfig.StagingDomain
+	}
+
+	if env == constants.ENV_DEVELOPMENT {
 		domain = constants.AppConfig.DevelopmentDomain
 	}
-	if env == "test" {
+
+	if env == constants.ENV_TEST {
 		domain = constants.AppConfig.TestDomain
 	}
 

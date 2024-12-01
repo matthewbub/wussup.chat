@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"log"
 	"strconv"
 
 	"bus.zcauldron.com/pkg/constants"
@@ -14,24 +13,28 @@ func Cors(c *gin.Context) {
 	origin := c.Request.Header.Get("Origin")
 
 	if env == "" {
-		log.Println("CORS: No environment found")
+		utils.GetLogger().Println("CORS: No environment found")
 		c.AbortWithStatus(500)
 		return
 	}
 
 	allowedOrigins := []string{}
 
-	// Do not assume prod by default
-	if env == "production" {
+	// do not assume prod by default
+	if env == constants.ENV_PRODUCTION {
 		allowedOrigins = append(allowedOrigins, "https://"+constants.AppConfig.ProductionDomain)
 	}
 
-	if env == "development" {
+	if env == constants.ENV_STAGING {
+		allowedOrigins = append(allowedOrigins, "http://"+constants.AppConfig.StagingDomain+":"+strconv.Itoa(constants.AppConfig.DevelopmentPorts.Staging_Port))
+	}
+
+	if env == constants.ENV_DEVELOPMENT {
 		allowedOrigins = append(allowedOrigins, "http://"+constants.AppConfig.DevelopmentDomain+":"+strconv.Itoa(constants.AppConfig.DevelopmentPorts.Frontend))
 		allowedOrigins = append(allowedOrigins, "http://"+constants.AppConfig.DevelopmentDomain+":"+strconv.Itoa(constants.AppConfig.DevelopmentPorts.Backend))
 	}
 
-	if env == "test" {
+	if env == constants.ENV_TEST {
 		allowedOrigins = append(allowedOrigins, "http://"+constants.AppConfig.TestDomain+":"+strconv.Itoa(constants.AppConfig.DevelopmentPorts.Frontend))
 		allowedOrigins = append(allowedOrigins, "http://"+constants.AppConfig.TestDomain+":"+strconv.Itoa(constants.AppConfig.DevelopmentPorts.Backend))
 	}
@@ -47,6 +50,7 @@ func Cors(c *gin.Context) {
 			return
 		}
 	} else {
+		utils.GetLogger().Println("CORS: Origin not allowed")
 		c.AbortWithStatus(401)
 		return
 	}

@@ -19,6 +19,9 @@ func InitLogger() {
 			log.Fatal("Error opening log file:", err)
 		}
 		Logger = log.New(logFile, "", log.Ldate|log.Ltime|log.Lshortfile)
+
+		Logger.Println("Logger initialized successfully")
+
 	})
 }
 

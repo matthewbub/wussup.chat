@@ -2,37 +2,31 @@ package utils
 
 import (
 	"database/sql"
-	"fmt"
 	"log"
 	"os"
 	"path/filepath"
 	"time"
 
-	"github.com/joho/godotenv"
+	"bus.zcauldron.com/pkg/constants"
 	_ "github.com/mattn/go-sqlite3"
 )
 
 var (
 	db *sql.DB
-	// once sync.Once
 )
 
 // GetDB returns a singleton database connection
 func GetDB() *sql.DB {
 	once.Do(func() {
 		db = initDB()
+		if db == nil {
+			log.Fatal("Failed to initialize the database.")
+		}
 	})
 	return db
 }
 
 func initDB() *sql.DB {
-	// Load .env file if it exists
-	err := godotenv.Load()
-	if err != nil {
-		log.Printf("Failed to init the env: %v", err)
-		return nil
-	}
-
 	// Get the current working directory
 	cwd, err := os.Getwd()
 	if err != nil {
@@ -41,26 +35,26 @@ func initDB() *sql.DB {
 
 	var dbPath string
 	env := GetEnv()
-	if env == "development" {
-		dbPath = filepath.Join(cwd, "pkg", "database", "dev.db")
-		fmt.Println("Using development database:", dbPath)
-	} else if env == "production" {
+	logger := GetLogger()
+
+	switch env {
+	case constants.ENV_PRODUCTION:
 		dbPath = filepath.Join(cwd, "pkg", "database", "prod.db")
-		fmt.Println("Using production database:", dbPath)
-	}
-
-	if env == "test" {
-		dbPath = filepath.Join(cwd, "pkg", "database", "test.db")
-		fmt.Println("Using test database:", dbPath)
-	} else {
-		fmt.Println("Unknown environment. Using development database.")
+	case constants.ENV_STAGING:
+		dbPath = filepath.Join(cwd, "pkg", "database", "staging.db")
+	case constants.ENV_DEVELOPMENT:
 		dbPath = filepath.Join(cwd, "pkg", "database", "dev.db")
+	case constants.ENV_TEST:
+		dbPath = filepath.Join(cwd, "pkg", "database", "test.db")
+	default:
+		logger.Fatalf("An unrecognized environment was detected. Aborting.")
+		panic("An unrecognized environment was detected. Aborting.")
 	}
-	db, err := sql.Open("sqlite3", dbPath)
 
+	db, err := sql.Open("sqlite3", dbPath)
 	if err != nil {
-		fmt.Println("Error opening database. Are you sure it exists?")
-		log.Fatal(err)
+		log.Fatalf("Error opening database. Are you sure it exists? %v", err)
+		return nil
 	}
 
 	// Configure the connection pool

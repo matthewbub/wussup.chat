@@ -18,18 +18,19 @@ import (
 
 func main() {
 	err := utils.ValidateEnvironment()
+	logger := utils.GetLogger()
 	if err != nil {
-		log.Fatalf("Environment validation failed: %v", err)
+		logger.Fatalf("Environment validation failed: %v", err)
 	}
 
 	if err := utils.RunMigrations(); err != nil {
-		log.Fatalf("Failed to run migrations: %v", err)
+		logger.Fatalf("Failed to run migrations: %v", err)
 	}
 
 	router := gin.Default()
 	router.Static("/_assets/", "./routes/dist/_assets")
 	router.NoRoute(func(c *gin.Context) {
-		log.Println("No route found, serving index.html")
+		logger.Println("No route found, serving index.html")
 		c.File("./routes/dist/index.html")
 	})
 

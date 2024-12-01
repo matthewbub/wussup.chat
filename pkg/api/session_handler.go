@@ -40,13 +40,20 @@ func RenewSessionHandler(c *gin.Context) {
 
 	var domain string
 	var env = utils.GetEnv()
-	if env == "development" {
-		domain = constants.AppConfig.DevelopmentDomain
-	} else if env == "production" {
+
+	if env == constants.ENV_PRODUCTION {
 		domain = constants.AppConfig.ProductionDomain
 	}
 
-	if env == "test" {
+	if env == constants.ENV_STAGING {
+		domain = constants.AppConfig.StagingDomain
+	}
+
+	if env == constants.ENV_DEVELOPMENT {
+		domain = constants.AppConfig.DevelopmentDomain
+	}
+
+	if env == constants.ENV_TEST {
 		domain = constants.AppConfig.TestDomain
 	}
 
