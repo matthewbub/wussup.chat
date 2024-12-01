@@ -3,6 +3,7 @@ package constants
 import "time"
 
 type Config struct {
+	Version           string
 	ProductionDomain  string
 	StagingDomain     string
 	DevelopmentDomain string
@@ -25,6 +26,7 @@ type Config struct {
 }
 
 var AppConfig = Config{
+	Version:           "0.0.1",
 	ProductionDomain:  "zcauldron.com",
 	StagingDomain:     "localhost",
 	DevelopmentDomain: "localhost",

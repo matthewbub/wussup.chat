@@ -1,6 +1,40 @@
 # Debugging in Docker
 
-> We aren't using Docker-Compose yet...
+## TLDR
+
+These are the steps to launch the containers individually. We've since moved to docker-compose.
+
+### Run the core application
+
+To run the app on docker:
+
+1. **Build the Image**
+   ```sh
+   docker build -t zcauldron .
+   ```
+2. **Run the Container**
+   ```sh
+   docker run \
+      -e ENV=staging \
+      -e SESSION_SECRET_KEY=your_secret_key_here \
+      -e OPENAI_API_KEY=your_openai_key_here \
+      -p 8080:8080 zcauldron
+   ```
+
+Next, we need to launch the lib/image micro service
+
+### Build the `lib/image` Python Service
+
+1. **Build the Image**
+   ```sh
+   docker build -t pdf-service -f lib/image/Dockerfile lib/image/
+   ```
+2. **Run the Container**
+   ```sh
+   docker run -p 8082:8082 pdf-service
+   ```
+
+## The deets
 
 If you're a core maintainer of this project, understanding how to **debug** the docker containers is essential. Particularly if you are planning on working in "staging" or "production" environments and want to understand what's happening behind the scenes.
 

@@ -62,37 +62,31 @@ Watch this 5 minute getting started video here: https://www.youtube.com/watch?v=
      ```
    - Tip: If you don't need to change code in this server, you might just run the [Docker image](#build-the-libimage-python-service)
 
-## Hosting with Docker
+## Running the Application with Docker
 
-### Run the core application
+The docker version of the application supports multiple environments:
 
-To run the app on docker:
+### Staging with Docker
 
-1. **Build the Image**
-   ```sh
-   docker build -t zcauldron .
-   ```
-2. **Run the Container**
-   ```sh
-   docker run \
-      -e ENV=staging \
-      -e SESSION_SECRET_KEY=your_secret_key_here \
-      -e OPENAI_API_KEY=your_openai_key_here \
-      -p 8080:8080 zcauldron
-   ```
+Useful for running observing what the application will look like in production.
 
-Next, we need to launch the lib/image micro service
+```bash
+# Copy example env file
+cp .env.example .env.staging
+# Edit .env.development with your development settings
+docker compose up --build
+```
 
-### Build the `lib/image` Python Service
+### Production with Docker
 
-1. **Build the Image**
-   ```sh
-   docker build -t pdf-service -f lib/image/Dockerfile lib/image/
-   ```
-2. **Run the Container**
-   ```sh
-   docker run -p 8082:8082 pdf-service
-   ```
+Secure encryption and proper configuration is required and enforced in this environment.
+
+```bash
+# Copy example env file
+cp .env.example .env.production
+# Edit .env.production with your production settings
+DOCKER_ENV=production docker compose -f docker-compose.yml -f docker-compose.production.yml up --build
+```
 
 ## About the core stack
 

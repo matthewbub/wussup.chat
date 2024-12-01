@@ -1,0 +1,16 @@
+services:
+  api:
+    environment:
+      - ENV=production
+    volumes:
+      - ./data/production:/app/data
+    deploy:
+      replicas: 2
+      restart_policy:
+        condition: on-failure
+
+  pdf-service:
+    environment:
+      - FLASK_ENV=production
+    deploy:
+      replicas: 2

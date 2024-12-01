@@ -114,7 +114,7 @@ func ExtractPDFText(c *gin.Context) {
 	writer.Close()
 
 	// Create HTTP request to the Python service
-	req, err := http.NewRequest("POST", "http://localhost:8082/api/v1/internal/pdf/extract-text", body)
+	req, err := http.NewRequest("POST", "http://pdf-service:8082/api/v1/internal/pdf/extract-text", body)
 	if err != nil {
 		logger.Printf("Failed to create request: %v", err)
 		c.JSON(500, gin.H{"error": "Failed to create request"})
@@ -326,7 +326,7 @@ func GetPDFPageCount(c *gin.Context) {
 	writer.Close()
 
 	// Create HTTP request to the Python service
-	req, err := http.NewRequest("POST", "http://localhost:8082/api/v1/internal/pdf/page-count", body)
+	req, err := http.NewRequest("POST", "http://pdf-service:8082/api/v1/internal/pdf/page-count", body)
 	if err != nil {
 		logger.Printf("Failed to create request: %v", err)
 		c.JSON(500, gin.H{"error": "Failed to create request"})

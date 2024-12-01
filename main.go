@@ -3,9 +3,11 @@ package main
 import (
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"bus.zcauldron.com/pkg/api"
+	"bus.zcauldron.com/pkg/constants"
 	"bus.zcauldron.com/pkg/middleware"
 	"bus.zcauldron.com/pkg/utils"
 	"github.com/gin-contrib/sessions"
@@ -19,6 +21,9 @@ import (
 func main() {
 	err := utils.ValidateEnvironment()
 	logger := utils.GetLogger()
+
+	log.Printf("Starting API version %s in %s environment", constants.AppConfig.Version, os.Getenv("ENV"))
+	logger.Printf("Starting API version %s in %s environment", constants.AppConfig.Version, os.Getenv("ENV"))
 	if err != nil {
 		logger.Fatalf("Environment validation failed: %v", err)
 	}
@@ -36,7 +41,6 @@ func main() {
 	router := gin.Default()
 	router.Static("/_assets/", "./routes/dist/_assets")
 	router.NoRoute(func(c *gin.Context) {
-		logger.Println("No route found, serving index.html")
 		c.File("./routes/dist/index.html")
 	})
 

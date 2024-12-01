@@ -1,5 +1,5 @@
 # Build stage
-FROM python:3.12-slim as builder
+FROM python:3.12-slim AS builder
 
 RUN set -eux; \
     apt-get update && \
@@ -64,7 +64,7 @@ EXPOSE 8082
 
 # health check
 HEALTHCHECK --interval=30s --timeout=3s \
-  CMD curl -f http://localhost:8082/health || exit 1
+  CMD curl -f http://pdf-service:8082/health || exit 1
 
 # Run the Flask app with gunicorn
 CMD ["gunicorn", "--bind", "0.0.0.0:8082", "--workers", "4", "--timeout", "120", "main:app"]

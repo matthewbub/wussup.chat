@@ -294,7 +294,7 @@ const importBankStatementStore = create<State & Action>()(
 
           try {
             const previewResponse = await fetch(
-              "http://localhost:8082/api/v1/pdf/upload-pdf",
+              "http://pdf-service:8082/api/v1/pdf/upload-pdf",
               {
                 method: "POST",
                 body: formData,
