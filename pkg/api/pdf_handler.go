@@ -7,21 +7,26 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"os/exec"
-	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
+
+	"mime/multipart"
 
 	"bus.zcauldron.com/pkg/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
 
+type PythonResponseData struct {
+	PatternsMatched []string `json:"patterns_matched"`
+}
+
 type PythonResponse struct {
-	Success bool   `json:"success"`
-	Text    string `json:"text"`
-	Error   string `json:"error"`
+	Success bool               `json:"success"`
+	Text    string             `json:"text"`
+	Data    PythonResponseData `json:"data"`
+	Error   string             `json:"error"`
 }
 
 type Transaction struct {
@@ -41,73 +46,107 @@ type PDFPageCount struct {
 }
 
 func ExtractPDFText(c *gin.Context) {
+	logger := utils.GetLogger()
+
 	tokenString, err := c.Cookie("jwt")
 	if err != nil || tokenString == "" {
+		logger.Printf("Unauthorized access attempt: missing or empty JWT")
 		c.JSON(401, gin.H{"error": "Unauthorized"})
 		return
 	}
 
 	userID, _, err := utils.VerifyJWT(tokenString)
 	if err != nil {
+		logger.Printf("JWT verification failed: %v", err)
 		c.JSON(401, gin.H{"error": "Unauthorized"})
 		return
 	}
 
 	file, err := c.FormFile("file")
 	if err != nil {
+		logger.Printf("No file uploaded: %v", err)
 		c.JSON(400, gin.H{"error": "No file uploaded"})
 		return
 	}
 	pagesStr := c.PostForm("pages")
 
-	tmpDir, err := os.MkdirTemp("", "pdf_processing")
-	if err != nil {
-		c.JSON(500, gin.H{"error": "Failed to create temp directory"})
-		return
-	}
-	defer os.RemoveAll(tmpDir)
-
-	pdfPath := filepath.Join(tmpDir, "statement.pdf")
-	if err := c.SaveUploadedFile(file, pdfPath); err != nil {
-		c.JSON(500, gin.H{"error": "Failed to save file"})
-		return
-	}
-
+	// Parse and validate pages
 	var pages []int
 	for _, p := range strings.Split(pagesStr, ",") {
 		page, err := strconv.Atoi(strings.TrimSpace(p))
 		if err != nil {
+			logger.Printf("Invalid page number: %v", err)
 			c.JSON(400, gin.H{"error": "Invalid page number"})
 			return
 		}
 		pages = append(pages, page)
 	}
 
-	extractedText := ""
+	// Create a new multipart form
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
 
-	// Run Python script for each page
-	for _, page := range pages {
-		cmd := exec.Command("python3", "scripts/pdf_extractor.py", pdfPath, strconv.Itoa(page))
-		output, err := cmd.Output()
-		if err != nil {
-			c.JSON(500, gin.H{"error": "Failed to process PDF: " + err.Error()})
-			return
-		}
-
-		// Parse the JSON response from Python
-		var response PythonResponse
-		if err := json.Unmarshal(output, &response); err != nil {
-			c.JSON(500, gin.H{"error": "Failed to parse Python output"})
-			return
-		}
-
-		if !response.Success {
-			c.JSON(500, gin.H{"error": response.Error})
-			return
-		}
-
-		extractedText += response.Text
+	// Add the file to the form
+	part, err := writer.CreateFormFile("file", file.Filename)
+	if err != nil {
+		logger.Printf("Failed to create form file: %v", err)
+		c.JSON(500, gin.H{"error": "Failed to create form file"})
+		return
 	}
+
+	// Open and copy the file content
+	src, err := file.Open()
+	if err != nil {
+		logger.Printf("Failed to open uploaded file: %v", err)
+		c.JSON(500, gin.H{"error": "Failed to open uploaded file"})
+		return
+	}
+	defer src.Close()
+
+	if _, err = io.Copy(part, src); err != nil {
+		logger.Printf("Failed to copy file content: %v", err)
+		c.JSON(500, gin.H{"error": "Failed to copy file content"})
+		return
+	}
+
+	// Add all pages in a single request
+	writer.WriteField("pages", strings.Trim(strings.Join(strings.Fields(fmt.Sprint(pages)), ","), "[]"))
+	writer.Close()
+
+	// Create HTTP request to the Python service
+	req, err := http.NewRequest("POST", "http://localhost:8082/api/v1/internal/pdf/extract-text", body)
+	if err != nil {
+		logger.Printf("Failed to create request: %v", err)
+		c.JSON(500, gin.H{"error": "Failed to create request"})
+		return
+	}
+	req.Header.Set("Content-Type", writer.FormDataContentType())
+
+	// Send request
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		logger.Printf("Failed to process PDF: %v", err)
+		c.JSON(500, gin.H{"error": "Failed to process PDF: " + err.Error()})
+		return
+	}
+	defer resp.Body.Close()
+
+	// Parse the response
+	var pythonResp PythonResponse
+	if err := json.NewDecoder(resp.Body).Decode(&pythonResp); err != nil {
+		logger.Printf("Failed to parse Python response: %v", err)
+		c.JSON(500, gin.H{"error": "Failed to parse Python response"})
+		return
+	}
+
+	if !pythonResp.Success {
+		logger.Printf("Python service error: %s sensitive words found in document %v", pythonResp.Error, pythonResp.Data.PatternsMatched)
+		c.JSON(500, gin.H{"error": pythonResp.Error})
+		return
+	}
+
+	extractedText := pythonResp.Text
 
 	// Define the JSON schema for the response
 	jsonSchema := map[string]interface{}{
@@ -165,13 +204,15 @@ func ExtractPDFText(c *gin.Context) {
 
 	payloadBytes, err := json.Marshal(payload)
 	if err != nil {
+		logger.Printf("Failed to marshal payload: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to marshal payload"})
 		return
 	}
 
 	// Send the request to OpenAI API
-	req, err := http.NewRequest("POST", "https://api.openai.com/v1/chat/completions", bytes.NewBuffer(payloadBytes))
+	req, err = http.NewRequest("POST", "https://api.openai.com/v1/chat/completions", bytes.NewBuffer(payloadBytes))
 	if err != nil {
+		logger.Printf("Failed to create request: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create request"})
 		return
 	}
@@ -179,14 +220,15 @@ func ExtractPDFText(c *gin.Context) {
 	req.Header.Set("Content-Type", "application/json")
 	apiKey := os.Getenv("OPENAI_API_KEY")
 	if apiKey == "" {
+		logger.Printf("OpenAI API key is not set")
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "OpenAI API key is not set"})
 		return
 	}
 	req.Header.Set("Authorization", "Bearer "+apiKey)
 
-	client := &http.Client{}
-	resp, err := client.Do(req)
+	resp, err = client.Do(req)
 	if err != nil {
+		logger.Printf("Failed to send request: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to send request"})
 		return
 	}
@@ -195,6 +237,7 @@ func ExtractPDFText(c *gin.Context) {
 	// Read the response
 	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
+		logger.Printf("Failed to read response: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to read response"})
 		return
 	}
@@ -215,12 +258,14 @@ func ExtractPDFText(c *gin.Context) {
 	}
 
 	if err := json.Unmarshal(respBody, &openAIResp); err != nil {
+		logger.Printf("Failed to parse OpenAI response: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to parse OpenAI response"})
 		return
 	}
 
 	var statement StatementData
 	if err := json.Unmarshal([]byte(openAIResp.Choices[0].Message.Content), &statement); err != nil {
+		logger.Printf("Failed to parse statement data: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to parse statement data"})
 		return
 	}
@@ -233,82 +278,111 @@ func ExtractPDFText(c *gin.Context) {
 	_, err = db.Exec("INSERT INTO pdf_processing (id, user_id, pages_processed) VALUES (?, ?, ?)",
 		uuid.New().String(), userID, pagesProcessed)
 	if err != nil {
+		logger.Printf("Failed to record PDF processing: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to record PDF processing"})
 		return
 	}
 
+	logger.Printf("Successfully processed PDF for user %s with %d pages", userID, pagesProcessed)
 	c.JSON(200, statement)
 }
 
 func GetPDFPageCount(c *gin.Context) {
+	logger := utils.GetLogger()
+
 	file, err := c.FormFile("file")
 	if err != nil {
+		logger.Printf("No file uploaded: %v", err)
 		c.JSON(400, gin.H{"error": "No file uploaded"})
 		return
 	}
 
-	// Create a temporary directory for the uploaded file
-	tmpDir, err := os.MkdirTemp("", "pdf_processing")
+	// Create a new multipart form
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+
+	// Add the file to the form
+	part, err := writer.CreateFormFile("file", file.Filename)
 	if err != nil {
-		c.JSON(500, gin.H{"error": "Failed to create temp directory"})
+		logger.Printf("Failed to create form file: %v", err)
+		c.JSON(500, gin.H{"error": "Failed to create form file"})
 		return
 	}
 
-	defer func() {
-		if err := os.RemoveAll(tmpDir); err != nil {
-			fmt.Printf("Failed to cleanup temporary directory %s: %v\n", tmpDir, err)
-		}
-	}()
-
-	// Save the uploaded file
-	pdfPath := filepath.Join(tmpDir, "statement.pdf")
-	if err := c.SaveUploadedFile(file, pdfPath); err != nil {
-		c.JSON(500, gin.H{"error": "Failed to save file"})
+	// Open and copy the file content
+	src, err := file.Open()
+	if err != nil {
+		logger.Printf("Failed to open uploaded file: %v", err)
+		c.JSON(500, gin.H{"error": "Failed to open uploaded file"})
 		return
 	}
+	defer src.Close()
 
-	// Run Python script to get page count
-	cmd := exec.Command("python3", "scripts/pdf_page_count.py", pdfPath)
-	output, err := cmd.Output()
+	if _, err = io.Copy(part, src); err != nil {
+		logger.Printf("Failed to copy file content: %v", err)
+		c.JSON(500, gin.H{"error": "Failed to copy file content"})
+		return
+	}
+	writer.Close()
+
+	// Create HTTP request to the Python service
+	req, err := http.NewRequest("POST", "http://localhost:8082/api/v1/internal/pdf/page-count", body)
 	if err != nil {
-		fmt.Println("err", err)
+		logger.Printf("Failed to create request: %v", err)
+		c.JSON(500, gin.H{"error": "Failed to create request"})
+		return
+	}
+	req.Header.Set("Content-Type", writer.FormDataContentType())
+
+	// Send request
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		logger.Printf("Failed to send request: %v", err)
 		c.JSON(500, gin.H{"error": "Failed to process PDF: " + err.Error()})
 		return
 	}
+	defer resp.Body.Close()
 
-	type response struct {
+	// Read and parse response
+	var pythonResp struct {
 		NumPages int    `json:"numPages,omitempty"`
 		Error    string `json:"error,omitempty"`
 	}
-	var resp response
-	if err := json.Unmarshal(output, &resp); err != nil {
-		c.JSON(500, gin.H{"error": "Failed to parse Python output"})
+	if err := json.NewDecoder(resp.Body).Decode(&pythonResp); err != nil {
+		logger.Printf("Failed to parse response: %v", err)
+		c.JSON(500, gin.H{"error": "Failed to parse response"})
+		return
+	}
+
+	if pythonResp.Error != "" {
+		logger.Printf("Python service error: %s", pythonResp.Error)
+		c.JSON(500, gin.H{"error": pythonResp.Error})
 		return
 	}
 
 	// Generate a unique ID for this file
 	fileID := uuid.New().String()
-
-	if resp.Error != "" {
-		c.JSON(500, gin.H{"error": resp.Error})
-		return
-	}
-
+	logger.Printf("Successfully counted pages for file %s: %d pages", fileID, pythonResp.NumPages)
 	c.JSON(200, PDFPageCount{
-		NumPages: resp.NumPages,
+		NumPages: pythonResp.NumPages,
 		FileID:   fileID,
 	})
 }
 
 func SaveStatement(c *gin.Context) {
+	logger := utils.GetLogger()
+
 	tokenString, err := c.Cookie("jwt")
 	if err != nil || tokenString == "" {
+		logger.Printf("Unauthorized access attempt: missing or empty JWT")
 		c.JSON(401, gin.H{"error": "Unauthorized"})
 		return
 	}
 
 	userID, _, err := utils.VerifyJWT(tokenString)
 	if err != nil {
+		logger.Printf("JWT verification failed: %v", err)
 		c.JSON(401, gin.H{"error": "Unauthorized"})
 		return
 	}
@@ -316,7 +390,7 @@ func SaveStatement(c *gin.Context) {
 	// Dump JSON body to file
 	body, err := io.ReadAll(c.Request.Body)
 	if err != nil {
-		fmt.Println(err)
+		logger.Printf("Failed to read request body: %v", err)
 		c.JSON(500, gin.H{"error": "Failed to read request body"})
 		return
 	}
@@ -329,7 +403,7 @@ func SaveStatement(c *gin.Context) {
 	err = json.Unmarshal(body, &statement)
 
 	if err != nil {
-		fmt.Println(err)
+		logger.Printf("Failed to parse statement data: %v", err)
 		c.JSON(500, gin.H{"error": "Failed to parse statement data"})
 		return
 	}
@@ -338,6 +412,7 @@ func SaveStatement(c *gin.Context) {
 	tx, err := db.Begin()
 
 	if err != nil {
+		logger.Printf("Failed to start transaction: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to start transaction"})
 		return
 	}
@@ -347,6 +422,7 @@ func SaveStatement(c *gin.Context) {
 	stmt, err := tx.Prepare("INSERT INTO transactions (id, user_id, date, description, amount, type) VALUES (?, ?, ?, ?, ?, ?)")
 
 	if err != nil {
+		logger.Printf("Failed to prepare statement: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to prepare statement"})
 		return
 	}
@@ -358,6 +434,7 @@ func SaveStatement(c *gin.Context) {
 		// Parse date string to timestamp
 		date, err := parseDate(t.Date)
 		if err != nil {
+			logger.Printf("Invalid date format: %v", err)
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid date format"})
 			return
 		}
@@ -371,16 +448,19 @@ func SaveStatement(c *gin.Context) {
 			t.Type,
 		)
 		if err != nil {
+			logger.Printf("Failed to save transaction: %v", err)
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save transaction"})
 			return
 		}
 	}
 
 	if err := tx.Commit(); err != nil {
+		logger.Printf("Failed to commit transaction: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to commit transaction"})
 		return
 	}
 
+	logger.Printf("Successfully saved %d transactions for user %s", len(statement.Transactions), userID)
 	c.JSON(http.StatusOK, gin.H{
 		"message": fmt.Sprintf("Successfully saved %d transactions", len(statement.Transactions)),
 	})

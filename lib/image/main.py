@@ -8,6 +8,7 @@ import io
 import json
 from fitz import Rect
 import logging
+import pdfplumber
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -15,10 +16,20 @@ logger = logging.getLogger(__name__)
 
 # Constants
 MAX_FILE_SIZE = 10 * 1024 * 1024  # 10 MB limit
+SENSITIVE_PATTERNS = [
+    "Account Number",
+    "Routing Number",
+    "SSN",
+    "Social Security",
+    "Credit Card",
+    "Password",
+    "DOB",
+    "Date of Birth",
+]
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {
-    "origins": ["http://localhost:3001"],
+    "origins": ["http://localhost:3001", "http://localhost:8080"],
     "methods": ["GET", "POST", "OPTIONS"],
     "allow_headers": ["Content-Type"],
     "supports_credentials": True
@@ -151,6 +162,111 @@ def apply_drawing():
     except Exception as e:
         print(e)  # For debugging
         return jsonify({'error': 'An internal error occurred'}), 500
+
+@app.route('/api/v1/internal/pdf/page-count', methods=['POST'])
+def get_pdf_page_count():
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file provided'}), 400
+    
+    file = request.files['file']
+    file.seek(0, io.SEEK_END)
+    file_length = file.tell()
+    file.seek(0)
+    
+    if file_length > MAX_FILE_SIZE:
+        return jsonify({'error': f'File size exceeds the maximum limit of {MAX_FILE_SIZE/1024/1024:.0f} MB'}), 400
+    
+    try:
+        # Verify PDF header
+        pdf_header = file.read(4)
+        file.seek(0)  # Reset file pointer
+        if pdf_header != b'%PDF':
+            return jsonify({'error': 'Not a valid PDF file'}), 400
+        
+        # Count pages using pdfplumber
+        with pdfplumber.open(file) as pdf:
+            num_pages = len(pdf.pages)
+            
+        return jsonify({
+            'numPages': num_pages
+        })
+        
+    except Exception as e:
+        logger.error(f"Error counting PDF pages: {str(e)}")
+        return jsonify({'error': 'An error occurred while processing the PDF'}), 500
+
+@app.route('/api/v1/internal/pdf/extract-text', methods=['POST'])
+def extract_pdf_text():
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file provided'}), 400
+    
+    file = request.files['file']
+    pages_to_extract = request.form.get('pages', '').split(',')
+    
+    try:
+        # Validate pages input
+        pages = [int(p.strip()) for p in pages_to_extract if p.strip()]
+        if not pages:
+            return jsonify({'error': 'No valid page numbers provided'}), 400
+        if not all(p > 0 for p in pages):
+            return jsonify({'error': 'Invalid page numbers'}), 400
+        
+        # Check file size
+        file.seek(0, io.SEEK_END)
+        file_length = file.tell()
+        file.seek(0)
+        if file_length > MAX_FILE_SIZE:
+            return jsonify({'error': f'File size exceeds maximum allowed size of {MAX_FILE_SIZE} bytes'}), 400
+        
+        # Verify PDF header
+        pdf_header = file.read(4)
+        file.seek(0)
+        if pdf_header != b'%PDF':
+            return jsonify({'error': 'Invalid PDF file format'}), 400
+        
+        # Extract text with improved efficiency
+        text_parts = []
+        with pdfplumber.open(file) as pdf:
+            total_pages = len(pdf.pages)
+            if any(p > total_pages for p in pages):
+                return jsonify({'error': f'Page number exceeds document length ({total_pages} pages)'}), 400
+            
+            for page in pdf.pages:
+                if page.page_number in pages:
+                    text = page.extract_text()
+                    # Check for sensitive data - do case conversion once
+                    text_lower = text.lower()
+                    matched_patterns = [
+                        pattern 
+                        for pattern in SENSITIVE_PATTERNS 
+                        if pattern.lower() in text_lower
+                    ]
+                    if matched_patterns:
+                        return jsonify({
+                            'success': False,
+                            'data': {
+                                'patterns_matched': matched_patterns
+                            },
+                            'error': 'Document contains sensitive information and cannot be processed'
+                        }), 400
+                    text_parts.append(text)
+        
+        return jsonify({
+            'success': True,
+            'text': '\n'.join(text_parts)
+        })
+        
+    except ValueError as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 400
+    except Exception as e:
+        logger.error(f"Error extracting PDF text: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': 'An error occurred while processing the PDF'
+        }), 500
 
 @app.route('/health', methods=['GET'])
 def health_check():

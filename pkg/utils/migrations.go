@@ -56,6 +56,8 @@ func RunMigrations() error {
 		return fmt.Errorf("failed to run migrations: %w", err)
 	}
 
+	log.Println("Migrations completed successfully")
+
 	return nil
 }
 
