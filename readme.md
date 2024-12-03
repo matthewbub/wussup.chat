@@ -159,3 +159,11 @@ docker compose up -d
 # Now you can create your first backup
 ./scripts/backup.sh [environment]
 ```
+
+## Troubleshooting
+
+```
+docker compose down
+docker compose build --no-cache
+docker compose up -d
+```
