@@ -81,3 +81,5 @@ dist
 *.log
 
 backups/
+
+__pycache__

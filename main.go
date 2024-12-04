@@ -41,6 +41,7 @@ func main() {
 	router := gin.Default()
 	router.Static("/_assets/", "./routes/dist/_assets")
 	router.NoRoute(func(c *gin.Context) {
+		logger.Printf("No route found for %s", c.Request.URL.Path)
 		c.File("./routes/dist/index.html")
 	})
 
@@ -54,6 +55,22 @@ func main() {
 	// API routes with auth below this point
 	router.GET("/api/v1/schema/:type", api.SchemaHandler)
 	router.GET("/health", func(c *gin.Context) {
+		// ping the pdf service
+		pdfServiceURL := utils.GetPDFServiceURL()
+		resp, err := http.Get(pdfServiceURL + "/health")
+		if err != nil {
+			logger.Printf("Failed to ping PDF service: %v", err)
+			c.Status(http.StatusServiceUnavailable)
+			return
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode != http.StatusOK {
+			logger.Printf("PDF service is not healthy: %v", resp.StatusCode)
+			c.Status(http.StatusServiceUnavailable)
+			return
+		}
+
 		c.Status(http.StatusOK)
 	})
 
@@ -77,9 +94,11 @@ func main() {
 
 	pdfRoutes := router.Group("/api/v1/pdf", middleware.JWTAuthMiddleware())
 	{
-		pdfRoutes.POST("/extract", api.ExtractPDFText)
+		pdfRoutes.POST("/extract-text", api.ExtractPDFText)
 		pdfRoutes.POST("/page-count", api.GetPDFPageCount)
 		pdfRoutes.POST("/save", api.SaveStatement)
+		pdfRoutes.POST("/upload-pdf", api.UploadPDFPreview)
+		pdfRoutes.POST("/apply-drawing", api.ApplyDrawing)
 	}
 
 	router.GET("/api/v1/transactions", middleware.JWTAuthMiddleware(), api.GetUserTransactionsHandler)

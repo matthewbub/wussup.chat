@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"mime/multipart"
+	"net/textproto"
 
 	"bus.zcauldron.com/pkg/utils"
 	"github.com/gin-gonic/gin"
@@ -86,15 +87,15 @@ func ExtractPDFText(c *gin.Context) {
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
 
-	// Add the file to the form
-	part, err := writer.CreateFormFile("file", file.Filename)
+	// Create the form file and capture the file part
+	filePart, err := writer.CreateFormFile("file", file.Filename)
 	if err != nil {
 		logger.Printf("Failed to create form file: %v", err)
 		c.JSON(500, gin.H{"error": "Failed to create form file"})
 		return
 	}
 
-	// Open and copy the file content
+	// Open the uploaded file
 	src, err := file.Open()
 	if err != nil {
 		logger.Printf("Failed to open uploaded file: %v", err)
@@ -103,7 +104,8 @@ func ExtractPDFText(c *gin.Context) {
 	}
 	defer src.Close()
 
-	if _, err = io.Copy(part, src); err != nil {
+	// Copy the file content to the form part
+	if _, err = io.Copy(filePart, src); err != nil {
 		logger.Printf("Failed to copy file content: %v", err)
 		c.JSON(500, gin.H{"error": "Failed to copy file content"})
 		return
@@ -301,15 +303,15 @@ func GetPDFPageCount(c *gin.Context) {
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
 
-	// Add the file to the form
-	part, err := writer.CreateFormFile("file", file.Filename)
+	// Create the form file and capture the file part
+	filePart, err := writer.CreateFormFile("file", file.Filename)
 	if err != nil {
 		logger.Printf("Failed to create form file: %v", err)
 		c.JSON(500, gin.H{"error": "Failed to create form file"})
 		return
 	}
 
-	// Open and copy the file content
+	// Open the uploaded file
 	src, err := file.Open()
 	if err != nil {
 		logger.Printf("Failed to open uploaded file: %v", err)
@@ -318,16 +320,19 @@ func GetPDFPageCount(c *gin.Context) {
 	}
 	defer src.Close()
 
-	if _, err = io.Copy(part, src); err != nil {
+	// Copy the file content to the form part
+	if _, err = io.Copy(filePart, src); err != nil {
 		logger.Printf("Failed to copy file content: %v", err)
 		c.JSON(500, gin.H{"error": "Failed to copy file content"})
 		return
 	}
 	writer.Close()
 
+	logger.Printf("Service URL: %s", utils.GetPDFServiceURL())
 	pdfServiceURL := utils.GetPDFServiceURL()
 	req, err := http.NewRequest("POST", pdfServiceURL+"/api/v1/internal/pdf/page-count", body)
 
+	logger.Printf("Service Request Sent: %s", req.URL.String())
 	if err != nil {
 		logger.Printf("Failed to create request: %v", err)
 		c.JSON(500, gin.H{"error": "Failed to create request"})
@@ -483,4 +488,184 @@ func parseDate(dateStr string) (time.Time, error) {
 		parseErr = err
 	}
 	return time.Time{}, parseErr
+}
+
+func UploadPDFPreview(c *gin.Context) {
+	logger := utils.GetLogger()
+	logger.Printf("Starting UploadPDFPreview function")
+
+	file, err := c.FormFile("file")
+	if err != nil {
+		logger.Printf("No file uploaded: %v", err)
+		c.JSON(400, gin.H{"error": "No file uploaded"})
+		return
+	}
+	logger.Printf("Received file: %s with content type: %s", file.Filename, file.Header.Get("Content-Type"))
+
+	// Create a new multipart form
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+
+	// Create the form file with proper headers
+	h := make(textproto.MIMEHeader)
+	h.Set("Content-Disposition", fmt.Sprintf(`form-data; name="%s"; filename="%s"`, "file", file.Filename))
+	h.Set("Content-Type", "application/pdf")
+
+	filePart, err := writer.CreatePart(h)
+	if err != nil {
+		logger.Printf("Failed to create form part: %v", err)
+		c.JSON(500, gin.H{"error": "Failed to create form part"})
+		return
+	}
+
+	// Open the uploaded file
+	src, err := file.Open()
+	if err != nil {
+		logger.Printf("Failed to open uploaded file: %v", err)
+		c.JSON(500, gin.H{"error": "Failed to open uploaded file"})
+		return
+	}
+	defer src.Close()
+
+	// Copy the file content to the form part
+	if _, err = io.Copy(filePart, src); err != nil {
+		logger.Printf("Failed to copy file content: %v", err)
+		c.JSON(500, gin.H{"error": "Failed to copy file content"})
+		return
+	}
+
+	// Add the page number from the form
+	pageNum := c.PostForm("page")
+	if pageNum != "" {
+		if err := writer.WriteField("page", pageNum); err != nil {
+			logger.Printf("Failed to write page field: %v", err)
+			c.JSON(500, gin.H{"error": "Failed to process request"})
+			return
+		}
+		logger.Printf("Added page number to form: %s", pageNum)
+	}
+
+	// Important: Close the writer before sending
+	if err := writer.Close(); err != nil {
+		logger.Printf("Failed to close writer: %v", err)
+		c.JSON(500, gin.H{"error": "Failed to process request"})
+		return
+	}
+
+	// Forward request to PDF service
+	pdfServiceURL := utils.GetPDFServiceURL()
+	logger.Printf("Sending request to PDF service URL: %s", pdfServiceURL)
+
+	req, err := http.NewRequest("POST", pdfServiceURL+"/api/v1/internal/pdf/upload-pdf", body)
+	if err != nil {
+		logger.Printf("Failed to create request: %v", err)
+		c.JSON(500, gin.H{"error": "Failed to create request"})
+		return
+	}
+
+	// Set the content type with the boundary
+	req.Header.Set("Content-Type", writer.FormDataContentType())
+	logger.Printf("Set Content-Type header: %s", writer.FormDataContentType())
+
+	// Send request
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		logger.Printf("Failed to send request: %v", err)
+		c.JSON(500, gin.H{"error": "Failed to process PDF: " + err.Error()})
+		return
+	}
+	defer resp.Body.Close()
+
+	// Copy the response headers and body to the client
+	for name, values := range resp.Header {
+		for _, value := range values {
+			c.Header(name, value)
+		}
+	}
+	c.Status(resp.StatusCode)
+	io.Copy(c.Writer, resp.Body)
+}
+
+func ApplyDrawing(c *gin.Context) {
+	logger := utils.GetLogger()
+
+	file, err := c.FormFile("file")
+	if err != nil {
+		logger.Printf("No file uploaded: %v", err)
+		c.JSON(400, gin.H{"error": "No file uploaded"})
+		return
+	}
+
+	// Check if the file is a PDF
+	if !strings.HasSuffix(file.Filename, ".pdf") {
+		logger.Printf("Uploaded file is not a PDF: %s", file.Filename)
+		c.JSON(400, gin.H{"error": "Uploaded file is not a PDF"})
+		return
+	}
+
+	// Create a new multipart form
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+
+	// Create the form file and capture the file part
+	filePart, err := writer.CreateFormFile("file", file.Filename)
+	if err != nil {
+		logger.Printf("Failed to create form file: %v", err)
+		c.JSON(500, gin.H{"error": "Failed to create form file"})
+		return
+	}
+
+	// Open the uploaded file
+	src, err := file.Open()
+	if err != nil {
+		logger.Printf("Failed to open uploaded file: %v", err)
+		c.JSON(500, gin.H{"error": "Failed to open uploaded file"})
+		return
+	}
+	defer src.Close()
+
+	// Copy the file content to the form part
+	if _, err = io.Copy(filePart, src); err != nil {
+		logger.Printf("Failed to copy file content: %v", err)
+		c.JSON(500, gin.H{"error": "Failed to copy file content"})
+		return
+	}
+
+	// Copy all form fields to the new request
+	for key, values := range c.Request.PostForm {
+		for _, value := range values {
+			writer.WriteField(key, value)
+		}
+	}
+	writer.Close()
+
+	// Forward request to PDF service
+	pdfServiceURL := utils.GetPDFServiceURL()
+	req, err := http.NewRequest("POST", pdfServiceURL+"/api/v1/internal/pdf/apply-drawing", body)
+	if err != nil {
+		logger.Printf("Failed to create request: %v", err)
+		c.JSON(500, gin.H{"error": "Failed to create request"})
+		return
+	}
+	req.Header.Set("Content-Type", writer.FormDataContentType())
+
+	// Send request
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		logger.Printf("Failed to process PDF: %v", err)
+		c.JSON(500, gin.H{"error": "Failed to process PDF: " + err.Error()})
+		return
+	}
+	defer resp.Body.Close()
+
+	// Copy the response headers and body directly to the client
+	for name, values := range resp.Header {
+		for _, value := range values {
+			c.Header(name, value)
+		}
+	}
+	c.Status(resp.StatusCode)
+	io.Copy(c.Writer, resp.Body)
 }

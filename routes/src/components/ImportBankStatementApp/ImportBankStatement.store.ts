@@ -188,7 +188,7 @@ const importBankStatementStore = create<State & Action>()(
         formData.append("pages", pageSelection.selectedPages.join(","));
 
         try {
-          const response = await fetch("/api/v1/pdf/extract", {
+          const response = await fetch("/api/v1/pdf/extract-text", {
             method: "POST",
             body: formData,
           });
@@ -293,16 +293,13 @@ const importBankStatementStore = create<State & Action>()(
           formData.append("page", pageNum.toString());
 
           try {
-            const previewResponse = await fetch(
-              "http://pdf-service:8082/api/v1/pdf/upload-pdf",
-              {
-                method: "POST",
-                body: formData,
-                headers: {
-                  Accept: "application/json",
-                },
-              }
-            );
+            const previewResponse = await fetch("/api/v1/pdf/upload-pdf", {
+              method: "POST",
+              body: formData,
+              headers: {
+                Accept: "application/json",
+              },
+            });
 
             if (!previewResponse.ok) continue;
 

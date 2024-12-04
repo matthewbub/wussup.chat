@@ -50,8 +50,10 @@ ENV PATH="/usr/local/bin:${PATH}"
 # Create and set working directory
 WORKDIR /app
 
-# Copy the Python service code
-COPY main.py .
+# Copy all Python service code
+COPY *.py .
+COPY logging_config.py .
+COPY config.py .
 
 # Change ownership
 RUN chown -R appuser:appuser /app
