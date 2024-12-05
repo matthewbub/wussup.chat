@@ -26,7 +26,7 @@ func Cors(c *gin.Context) {
 	}
 
 	if env == constants.ENV_STAGING {
-		allowedOrigins = append(allowedOrigins, "http://"+constants.AppConfig.StagingDomain+":"+strconv.Itoa(constants.AppConfig.DevelopmentPorts.Staging_Port))
+		allowedOrigins = append(allowedOrigins, "http://"+constants.AppConfig.StagingDomain+":"+strconv.Itoa(constants.AppConfig.DevelopmentPorts.StagingPort))
 	}
 
 	if env == constants.ENV_DEVELOPMENT {
