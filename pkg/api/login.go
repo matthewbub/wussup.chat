@@ -76,22 +76,24 @@ func LoginHandler(c *gin.Context) {
 	}
 
 	env := utils.GetEnv()
-	if env == constants.ENV_PRODUCTION {
-		cookieConfig.Domain = constants.AppConfig.ProductionDomain
+	domainMap := map[string]string{
+		constants.ENV_PRODUCTION:  constants.AppConfig.ProductionDomain,
+		constants.ENV_STAGING:     constants.AppConfig.StagingDomain,
+		constants.ENV_DEVELOPMENT: constants.AppConfig.DevelopmentDomain,
+		constants.ENV_TEST:        constants.AppConfig.TestDomain,
 	}
 
-	if env == constants.ENV_STAGING {
-		cookieConfig.Domain = constants.AppConfig.StagingDomain
-	}
+	if d, ok := domainMap[env]; ok {
+		cookieConfig.Domain = d
 
-	if env == constants.ENV_DEVELOPMENT {
-		cookieConfig.Domain = constants.AppConfig.DevelopmentDomain
-		cookieConfig.Secure = false
-	}
-
-	if env == constants.ENV_TEST {
-		cookieConfig.Domain = constants.AppConfig.TestDomain
-		cookieConfig.Secure = false
+		if env == constants.ENV_PRODUCTION {
+			cookieConfig.Secure = true
+			cookieConfig.HttpOnly = true
+		}
+		if env == constants.ENV_STAGING || env == constants.ENV_DEVELOPMENT || env == constants.ENV_TEST {
+			cookieConfig.HttpOnly = false
+			cookieConfig.Secure = false
+		}
 	}
 
 	c.SetCookie("jwt", jwtToken, int(cookieConfig.Expiration.Seconds()), "/", cookieConfig.Domain, cookieConfig.Secure, cookieConfig.HttpOnly)

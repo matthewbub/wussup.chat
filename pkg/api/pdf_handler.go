@@ -112,7 +112,13 @@ func ExtractPDFText(c *gin.Context) {
 	}
 
 	// Add all pages in a single request
-	writer.WriteField("pages", strings.Trim(strings.Join(strings.Fields(fmt.Sprint(pages)), ","), "[]"))
+	pagesStr = strings.Join(strings.Fields(fmt.Sprint(pages)), ",")
+	pagesStr = strings.Trim(pagesStr, "[]")
+	if err := writer.WriteField("pages", pagesStr); err != nil {
+		logger.Printf("Failed to write pages field: %v", err)
+		c.JSON(500, gin.H{"error": "Failed to write pages field"})
+		return
+	}
 	writer.Close()
 
 	pdfServiceURL := utils.GetPDFServiceURL()
@@ -144,7 +150,7 @@ func ExtractPDFText(c *gin.Context) {
 
 	if !pythonResp.Success {
 		logger.Printf("Python service error: %s sensitive words found in document %v", pythonResp.Error, pythonResp.Data.PatternsMatched)
-		c.JSON(500, gin.H{"error": pythonResp.Error})
+		c.JSON(400, gin.H{"error": pythonResp.Error})
 		return
 	}
 
@@ -492,7 +498,6 @@ func parseDate(dateStr string) (time.Time, error) {
 
 func UploadPDFPreview(c *gin.Context) {
 	logger := utils.GetLogger()
-	logger.Printf("Starting UploadPDFPreview function")
 
 	file, err := c.FormFile("file")
 	if err != nil {
@@ -500,8 +505,6 @@ func UploadPDFPreview(c *gin.Context) {
 		c.JSON(400, gin.H{"error": "No file uploaded"})
 		return
 	}
-	logger.Printf("Received file: %s with content type: %s", file.Filename, file.Header.Get("Content-Type"))
-
 	// Create a new multipart form
 	body := &bytes.Buffer{}
 	writer := multipart.NewWriter(body)
@@ -542,7 +545,6 @@ func UploadPDFPreview(c *gin.Context) {
 			c.JSON(500, gin.H{"error": "Failed to process request"})
 			return
 		}
-		logger.Printf("Added page number to form: %s", pageNum)
 	}
 
 	// Important: Close the writer before sending
@@ -554,8 +556,6 @@ func UploadPDFPreview(c *gin.Context) {
 
 	// Forward request to PDF service
 	pdfServiceURL := utils.GetPDFServiceURL()
-	logger.Printf("Sending request to PDF service URL: %s", pdfServiceURL)
-
 	req, err := http.NewRequest("POST", pdfServiceURL+"/api/v1/internal/pdf/upload-pdf", body)
 	if err != nil {
 		logger.Printf("Failed to create request: %v", err)
@@ -565,7 +565,6 @@ func UploadPDFPreview(c *gin.Context) {
 
 	// Set the content type with the boundary
 	req.Header.Set("Content-Type", writer.FormDataContentType())
-	logger.Printf("Set Content-Type header: %s", writer.FormDataContentType())
 
 	// Send request
 	client := &http.Client{}
