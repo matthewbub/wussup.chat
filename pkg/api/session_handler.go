@@ -38,28 +38,39 @@ func RenewSessionHandler(c *gin.Context) {
 		return
 	}
 
-	var domain string
 	var env = utils.GetEnv()
-	if env == "development" {
-		domain = constants.AppConfig.DevelopmentDomain
-	} else if env == "production" {
-		domain = constants.AppConfig.ProductionDomain
+	domainMap := map[string]string{
+		constants.ENV_PRODUCTION:  constants.AppConfig.ProductionDomain,
+		constants.ENV_STAGING:     constants.AppConfig.StagingDomain,
+		constants.ENV_DEVELOPMENT: constants.AppConfig.DevelopmentDomain,
+		constants.ENV_TEST:        constants.AppConfig.TestDomain,
+	}
+	var domain string = ""
+	var httpOnly bool = true
+	var secure bool = true
+	if d, ok := domainMap[env]; ok {
+		domain = d
+		if env == constants.ENV_STAGING || env == constants.ENV_DEVELOPMENT || env == constants.ENV_TEST {
+			httpOnly = false
+			secure = false
+		}
 	}
 
-	if env == "test" {
-		domain = constants.AppConfig.TestDomain
-	}
+	cookieName := "jwt"
+	cookieValue := newToken
+	maxAge := int(constants.AppConfig.DefaultJWTExpiration.Seconds())
+	path := "/"
 
 	// Set new cookie
 	c.SetSameSite(http.SameSiteLaxMode)
 	c.SetCookie(
-		"jwt",
-		newToken,
-		int(constants.AppConfig.DefaultJWTExpiration.Seconds()),
-		"/",
+		cookieName,
+		cookieValue,
+		maxAge,
+		path,
 		domain,
-		true,
-		true,
+		secure,
+		httpOnly,
 	)
 
 	c.JSON(http.StatusOK, response.SuccessMessage(

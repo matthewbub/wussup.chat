@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"io"
 	"log"
 	"os"
 	"sync"
@@ -11,14 +12,19 @@ var (
 	once   sync.Once
 )
 
-// InitLogger initializes the logger to write to a file
+// InitLogger initializes the logger to write to both stdout and a file
 func InitLogger() {
 	once.Do(func() {
-		logFile, err := os.OpenFile("app.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+		// create log file with append mode
+		file, err := os.OpenFile("app.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 		if err != nil {
-			log.Fatal("Error opening log file:", err)
+			log.Fatal("Failed to open log file:", err)
 		}
-		Logger = log.New(logFile, "", log.Ldate|log.Ltime|log.Lshortfile)
+
+		// use multiwriter to write to both stdout and file
+		multiWriter := io.MultiWriter(os.Stdout, file)
+		Logger = log.New(multiWriter, "", log.Ldate|log.Ltime|log.Lshortfile)
+		Logger.Println("Logger initialized successfully")
 	})
 }
 

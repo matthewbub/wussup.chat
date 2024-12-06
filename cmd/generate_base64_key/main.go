@@ -6,6 +6,8 @@ import (
 	"fmt"
 )
 
+// GenerateAndPrintBase64Key generates a random byte slice of the specified length,
+// encodes it to a base64 string, and prints it
 func GenerateAndPrintBase64Key(length int) error {
 	bytes := make([]byte, length)
 	_, err := rand.Read(bytes)

@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 
+	"bus.zcauldron.com/pkg/constants"
 	"github.com/joho/godotenv"
 )
 
@@ -28,8 +29,9 @@ func GetSecretKeyFromEnv() []byte {
 
 func GetEnv() string {
 	env := os.Getenv("ENV")
+	logger := GetLogger()
 	if env == "" {
-		log.Printf("ENV environment variable is not set")
+		logger.Printf("ENV environment variable is not set")
 	}
 	return env
 }
@@ -39,10 +41,29 @@ func ValidateEnvironment() error {
 	if env == "" {
 		return fmt.Errorf("ENV is not set")
 	}
-	if env != "production" && env != "development" && env != "test" {
+
+	// define valid environments
+	validEnvironments := []string{
+		constants.ENV_PRODUCTION,
+		constants.ENV_DEVELOPMENT,
+		constants.ENV_TEST,
+		constants.ENV_STAGING,
+	}
+
+	// check if the current environment is valid
+	isValid := false
+	for _, validEnv := range validEnvironments {
+		if env == validEnv {
+			isValid = true
+			break
+		}
+	}
+
+	if !isValid {
 		return fmt.Errorf("ENV is not valid")
 	}
-	// Add other environment checks here
+
+	// add other environment checks here
 	return nil
 }
 

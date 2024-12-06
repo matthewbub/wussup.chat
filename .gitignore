@@ -27,6 +27,9 @@ yarn-error.log*
 
 # local env files
 .env*.local
+.env.*
+!.env.*.example
+data/
 
 # vercel
 .vercel
@@ -74,3 +77,9 @@ dist
 
 # python
 .venv
+
+*.log
+
+backups/
+
+__pycache__

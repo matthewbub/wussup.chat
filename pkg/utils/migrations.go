@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 
+	"bus.zcauldron.com/pkg/constants"
 	"bus.zcauldron.com/pkg/test"
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/sqlite3"
@@ -19,11 +20,13 @@ func RunMigrations() error {
 	dbPath := os.Getenv("DATABASE_PATH")
 	if dbPath == "" {
 		switch env {
-		case "production":
+		case constants.ENV_PRODUCTION:
 			dbPath = "sqlite3://pkg/database/prod.db?cache=shared&mode=rwc"
-		case "development":
+		case constants.ENV_STAGING:
+			dbPath = "sqlite3://pkg/database/staging.db?cache=shared&mode=rwc"
+		case constants.ENV_DEVELOPMENT:
 			dbPath = "sqlite3://pkg/database/dev.db?cache=shared&mode=rwc"
-		case "test":
+		case constants.ENV_TEST:
 			dbPath = "sqlite3://pkg/database/test.db?cache=shared&mode=rwc"
 		default:
 			return fmt.Errorf("invalid environment: %s", env)
@@ -52,6 +55,8 @@ func RunMigrations() error {
 	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
 		return fmt.Errorf("failed to run migrations: %w", err)
 	}
+
+	log.Println("Migrations completed successfully")
 
 	return nil
 }

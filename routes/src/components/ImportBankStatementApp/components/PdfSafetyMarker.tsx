@@ -47,16 +47,13 @@ const PdfSafetyMarker: React.FC = () => {
         formData.append("page", pageNum.toString());
 
         try {
-          const previewResponse = await fetch(
-            "http://localhost:8082/api/v1/pdf/upload-pdf",
-            {
-              method: "POST",
-              body: formData,
-              headers: {
-                Accept: "application/json",
-              },
-            }
-          );
+          const previewResponse = await fetch("/api/v1/pdf/upload-pdf", {
+            method: "POST",
+            body: formData,
+            headers: {
+              Accept: "application/json",
+            },
+          });
 
           if (!previewResponse.ok) continue;
 
@@ -85,13 +82,10 @@ const PdfSafetyMarker: React.FC = () => {
       formData.append("page", selectedPageForDrawing.toString());
       formData.append("drawing", JSON.stringify(vectorData));
 
-      const response = await fetch(
-        "http://localhost:8082/api/v1/pdf/apply-drawing",
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
+      const response = await fetch("/api/v1/pdf/apply-drawing", {
+        method: "POST",
+        body: formData,
+      });
 
       if (!response.ok) throw new Error("Failed to save drawing");
 
@@ -104,13 +98,10 @@ const PdfSafetyMarker: React.FC = () => {
       );
       previewFormData.append("page", selectedPageForDrawing.toString());
 
-      const previewResponse = await fetch(
-        "http://localhost:8082/api/v1/pdf/upload-pdf",
-        {
-          method: "POST",
-          body: previewFormData,
-        }
-      );
+      const previewResponse = await fetch("/api/v1/pdf/upload-pdf", {
+        method: "POST",
+        body: previewFormData,
+      });
 
       if (!previewResponse.ok) throw new Error("Failed to update preview");
 

@@ -11,12 +11,16 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    outDir: "dist",
+    assetsDir: "_assets",
+  },
   server: {
     proxy: {
       "/api": {
         target: "http://localhost:8080",
         changeOrigin: true,
-        secure: false,
+        secure: process.env.NODE_ENV === "production",
       },
     },
   },

@@ -2,9 +2,12 @@ package main
 
 import (
 	"log"
+	"net/http"
+	"os"
 	"time"
 
 	"bus.zcauldron.com/pkg/api"
+	"bus.zcauldron.com/pkg/constants"
 	"bus.zcauldron.com/pkg/middleware"
 	"bus.zcauldron.com/pkg/utils"
 	"github.com/gin-contrib/sessions"
@@ -17,28 +20,59 @@ import (
 
 func main() {
 	err := utils.ValidateEnvironment()
+	logger := utils.GetLogger()
+
+	log.Printf("Starting API version %s in %s environment", constants.AppConfig.Version, os.Getenv("ENV"))
+	logger.Printf("Starting API version %s in %s environment", constants.AppConfig.Version, os.Getenv("ENV"))
 	if err != nil {
-		log.Fatalf("Environment validation failed: %v", err)
+		logger.Fatalf("Environment validation failed: %v", err)
 	}
 
 	if err := utils.RunMigrations(); err != nil {
-		log.Fatalf("Failed to run migrations: %v", err)
+		logger.Fatalf("Failed to run migrations: %v", err)
+	}
+
+	// Initialize the database connection
+	db := utils.GetDB()
+	if db == nil {
+		logger.Fatal("Failed to initialize the database connection.")
 	}
 
 	router := gin.Default()
+	router.Static("/_assets/", "./routes/dist/_assets")
+	router.NoRoute(func(c *gin.Context) {
+		logger.Printf("No route found for %s", c.Request.URL.Path)
+		c.File("./routes/dist/index.html")
+	})
+
 	router.Use(middleware.Cors)
-
-	// React build assets
-	router.Static("/_assets", "./router/dist/_assets")
-
 	// session management
 	secretKey := utils.GetSecretKeyFromEnv()
 	store := cookie.NewStore(secretKey)
 	router.Use(sessions.Sessions("session", store))
 	router.Use(middleware.Recovery("Something went wrong"))
 
-	// schema - keep me above other routes
+	// API routes with auth below this point
 	router.GET("/api/v1/schema/:type", api.SchemaHandler)
+	router.GET("/health", func(c *gin.Context) {
+		// ping the pdf service
+		pdfServiceURL := utils.GetPDFServiceURL()
+		resp, err := http.Get(pdfServiceURL + "/health")
+		if err != nil {
+			logger.Printf("Failed to ping PDF service: %v", err)
+			c.Status(http.StatusServiceUnavailable)
+			return
+		}
+		defer resp.Body.Close()
+
+		if resp.StatusCode != http.StatusOK {
+			logger.Printf("PDF service is not healthy: %v", resp.StatusCode)
+			c.Status(http.StatusServiceUnavailable)
+			return
+		}
+
+		c.Status(http.StatusOK)
+	})
 
 	publicRoutes := router.Group("/api/v1/public", middleware.RateLimit(5*time.Second))
 	{
@@ -60,13 +94,14 @@ func main() {
 
 	pdfRoutes := router.Group("/api/v1/pdf", middleware.JWTAuthMiddleware())
 	{
-		pdfRoutes.POST("/extract", api.ExtractPDFText)
+		pdfRoutes.POST("/extract-text", api.ExtractPDFText)
 		pdfRoutes.POST("/page-count", api.GetPDFPageCount)
 		pdfRoutes.POST("/save", api.SaveStatement)
+		pdfRoutes.POST("/upload-pdf", api.UploadPDFPreview)
+		pdfRoutes.POST("/apply-drawing", api.ApplyDrawing)
 	}
 
 	router.GET("/api/v1/transactions", middleware.JWTAuthMiddleware(), api.GetUserTransactionsHandler)
-	//router.NoRoute(handlers.NotFound404)
 
 	log.Println("Server is running on port 8080")
 	err = router.Run(":8080")
