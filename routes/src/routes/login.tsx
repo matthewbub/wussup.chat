@@ -1,5 +1,4 @@
 import { useAuthStore } from "@/stores/auth";
-import * as React from "react";
 import { createFileRoute, Navigate } from "@tanstack/react-router";
 import { Button } from "@/components/catalyst/button";
 import { Input } from "@/components/catalyst/input";
@@ -15,6 +14,7 @@ import {
 import { Link } from "@tanstack/react-router";
 import { useForm } from "react-hook-form";
 import { config } from "@/app_config";
+import { PublicLayout } from "@/components/PublicLayout";
 
 type LoginFormInputs = {
   username: string;
@@ -33,9 +33,11 @@ function LoginComponent() {
   }
 
   return (
-    <main className="flex justify-center items-center h-screen">
-      <LoginFormComponent />
-    </main>
+    <PublicLayout noRegister>
+      <div className="flex justify-center items-center h-100">
+        <LoginFormComponent />
+      </div>
+    </PublicLayout>
   );
 }
 
@@ -44,7 +46,6 @@ function LoginFormComponent() {
   const isLoading = useAuthStore((state) => state.isLoading);
   const error = useAuthStore((state) => state.error);
 
-  // Initialize react-hook-form
   const {
     register,
     handleSubmit,
@@ -58,7 +59,7 @@ function LoginFormComponent() {
   return (
     <Card className="w-full max-w-md mx-auto">
       <CardHeader>
-        <CardTitle className="text-2xl font-bold">Login</CardTitle>
+        <CardTitle className="text-lg font-bold">Login</CardTitle>
         <CardDescription>
           Enter your credentials to access your account
         </CardDescription>

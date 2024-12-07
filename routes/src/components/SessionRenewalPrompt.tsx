@@ -25,6 +25,10 @@ export const SessionRenewalPrompt: React.FC<SessionRenewalPromptProps> = ({
   const [timeLeft, setTimeLeft] = useState(remainingTime);
 
   useEffect(() => {
+    setTimeLeft(remainingTime);
+  }, [remainingTime]);
+
+  useEffect(() => {
     if (!showPrompt) {
       return;
     }

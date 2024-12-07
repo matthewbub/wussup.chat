@@ -49,7 +49,7 @@ const PdfPageSelector: React.FC = () => {
       <div>
         <h3 className="text-lg font-bold">Select Pages</h3>
         <p className="text-sm text-gray-500">
-          {pageSelection?.selectedPages.length} of {pageSelection?.numPages}
+          {pageSelection?.selectedPages.length} of {pageSelection?.numPages}{" "}
           pages selected
         </p>
         <p className="text-sm text-gray-500">

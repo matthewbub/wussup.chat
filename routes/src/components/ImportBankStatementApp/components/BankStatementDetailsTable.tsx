@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState } from "react";
 import {
   ColumnDef,
   HeaderGroup,
@@ -103,11 +103,8 @@ const BankStatementDetailsTable: React.FC<{
             date={getValue() as Date}
             setDate={(date) => {
               adjustTransaction({
-                id: row.original.id,
+                ...row.original,
                 date: date.toISOString(),
-                type: row.original.type,
-                amount: row.original.amount,
-                description: row.original.description,
               });
             }}
           />
@@ -126,10 +123,7 @@ const BankStatementDetailsTable: React.FC<{
             defaultValue={getValue() as string}
             onBlur={(e) => {
               adjustTransaction({
-                id: row.original.id,
-                date: row.original.date,
-                type: row.original.type,
-                amount: row.original.amount,
+                ...row.original,
                 description: e.target.value,
               });
             }}
@@ -153,11 +147,8 @@ const BankStatementDetailsTable: React.FC<{
                 parseFloat(e.target.value.replace("$", ""))
               ).toFixed(2);
               adjustTransaction({
-                id: row.original.id,
-                date: row.original.date,
-                type: row.original.type,
+                ...row.original,
                 amount: parseFloat(amount),
-                description: row.original.description,
               });
             }}
             decimalSeparator="."
@@ -182,11 +173,8 @@ const BankStatementDetailsTable: React.FC<{
             onValueChange={(value) => {
               console.log("onValueChange", value);
               adjustTransaction({
-                id: row.original.id,
-                date: row.original.date,
+                ...row.original,
                 type: value as "credit" | "debit",
-                amount: row.original.amount,
-                description: row.original.description,
               });
             }}
             defaultValue={getValue() as string}

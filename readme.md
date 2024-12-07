@@ -28,12 +28,7 @@ Watch this 5 minute getting started video here: https://www.youtube.com/watch?v=
      go run main.go
      ```
    - Add the generated key to `SESSION_SECRET_KEY` in `.env`
-4. **Database Setup**
-   - Run the SQLite3 schema:
-     ```sh
-     sqlite3 ./pkg/database/dev.db < ./pkg/database/schema.sql
-     ```
-5. **Add OpenAI API Key**
+4. **Add OpenAI API Key**
    - Update `.env` with your OpenAI API key
 
 ### Running the Application

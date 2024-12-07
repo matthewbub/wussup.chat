@@ -224,51 +224,92 @@ const importBankStatementStore = create<State & Action>()(
         }
       },
       handleFileChange: async (file: File) => {
-        if (file?.type === "application/pdf") {
-          set(
-            { file, error: "" },
-            undefined,
-            "ImportBankStatementStore/HandleFileChange"
-          );
+        try {
+          const response = await fetch("/api/v1/account/auth-check", {
+            credentials: "include",
+          });
+          const json = (await response.json()) as {
+            ok: boolean;
+            data: {
+              tokenExpiresIn: number;
+              inactiveAt: { Valid: boolean };
+            };
+          };
 
-          const formData = new FormData();
-          formData.append("file", file);
-
-          try {
-            const pageCountResponse = await fetch("/api/v1/pdf/page-count", {
-              method: "POST",
-              body: formData,
-            });
-
-            const pageCountData = await pageCountResponse.json();
-            if (!pageCountResponse.ok) throw new Error(pageCountData.error);
-
+          if (
+            !json.ok ||
+            json?.data?.tokenExpiresIn <= 0 ||
+            json?.data?.inactiveAt?.Valid
+          ) {
             set(
               {
-                pageSelection: {
-                  fileId: pageCountData.fileId,
-                  numPages: pageCountData.numPages,
-                  selectedPages: [],
-                  previews: {},
-                },
+                error: json?.data?.inactiveAt?.Valid
+                  ? "This account has been deactivated. Please contact support."
+                  : "You must be logged in to upload a file",
               },
               undefined,
               "ImportBankStatementStore/HandleFileChange"
             );
-          } catch (err) {
+            return;
+          }
+
+          if (file?.type === "application/pdf") {
+            set(
+              { file, error: "" },
+              undefined,
+              "ImportBankStatementStore/HandleFileChange"
+            );
+
+            const formData = new FormData();
+            formData.append("file", file);
+
+            try {
+              const pageCountResponse = await fetch("/api/v1/pdf/page-count", {
+                method: "POST",
+                body: formData,
+              });
+
+              const pageCountData = await pageCountResponse.json();
+              if (!pageCountResponse.ok) throw new Error(pageCountData.error);
+
+              set(
+                {
+                  pageSelection: {
+                    fileId: pageCountData.fileId,
+                    numPages: pageCountData.numPages,
+                    selectedPages: [],
+                    previews: {},
+                  },
+                },
+                undefined,
+                "ImportBankStatementStore/HandleFileChange"
+              );
+            } catch (err) {
+              set(
+                {
+                  error:
+                    err instanceof Error ? err.message : "An error occurred",
+                  file: null,
+                },
+                undefined,
+                "ImportBankStatementStore/HandleFileChange"
+              );
+            }
+          } else {
             set(
               {
-                error: err instanceof Error ? err.message : "An error occurred",
+                error: "Please select a valid PDF file",
                 file: null,
               },
               undefined,
               "ImportBankStatementStore/HandleFileChange"
             );
           }
-        } else {
+        } catch (err) {
           set(
             {
-              error: "Please select a valid PDF file",
+              error:
+                "Authentication check failed. Please try signing in again.",
               file: null,
             },
             undefined,

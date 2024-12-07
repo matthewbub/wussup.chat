@@ -16,6 +16,7 @@ import {
 import { Link } from "@tanstack/react-router";
 import { config } from "@/app_config";
 import { useForm } from "react-hook-form";
+import { PublicLayout } from "@/components/PublicLayout";
 
 export const Route = createFileRoute("/sign-up")({
   component: SignUpComponent,
@@ -29,9 +30,11 @@ function SignUpComponent() {
   }
 
   return (
-    <main className="flex justify-center items-center h-screen">
-      <SignUpForm />
-    </main>
+    <PublicLayout noRegister>
+      <main className="flex justify-center items-center">
+        <SignUpForm />
+      </main>
+    </PublicLayout>
   );
 }
 
@@ -66,7 +69,7 @@ function SignUpForm() {
   };
 
   return (
-    <Card className="w-full max-w-md mx-auto">
+    <Card className="w-full max-w-md mx-auto mb-20">
       <CardHeader>
         <CardTitle className="text-2xl font-bold">Sign Up</CardTitle>
         <CardDescription>Create your account to get started</CardDescription>
@@ -83,7 +86,8 @@ function SignUpForm() {
                 required: "Username is required",
                 pattern: {
                   value: /^[a-zA-Z0-9._-]{3,30}$/,
-                  message: "Username must be 3-30 characters and can only contain letters, numbers, dots, hyphens, and underscores"
+                  message:
+                    "Username must be 3-30 characters and can only contain letters, numbers, dots, hyphens, and underscores",
                 },
                 validate: {
                   noConsecutiveSpecials: (value) => {
@@ -99,7 +103,7 @@ function SignUpForm() {
                       return "Username cannot start or end with special characters";
                     }
                     return true;
-                  }
+                  },
                 },
                 minLength: {
                   value: 3,
