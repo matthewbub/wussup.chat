@@ -49,7 +49,7 @@ export function LandingPageComponent() {
             </div>
           </div>
           <div className="mt-16 flow-root sm:mt-24">
-            <ImportBankStatement />
+            <ImportBankStatement displayLoginModalOnUnauthorized />
           </div>
         </div>
       </div>

@@ -1,3 +1,4 @@
+import importBankStatementStore from "@/components/ImportBankStatementApp/ImportBankStatement.store";
 import { fetchWithAuth } from "@/utils/auth-helpers";
 import { validateResponse } from "@/utils/schema-validator";
 import { create } from "zustand";
@@ -38,6 +39,8 @@ type AuthStore = {
   sessionTimeRemaining: number;
   renewSession: () => Promise<void>;
   setSessionExpiring: (expiring: boolean, timeRemaining?: number) => void;
+  setDisplayLoginModal: (display: boolean) => void;
+  displayLoginModal: boolean;
 };
 
 export const useAuthStore = create<AuthStore>((set) => ({
@@ -138,7 +141,13 @@ export const useAuthStore = create<AuthStore>((set) => ({
           isAuthenticated: true,
           isSecurityQuestionsAnswered: json?.securityQuestionsAnswered ?? false,
           error: null,
+
+          // close the login modal if it was used to login
+          displayLoginModal: false,
         });
+
+        // dismiss the ImportBankStatement Errors
+        importBankStatementStore.getState().setError("");
       } else {
         set({
           error: json.message || "Invalid username or password",
@@ -319,6 +328,19 @@ export const useAuthStore = create<AuthStore>((set) => ({
       });
     } finally {
       set({ isLoading: false });
+    }
+  },
+  displayLoginModal: false,
+  setDisplayLoginModal: (display: boolean) => {
+    //  check if the user is authenticated
+    const isAuthenticated = useAuthStore.getState().isAuthenticated;
+
+    if (isAuthenticated) {
+      // if the user is authenticated, we're gonna close the login modal
+      set({ displayLoginModal: false });
+    } else {
+      // if the user is not authenticated, we're gonna display the login modal
+      set({ displayLoginModal: display });
     }
   },
 }));

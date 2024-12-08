@@ -1,17 +1,37 @@
-import React from "react";
-import { DashboardWrapper } from "../DashboardWrapper";
+import React, { useEffect } from "react";
 import FileUploader from "../FileUploader";
 import importBankStatementStore from "./ImportBankStatement.store";
 import BankStatementDetailsTable from "./components/BankStatementDetailsTable";
 import PdfPageSelector from "./components/PdfPageSelector";
 import PdfSafetyMarker from "./components/PdfSafetyMarker";
 import ImportBankStatementLifecycle from "./ImportBankStatement.lifecycle";
+import { LoginModal } from "../Login";
+import { useAuthStore } from "@/stores/auth";
 
-const ImportBankStatement: React.FC = () => {
+const ImportBankStatement: React.FC<{
+  displayLoginModalOnUnauthorized?: boolean;
+}> = ({ displayLoginModalOnUnauthorized = false }) => {
   const error = importBankStatementStore((state) => state.error);
   const handleFileChange = importBankStatementStore(
     (state) => state.handleFileChange
   );
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const setDisplayLoginModal = useAuthStore(
+    (state) => state.setDisplayLoginModal
+  );
+  const displayLoginModal = useAuthStore((state) => state.displayLoginModal);
+
+  useEffect(() => {
+    // if you are unauthorized, we're gonna toss a login modal your way
+    const shouldWeDisplayLoginModal =
+      error === "You must be logged in to upload a file" &&
+      displayLoginModalOnUnauthorized &&
+      !isAuthenticated;
+
+    if (shouldWeDisplayLoginModal) {
+      setDisplayLoginModal(true);
+    }
+  }, [isAuthenticated, error]);
 
   return (
     <ImportBankStatementLifecycle>
@@ -40,6 +60,13 @@ const ImportBankStatement: React.FC = () => {
         <PdfSafetyMarker />
         {/* 3. Table view of the data after the user has processed the selected pages */}
         <BankStatementDetailsTable />
+
+        {displayLoginModal && (
+          <LoginModal
+            open={displayLoginModal}
+            onOpenChange={() => setDisplayLoginModal(false)}
+          />
+        )}
       </div>
     </ImportBankStatementLifecycle>
   );

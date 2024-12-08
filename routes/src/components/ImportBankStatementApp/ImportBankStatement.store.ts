@@ -243,9 +243,7 @@ const importBankStatementStore = create<State & Action>()(
           ) {
             set(
               {
-                error: json?.data?.inactiveAt?.Valid
-                  ? "This account has been deactivated. Please contact support."
-                  : "You must be logged in to upload a file",
+                error: "You must be logged in to upload a file",
               },
               undefined,
               "ImportBankStatementStore/HandleFileChange"
