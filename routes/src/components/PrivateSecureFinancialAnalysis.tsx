@@ -8,22 +8,26 @@ import {
   LockIcon,
 } from "lucide-react";
 import { StaticAnimatedSticker } from "./StaticAnimatedSticker";
+import { useAuthStore } from "@/stores/auth";
 
 export default function PrivateSecureFinancialAnalysis() {
+  const { isAuthenticated } = useAuthStore();
   return (
     <div className="container mx-auto px-4 md:py-12 max-w-4xl relative">
-      <div className="md:absolute md:-top-36 md:right-4 ">
-        <StaticAnimatedSticker
-          mainText="Limited Time Offer!"
-          subText="100 Pages Free"
-          additionalInfo={[
-            "No credit card required",
-            "Sign up instantly",
-            "Cancel anytime",
-          ]}
-        />
-      </div>
-      <div className="">
+      {!isAuthenticated && (
+        <div className="md:absolute md:-top-36 md:right-4 ">
+          <StaticAnimatedSticker
+            mainText="Limited Time Offer!"
+            subText="100 Pages Free"
+            additionalInfo={[
+              "No credit card required",
+              "Sign up instantly",
+              "Cancel anytime",
+            ]}
+          />
+        </div>
+      )}
+      <div>
         <div className="mb-6 inline-block rounded-full bg-blue-100 px-4 py-2 w-full md:w-auto">
           <div className="flex items-center space-x-2 text-blue-700">
             <LockIcon className="h-5 w-5" />

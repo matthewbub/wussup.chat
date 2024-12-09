@@ -10,7 +10,7 @@ export const Route = createFileRoute("/")({
 export function LandingPageComponent() {
   return (
     <PublicLayout>
-      <div className="pb-24 sm:py-32 lg:pb-40">
+      <div className="pb-24 sm:pb-20 sm:pt-10">
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           <PrivateSecureFinancialAnalysis />
           <div className="mt-16 flow-root sm:mt-24">
