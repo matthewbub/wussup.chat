@@ -9,9 +9,13 @@ import {
 } from "lucide-react";
 import { StaticAnimatedSticker } from "./StaticAnimatedSticker";
 import { useAuthStore } from "@/stores/auth";
+import { useDarkReader } from "@/hooks/useDarkReader";
+import { cn } from "@/lib/utils";
+import Eyebrow from "./Eyebrow";
 
 export default function PrivateSecureFinancialAnalysis() {
   const { isAuthenticated } = useAuthStore();
+  const isDarkReader = useDarkReader();
   return (
     <div className="container mx-auto px-4 md:py-12 max-w-4xl relative">
       {!isAuthenticated && (
@@ -28,25 +32,16 @@ export default function PrivateSecureFinancialAnalysis() {
         </div>
       )}
       <div>
-        <div className="mb-6 inline-block rounded-full bg-blue-100 px-4 py-2 w-full md:w-auto">
-          <div className="flex items-center space-x-2 text-blue-700">
-            <LockIcon className="h-5 w-5" />
-            <div className="flex flex-col md:flex-row md:items-center md:space-x-2">
-              <p className="text-sm font-semibold">
-                Your data stays yours, unless you say otherwise
-              </p>
-              <a
-                href="#learn-more"
-                className="text-sm font-medium underline hover:text-blue-900"
-              >
-                Learn more
-              </a>
-            </div>
-          </div>
-        </div>
+        <Eyebrow />
         <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl mb-6">
           Private & Secure{" "}
-          <span className="bg-clip-text text-transparent bg-gradient-to-r from-red-500 via-yellow-500 via-green-500 via-blue-500 to-purple-500">
+          <span
+            className={cn(
+              "bg-clip-text text-transparent bg-gradient-to-r from-red-500 via-yellow-500 via-green-500 via-blue-500 to-purple-500",
+              // the gradient is not visible in dark reader mode, this is a workaround
+              isDarkReader && "text-white"
+            )}
+          >
             Financial Analysis
           </span>
         </h1>
