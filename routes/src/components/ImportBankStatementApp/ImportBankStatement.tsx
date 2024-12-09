@@ -9,8 +9,16 @@ import { LoginModal } from "../Login";
 import { useAuthStore } from "@/stores/auth";
 
 const ImportBankStatement: React.FC<{
+  labels: {
+    title?: string;
+    subtitle?: string;
+  };
+  // This prop is only useful if you're usign this component in a non-authenticated context (e.g. the landing page)
   displayLoginModalOnUnauthorized?: boolean;
-}> = ({ displayLoginModalOnUnauthorized = false }) => {
+}> = ({
+  labels = { title: "Import Bank Statement", subtitle: "" },
+  displayLoginModalOnUnauthorized = false,
+}) => {
   const error = importBankStatementStore((state) => state.error);
   const handleFileChange = importBankStatementStore(
     (state) => state.handleFileChange
@@ -36,7 +44,12 @@ const ImportBankStatement: React.FC<{
   return (
     <ImportBankStatementLifecycle>
       <div className=" p-4">
-        <h2 className="text-2xl font-bold mb-4">Import Bank Statement</h2>
+        {labels?.title && (
+          <h2 className="text-2xl font-bold mb-4">{labels.title}</h2>
+        )}
+        {labels?.subtitle && (
+          <p className="text-sm text-stone-500 mb-4">{labels.subtitle}</p>
+        )}
 
         {/* This is hard coded to only accept a single PDF file */}
         {/* TODO: New Feature - Make this accept multiple files */}
