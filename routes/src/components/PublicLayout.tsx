@@ -42,9 +42,9 @@ export function PublicLayout({
             <>
               <a
                 className="text-[16px] font-medium hover:underline underline-offset-4 h-9 px-4 py-2"
-                href="/dashboard"
+                href="/me"
               >
-                Dashboard
+                Me
               </a>
               <Button
                 variant="outline"
