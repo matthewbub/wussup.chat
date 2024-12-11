@@ -14,9 +14,13 @@ export function StaticAnimatedSticker({
   const [isAnimated, setIsAnimated] = useState(true);
 
   useEffect(() => {
-    const storedPreference = localStorage.getItem("animationPreference");
-    if (storedPreference !== null) {
-      setIsAnimated(storedPreference === "true");
+    try {
+      const storedPreference = localStorage.getItem("animationPreference");
+      if (storedPreference !== null) {
+        setIsAnimated(storedPreference === "true");
+      }
+    } catch (error) {
+      setIsAnimated(false);
     }
   }, []);
 
@@ -52,16 +56,16 @@ export function StaticAnimatedSticker({
           ))}
         </ul>
       </div>
-      <a
-        href="#"
+      <button
         onClick={(e) => {
           e.preventDefault();
           toggleAnimation();
         }}
         className="hidden md:mt-4 md:block text-blue-500 hover:text-blue-700 transition-colors text-sm text-right"
+        aria-label={isAnimated ? "Stop animation" : "Start animation"}
       >
         {isAnimated ? "Stop" : "Start"} Animation
-      </a>
+      </button>
       <style>{`
         @keyframes bob {
           0%, 100% { transform: translateY(0) rotate(6deg); }

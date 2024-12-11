@@ -1,6 +1,6 @@
 import { LockIcon } from "lucide-react";
 
-const Eyebrow = () => {
+const Eyebrow: React.FC = () => {
   return (
     <div className="mb-6 inline-block rounded-full bg-blue-100 px-4 py-2 w-full md:w-auto border border-blue-300">
       <div className="flex items-center space-x-2 text-blue-700">

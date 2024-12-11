@@ -328,15 +328,8 @@ export const useAuthStore = create<AuthStore>((set) => ({
   },
   displayLoginModal: false,
   setDisplayLoginModal: (display: boolean) => {
-    //  check if the user is authenticated
-    const isAuthenticated = useAuthStore.getState().isAuthenticated;
-
-    if (isAuthenticated) {
-      // if the user is authenticated, we're gonna close the login modal
-      set({ displayLoginModal: false });
-    } else {
-      // if the user is not authenticated, we're gonna display the login modal
-      set({ displayLoginModal: display });
-    }
+    set((state) => ({
+      displayLoginModal: state.isAuthenticated ? false : display,
+    }));
   },
 }));

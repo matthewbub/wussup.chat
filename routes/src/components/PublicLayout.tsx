@@ -22,12 +22,12 @@ export function PublicLayout({
         <nav className="ml-auto flex gap-8">
           {!isAuthenticated && !noRegister && (
             <>
-              <a
+              <Link
                 className="text-[16px] font-medium hover:underline underline-offset-4 h-9 px-4 py-2"
                 href="/login"
               >
                 Login
-              </a>
+              </Link>
 
               <Button
                 variant="outline"
