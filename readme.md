@@ -2,6 +2,21 @@
 
 "z cauldron"
 
+TODO FOR LAUNCH:
+
+- Clean State / Bus Logic in the PDF Processing
+- PDF Process by page instead of in grouping all pages together at once
+- New Endpoint: Sensitive Data Detection to aid in visuals
+- Stop storing bank transactions
+- Implement Token Usage Tracker
+- Implement Web Analytics
+- Implement pages uploaded as a core feature
+- Implement Billing (Probably Reg/ Business plans only)
+- Table data should be exportable, Download via .csv or other common options
+- Table view should be print ready
+- Launch Prod in ZCauldron for email testing, 2FA
+- Rename to **\*\*\***.\*\*!!!
+
 ## Getting Started
 
 ### Project Requirements
@@ -28,12 +43,7 @@ Watch this 5 minute getting started video here: https://www.youtube.com/watch?v=
      go run main.go
      ```
    - Add the generated key to `SESSION_SECRET_KEY` in `.env`
-4. **Database Setup**
-   - Run the SQLite3 schema:
-     ```sh
-     sqlite3 ./pkg/database/dev.db < ./pkg/database/schema.sql
-     ```
-5. **Add OpenAI API Key**
+4. **Add OpenAI API Key**
    - Update `.env` with your OpenAI API key
 
 ### Running the Application

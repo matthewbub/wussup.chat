@@ -47,6 +47,7 @@ import { SelectItem } from "@/components/ui/select";
 import { Authorized } from "@/components/Authorized";
 import { fetchWithAuth } from "@/utils/auth-helpers";
 import { useToast } from "@/hooks/use-toast";
+import { PublicLayout } from "@/components/PublicLayout";
 
 interface FormData {
   questions: { question: string; answer: string }[];
@@ -89,7 +90,7 @@ function AccountSettings() {
   };
 
   return (
-    <DashboardWrapper>
+    <PublicLayout>
       <div className="mx-auto p-4 flex gap-8">
         <aside className="hidden md:block w-64 flex-shrink-0">
           <Heading>Account Settings</Heading>
@@ -149,6 +150,10 @@ function AccountSettings() {
                 <CardDescription>Manage your account data</CardDescription>
               </CardHeader>
               <CardContent className="space-y-8 md:space-y-8">
+                {/* TODO: Add stats on data usage */}
+                {/* Total pages processed this billing cycle */}
+                {/* Total pages processed */}
+
                 <div className="grid grid-cols-1 md:grid-cols-4 md:gap-4 gap-2">
                   <div className="col-span-1 flex items-center">
                     <Label htmlFor="delete-account">Delete Account</Label>
@@ -189,7 +194,7 @@ function AccountSettings() {
           </section>
         </main>
       </div>
-    </DashboardWrapper>
+    </PublicLayout>
   );
 }
 

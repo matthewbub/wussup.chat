@@ -66,7 +66,7 @@ export function DashboardWrapper({ children }: { children: React.ReactNode }) {
                 <Avatar square initials="MB" />
               </DropdownButton>
               <DropdownMenu className="min-w-64" anchor="bottom end">
-                <DropdownItem href="/my-profile">
+                <DropdownItem href="/me">
                   <UserIcon />
                   <DropdownLabel>My profile</DropdownLabel>
                 </DropdownItem>
@@ -190,7 +190,7 @@ export function DashboardWrapper({ children }: { children: React.ReactNode }) {
                 <ChevronUpIcon />
               </DropdownButton>
               <DropdownMenu className="min-w-64" anchor="top start">
-                <DropdownItem href="/my-profile">
+                <DropdownItem href="/me">
                   <UserIcon />
                   <DropdownLabel>My profile</DropdownLabel>
                 </DropdownItem>

@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState } from "react";
 import {
   ColumnDef,
   HeaderGroup,
@@ -103,11 +103,8 @@ const BankStatementDetailsTable: React.FC<{
             date={getValue() as Date}
             setDate={(date) => {
               adjustTransaction({
-                id: row.original.id,
+                ...row.original,
                 date: date.toISOString(),
-                type: row.original.type,
-                amount: row.original.amount,
-                description: row.original.description,
               });
             }}
           />
@@ -126,10 +123,7 @@ const BankStatementDetailsTable: React.FC<{
             defaultValue={getValue() as string}
             onBlur={(e) => {
               adjustTransaction({
-                id: row.original.id,
-                date: row.original.date,
-                type: row.original.type,
-                amount: row.original.amount,
+                ...row.original,
                 description: e.target.value,
               });
             }}
@@ -153,11 +147,8 @@ const BankStatementDetailsTable: React.FC<{
                 parseFloat(e.target.value.replace("$", ""))
               ).toFixed(2);
               adjustTransaction({
-                id: row.original.id,
-                date: row.original.date,
-                type: row.original.type,
+                ...row.original,
                 amount: parseFloat(amount),
-                description: row.original.description,
               });
             }}
             decimalSeparator="."
@@ -182,11 +173,8 @@ const BankStatementDetailsTable: React.FC<{
             onValueChange={(value) => {
               console.log("onValueChange", value);
               adjustTransaction({
-                id: row.original.id,
-                date: row.original.date,
+                ...row.original,
                 type: value as "credit" | "debit",
-                amount: row.original.amount,
-                description: row.original.description,
               });
             }}
             defaultValue={getValue() as string}
@@ -387,7 +375,44 @@ const BankStatementDetailsTable: React.FC<{
           </table>
         </div>
       </div>
-      <div className="flex justify-end">
+      <div className="flex justify-end space-x-4">
+        <Button
+          variant="outline"
+          onClick={() => {
+            const rows = table.getRowModel().rows;
+            const data = rows.map((row) => {
+              return {
+                date: row.original.date,
+                description: row.original.description,
+                amount: row.original.amount,
+                type: row.original.type,
+              };
+            });
+
+            // Add header row
+            const header = "Date,Description,Amount,Type\n";
+            const csvRows = data
+              .map((row) => {
+                // Escape commas in description if present
+                const escapedDescription = row.description.includes(",")
+                  ? `"${row.description}"`
+                  : row.description;
+                return `${row.date},${escapedDescription},${row.amount},${row.type}`;
+              })
+              .join("\n"); // Join rows with newline
+
+            const csv = header + csvRows;
+
+            const blob = new Blob([csv], { type: "text/csv" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "transactions.csv";
+            a.click();
+          }}
+        >
+          Export as CSV
+        </Button>
         <Button
           variant="primary"
           onClick={handleSave}

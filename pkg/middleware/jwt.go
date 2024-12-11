@@ -18,7 +18,7 @@ func JWTAuthMiddleware() gin.HandlerFunc {
 		log.Println("tokenString", tokenString)
 		if err != nil {
 			log.Println("error getting token from cookie", err)
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "Authentication required"})
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{})
 			return
 		}
 
