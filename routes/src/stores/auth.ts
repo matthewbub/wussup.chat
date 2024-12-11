@@ -41,6 +41,8 @@ type AuthStore = {
   setSessionExpiring: (expiring: boolean, timeRemaining?: number) => void;
   setDisplayLoginModal: (display: boolean) => void;
   displayLoginModal: boolean;
+  pagesProcessed: number;
+  setPagesProcessed: () => Promise<void>;
 };
 
 export const useAuthStore = create<AuthStore>((set) => ({
@@ -331,5 +333,14 @@ export const useAuthStore = create<AuthStore>((set) => ({
     set((state) => ({
       displayLoginModal: state.isAuthenticated ? false : display,
     }));
+  },
+  pagesProcessed: 0,
+  setPagesProcessed: async () => {
+    const response = await fetchWithAuth("/api/v1/account/pages-processed", {
+      method: "GET",
+    });
+    const json = await response.json();
+
+    set({ pagesProcessed: json.pages_processed });
   },
 }));
