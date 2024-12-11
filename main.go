@@ -90,6 +90,7 @@ func main() {
 		accountRoutes.POST("/in/reset-password", api.AuthenticatedResetPasswordHandler)
 		accountRoutes.POST("/profile", api.UpdateProfileHandler)
 		accountRoutes.DELETE("/delete", api.DeleteAccountHandler)
+		accountRoutes.GET("/pages-processed", api.GetPagesProcessed)
 	}
 
 	pdfRoutes := router.Group("/api/v1/pdf", middleware.JWTAuthMiddleware())
