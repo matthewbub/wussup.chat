@@ -1,6 +1,6 @@
 import { useAuthStore } from "@/stores/auth";
 import { Button } from "@/components/catalyst/button";
-import { Input } from "@/components/catalyst/input";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Card,
