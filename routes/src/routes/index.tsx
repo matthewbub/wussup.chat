@@ -5,6 +5,7 @@ import { PublicLayout } from "@/components/PublicLayout";
 import { useAuthStore } from "@/stores/auth";
 import { cn } from "@/lib/utils";
 import { useEffect } from "react";
+import ImportBankStatementPricing from "@/components/Pricing";
 
 export const Route = createFileRoute("/")({
   component: LandingPageComponent,
@@ -35,6 +36,7 @@ export function LandingPageComponent() {
               displayLoginModalOnUnauthorized
             />
           </div>
+          <ImportBankStatementPricing />
         </div>
       </div>
     </PublicLayout>
