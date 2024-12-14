@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/catalyst/button";
-import { Input } from "@/components/catalyst/input";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/catalyst/switch";
 import { Select } from "@/components/catalyst/select";

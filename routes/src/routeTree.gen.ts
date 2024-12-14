@@ -13,6 +13,7 @@
 import { Route as rootRoute } from './routes/__root'
 import { Route as SignUpImport } from './routes/sign-up'
 import { Route as SecurityQuestionsImport } from './routes/security-questions'
+import { Route as PageImport } from './routes/page'
 import { Route as MeImport } from './routes/me'
 import { Route as LoginImport } from './routes/login'
 import { Route as ForgotPasswordImport } from './routes/forgot-password'
@@ -34,6 +35,12 @@ const SignUpRoute = SignUpImport.update({
 const SecurityQuestionsRoute = SecurityQuestionsImport.update({
   id: '/security-questions',
   path: '/security-questions',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const PageRoute = PageImport.update({
+  id: '/page',
+  path: '/page',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -144,6 +151,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MeImport
       parentRoute: typeof rootRoute
     }
+    '/page': {
+      id: '/page'
+      path: '/page'
+      fullPath: '/page'
+      preLoaderRoute: typeof PageImport
+      parentRoute: typeof rootRoute
+    }
     '/security-questions': {
       id: '/security-questions'
       path: '/security-questions'
@@ -185,6 +199,7 @@ export interface FileRoutesByFullPath {
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/me': typeof MeRoute
+  '/page': typeof PageRoute
   '/security-questions': typeof SecurityQuestionsRoute
   '/sign-up': typeof SignUpRoute
   '/app/transactions/new': typeof AppTransactionsNewRoute
@@ -199,6 +214,7 @@ export interface FileRoutesByTo {
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/me': typeof MeRoute
+  '/page': typeof PageRoute
   '/security-questions': typeof SecurityQuestionsRoute
   '/sign-up': typeof SignUpRoute
   '/app/transactions/new': typeof AppTransactionsNewRoute
@@ -214,6 +230,7 @@ export interface FileRoutesById {
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/me': typeof MeRoute
+  '/page': typeof PageRoute
   '/security-questions': typeof SecurityQuestionsRoute
   '/sign-up': typeof SignUpRoute
   '/app/transactions/new': typeof AppTransactionsNewRoute
@@ -230,6 +247,7 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/login'
     | '/me'
+    | '/page'
     | '/security-questions'
     | '/sign-up'
     | '/app/transactions/new'
@@ -243,6 +261,7 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/login'
     | '/me'
+    | '/page'
     | '/security-questions'
     | '/sign-up'
     | '/app/transactions/new'
@@ -256,6 +275,7 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/login'
     | '/me'
+    | '/page'
     | '/security-questions'
     | '/sign-up'
     | '/app/transactions/new'
@@ -271,6 +291,7 @@ export interface RootRouteChildren {
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   LoginRoute: typeof LoginRoute
   MeRoute: typeof MeRoute
+  PageRoute: typeof PageRoute
   SecurityQuestionsRoute: typeof SecurityQuestionsRoute
   SignUpRoute: typeof SignUpRoute
   AppTransactionsNewRoute: typeof AppTransactionsNewRoute
@@ -285,6 +306,7 @@ const rootRouteChildren: RootRouteChildren = {
   ForgotPasswordRoute: ForgotPasswordRoute,
   LoginRoute: LoginRoute,
   MeRoute: MeRoute,
+  PageRoute: PageRoute,
   SecurityQuestionsRoute: SecurityQuestionsRoute,
   SignUpRoute: SignUpRoute,
   AppTransactionsNewRoute: AppTransactionsNewRoute,
@@ -310,6 +332,7 @@ export const routeTree = rootRoute
         "/forgot-password",
         "/login",
         "/me",
+        "/page",
         "/security-questions",
         "/sign-up",
         "/app/transactions/new",
@@ -336,6 +359,9 @@ export const routeTree = rootRoute
     },
     "/me": {
       "filePath": "me.tsx"
+    },
+    "/page": {
+      "filePath": "page.tsx"
     },
     "/security-questions": {
       "filePath": "security-questions.tsx"
