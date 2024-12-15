@@ -55,7 +55,7 @@ Another thing worth checking out here is if we modify the request to log `reques
 
 ```js
 console.log(JSON.stringify(request.cf));
-return new Response("Hello, World!");
+return new Response('Hello, World!');
 ```
 
 this shows info such as `asOrganization` which is your actual ISP, your `score` which is a score regarding how sure cloudflare is that you aren't a bot
