@@ -44,7 +44,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Link } from "@tanstack/react-router";
+import Link from "next/link";
 
 const BankStatementDetailsTable: React.FC<{
   withImportStatementsButton?: boolean;

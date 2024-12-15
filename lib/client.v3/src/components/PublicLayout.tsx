@@ -1,7 +1,5 @@
-import { Link } from "@tanstack/react-router";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { useAuthStore } from "@/stores/auth";
-import { useAuthCheck } from "@/components/Authorized";
 
 export function PublicLayout({
   children,
@@ -10,17 +8,14 @@ export function PublicLayout({
   children: React.ReactNode;
   noRegister?: boolean;
 }) {
-  const { isAuthenticated } = useAuthStore();
-  useAuthCheck();
-
   return (
     <div className="flex flex-col min-h-screen mx-auto">
       <header className="px-4 md:px-6 lg:px-12 h-24 flex items-center">
-        <a className="flex items-center justify-center" href="/">
+        <Link className="flex items-center justify-center" href="/">
           <span className="ml-2 text-lg font-semibold">ZCauldron</span>
-        </a>
+        </Link>
         <nav className="ml-auto flex gap-8">
-          {!isAuthenticated && !noRegister && (
+          {!noRegister && (
             <>
               <Link
                 className="text-[16px] font-medium hover:underline underline-offset-4 h-9 px-4 py-2"
@@ -49,9 +44,6 @@ export function PublicLayout({
               <Button
                 variant="outline"
                 className="text-[16px] font-medium hover:underline underline-offset-4"
-                onClick={() => {
-                  useAuthStore.getState().useLogout();
-                }}
               >
                 Logout
               </Button>
