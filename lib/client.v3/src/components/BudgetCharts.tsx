@@ -14,7 +14,6 @@ import {
 import {
   Bar,
   BarChart,
-  Cell,
   Line,
   LineChart,
   Pie,
@@ -23,7 +22,7 @@ import {
   YAxis,
   ResponsiveContainer,
 } from "recharts";
-import { Transaction } from "../../types/budget";
+import { Transaction } from "@/types/budget";
 import { formatCurrency } from "../../utils/formatCurrency";
 import { Cell as RechartsCell } from "recharts"; // Added import
 
@@ -46,13 +45,10 @@ export function BudgetCharts({ transactions }: BudgetChartsProps) {
   // Prepare data for Expense Distribution Pie Chart
   const expenseDistribution = transactions
     .filter((t) => t.category !== "Income")
-    .reduce(
-      (acc, t) => {
-        acc[t.category] = (acc[t.category] || 0) + t.amount;
-        return acc;
-      },
-      {} as Record<string, number>
-    );
+    .reduce((acc, t) => {
+      acc[t.category] = (acc[t.category] || 0) + t.amount;
+      return acc;
+    }, {} as Record<string, number>);
 
   const pieChartData: ChartData[] = Object.entries(expenseDistribution).map(
     ([name, value]) => ({ name, value })
@@ -81,18 +77,15 @@ export function BudgetCharts({ transactions }: BudgetChartsProps) {
     .sort((a, b) => a.date.localeCompare(b.date));
 
   // Prepare data for Balance Over Time Line Chart
-  const balanceData = timeSeriesData.reduce(
-    (acc, entry) => {
-      const balance = entry.income - entry.expenses;
-      const lastBalance = acc.length > 0 ? acc[acc.length - 1].balance : 0;
-      acc.push({
-        date: entry.date,
-        balance: lastBalance + balance,
-      });
-      return acc;
-    },
-    [] as { date: string; balance: number }[]
-  );
+  const balanceData = timeSeriesData.reduce((acc, entry) => {
+    const balance = entry.income - entry.expenses;
+    const lastBalance = acc.length > 0 ? acc[acc.length - 1].balance : 0;
+    acc.push({
+      date: entry.date,
+      balance: lastBalance + balance,
+    });
+    return acc;
+  }, [] as { date: string; balance: number }[]);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">

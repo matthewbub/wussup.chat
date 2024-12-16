@@ -22,11 +22,9 @@ export function LandingPageComponent() {
 
   return (
     <PublicLayout>
-      <div
-        className={cn("pb-24 sm:pb-20", isAuthenticated ? "pt-10" : "sm:pt-40")}
-      >
+      <div className="pb-24 sm:pb-20 pt-10">
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
-          Pages {pagesProcessed}
+          {/* Pages {pagesProcessed} */}
           <PrivateSecureFinancialAnalysis />
           <div className="mt-16 flow-root">
             <ImportBankStatement
@@ -36,7 +34,7 @@ export function LandingPageComponent() {
               displayLoginModalOnUnauthorized
             />
           </div>
-          <ImportBankStatementPricing />
+          {/* <ImportBankStatementPricing /> */}
         </div>
       </div>
     </PublicLayout>

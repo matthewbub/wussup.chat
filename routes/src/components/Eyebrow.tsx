@@ -7,14 +7,8 @@ const Eyebrow: React.FC = () => {
         <LockIcon className="h-5 w-5" />
         <div className="flex flex-col md:flex-row md:items-center md:space-x-2">
           <p className="text-sm font-semibold">
-            Your data stays yours, unless you say otherwise
+            AI-driven insights, zero data storage
           </p>
-          <a
-            href="#learn-more"
-            className="text-sm font-medium underline hover:text-blue-900"
-          >
-            Learn more
-          </a>
         </div>
       </div>
     </div>

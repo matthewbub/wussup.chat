@@ -15,7 +15,7 @@ export function PublicLayout({
 
   return (
     <div className="flex flex-col min-h-screen mx-auto">
-      <header className="px-4 md:px-6 lg:px-12 h-24 flex items-center">
+      {/* <header className="px-4 md:px-6 lg:px-12 h-24 flex items-center">
         <a className="flex items-center justify-center" href="/">
           <span className="ml-2 text-lg font-semibold">ZCauldron</span>
         </a>
@@ -58,7 +58,7 @@ export function PublicLayout({
             </>
           )}
         </nav>
-      </header>
+      </header> */}
       <main className="flex-1 mx-auto">{children}</main>
       <footer className="flex flex-col gap-2 sm:flex-row py-6 w-full shrink-0 items-center px-4 md:px-6 border-t">
         <p className="text-xs text-gray-500 dark:text-gray-400">

@@ -6,6 +6,7 @@ import {
   XCircle,
   Upload,
   LockIcon,
+  ArrowDown,
 } from "lucide-react";
 import { StaticAnimatedSticker } from "./StaticAnimatedSticker";
 import { useAuthStore } from "@/stores/auth";
@@ -14,23 +15,9 @@ import { cn } from "@/lib/utils";
 import Eyebrow from "./Eyebrow";
 
 export default function PrivateSecureFinancialAnalysis() {
-  const { isAuthenticated } = useAuthStore();
   const isDarkReader = useDarkReader();
   return (
     <div className="container mx-auto px-4 md:py-12 max-w-4xl relative">
-      {!isAuthenticated && (
-        <div className="md:absolute md:-top-36 md:right-4 ">
-          <StaticAnimatedSticker
-            mainText="Limited Time Offer!"
-            subText="100 Pages Free"
-            additionalInfo={[
-              "No credit card required",
-              "Sign up instantly",
-              "Cancel anytime",
-            ]}
-          />
-        </div>
-      )}
       <div>
         <Eyebrow />
         <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl mb-6">
@@ -61,10 +48,14 @@ export default function PrivateSecureFinancialAnalysis() {
             icon: Tool,
             text: "Use our Privacy Tool to redact sensitive information",
           },
-          { icon: Brain, text: "AI-powered analysis with no data storage" },
+          // { icon: Brain, text: "AI-powered analysis with no data storage" },
           {
             icon: XCircle,
             text: "Automatic rejection of documents containing sensitive data",
+          },
+          {
+            icon: ArrowDown,
+            text: "Export to CSV and be on your way",
           },
         ].map((item, index) => (
           <li key={index} className="flex items-center space-x-3">
