@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Transaction } from "../../types/budget";
+import { Transaction } from "@/types/budget";
 import { formatCurrency } from "../../utils/formatCurrency";
 import { colors } from "../../utils/colors";
 import { YearMonthToggle } from "./YearMonthToggle";

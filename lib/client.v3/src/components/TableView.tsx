@@ -1,5 +1,5 @@
 import React from "react";
-import { Transaction } from "../../types/budget";
+import { Transaction } from "@/types/budget";
 import { formatCurrency } from "../../utils/formatCurrency";
 
 interface TableViewProps {
