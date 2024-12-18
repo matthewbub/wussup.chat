@@ -21,6 +21,19 @@ const app = new Hono<{ Bindings: Env }>();
 
 // middleware
 app.use(logger());
+app.use(
+	'/v3/*',
+	bearerAuth({
+		verifyToken: async (token, c) => {
+			try {
+				await verify(token, env(c).AUTH_KEY);
+				return true;
+			} catch {
+				return false;
+			}
+		},
+	})
+);
 
 interface AuthResponse {
 	access_token: string;
@@ -54,8 +67,8 @@ app.post('/sign-up', zValidator('json', authSchema), async (c) => {
 	});
 });
 
-// Add a verification endpoint
-app.post('/verify', async (c) => {
+// This is the manual way to verify a token
+/* app.post('/verify', async (c) => {
 	// get the token from the Authorization header
 	const token = c.req.header('Authorization')?.split(' ')[1];
 
@@ -69,6 +82,10 @@ app.post('/verify', async (c) => {
 	} catch {
 		throw new HTTPException(401, { message: 'Invalid token' });
 	}
+}); **/
+
+app.get('/v3/test', (c) => {
+	return c.json({ message: 'Hello World' });
 });
 
 export default app;
