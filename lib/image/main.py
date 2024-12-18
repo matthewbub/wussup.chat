@@ -61,7 +61,7 @@ def upload_pdf():
         page_num = int(request.form.get('page', 1)) - 1
         logger.info(f'Generating preview for page {page_num + 1}')
         
-        # Check for PDF magic bytes
+        # Check for PDF magic bytes; ensure the file is a valid PDF
         pdf_header = file.read(4)
         file.seek(0)
         if pdf_header != b'%PDF':
