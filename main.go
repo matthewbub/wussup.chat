@@ -98,7 +98,7 @@ func main() {
 		pdfRoutes.POST("/extract-text", api.ExtractPDFText)
 		pdfRoutes.POST("/page-count", api.GetPDFPageCount)
 		pdfRoutes.POST("/save", api.SaveStatement)
-		pdfRoutes.POST("/upload-pdf", api.UploadPDFPreview)
+		pdfRoutes.POST("/pdf-to-image", api.PDFToImage)
 		pdfRoutes.POST("/apply-drawing", api.ApplyDrawing)
 	}
 

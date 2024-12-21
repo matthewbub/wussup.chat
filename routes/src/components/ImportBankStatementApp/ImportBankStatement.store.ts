@@ -332,7 +332,7 @@ const importBankStatementStore = create<State & Action>()(
           formData.append("page", pageNum.toString());
 
           try {
-            const previewResponse = await fetch("/api/v1/pdf/upload-pdf", {
+            const previewResponse = await fetch("/api/v1/pdf/pdf-to-image", {
               method: "POST",
               body: formData,
               headers: {
@@ -371,7 +371,6 @@ const importBankStatementStore = create<State & Action>()(
         );
       },
       adjustTransaction: (transaction) => {
-        console.log("Adjusting transaction", transaction);
         set(
           (state) => {
             if (!state.statement_copy) return state;
