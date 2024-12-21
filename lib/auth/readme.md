@@ -2,6 +2,8 @@
 
 Setup
 
+rename the .example.dev.vars to .dev.vars and add a uuid to the AUTH_KEY field
+
 ```shell
 # auth with cloudflare
 npx wrangler login
@@ -9,10 +11,6 @@ npx wrangler login
 
 # confrim identity
 npx wrangler whoami
-
-# add env variables
-npx wrangler secret put AUTH_KEY
-# follow tui..
 
 # setup db
 npx wrangler d1 create auth_storage --location wnam
