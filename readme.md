@@ -17,6 +17,24 @@ TODO FOR LAUNCH:
 - Launch Prod in ZCauldron for email testing, 2FA
 - Rename to **\*\*\***.\*\*!!!
 
+# Table of Contents
+
+- [Getting Started](#getting-started)
+  - [Project Requirements](#project-requirements)
+  - [Set up locally](#set-up-locally)
+  - [Running the Application](#running-the-application)
+- [Running the Application with Docker](#running-the-application-with-docker)
+  - [Staging with Docker](#staging-with-docker)
+  - [Production with Docker](#production-with-docker)
+- [About the core stack](#about-the-core-stack)
+- [Database Management](#database-management)
+  - [Persistence](#persistence)
+  - [Backup](#backup)
+  - [Restore](#restore)
+  - [List All Backups](#list-all-backups)
+  - [Database Initialization](#database-initialization)
+- [Troubleshooting](#troubleshooting)
+
 ## Getting Started
 
 ### Project Requirements
