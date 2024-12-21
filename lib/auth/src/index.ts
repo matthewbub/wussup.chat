@@ -15,6 +15,7 @@ const authSchema = z.object({
 
 export interface Env {
 	AUTH_KEY: string;
+	DB: D1Database;
 }
 
 const app = new Hono<{ Bindings: Env }>();
