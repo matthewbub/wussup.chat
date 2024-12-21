@@ -63,7 +63,7 @@ Watch this 5 minute getting started video here: https://www.youtube.com/watch?v=
      npm run dev
      ```
 3. **Image Service Setup**
-   - In another terminal, navigate to `/lib/image` and install dependencies:
+   - In another terminal, navigate to `/lib/pdf-service` and install dependencies:
      ```sh
      python -m venv venv
      source venv/bin/activate  # On Windows, use: venv\Scripts\activate
