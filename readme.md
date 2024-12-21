@@ -132,7 +132,7 @@ Client
 - [TypeScript](https://www.typescriptlang.org/) - Type safe javascript
 - [TailwindCSS + TailwindUI](https://tailwindui.com) - Prototype friendly component system
 
-Image (Micro Service)
+PDF Service (Micro Service /lib/pdf-service)
 
 - [Python](https://www.python.org/downloads)
 - [PyMuPDF](https://pymupdf.readthedocs.io/en/latest/)
