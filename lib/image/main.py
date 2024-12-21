@@ -29,9 +29,8 @@ CORS(app, resources={r"/*": {
     "supports_credentials": True
 }})
 
-
-@app.route('/api/v1/internal/pdf/upload-pdf', methods=['POST'])
-def upload_pdf():
+@app.route('/api/v1/internal/pdf/pdf-to-image', methods=['POST'])
+def pdf_to_image():
     try:
         if 'file' not in request.files:
             logger.warning('PDF upload attempted without file')
@@ -43,8 +42,11 @@ def upload_pdf():
         # Log all form data for debugging
         logger.info(f'Form data: {request.form}')
         
+        # Move the file pointer to the end of the file to determine the file size
         file.seek(0, io.SEEK_END)
+        # Get the current position of the file pointer, which represents the file size in bytes
         file_length = file.tell()
+        # Move the file pointer back to the beginning of the file for further processing
         file.seek(0)
         
         logger.info(f'Processing PDF upload of size: {file_length/1024/1024:.2f}MB')
@@ -71,7 +73,6 @@ def upload_pdf():
         try:
             # Read PDF file
             pdf_bytes = file.read()
-            logger.debug(f'Successfully read {len(pdf_bytes)} bytes from PDF')
             
             doc = fitz.open(stream=pdf_bytes, filetype="pdf")
             logger.debug(f'PDF opened successfully, total pages: {doc.page_count}')
@@ -123,6 +124,7 @@ def upload_pdf():
     except Exception as e:
         logger.error(f'Unexpected error in upload_pdf: {str(e)}', exc_info=True)
         return jsonify({'error': 'An internal error occurred'}), 500
+
 
 def hex_to_rgb(hex_color: str) -> tuple:
     """Convert hex color (#FF0000) to normalized RGB tuple (0-1)"""

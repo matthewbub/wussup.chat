@@ -496,7 +496,7 @@ func parseDate(dateStr string) (time.Time, error) {
 	return time.Time{}, parseErr
 }
 
-func UploadPDFPreview(c *gin.Context) {
+func PDFToImage(c *gin.Context) {
 	logger := utils.GetLogger()
 
 	file, err := c.FormFile("file")
@@ -556,7 +556,7 @@ func UploadPDFPreview(c *gin.Context) {
 
 	// Forward request to PDF service
 	pdfServiceURL := utils.GetPDFServiceURL()
-	req, err := http.NewRequest("POST", pdfServiceURL+"/api/v1/internal/pdf/upload-pdf", body)
+	req, err := http.NewRequest("POST", pdfServiceURL+"/api/v1/internal/pdf/pdf-to-image", body)
 	if err != nil {
 		logger.Printf("Failed to create request: %v", err)
 		c.JSON(500, gin.H{"error": "Failed to create request"})
