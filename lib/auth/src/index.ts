@@ -47,6 +47,12 @@ app.post('/login', zValidator('json', responseService.loginSchema), async (c) =>
 	return result;
 });
 
+app.post('/refresh-token', zValidator('json', responseService.refreshSchema), async (c) => {
+	const { refreshToken } = await c.req.json();
+	const result = await publicService.refreshToken({ refreshToken }, c);
+	return result;
+});
+
 app.get('/v3/test', (c) => {
 	return c.json({ message: 'Hello World' });
 });

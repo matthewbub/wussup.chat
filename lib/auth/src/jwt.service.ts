@@ -76,6 +76,46 @@ const jwtService = {
 
 		return true;
 	},
+	// this method exits for the refrsh token validation
+	validateTokenAndUser: async (
+		tokenData: { expires_at: string; revoked_at: string | null; user_id: string },
+		c: Context
+	): Promise<boolean> => {
+		const db = env(c).DB;
+		if (!db) {
+			return false;
+		}
+
+		// check if the token is expired or revoked
+		const { expires_at, revoked_at } = tokenData;
+		if (new Date(expires_at) < new Date() || revoked_at !== null) {
+			return false;
+		}
+
+		const user = await db.prepare('SELECT * FROM users WHERE id = ? AND status = ?').bind(tokenData.user_id, 'active').run();
+		if (!user.success) {
+			return false;
+		}
+
+		return true;
+	},
+	revokeRefreshToken: async (token: string, c: Context): Promise<boolean> => {
+		const db = env(c).DB;
+		if (!db) {
+			return false;
+		}
+
+		try {
+			const d1Result: D1Result = await db
+				.prepare('UPDATE refresh_tokens SET revoked_at = CURRENT_TIMESTAMP WHERE token = ? AND revoked_at IS NULL')
+				.bind(token)
+				.run();
+			return d1Result.success;
+		} catch (error) {
+			console.error(error);
+			return false;
+		}
+	},
 };
 
 export default jwtService;

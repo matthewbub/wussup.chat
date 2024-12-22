@@ -1,4 +1,3 @@
-import { Context } from 'hono';
 import { z } from 'zod';
 
 const responseService = {
@@ -11,9 +10,9 @@ const responseService = {
 		email: z.string().email().max(255),
 		password: z.string().min(8).max(255),
 	}),
-	error: (c: Context, error: any) => {
-		return c.json({ error: error instanceof Error ? error.message : 'Unknown error' }, 500);
-	},
+	refreshSchema: z.object({
+		refreshToken: z.string().min(1).max(255),
+	}),
 };
 
 export default responseService;

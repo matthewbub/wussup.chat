@@ -15,7 +15,7 @@ interface CommonAuthResponse {
 
 export interface SignUpResponse extends CommonAuthResponse {}
 export interface LoginResponse extends CommonAuthResponse {}
-
+interface RefreshTokenResponse extends CommonAuthResponse {}
 const publicService = {
 	signUp: async ({ email, password, confirmPassword }: { email: string; password: string; confirmPassword: string }, c: Context) => {
 		if (password !== confirmPassword) {
@@ -23,6 +23,7 @@ const publicService = {
 		}
 
 		const db = env(c).DB;
+		console.log('db', db);
 		try {
 			const hashedPassword = await passwordService.hashPassword(password);
 
@@ -35,6 +36,7 @@ const publicService = {
 				.run();
 
 			if (!d1Result.success) {
+				console.log('d1Result failed', d1Result);
 				return c.json({ error: d1Result.error }, 500);
 			}
 
@@ -55,6 +57,7 @@ const publicService = {
 			// we need the auth key to decrypt at validation time
 			const token = await jwtService.assignRefreshToken(c, payload);
 			if (token instanceof Error) {
+				console.log('token failed', token);
 				// throw new Error(token.message);
 				return c.json({ error: token.message }, 500);
 			}
@@ -116,6 +119,50 @@ const publicService = {
 		} catch (error) {
 			return c.json({ error: error instanceof Error ? error.message : 'Unknown error' }, 500);
 		}
+	},
+	refreshToken: async ({ refreshToken }: { refreshToken: string }, c: Context) => {
+		const db = env(c).DB;
+
+		const d1Result: D1Result = await db.prepare('SELECT * FROM refresh_tokens WHERE token = ?').bind(refreshToken).run();
+
+		if (!d1Result.success) {
+			return c.json({ error: 'Invalid refresh token' }, 401);
+		}
+
+		const tokenData = d1Result.results?.[0] as { expires_at: string; revoked_at: string | null; user_id: string };
+		if (!tokenData) {
+			return c.json({ error: 'Invalid refresh token' }, 401);
+		}
+
+		// verify the refresh token
+		const isValid = await jwtService.validateTokenAndUser(tokenData, c);
+		if (!isValid) {
+			return c.json({ error: 'Invalid refresh token' }, 401);
+		}
+
+		// revoke the old refresh token first
+		const revoked = await jwtService.revokeRefreshToken(refreshToken, c);
+		if (!revoked) {
+			return c.json({ error: 'Failed to revoke refresh token' }, 500);
+		}
+
+		const payload = {
+			id: tokenData.user_id,
+			exp: Math.floor(Date.now() / 1000) + EXPIRES_IN,
+		};
+
+		// create a new access token
+		const newToken = await jwtService.assignRefreshToken(c, payload);
+		if (newToken instanceof Error) {
+			return c.json({ error: newToken.message }, 500);
+		}
+
+		// return the new access token
+		return c.json<RefreshTokenResponse>({
+			access_token: newToken,
+			token_type: 'Bearer',
+			expires_in: EXPIRES_IN,
+		});
 	},
 };
 

@@ -17,6 +17,7 @@
     "wrangler": "^3.60.3"
   },
   "dependencies": {
+    "@faker-js/faker": "^9.3.0",
     "@hono/zod-validator": "^0.4.2",
     "hono": "^4.6.14",
     "uuid": "^11.0.3"
