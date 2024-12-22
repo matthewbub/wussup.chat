@@ -6,12 +6,7 @@ import { bearerAuth } from 'hono/bearer-auth';
 import publicService from './public.service';
 import { D1Database } from '@cloudflare/workers-types';
 import jwtService from './jwt.service';
-
-const authSchema = z.object({
-	email: z.string().email().max(255),
-	password: z.string().min(8).max(255),
-	confirmPassword: z.string().min(8).max(255),
-});
+import responseService from './response.service';
 
 export interface Env {
 	AUTH_KEY: string;
@@ -40,9 +35,15 @@ app.use(
 );
 
 // routes
-app.post('/sign-up', zValidator('json', authSchema), async (c) => {
+app.post('/sign-up', zValidator('json', responseService.signUpSchema), async (c) => {
 	const { email, password, confirmPassword } = await c.req.json();
 	const result = await publicService.signUp({ email, password, confirmPassword }, c);
+	return result;
+});
+
+app.post('/login', zValidator('json', responseService.loginSchema), async (c) => {
+	const { email, password } = await c.req.json();
+	const result = await publicService.login({ email, password }, c);
 	return result;
 });
 
