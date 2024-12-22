@@ -2,19 +2,20 @@ import { Hono } from 'hono';
 import { logger } from 'hono/logger';
 import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod';
-import { HTTPException } from 'hono/http-exception';
-import { sign, verify } from 'hono/jwt';
-import { getCookie, setCookie } from 'hono/cookie';
 import { bearerAuth } from 'hono/bearer-auth';
-import { env } from 'hono/adapter';
+import publicService from './public.service';
+import { D1Database } from '@cloudflare/workers-types';
+import jwtService from './jwt.service';
 
 const authSchema = z.object({
-	email: z.string().email(),
-	password: z.string().min(8),
+	email: z.string().email().max(255),
+	password: z.string().min(8).max(255),
+	confirmPassword: z.string().min(8).max(255),
 });
 
 export interface Env {
 	AUTH_KEY: string;
+	DB: D1Database;
 }
 
 const app = new Hono<{ Bindings: Env }>();
@@ -26,7 +27,10 @@ app.use(
 	bearerAuth({
 		verifyToken: async (token, c) => {
 			try {
-				await verify(token, env(c).AUTH_KEY);
+				const isTokenValid = await jwtService.verifyRefreshToken(token, c);
+				if (!isTokenValid) {
+					return false;
+				}
 				return true;
 			} catch {
 				return false;
@@ -35,57 +39,19 @@ app.use(
 	})
 );
 
-interface AuthResponse {
-	access_token: string;
-	token_type: string;
-	expires_in: number;
-}
-
 // routes
 app.post('/sign-up', zValidator('json', authSchema), async (c) => {
-	const { email, password } = await c.req.json();
-
-	const expiresIn = 60 * 60; // 1 hour
-
-	// create a "payload" object
-	// were gonna encrypt this and then
-	// decrypt it at validation time
-	const payload = {
-		email,
-		exp: Math.floor(Date.now() / 1000) + expiresIn,
-	};
-
-	// encrypt the payload with an auth key
-	// we need the auth key to decrypt at validation time
-	const token = await sign(payload, env(c).AUTH_KEY);
-
-	// standardized OAuth-style response
-	return c.json<AuthResponse>({
-		access_token: token,
-		token_type: 'Bearer',
-		expires_in: expiresIn,
-	});
+	const { email, password, confirmPassword } = await c.req.json();
+	const result = await publicService.signUp({ email, password, confirmPassword }, c);
+	return result;
 });
-
-// This is the manual way to verify a token
-/* app.post('/verify', async (c) => {
-	// get the token from the Authorization header
-	const token = c.req.header('Authorization')?.split(' ')[1];
-
-	if (!token) {
-		throw new HTTPException(401, { message: 'No token provided' });
-	}
-
-	try {
-		const payload = await verify(token, env(c).AUTH_KEY);
-		return c.json({ valid: true, payload });
-	} catch {
-		throw new HTTPException(401, { message: 'Invalid token' });
-	}
-}); **/
 
 app.get('/v3/test', (c) => {
 	return c.json({ message: 'Hello World' });
+});
+
+app.get('/ping', async (c) => {
+	return c.json({ message: 'pong' });
 });
 
 export default app;
