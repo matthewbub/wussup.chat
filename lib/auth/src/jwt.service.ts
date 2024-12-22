@@ -2,7 +2,7 @@ import { sign, verify } from 'hono/jwt';
 import { env } from 'hono/adapter';
 import { Context } from 'hono';
 
-const jwtFactory = {
+const jwtService = {
 	assignRefreshToken: async (c: Context, payload: { id: string; exp: number }): Promise<string | Error> => {
 		try {
 			const authKey = env(c).AUTH_KEY;
@@ -31,10 +31,11 @@ const jwtFactory = {
 		} catch (error) {
 			const errorMessage = error instanceof Error ? error.message : 'Unknown error';
 			const errorStack = error instanceof Error ? error.stack : '';
-			throw new Error(`Failed to assign refresh token: ${errorMessage} ${errorStack} DEV`);
+			throw new Error(`Failed to assign refresh token: ${errorMessage} ${errorStack}`);
 		}
 	},
-	verifyRefreshToken: async (token: string, c: Context) => {
+	// this is just a seriees of checks to see if the token and user are both valid
+	verifyRefreshToken: async (token: string, c: Context): Promise<boolean> => {
 		const authKey = env(c).AUTH_KEY;
 		if (!authKey) {
 			return false;
@@ -57,7 +58,7 @@ const jwtFactory = {
 			return false;
 		}
 
-		const tokenData = d1Result.results?.[0] as { expires_at: string; revoked_at: string | null };
+		const tokenData = d1Result.results?.[0] as { expires_at: string; revoked_at: string | null; user_id: string };
 		if (!tokenData) {
 			return false;
 		}
@@ -68,8 +69,13 @@ const jwtFactory = {
 			return false;
 		}
 
+		const user = await db.prepare('SELECT * FROM users WHERE id = ? AND status = ?').bind(tokenData.user_id, 'active').run();
+		if (!user.success) {
+			return false;
+		}
+
 		return true;
 	},
 };
 
-export default jwtFactory;
+export default jwtService;

@@ -3,9 +3,9 @@ import { logger } from 'hono/logger';
 import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod';
 import { bearerAuth } from 'hono/bearer-auth';
-import authService from './auth.services';
+import publicService from './public.service';
 import { D1Database } from '@cloudflare/workers-types';
-import jwtFactory from './jwt.services';
+import jwtService from './jwt.service';
 
 const authSchema = z.object({
 	email: z.string().email().max(255),
@@ -27,7 +27,7 @@ app.use(
 	bearerAuth({
 		verifyToken: async (token, c) => {
 			try {
-				const isTokenValid = await jwtFactory.verifyRefreshToken(token, c);
+				const isTokenValid = await jwtService.verifyRefreshToken(token, c);
 				if (!isTokenValid) {
 					return false;
 				}
@@ -42,9 +42,7 @@ app.use(
 // routes
 app.post('/sign-up', zValidator('json', authSchema), async (c) => {
 	const { email, password, confirmPassword } = await c.req.json();
-
-	const result = await authService.signUp(c, { email, password, confirmPassword });
-
+	const result = await publicService.signUp({ email, password, confirmPassword }, c);
 	return result;
 });
 

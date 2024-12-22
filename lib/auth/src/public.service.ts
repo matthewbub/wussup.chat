@@ -1,17 +1,19 @@
 import { Context } from 'hono';
 import { v4 as uuidv4 } from 'uuid';
 import { env } from 'hono/adapter';
-import jwtFactory from './jwt.services';
-const EXPIRES_IN = 60 * 60; // 1 hour
+import jwtService from './jwt.service';
 
-interface AuthResponse {
+const EXPIRES_IN = 60 * 60; // 1 hour
+const STATUS_PENDING = 'pending';
+
+export interface SignUpResponse {
 	access_token: string;
 	token_type: string;
 	expires_in: number;
 }
 
-const authService = {
-	signUp: async (c: Context, { email, password, confirmPassword }: { email: string; password: string; confirmPassword: string }) => {
+const publicService = {
+	signUp: async ({ email, password, confirmPassword }: { email: string; password: string; confirmPassword: string }, c: Context) => {
 		if (password !== confirmPassword) {
 			return c.json({ error: 'Passwords do not match' }, 400);
 		}
@@ -19,9 +21,10 @@ const authService = {
 		const db = env(c).DB;
 		try {
 			const d1Result: D1Result = await db
-				.prepare('INSERT INTO users (id, email, username, password) VALUES (?, ?, ?, ?) RETURNING id, email, username')
+				.prepare('INSERT INTO users (id, email, username, password, status) VALUES (?, ?, ?, ?, ?) RETURNING id, email, username')
 				// we are use the email as the username by default
-				.bind(uuidv4(), email, email, password)
+				// account status is pending til user verifies their email
+				.bind(uuidv4(), email, email, password, STATUS_PENDING)
 				.run();
 
 			if (!d1Result.success) {
@@ -43,14 +46,14 @@ const authService = {
 
 			// encrypt the payload with an auth key
 			// we need the auth key to decrypt at validation time
-			const token = await jwtFactory.assignRefreshToken(c, payload);
+			const token = await jwtService.assignRefreshToken(c, payload);
 			if (token instanceof Error) {
 				// throw new Error(token.message);
 				return c.json({ error: token.message }, 500);
 			}
 
 			// standardized OAuth-style response
-			return c.json<AuthResponse>({
+			return c.json<SignUpResponse>({
 				access_token: token,
 				token_type: 'Bearer',
 				expires_in: EXPIRES_IN,
@@ -61,4 +64,4 @@ const authService = {
 	},
 };
 
-export default authService;
+export default publicService;
