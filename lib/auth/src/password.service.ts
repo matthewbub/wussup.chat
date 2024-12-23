@@ -1,3 +1,6 @@
+import { Context } from 'hono';
+import { env } from 'hono/adapter';
+
 const passwordService = {
 	hashPassword: async (password: string, providedSalt?: Uint8Array): Promise<string> => {
 		try {
@@ -69,6 +72,28 @@ const passwordService = {
 			return attemptHash === originalHash;
 		} catch (error) {
 			throw new Error(`Failed to verify password: ${error instanceof Error ? error.message : 'Unknown error'}`);
+		}
+	},
+	addToPasswordHistory: async ({ userId, passwordHash }: { userId: string; passwordHash: string }, c: Context) => {
+		const db = env(c).DB;
+		if (!db) {
+			throw new Error('Database connection not found in context');
+		}
+
+		try {
+			const id = crypto.randomUUID();
+			const result = await db
+				.prepare('INSERT INTO password_history (id, user_id, password_hash) VALUES (?, ?, ?)')
+				.bind(id, userId, passwordHash)
+				.run();
+			return result;
+		} catch (error) {
+			// Check if error is due to unique constraint violation
+			if (error instanceof Error && error.message.includes('unique_user_password')) {
+				// Password already exists in history - this might be a reuse attempt
+				return null;
+			}
+			throw error;
 		}
 	},
 };

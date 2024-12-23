@@ -24,11 +24,8 @@ const publicService = {
 		}
 
 		const db = env(c).DB;
-		console.log('db', db);
 		try {
 			const hashedPassword = await passwordService.hashPassword(password);
-
-			console.log(`Hashed Password: ${hashedPassword}`);
 			const d1Result: D1Result = await db
 				.prepare('INSERT INTO users (id, email, username, password, status) VALUES (?, ?, ?, ?, ?) RETURNING id, email, username')
 				// we are use the email as the username by default
@@ -43,6 +40,12 @@ const publicService = {
 			const user = d1Result.results?.[0] as { id: string };
 			if (!user) {
 				throw new Error('Failed to create user');
+			}
+
+			// add the password to the password history
+			const passwordHistoryResult = await passwordService.addToPasswordHistory({ userId: user.id, passwordHash: hashedPassword }, c);
+			if (passwordHistoryResult instanceof Error) {
+				return c.json({ error: passwordHistoryResult.message }, 500);
 			}
 
 			// this is the point at which we send the initial verification email

@@ -53,7 +53,7 @@ const emailService = {
 	 */
 	sendVerificationEmail: async ({ to, user }: { to: string; user: any }, c: Context) => {
 		try {
-			const db = c.get('db');
+			const db = env(c).DB;
 			const verificationToken = uuidv4();
 
 			// store verification token in database
