@@ -13,6 +13,10 @@ const responseService = {
 	refreshSchema: z.object({
 		refreshToken: z.string().min(1).max(255),
 	}),
+	verifyEmailSchema: z.object({
+		token: z.string().min(1).max(255),
+		email: z.string().email().max(255),
+	}),
 };
 
 export default responseService;

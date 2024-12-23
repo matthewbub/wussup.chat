@@ -54,18 +54,14 @@ app.post('/refresh-token', zValidator('json', responseService.refreshSchema), as
 	return result;
 });
 
-app.get('/v3/test', (c) => {
-	return c.json({ message: 'Hello World' });
-});
-
-app.post('/verify-email', zValidator('json', z.object({ token: z.string(), email: z.string() })), async (c) => {
+app.post('/verify-email', zValidator('json', responseService.verifyEmailSchema), async (c) => {
 	const { token, email } = await c.req.json();
 	const result = await publicService.verifyEmail({ token, email }, c);
 	return result;
 });
 
-app.get('/ping', async (c) => {
-	return c.json({ message: 'pong' });
+app.get('/v3/test', (c) => {
+	return c.json({ message: 'Hello World' });
 });
 
 export default app;

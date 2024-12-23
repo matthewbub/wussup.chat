@@ -18,6 +18,11 @@ interface CommonAuthResponse {
 export interface SignUpResponse extends CommonAuthResponse {}
 export interface LoginResponse extends CommonAuthResponse {}
 interface RefreshTokenResponse extends CommonAuthResponse {}
+interface VerifyEmailResponse {
+	success: boolean;
+	message: string;
+}
+
 const publicService = {
 	signUp: async ({ email, password, confirmPassword }: { email: string; password: string; confirmPassword: string }, c: Context) => {
 		if (password !== confirmPassword) {
@@ -216,7 +221,7 @@ const publicService = {
 			return c.json({ error: 'Failed to verify email' }, 500);
 		}
 
-		return c.json({ message: 'Email verified successfully' });
+		return c.json<VerifyEmailResponse>({ success: true, message: 'Email verified successfully' });
 	},
 };
 
