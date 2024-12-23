@@ -7,6 +7,7 @@ import publicService from './public.service';
 import { D1Database } from '@cloudflare/workers-types';
 import jwtService from './jwt.service';
 import responseService from './response.service';
+import emailService from './email.service';
 
 export interface Env {
 	AUTH_KEY: string;
@@ -55,6 +56,12 @@ app.post('/refresh-token', zValidator('json', responseService.refreshSchema), as
 
 app.get('/v3/test', (c) => {
 	return c.json({ message: 'Hello World' });
+});
+
+app.post('/email', zValidator('json', z.object({ to: z.string(), subject: z.string(), body: z.string() })), async (c) => {
+	const { to, subject, body } = await c.req.json();
+	const result = await emailService.sendEmail({ to, subject, body }, c);
+	return c.json({ message: 'Hello World', result });
 });
 
 app.get('/ping', async (c) => {
