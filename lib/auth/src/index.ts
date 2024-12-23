@@ -58,10 +58,10 @@ app.get('/v3/test', (c) => {
 	return c.json({ message: 'Hello World' });
 });
 
-app.post('/email', zValidator('json', z.object({ to: z.string(), subject: z.string(), body: z.string() })), async (c) => {
-	const { to, subject, body } = await c.req.json();
-	const result = await emailService.sendEmail({ to, subject, body }, c);
-	return c.json({ message: 'Hello World', result });
+app.post('/verify-email', zValidator('json', z.object({ token: z.string(), email: z.string() })), async (c) => {
+	const { token, email } = await c.req.json();
+	const result = await publicService.verifyEmail({ token, email }, c);
+	return result;
 });
 
 app.get('/ping', async (c) => {
