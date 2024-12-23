@@ -89,9 +89,11 @@ const publicService = {
 	},
 	login: async ({ email, password }: { email: string; password: string }, c: Context) => {
 		const db = env(c).DB;
+		const MAX_FAILED_ATTEMPTS = 3;
+
 		try {
 			const d1Result: D1Result = await db
-				.prepare('SELECT id, email, username, password, status FROM users WHERE email = ?')
+				.prepare('SELECT id, password, status, failed_login_attempts, locked_until FROM users WHERE email = ?')
 				.bind(email)
 				.run();
 
@@ -99,33 +101,47 @@ const publicService = {
 				return c.json({ error: d1Result.error }, 500);
 			}
 
-			const user = d1Result.results?.[0] as { id: string; email: string; username: string; password: string; status: string };
+			const user = d1Result.results?.[0] as {
+				id: string;
+				password: string;
+				status: string;
+				failed_login_attempts: number;
+				locked_until: string | null;
+			};
+
 			if (!user) {
 				throw new Error('User not found');
 			}
 
-			// verify the password using the stored hash and the password attempt
-			const isPasswordValid = await passwordService.verifyPassword(user.password, password);
-			if (!isPasswordValid) {
-				throw new Error('Invalid password');
+			// Check account status
+			if (user.status === 'deleted') {
+				throw new Error('Account has been deleted');
 			}
 
-			// create a "payload" object
-			// were gonna encrypt this and then
-			// decrypt it at validation time
+			if (user.status === 'suspended') {
+				throw new Error('Account has been suspended. Please contact support.');
+			}
+
+			// Check if account is locked
+			if (user.locked_until && new Date(user.locked_until) > new Date() && user.status === 'temporarily_locked') {
+				throw new Error('Account is temporarily locked. Please reset your password via email.');
+			}
+
+			const loginAttemptResult = await passwordService.handleLoginAttempt({ user, passwordAttempt: password }, c);
+			if (loginAttemptResult instanceof Error || loginAttemptResult.error) {
+				return c.json({ error: loginAttemptResult.error }, 500);
+			}
+
 			const payload = {
 				id: user.id,
 				exp: Math.floor(Date.now() / 1000) + EXPIRES_IN,
 			};
 
-			// encrypt the payload with an auth key
-			// we need the auth key to decrypt at validation time
 			const token = await jwtService.assignRefreshToken(c, payload);
 			if (token instanceof Error) {
 				return c.json({ error: token.message }, 500);
 			}
 
-			// standardized OAuth-style response
 			return c.json<LoginResponse>({
 				access_token: token,
 				token_type: 'Bearer',

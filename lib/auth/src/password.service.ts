@@ -1,6 +1,12 @@
 import { Context } from 'hono';
 import { env } from 'hono/adapter';
 
+interface LoginAttemptResult {
+	success: boolean;
+	error?: string;
+	remainingAttempts?: number;
+}
+
 const passwordService = {
 	hashPassword: async (password: string, providedSalt?: Uint8Array): Promise<string> => {
 		try {
@@ -95,6 +101,94 @@ const passwordService = {
 			}
 			throw error;
 		}
+	},
+	handleLoginAttempt: async (
+		{
+			user,
+			passwordAttempt,
+		}: {
+			user: {
+				id: string;
+				password: string;
+				failed_login_attempts: number;
+				status: string;
+			};
+			passwordAttempt: string;
+		},
+		c: Context
+	): Promise<LoginAttemptResult> => {
+		const db = env(c).DB;
+		if (!db) {
+			throw new Error('Database connection not found in context');
+		}
+
+		const MAX_FAILED_ATTEMPTS = 3;
+
+		// Verify password
+		const isPasswordValid = await passwordService.verifyPassword(user.password, passwordAttempt);
+		if (!isPasswordValid) {
+			const newAttempts = user.failed_login_attempts + 1;
+
+			// if new attempts is greater than or equal to max failed attempts
+			if (newAttempts >= MAX_FAILED_ATTEMPTS) {
+				const oneHourFromNow = new Date(Date.now() + 60 * 60 * 1000).toISOString();
+
+				await db
+					.prepare(
+						`
+						UPDATE users 
+						SET failed_login_attempts = ?, 
+								locked_until = ?,
+								status = 'temporarily_locked',
+								status_before_lockout = ?
+						WHERE id = ?
+					`
+					)
+					.bind(newAttempts, oneHourFromNow, user.status, user.id)
+					.run();
+
+				return {
+					success: false,
+					error: 'Account locked due to too many failed attempts. Please check your email to reset your password.',
+				};
+			}
+
+			// Increment failed attempts
+			await db.prepare('UPDATE users SET failed_login_attempts = ? WHERE id = ?').bind(newAttempts, user.id).run();
+
+			return {
+				success: false,
+				error: 'Invalid password',
+				remainingAttempts: MAX_FAILED_ATTEMPTS - newAttempts,
+			};
+		}
+
+		// Reset failed attempts and status on successful login
+		// attempt to restore the status before lockout if it exists
+		// if the check fails, set the status to pending
+		// worst case user will need to reverify their email
+		await db
+			.prepare(
+				`
+				UPDATE users 
+				SET failed_login_attempts = 0, 
+					locked_until = NULL, 
+					last_login_at = CURRENT_TIMESTAMP,
+					status = CASE 
+						WHEN status = 'temporarily_locked' AND status_before_lockout IS NOT NULL 
+							THEN status_before_lockout
+						WHEN status = 'temporarily_locked' 
+							THEN 'pending'
+						ELSE status 
+					END,
+					status_before_lockout = NULL
+				WHERE id = ?
+			`
+			)
+			.bind(user.id)
+			.run();
+
+		return { success: true };
 	},
 };
 

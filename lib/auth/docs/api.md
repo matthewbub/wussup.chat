@@ -5,6 +5,20 @@ import TabItem from '@theme/TabItem';
 
 To sign up for a new account, you just need to pass a unique email and strong password (twice)
 
+### Request
+
+**Endpoint:** `POST /sign-up`
+
+**Content-Type:** `application/json`
+
+**Request Body:**
+
+| Field             | Type   | Description           | Constraints                                                                                                                                                          |
+| ----------------- | ------ | --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `email`           | string | User's email address  | - Valid email format<br/>- Max 255 characters                                                                                                                        |
+| `password`        | string | User's password       | - 8-20 characters<br/>- At least one uppercase letter<br/>- At least one lowercase letter<br/>- At least one number<br/>- At least one special character (!@#$%^&\*) |
+| `confirmPassword` | string | Password confirmation | Must match `password` field                                                                                                                                          |
+
 <Tabs>
 <TabItem value="curl" label="cURL">
 
@@ -69,6 +83,18 @@ http.Post(
 
 </TabItem>
 </Tabs>
+
+### Response
+
+**Success Response:** `200 OK`
+
+```json
+{
+	"access_token": "string",
+	"token_type": "Bearer",
+	"expires_in": 3600
+}
+```
 
 All fields are required.
 
