@@ -1,5 +1,9 @@
 import { Context } from 'hono';
 import { Resend } from 'resend';
+import { env } from 'hono/adapter';
+import { v4 as uuidv4 } from 'uuid';
+
+const VERIFICATION_EXPIRES_IN = 24 * 60 * 60; // 24 hours
 
 const emailService = {
 	/**
@@ -36,6 +40,59 @@ const emailService = {
 			const errorMessage = error instanceof Error ? error.message : 'Unknown error';
 			const errorStack = error instanceof Error ? error.stack : '';
 			throw new Error(`Failed to send email: ${errorMessage} ${errorStack}`);
+		}
+	},
+	/**
+	 * sends a verification email to a user
+	 * @param {object} params - verification email parameters
+	 * @param {string} params.to - recipient email address
+	 * @param {object} params.user - user object containing id
+	 * @param {Context} c - hono context containing environment variables and db
+	 * @returns {Promise<object>} email sending result
+	 * @throws {Error} if verification token creation or email sending fails
+	 */
+	sendVerificationEmail: async ({ to, user }: { to: string; user: any }, c: Context) => {
+		try {
+			const db = c.get('db');
+			const verificationToken = uuidv4();
+
+			// store verification token in database
+			const verificationResult = await db
+				.prepare(
+					`
+						INSERT INTO verification_tokens (
+							token, 
+							user_id, 
+							type, 
+							expires_at
+						) VALUES (?, ?, ?, ?)
+					`
+				)
+				.bind(verificationToken, user.id, 'email', new Date(Date.now() + VERIFICATION_EXPIRES_IN * 1000).toISOString())
+				.run();
+
+			if (!verificationResult.success) {
+				throw new Error('Failed to create verification token in database');
+			}
+
+			// construct verification url from environment
+			const baseUrl = env(c).VERIFICATION_URL || 'http://localhost:3000';
+			const verificationUrl = `${baseUrl}/verify-email/${verificationToken}`;
+
+			// send verification email
+			const emailResult = await emailService.sendEmail(
+				{
+					to: to,
+					subject: 'Verify your email',
+					body: `Please verify your email by clicking this link: ${verificationUrl}\n\nThis link will expire in 24 hours.`,
+				},
+				c
+			);
+
+			return emailResult;
+		} catch (error) {
+			const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+			throw new Error(`Failed to send verification email: ${errorMessage}`);
 		}
 	},
 };

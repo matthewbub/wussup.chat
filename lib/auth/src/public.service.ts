@@ -3,6 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { env } from 'hono/adapter';
 import jwtService from './jwt.service';
 import passwordService from './password.service';
+import emailService from './email.service';
 
 const EXPIRES_IN = 60 * 60; // 1 hour
 const STATUS_PENDING = 'pending';
@@ -36,13 +37,18 @@ const publicService = {
 				.run();
 
 			if (!d1Result.success) {
-				console.log('d1Result failed', d1Result);
 				return c.json({ error: d1Result.error }, 500);
 			}
 
 			const user = d1Result.results?.[0] as { id: string };
 			if (!user) {
 				throw new Error('Failed to create user');
+			}
+
+			// this is the point at which we send the initial verification email
+			const emailResult = await emailService.sendVerificationEmail({ to: email, user }, c);
+			if (emailResult instanceof Error || emailResult?.error?.message) {
+				return c.json({ error: emailResult?.error?.message }, 500);
 			}
 
 			// create a "payload" object
