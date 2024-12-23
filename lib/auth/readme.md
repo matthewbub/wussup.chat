@@ -39,7 +39,7 @@ POST    /v3/auth/login               // user login, returns JWT  [x]
 POST    /v3/auth/refresh-token       // refresh access token using refresh token [x]
 POST    /v3/auth/forgot-password     // initiate password reset
 POST    /v3/auth/reset-password      // complete password reset with token
-GET     /v3/auth/verify-email/:token // verify email with token
+GET     /v3/auth/verify-email/:token // verify email with token [x]
 POST    /v3/auth/resend-verification // resend verification email
 
 /*
