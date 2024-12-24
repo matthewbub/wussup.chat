@@ -197,7 +197,7 @@ const publicService = {
 			expires_in: EXPIRES_IN,
 		});
 	},
-	verifyEmail: async ({ token, email }: { token: string; email: string }, c: Context) => {
+	verifyEmail: async ({ token }: { token: string }, c: Context) => {
 		const db = env(c).DB;
 		// check for valid token of type 'email' that hasn't been used and hasn't expired
 		const d1Result: D1Result = await db
@@ -228,7 +228,7 @@ const publicService = {
 
 		// start a transaction for updating both user status and token usage
 		const transaction = db.batch([
-			db.prepare('UPDATE users SET status = ? WHERE id = ?').bind(STATUS_ACTIVE, tokenData.user_id),
+			db.prepare('UPDATE users SET status = ?, email_verified_at = CURRENT_TIMESTAMP WHERE id = ?').bind(STATUS_ACTIVE, tokenData.user_id),
 			db.prepare('UPDATE verification_tokens SET used_at = CURRENT_TIMESTAMP WHERE token = ?').bind(token),
 		]);
 
