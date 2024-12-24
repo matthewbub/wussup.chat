@@ -9,6 +9,9 @@ import jwtService from './jwt.service';
 import responseService from './response.service';
 import emailService from './email.service';
 import authService from './auth.service';
+import adminService from './admin.service';
+import { Context } from 'hono';
+import { env } from 'hono/adapter';
 
 export interface Env {
 	AUTH_KEY: string;
@@ -35,6 +38,29 @@ app.use(
 		},
 	})
 );
+
+// Add this middleware function
+const adminAuthMiddleware = async (c: Context, next: () => Promise<void>) => {
+	const token = c.req.header('Authorization')?.split(' ')[1];
+	if (!token) {
+		return c.json({ success: false, message: 'No token provided' }, 401);
+	}
+
+	const payload = await jwtService.decodeToken(token, c);
+	if (!payload?.id) {
+		return c.json({ success: false, message: 'Invalid token' }, 401);
+	}
+
+	const db = env(c).DB;
+	const userResult = await db.prepare('SELECT role FROM users WHERE id = ?').bind(payload.id).run();
+
+	const user = userResult.results?.[0] as { role: string };
+	if (!user || user.role !== 'admin') {
+		return c.json({ success: false, message: 'Unauthorized' }, 403);
+	}
+
+	await next();
+};
 
 // routes
 app.post('/v3/public/sign-up', zValidator('json', responseService.signUpSchema), async (c) => {
@@ -117,6 +143,26 @@ app.delete('/v3/auth/me', async (c) => {
 		return c.json({ success: false, message: 'No token provided' }, 401);
 	}
 	const result = await authService.deleteAccount(token, c);
+	return c.json(result);
+});
+
+// Admin routes
+// app.use('/v3/admin/*', adminAuthMiddleware);
+
+app.post('/v3/admin/users/:id/promote', async (c) => {
+	const userId = c.req.param('id');
+	const result = await adminService.promoteUser(userId, c);
+	return c.json(result);
+});
+
+app.get('/v3/admin/users', async (c) => {
+	const result = await adminService.listUsers(c);
+	return c.json(result);
+});
+
+app.post('/v3/admin/users/:id/suspend', async (c) => {
+	const userId = c.req.param('id');
+	const result = await adminService.suspendUser(userId, c);
 	return c.json(result);
 });
 
