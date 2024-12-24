@@ -233,14 +233,9 @@ export const navigation: Array<NavGroup> = [
   {
     title: 'IntlAuth Service',
     links: [
-      // { title: 'Introduction', href: '/' },
-      // { title: 'Quickstart', href: '/quickstart' },
-      // { title: 'SDKs', href: '/sdks' },
-      // { t itle: 'Authentication', href: '/authentication' },
       { title: 'Public Endpoints', href: '/authentication_api_public' },
-      // { title: 'Pagination', href: '/pagination' },
-      // { title: 'Errors', href: '/errors' },
-      // { title: 'Webhooks', href: '/webhooks' },
+      { title: 'Private Endpoints', href: '/authentication_api_private' },
+      { title: 'Admin Endpoints', href: '/authentication_api_admin' },
     ],
   },
   {

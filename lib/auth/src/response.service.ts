@@ -65,6 +65,14 @@ const responseService = {
 			message: "Passwords don't match",
 			path: ['confirmPassword'],
 		}),
+	updateUserSchema: z
+		.object({
+			email: z.string().email().max(255).optional(),
+			username: z.string().min(3).max(255).optional(),
+		})
+		.refine((data) => data.email !== undefined || data.username !== undefined, {
+			message: 'At least one field (email or username) must be provided',
+		}),
 };
 
 export default responseService;

@@ -1,4 +1,4 @@
-import { sign, verify } from 'hono/jwt';
+import { decode, sign, verify } from 'hono/jwt';
 import { env } from 'hono/adapter';
 import { Context } from 'hono';
 
@@ -114,6 +114,19 @@ const jwtService = {
 		} catch (error) {
 			console.error(error);
 			return false;
+		}
+	},
+	decodeToken: async (token: string, c: Context): Promise<{ id: string; exp: number } | null> => {
+		try {
+			const authKey = env(c).AUTH_KEY;
+			if (!authKey) {
+				return null;
+			}
+			const decoded = await decode(token);
+			return decoded.payload as { id: string; exp: number };
+		} catch (error) {
+			console.error('Token decode error:', error);
+			return null;
 		}
 	},
 };

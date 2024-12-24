@@ -8,6 +8,7 @@ import { D1Database } from '@cloudflare/workers-types';
 import jwtService from './jwt.service';
 import responseService from './response.service';
 import emailService from './email.service';
+import authService from './auth.service';
 
 export interface Env {
 	AUTH_KEY: string;
@@ -34,14 +35,6 @@ app.use(
 		},
 	})
 );
-
-// OK    POST    /v3/public/sign-up             // new user registration returns JWT
-// OK    POST    /v3/public/login               // user login, returns JWT
-// OK    POST    /v3/public/refresh-token       // refresh access token using refresh token
-// OK    POST    /v3/public/forgot-password     // initiate password reset
-// OK    POST    /v3/public/reset-password      // complete password reset with token
-// OK    GET     /v3/public/verify-email/:token // verify email with token
-// OK    POST    /v3/public/resend-verification // resend verification email
 
 // routes
 app.post('/v3/public/sign-up', zValidator('json', responseService.signUpSchema), async (c) => {
@@ -86,8 +79,45 @@ app.post('/v3/public/resend-verification-email', zValidator('json', responseServ
 	return result;
 });
 
+app.get('/v3/logout', async (c) => {
+	const token = c.req.header('Authorization')?.split(' ')[1];
+	if (!token) {
+		return c.json({ success: false, message: 'No token provided' }, 401);
+	}
+	const result = await authService.logout(token, c);
+	return result;
+});
+
 app.get('/v3/test', (c) => {
 	return c.json({ message: 'Hello World' });
+});
+
+app.get('/v3/auth/me', async (c) => {
+	const token = c.req.header('Authorization')?.split(' ')[1];
+	if (!token) {
+		return c.json({ success: false, message: 'No token provided' }, 401);
+	}
+	const result = await authService.getCurrentUser(token, c);
+	return c.json(result);
+});
+
+app.put('/v3/auth/me', zValidator('json', responseService.updateUserSchema), async (c) => {
+	const token = c.req.header('Authorization')?.split(' ')[1];
+	if (!token) {
+		return c.json({ success: false, message: 'No token provided' }, 401);
+	}
+	const updates = await c.req.json();
+	const result = await authService.updateUser(token, updates, c);
+	return c.json(result);
+});
+
+app.delete('/v3/auth/me', async (c) => {
+	const token = c.req.header('Authorization')?.split(' ')[1];
+	if (!token) {
+		return c.json({ success: false, message: 'No token provided' }, 401);
+	}
+	const result = await authService.deleteAccount(token, c);
+	return c.json(result);
 });
 
 export default app;
