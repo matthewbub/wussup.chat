@@ -25,11 +25,16 @@ const passwordSchema = z
 	});
 
 const responseService = {
-	signUpSchema: z.object({
-		email: z.string().email().max(255),
-		password: passwordSchema,
-		confirmPassword: passwordSchema,
-	}),
+	signUpSchema: z
+		.object({
+			email: z.string().email().max(255),
+			password: passwordSchema,
+			confirmPassword: passwordSchema,
+		})
+		.refine((data) => data.password === data.confirmPassword, {
+			message: "Passwords don't match",
+			path: ['confirmPassword'],
+		}),
 	loginSchema: z.object({
 		email: z.string().email().max(255),
 		password: passwordSchema,
@@ -41,6 +46,25 @@ const responseService = {
 		token: z.string().min(1).max(255),
 		email: z.string().email().max(255),
 	}),
+	forgotPasswordSchema: z.object({
+		email: z.string().email().max(255),
+	}),
+	resendForgotPasswordSchema: z.object({
+		email: z.string().email().max(255),
+	}),
+	resendVerificationEmailSchema: z.object({
+		email: z.string().email().max(255),
+	}),
+	resetPasswordSchema: z
+		.object({
+			token: z.string().min(1).max(255),
+			password: passwordSchema,
+			confirmPassword: passwordSchema,
+		})
+		.refine((data) => data.password === data.confirmPassword, {
+			message: "Passwords don't match",
+			path: ['confirmPassword'],
+		}),
 };
 
 export default responseService;

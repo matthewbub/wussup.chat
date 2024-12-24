@@ -231,16 +231,16 @@ function NavigationGroup({
 
 export const navigation: Array<NavGroup> = [
   {
-    title: 'Guides',
+    title: 'IntlAuth Service',
     links: [
-      { title: 'Introduction', href: '/' },
-      { title: 'Quickstart', href: '/quickstart' },
-      { title: 'SDKs', href: '/sdks' },
-      { title: 'Authentication', href: '/authentication' },
-      { title: 'Authentication Api', href: '/authentication_api' },
-      { title: 'Pagination', href: '/pagination' },
-      { title: 'Errors', href: '/errors' },
-      { title: 'Webhooks', href: '/webhooks' },
+      // { title: 'Introduction', href: '/' },
+      // { title: 'Quickstart', href: '/quickstart' },
+      // { title: 'SDKs', href: '/sdks' },
+      // { t itle: 'Authentication', href: '/authentication' },
+      { title: 'Public Endpoints', href: '/authentication_api_public' },
+      // { title: 'Pagination', href: '/pagination' },
+      // { title: 'Errors', href: '/errors' },
+      // { title: 'Webhooks', href: '/webhooks' },
     ],
   },
   {

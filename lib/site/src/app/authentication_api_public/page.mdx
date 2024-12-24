@@ -1,0 +1,783 @@
+export const metadata = {
+  title: 'Public Endpoints',
+  description:
+    "This is a document that covers alot of ground in our internal authentication system. This is a good point of refernce if you are someone who is needing to work in this functional area. We tend to keep it locked down so this is probably the most your going to see on it. We'll try to be comprehensive.",
+}
+
+# Internal Authentication Api
+
+This is a document that covers alot of ground in our internal authentication system. This is a good point of refernce if you are someone who is needing to work in this functional area. We tend to keep it locked down so this is probably the most your going to see on it. We'll try to be comprehensive.
+
+What you can expect to see in this service is a comprehensive jwt based authentication system. This service is hosted directly on cloudflare.
+
+The system as it is, in-progress
+
+```sh
+/* Public Routes (No Auth Required) ------------------------------*/
+OK    POST    /v3/public/sign-up             // new user registration returns JWT
+OK    POST    /v3/public/login               // user login, returns JWT
+OK    POST    /v3/public/refresh-token       // refresh access token using refresh token
+OK    POST    /v3/public/forgot-password     // initiate password reset
+OK    POST    /v3/public/reset-password      // complete password reset with token
+OK    GET     /v3/public/verify-email/:token // verify email with token
+OK    POST    /v3/public/resend-verification // resend verification email
+
+/* Protected Routes (Valid JWT Required) ---------------------------------*/
+TODO  POST    /v3/auth/logout              // invalidate current token
+TODO  PUT     /v3/auth/change-password     // change password while logged in
+TODO  GET     /v3/auth/me                  // get current user info
+TODO  PUT     /v3/auth/me                  // update user info
+TODO  DELETE  /v3/auth/me                  // delete account
+
+/* Admin Routes (Admin JWT Required) -----------------------------*/
+TODO  GET     /v3/auth/users               // list all users
+TODO  GET     /v3/auth/users/:id           // get specific user
+TODO  PUT     /v3/auth/users/:id/status    // modify user status (suspend/activate)
+TODO  DELETE  /v3/auth/users/:id           // delete user account
+```
+
+## Sign Up
+
+To sign up for a new account, you just need to pass a unique email and strong password (twice)
+
+### Request
+
+- **Endpoint:** `POST /v3/public/sign-up`
+- **Content-Type:** `application/json`
+
+The sign-up endpoint requires three fields to create a new account. Make sure your password meets the strength requirements.
+
+<Row>
+  <Col>
+
+    <Properties>
+      <Property name="email" type="string">
+        User's email address. Must be valid format and maximum 255 characters.
+      </Property>
+      <Property name="password" type="string">
+        Password must be 8-20 characters with at least one uppercase letter, lowercase letter, number, and special character (!@#$%^&*).
+      </Property>
+      <Property name="confirmPassword" type="string">
+        Must match exactly with the password field.
+      </Property>
+    </Properties>
+
+  </Col>
+  <Col>
+
+    <CodeGroup title="Sign-up request examples">
+
+    ```bash {{ title: 'cURL' }}
+    curl -X POST 'http://example.com/v3/public/sign-up' \
+    -H 'Content-Type: application/json' \
+    -d '{
+        "email": "user@example.com",
+        "password": "yourpassword123",
+        "confirmPassword": "yourpassword123"
+    }'
+    ```
+
+    ```js {{ title: 'JavaScript' }}
+    fetch('http://example.com/v3/public/sign-up', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: 'user@example.com',
+        password: 'yourpassword123',
+        confirmPassword: 'yourpassword123',
+      }),
+    })
+    ```
+
+    ```python {{ title: 'Python' }}
+    import requests
+
+    requests.post('http://example.com/v3/public/sign-up',
+        json={
+            'email': 'user@example.com',
+            'password': 'yourpassword123',
+            'confirmPassword': 'yourpassword123'
+        }
+    )
+    ```
+
+    ```go {{ title: 'Go' }}
+    import "net/http"
+
+    data := `{
+        "email": "user@example.com",
+        "password": "yourpassword123",
+        "confirmPassword": "yourpassword123"
+    }`
+
+    http.Post(
+        "http://example.com/v3/public/sign-up",
+        "application/json",
+        strings.NewReader(data),
+    )
+    ```
+
+    </CodeGroup>
+
+  </Col>
+</Row>
+
+### Response
+
+**Success Response:** `200 OK`
+
+```json
+{
+  "access_token": "string",
+  "token_type": "Bearer",
+  "expires_in": 3600
+}
+```
+
+All fields are required.
+
+**Under the hood**
+
+When we send this request, theres quite a few steps happening. Here's the general flow
+
+1. Zod validates the password "strength"
+2. Confirm the `password` matches the `confirmPassword` field
+3. Use `passwordService.hashPassword` hash the password
+4. Create this user in the database, assign a default `user.status` of `"pending"`
+5. Use `passwordService.addToPasswordHistory` to assign the password to the users password_history
+6. Use `emailService.sendVerificationEmail` to send a token for account verification
+7. Use `jwtService.assignRefreshToken` to create refresh token
+8. Send `SignUpResponse`
+
+## Login
+
+To login to an existing account, provide your email and password.
+
+### Request
+
+- **Endpoint:** `POST /v3/public/login`
+- **Content-Type:** `application/json`
+
+<Row>
+  <Col>
+
+    <Properties>
+      <Property name="email" type="string">
+        Your registered email address.
+      </Property>
+      <Property name="password" type="string">
+        Your account password.
+      </Property>
+    </Properties>
+
+  </Col>
+  <Col>
+
+    <CodeGroup title="Login request examples">
+
+    ```bash {{ title: 'cURL' }}
+    curl -X POST 'http://example.com/v3/public/login' \
+    -H 'Content-Type: application/json' \
+    -d '{
+        "email": "user@example.com",
+        "password": "yourpassword123"
+    }'
+    ```
+
+    ```js {{ title: 'JavaScript' }}
+    fetch('http://example.com/v3/public/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: 'user@example.com',
+        password: 'yourpassword123',
+      }),
+    })
+    ```
+
+    ```python {{ title: 'Python' }}
+    import requests
+
+    requests.post('http://example.com/v3/public/login',
+        json={
+            'email': 'user@example.com',
+            'password': 'yourpassword123'
+        }
+    )
+    ```
+
+    ```go {{ title: 'Go' }}
+    import "net/http"
+
+    data := `{
+        "email": "user@example.com",
+        "password": "yourpassword123"
+    }`
+
+    http.Post(
+        "http://example.com/v3/public/login",
+        "application/json",
+        strings.NewReader(data),
+    )
+    ```
+
+    </CodeGroup>
+
+  </Col>
+</Row>
+
+### Response
+
+**Success Response:** `200 OK`
+
+```json
+{
+  "access_token": "string",
+  "token_type": "Bearer",
+  "expires_in": 3600
+}
+```
+
+All fields are required.
+
+**Under the hood**
+
+When we send this request, the following steps occur:
+
+1. Check if the user exists in the database
+2. Verify account status (not deleted or suspended)
+3. Check if account is locked due to failed attempts
+4. Validate the password using `passwordService.handleLoginAttempt`
+5. If successful, use `jwtService.assignRefreshToken` to create a new token
+6. Send `LoginResponse`
+
+**Error Cases:**
+
+- Account deleted: "Account has been deleted"
+- Account suspended: "Account has been suspended. Please contact support."
+- Account locked: "Account is temporarily locked. Please reset your password via email."
+- Invalid credentials: Increments failed login attempts
+
+## Refresh Token
+
+Use this endpoint to obtain a new access token using your refresh token.
+
+### Request
+
+- **Endpoint:** `POST /v3/public/refresh-token`
+- **Content-Type:** `application/json`
+
+<Row>
+  <Col>
+
+    <Properties>
+      <Property name="refreshToken" type="string">
+        The refresh token received from a previous login or token refresh.
+      </Property>
+    </Properties>
+
+  </Col>
+  <Col>
+
+    <CodeGroup title="Refresh token request examples">
+
+    ```bash {{ title: 'cURL' }}
+    curl -X POST 'http://example.com/v3/public/refresh-token' \
+    -H 'Content-Type: application/json' \
+    -d '{
+        "refreshToken": "your-refresh-token"
+    }'
+    ```
+
+    ```js {{ title: 'JavaScript' }}
+    fetch('http://example.com/v3/public/refresh-token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        refreshToken: 'your-refresh-token',
+      }),
+    })
+    ```
+
+    ```python {{ title: 'Python' }}
+    import requests
+
+    requests.post('http://example.com/v3/public/refresh-token',
+        json={
+            'refreshToken': 'your-refresh-token'
+        }
+    )
+    ```
+
+    ```go {{ title: 'Go' }}
+    import "net/http"
+
+    data := `{
+        "refreshToken": "your-refresh-token"
+    }`
+
+    http.Post(
+        "http://example.com/v3/public/refresh-token",
+        "application/json",
+        strings.NewReader(data),
+    )
+    ```
+
+    </CodeGroup>
+
+  </Col>
+</Row>
+
+### Response
+
+**Success Response:** `200 OK`
+
+```json
+{
+  "access_token": "string",
+  "token_type": "Bearer",
+  "expires_in": 3600
+}
+```
+
+**Under the hood**
+
+When we send this request, the following steps occur:
+
+1. Verify the refresh token exists in the database
+2. Validate the token hasn't expired and isn't revoked
+3. Verify the associated user account is still valid using `jwtService.validateTokenAndUser`
+4. Revoke the old refresh token using `jwtService.revokeRefreshToken`
+5. Create a new access token using `jwtService.assignRefreshToken`
+6. Send `RefreshTokenResponse`
+
+**Error Cases:**
+
+- Invalid refresh token: "Invalid refresh token"
+- Expired token: "Invalid refresh token"
+- Revoked token: "Invalid refresh token"
+- Failed token rotation: "Failed to revoke refresh token"
+
+## Verify Email
+
+Use this endpoint to verify a user's email address using the token sent to their email.
+
+### Request
+
+- **Endpoint:** `GET /v3/public/verify-email/:token`
+- **Content-Type:** `application/json`
+
+<Row>
+  <Col>
+
+    <Properties>
+      <Property name="token" type="string">
+        The verification token received in the email.
+      </Property>
+      <Property name="email" type="string">
+        The email address being verified.
+      </Property>
+    </Properties>
+
+  </Col>
+  <Col>
+
+    <CodeGroup title="Email verification request examples">
+
+    ```bash {{ title: 'cURL' }}
+    curl -X GET 'http://example.com/v3/public/verify-email?token=verification-token&email=user@example.com'
+    ```
+
+    ```js {{ title: 'JavaScript' }}
+    fetch('http://example.com/v3/public/verify-email?token=verification-token&email=user@example.com', {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' }
+    })
+    ```
+
+    ```python {{ title: 'Python' }}
+    import requests
+
+    requests.get(
+        'http://example.com/v3/public/verify-email',
+        params={
+            'token': 'verification-token',
+            'email': 'user@example.com'
+        }
+    )
+    ```
+
+    ```go {{ title: 'Go' }}
+    import "net/http"
+
+    http.Get("http://example.com/v3/public/verify-email?token=verification-token&email=user@example.com")
+    ```
+
+    </CodeGroup>
+
+  </Col>
+</Row>
+
+### Response
+
+**Success Response:** `200 OK`
+
+```json
+{
+  "success": true,
+  "message": "Email verified successfully"
+}
+```
+
+**Under the hood**
+
+When we send this request, the following steps occur:
+
+1. Check for a valid verification token in the database that:
+   - Is of type 'email'
+   - Hasn't been used yet (used_at is NULL)
+   - Hasn't expired (expires_at > current time)
+2. If token is valid, update the user's status to 'active'
+3. Mark the verification token as used
+4. Send verification success response
+
+**Error Cases:**
+
+- Invalid token: "Invalid verification token"
+- Expired token: "Token expired or already used"
+- Database error: "Failed to verify email"
+
+## Forgot Password
+
+Use this endpoint to initiate the password reset process. A reset token will be sent to the provided email address if the account exists.
+
+### Request
+
+- **Endpoint:** `POST /v3/public/forgot-password`
+- **Content-Type:** `application/json`
+
+<Row>
+  <Col>
+
+    <Properties>
+      <Property name="email" type="string">
+        The email address associated with the account.
+      </Property>
+    </Properties>
+
+  </Col>
+  <Col>
+
+    <CodeGroup title="Forgot password request examples">
+
+    ```bash {{ title: 'cURL' }}
+    curl -X POST 'http://example.com/v3/public/forgot-password' \
+    -H 'Content-Type: application/json' \
+    -d '{
+        "email": "user@example.com"
+    }'
+    ```
+
+    ```js {{ title: 'JavaScript' }}
+    fetch('http://example.com/v3/public/forgot-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: 'user@example.com',
+      }),
+    })
+    ```
+
+    ```python {{ title: 'Python' }}
+    import requests
+
+    requests.post('http://example.com/v3/public/forgot-password',
+        json={
+            'email': 'user@example.com'
+        }
+    )
+    ```
+
+    ```go {{ title: 'Go' }}
+    import "net/http"
+
+    data := `{
+        "email": "user@example.com"
+    }`
+
+    http.Post(
+        "http://example.com/v3/public/forgot-password",
+        "application/json",
+        strings.NewReader(data),
+    )
+    ```
+
+    </CodeGroup>
+
+  </Col>
+</Row>
+
+### Response
+
+**Success Response:** `200 OK`
+
+```json
+{
+  "success": true,
+  "message": "If a user exists with this email, they will receive reset instructions."
+}
+```
+
+**Under the hood**
+
+When we send this request, the following steps occur:
+
+1. Check if user exists and is eligible for password reset
+   - Account must be in one of these states: 'active', 'pending', or 'temporarily_locked'
+2. Generate a unique reset token using `crypto.randomUUID()`
+3. Store the reset token in the database with:
+   - Type: 'password_reset'
+   - Expiration: 1 hour from creation
+4. Send reset email containing:
+   - Reset URL with token
+   - Expiration information
+5. Return success message (same response regardless of whether email exists for security)
+
+**Error Cases:**
+
+- Account not eligible: "Account is not eligible for password reset"
+- Token creation failure: "Failed to create reset token"
+- Email sending failure: Internal server error
+- Database errors: Internal server error
+
+**Security Notes:**
+
+- Response message is intentionally vague to prevent email enumeration
+- Reset tokens expire after 1 hour
+- Reset links are single-use only
+
+## Reset Password
+
+Use this endpoint to complete the password reset process using the token received via email.
+
+### Request
+
+- **Endpoint:** `POST /reset-password`
+- **Content-Type:** `application/json`
+
+<Row>
+  <Col>
+
+    <Properties>
+      <Property name="token" type="string">
+        The reset token received from the forgot password email.
+      </Property>
+      <Property name="password" type="string">
+        The new password. Must meet password strength requirements.
+      </Property>
+    </Properties>
+
+  </Col>
+  <Col>
+
+    <CodeGroup title="Reset password request examples">
+
+    ```bash {{ title: 'cURL' }}
+    curl -X POST 'http://example.com/reset-password' \
+    -H 'Content-Type: application/json' \
+    -d '{
+        "token": "reset-token-from-email",
+        "password": "newSecurePassword123!"
+    }'
+    ```
+
+    ```js {{ title: 'JavaScript' }}
+    fetch('http://example.com/reset-password', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        token: 'reset-token-from-email',
+        password: 'newSecurePassword123!',
+      }),
+    })
+    ```
+
+    ```python {{ title: 'Python' }}
+    import requests
+
+    requests.post('http://example.com/reset-password',
+        json={
+            'token': 'reset-token-from-email',
+            'password': 'newSecurePassword123!'
+        }
+    )
+    ```
+
+    ```go {{ title: 'Go' }}
+    import "net/http"
+
+    data := `{
+        "token": "reset-token-from-email",
+        "password": "newSecurePassword123!"
+    }`
+
+    http.Post(
+        "http://example.com/reset-password",
+        "application/json",
+        strings.NewReader(data),
+    )
+    ```
+
+    </CodeGroup>
+
+  </Col>
+</Row>
+
+### Response
+
+**Success Response:** `200 OK`
+
+```json
+{
+  "success": true,
+  "message": "Password has been reset successfully"
+}
+```
+
+**Under the hood**
+
+When we send this request, the following steps occur:
+
+1. Verify the reset token is:
+   - Valid and unexpired
+   - Of type 'password_reset'
+   - Not already used
+2. Check user account status (not deleted or suspended)
+3. Hash the new password
+4. Check password history to prevent reuse
+5. In a single transaction:
+   - Update the user's password
+   - Reset failed login attempts and locks
+   - Mark the reset token as used
+   - Add new password to password history
+6. Send success response
+
+**Error Cases:**
+
+- Invalid/expired token: "Invalid or expired reset token"
+- Account not eligible: "Account is not eligible for password reset"
+- Password reuse: "Cannot reuse a recent password"
+- Transaction failure: "Failed to update password"
+
+**Security Notes:**
+
+- Password must meet strength requirements
+- Previous passwords cannot be reused
+- Reset tokens are single-use only
+- Account status is verified before allowing reset
+
+## Resend Verification Email
+
+Use this endpoint to request a new verification email if the original one expired or was lost.
+
+### Request
+
+- **Endpoint:** `POST /v3/public/resend-verification`
+- **Content-Type:** `application/json`
+
+<Row>
+  <Col>
+
+    <Properties>
+      <Property name="email" type="string">
+        The email address that needs verification.
+      </Property>
+    </Properties>
+
+  </Col>
+  <Col>
+
+    <CodeGroup title="Resend verification request examples">
+
+    ```bash {{ title: 'cURL' }}
+    curl -X POST 'http://example.com/v3/public/resend-verification' \
+    -H 'Content-Type: application/json' \
+    -d '{
+        "email": "user@example.com"
+    }'
+    ```
+
+    ```js {{ title: 'JavaScript' }}
+    fetch('http://example.com/v3/public/resend-verification', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: 'user@example.com',
+      }),
+    })
+    ```
+
+    ```python {{ title: 'Python' }}
+    import requests
+
+    requests.post('http://example.com/v3/public/resend-verification',
+        json={
+            'email': 'user@example.com'
+        }
+    )
+    ```
+
+    ```go {{ title: 'Go' }}
+    import "net/http"
+
+    data := `{
+        "email": "user@example.com"
+    }`
+
+    http.Post(
+        "http://example.com/v3/public/resend-verification",
+        "application/json",
+        strings.NewReader(data),
+    )
+    ```
+
+    </CodeGroup>
+
+  </Col>
+</Row>
+
+### Response
+
+**Success Response:** `200 OK`
+
+```json
+{
+  "success": true,
+  "message": "Verification email has been resent"
+}
+```
+
+**Under the hood**
+
+When we send this request, the following steps occur:
+
+1. Find the user and verify they exist and are still pending
+2. Check if user is already verified (status is 'active')
+3. Verify user status allows for verification resend
+4. Check rate limiting (minimum 5-minute wait between requests)
+5. Generate and store new verification token
+6. Send new verification email via `emailService.sendVerificationEmail`
+
+**Error Cases:**
+
+- Email already verified: "Email is already verified"
+- Invalid status: "Unable to resend verification email"
+- Rate limit: "Please wait 5 minutes before requesting another verification email"
+- Email sending failure: "Failed to send verification email"
+
+**Security Notes:**
+
+- Rate limiting prevents abuse
+- Same response is returned whether email exists or not
+- Only pending accounts can receive verification emails
+- Previous verification tokens remain valid until used or expired

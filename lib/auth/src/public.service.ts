@@ -22,6 +22,10 @@ interface VerifyEmailResponse {
 	success: boolean;
 	message: string;
 }
+interface ResendEmailResponse {
+	success: boolean;
+	message: string;
+}
 
 const publicService = {
 	signUp: async ({ email, password, confirmPassword }: { email: string; password: string; confirmPassword: string }, c: Context) => {
@@ -237,6 +241,119 @@ const publicService = {
 		}
 
 		return c.json<VerifyEmailResponse>({ success: true, message: 'Email verified successfully' });
+	},
+	forgotPassword: async ({ email }: { email: string }, c: Context) => {
+		try {
+			const result = await passwordService.initiateReset(email, c);
+			return c.json(result);
+		} catch (error) {
+			return c.json(
+				{
+					success: false,
+					message: 'Failed to process password reset request',
+				},
+				500
+			);
+		}
+	},
+	resetPassword: async ({ token, password }: { token: string; password: string }, c: Context) => {
+		try {
+			const result = await passwordService.completeReset({ token, newPassword: password }, c);
+			return c.json(result);
+		} catch (error) {
+			return c.json(
+				{
+					success: false,
+					message: 'Failed to reset password',
+				},
+				500
+			);
+		}
+	},
+	resendVerificationEmail: async ({ email }: { email: string }, c: Context) => {
+		const db = env(c).DB;
+
+		try {
+			// Find the user and verify they exist and are still pending
+			const userResult = await db.prepare('SELECT id, email, status FROM users WHERE email = ?').bind(email).run();
+
+			if (!userResult.success) {
+				throw new Error('Database error while looking up user');
+			}
+
+			const user = userResult.results?.[0] as { id: string; email: string; status: string } | undefined;
+
+			if (!user) {
+				return c.json<ResendEmailResponse>({
+					success: false,
+					message: 'If a matching account was found, a verification email has been sent.',
+				});
+			}
+
+			// Check if user is already verified
+			if (user.status === STATUS_ACTIVE) {
+				return c.json<ResendEmailResponse>({
+					success: false,
+					message: 'Email is already verified',
+				});
+			}
+
+			// Check if user is pending
+			const allowedStatuses = ['pending'];
+			if (!allowedStatuses.includes(user.status)) {
+				return c.json<ResendEmailResponse>({
+					success: false,
+					message: 'Unable to resend verification email',
+				});
+			}
+
+			// Check for rate limiting (optional but recommended)
+			const lastEmailResult = await db
+				.prepare(
+					`
+					SELECT created_at 
+					FROM verification_tokens 
+					WHERE user_id = ? 
+					AND type = 'email' 
+					ORDER BY created_at DESC 
+					LIMIT 1
+				`
+				)
+				.bind(user.id)
+				.run();
+
+			if (lastEmailResult.success && lastEmailResult.results?.[0]) {
+				const lastSent = new Date(lastEmailResult.results[0].created_at);
+				const timeSinceLastEmail = Date.now() - lastSent.getTime();
+				const MIN_RESEND_INTERVAL = 5 * 60 * 1000; // 5 minutes
+
+				if (timeSinceLastEmail < MIN_RESEND_INTERVAL) {
+					return c.json<ResendEmailResponse>({
+						success: false,
+						message: 'Please wait 5 minutes before requesting another verification email',
+					});
+				}
+			}
+
+			// Send new verification email
+			const emailResult = await emailService.sendVerificationEmail({ to: email, user }, c);
+			if (emailResult instanceof Error || emailResult?.error?.message) {
+				throw new Error(emailResult?.error?.message || 'Failed to send verification email');
+			}
+
+			return c.json<ResendEmailResponse>({
+				success: true,
+				message: 'Verification email has been resent',
+			});
+		} catch (error) {
+			return c.json<ResendEmailResponse>(
+				{
+					success: false,
+					message: error instanceof Error ? error.message : 'Failed to resend verification email',
+				},
+				500
+			);
+		}
 	},
 };
 

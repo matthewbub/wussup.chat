@@ -1,11 +1,14 @@
 import { Context } from 'hono';
 import { env } from 'hono/adapter';
+import emailService from './email.service';
 
 interface LoginAttemptResult {
 	success: boolean;
 	error?: string;
 	remainingAttempts?: number;
 }
+
+const PASSWORD_RESET_EXPIRES_IN = 60 * 60 * 1000; // 1 hour
 
 const passwordService = {
 	hashPassword: async (password: string, providedSalt?: Uint8Array): Promise<string> => {
@@ -189,6 +192,174 @@ const passwordService = {
 			.run();
 
 		return { success: true };
+	},
+	/**
+	 * initiates password reset process by creating a token and sending email
+	 * @param {string} email - user's email address
+	 * @param {Context} c - hono context
+	 * @returns {Promise<{success: boolean, message: string}>}
+	 */
+	initiateReset: async (email: string, c: Context) => {
+		const db = env(c).DB;
+		try {
+			// Find user
+			const userResult = await db.prepare('SELECT id, email, status FROM users WHERE email = ?').bind(email).run();
+
+			const user = userResult.results?.[0] as { id: string; email: string; status: string };
+			if (!user) {
+				return { success: false, message: 'If a user exists with this email, they will receive reset instructions.' };
+			}
+
+			const allowedStatuses = ['active', 'pending', 'temporarily_locked'];
+			if (!allowedStatuses.includes(user.status)) {
+				return { success: false, message: 'Account is not eligible for password reset' };
+			}
+
+			const resetToken = crypto.randomUUID();
+
+			// Store reset token
+			const tokenResult = await db
+				.prepare(
+					`INSERT INTO verification_tokens (
+										token, 
+										user_id, 
+										type, 
+										expires_at
+								) VALUES (?, ?, ?, ?)`
+				)
+				.bind(resetToken, user.id, 'password_reset', new Date(Date.now() + PASSWORD_RESET_EXPIRES_IN * 1000).toISOString())
+				.run();
+
+			if (!tokenResult.success) {
+				throw new Error('Failed to create reset token');
+			}
+
+			// Send reset email
+			const baseUrl = env(c).PASSWORD_RESET_URL || 'http://localhost:3000';
+			const resetUrl = `${baseUrl}/reset-password/${resetToken}`;
+
+			await emailService.sendEmail(
+				{
+					to: user.email,
+					subject: 'Reset Your Password',
+					body: `Click this link to reset your password: ${resetUrl}\n\nThis link will expire in 1 hour.`,
+				},
+				c
+			);
+
+			return {
+				success: true,
+				message: 'If a user exists with this email, they will receive reset instructions.',
+			};
+		} catch (error) {
+			console.error('Password reset initiation error:', error);
+			throw error;
+		}
+	},
+
+	/**
+	 * completes password reset process by validating token and updating password
+	 * @param {object} params - reset parameters
+	 * @param {string} params.token - reset token
+	 * @param {string} params.newPassword - new password
+	 * @param {Context} c - hono context
+	 * @returns {Promise<{success: boolean, message: string}>}
+	 */
+	completeReset: async ({ token, newPassword }: { token: string; newPassword: string }, c: Context) => {
+		const db = env(c).DB;
+		try {
+			// Verify token and get user status
+			const tokenResult = await db
+				.prepare(
+					`
+					SELECT vt.*, u.id as user_id, u.status
+					FROM verification_tokens vt
+					JOIN users u ON u.id = vt.user_id
+					WHERE vt.token = ? 
+					AND vt.type = 'password_reset'
+					AND vt.used_at IS NULL 
+					AND vt.expires_at > CURRENT_TIMESTAMP
+					`
+				)
+				.bind(token)
+				.run();
+			const tokenData = tokenResult.results?.[0] as { user_id: string; status: string };
+			if (!tokenData) {
+				return { success: false, message: 'Invalid or expired reset token' };
+			}
+
+			// Check if user is in a state that doesn't allow password reset
+			if (tokenData.status === 'deleted' || tokenData.status === 'suspended') {
+				return { success: false, message: 'Account is not eligible for password reset' };
+			}
+
+			// Hash new password and check history
+			const hashedPassword = await passwordService.hashPassword(newPassword);
+			const isPasswordReused = await passwordService.isPasswordReused({ userId: tokenData.user_id, newPasswordHash: hashedPassword }, c);
+
+			if (isPasswordReused) {
+				return { success: false, message: 'Cannot reuse a recent password' };
+			}
+
+			// Update password, mark token as used, and update user status in transaction
+			const transaction = db.batch([
+				db
+					.prepare(
+						`
+					UPDATE users 
+					SET password = ?,
+						failed_login_attempts = 0,
+						locked_until = NULL,
+						status = CASE 
+							WHEN status = 'temporarily_locked' AND status_before_lockout IS NOT NULL 
+								THEN status_before_lockout
+							WHEN status = 'temporarily_locked' 
+								THEN 'pending'
+							ELSE status 
+						END,
+						status_before_lockout = NULL
+					WHERE id = ?
+				`
+					)
+					.bind(hashedPassword, tokenData.user_id),
+				db.prepare('UPDATE verification_tokens SET used_at = CURRENT_TIMESTAMP WHERE token = ?').bind(token),
+				db
+					.prepare('INSERT INTO password_history (id, user_id, password_hash) VALUES (?, ?, ?)')
+					.bind(crypto.randomUUID(), tokenData.user_id, hashedPassword),
+			]);
+
+			const results = await transaction;
+			if (!results.every((result: { success: boolean }) => result.success)) {
+				throw new Error('Failed to update password');
+			}
+
+			return { success: true, message: 'Password has been reset successfully' };
+		} catch (error) {
+			console.error('Password reset completion error:', error);
+			throw error;
+		}
+	},
+
+	isPasswordReused: async ({ userId, newPasswordHash }: { userId: string; newPasswordHash: string }, c: Context) => {
+		const db = env(c).DB;
+		if (!db) {
+			throw new Error('Database connection not found in context');
+		}
+
+		try {
+			const result = await db
+				.prepare('SELECT COUNT(*) as count FROM password_history WHERE user_id = ? AND password_hash = ?')
+				.bind(userId, newPasswordHash)
+				.run();
+
+			if (!result.success) {
+				throw new Error('Failed to check password history');
+			}
+
+			return (result.results?.[0]?.count as number) || 0;
+		} catch (error) {
+			throw new Error(`Failed to check password reuse: ${error instanceof Error ? error.message : 'Unknown error'}`);
+		}
 	},
 };
 
