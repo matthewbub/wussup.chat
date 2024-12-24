@@ -20,7 +20,7 @@ const app = new Hono<{ Bindings: Env }>();
 // middleware
 app.use(logger());
 app.use(
-	'/v3/*',
+	'/v3/auth/*',
 	bearerAuth({
 		verifyToken: async (token, c) => {
 			try {
@@ -79,7 +79,7 @@ app.post('/v3/public/resend-verification-email', zValidator('json', responseServ
 	return result;
 });
 
-app.get('/v3/logout', async (c) => {
+app.get('/v3/auth/logout', async (c) => {
 	const token = c.req.header('Authorization')?.split(' ')[1];
 	if (!token) {
 		return c.json({ success: false, message: 'No token provided' }, 401);
@@ -88,7 +88,7 @@ app.get('/v3/logout', async (c) => {
 	return result;
 });
 
-app.get('/v3/test', (c) => {
+app.get('/v3/auth/test', (c) => {
 	return c.json({ message: 'Hello World' });
 });
 
