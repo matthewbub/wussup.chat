@@ -1,7 +1,6 @@
 import { Context } from 'hono';
 import { Resend } from 'resend';
 import { env } from 'hono/adapter';
-import { v4 as uuidv4 } from 'uuid';
 
 const VERIFICATION_EXPIRES_IN = 24 * 60 * 60; // 24 hours
 
@@ -54,7 +53,7 @@ const emailService = {
 	sendVerificationEmail: async ({ to, user }: { to: string; user: any }, c: Context) => {
 		try {
 			const db = env(c).DB;
-			const verificationToken = uuidv4();
+			const verificationToken = crypto.randomUUID();
 
 			// store verification token in database
 			const verificationResult = await db

@@ -1,5 +1,4 @@
 import { Context } from 'hono';
-import { v4 as uuidv4 } from 'uuid';
 import { env } from 'hono/adapter';
 import jwtService from './jwt.service';
 import passwordService from './password.service';
@@ -40,7 +39,7 @@ const publicService = {
 				.prepare('INSERT INTO users (id, email, username, password, status) VALUES (?, ?, ?, ?, ?) RETURNING id, email, username')
 				// we are use the email as the username by default
 				// account status is pending til user verifies their email
-				.bind(uuidv4(), email, email, hashedPassword, STATUS_PENDING)
+				.bind(crypto.randomUUID(), email, email, hashedPassword, STATUS_PENDING)
 				.run();
 
 			if (!d1Result.success) {
