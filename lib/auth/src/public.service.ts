@@ -89,7 +89,6 @@ const publicService = {
 	},
 	login: async ({ email, password }: { email: string; password: string }, c: Context) => {
 		const db = env(c).DB;
-		const MAX_FAILED_ATTEMPTS = 3;
 
 		try {
 			const d1Result: D1Result = await db
