@@ -1,6 +1,6 @@
+import { Context } from 'hono';
 import { decode, sign, verify } from 'hono/jwt';
 import { env } from 'hono/adapter';
-import { Context } from 'hono';
 
 const jwtService = {
 	assignRefreshToken: async (c: Context, payload: { id: string; exp: number }): Promise<string | Error> => {

@@ -1,6 +1,6 @@
 import { Context } from 'hono';
 import { env } from 'hono/adapter';
-import emailService from './email.service';
+import emailService from './email';
 
 interface LoginAttemptResult {
 	success: boolean;

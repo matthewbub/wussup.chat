@@ -1,17 +1,14 @@
-import { Hono } from 'hono';
+import { Context, Hono } from 'hono';
 import { logger } from 'hono/logger';
-import { zValidator } from '@hono/zod-validator';
-import { z } from 'zod';
 import { bearerAuth } from 'hono/bearer-auth';
-import publicService from './public.service';
-import { D1Database } from '@cloudflare/workers-types';
-import jwtService from './jwt.service';
-import responseService from './response.service';
-import emailService from './email.service';
-import authService from './auth.service';
-import adminService from './admin.service';
-import { Context } from 'hono';
 import { env } from 'hono/adapter';
+import { zValidator } from '@hono/zod-validator';
+import { D1Database } from '@cloudflare/workers-types';
+import publicService from './modules/public';
+import jwtService from './modules/jwt';
+import responseService from './modules/response';
+import authService from './modules/auth';
+import adminService from './modules/admin';
 
 export interface Env {
 	AUTH_KEY: string;

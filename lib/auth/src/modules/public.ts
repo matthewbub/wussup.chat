@@ -1,8 +1,8 @@
 import { Context } from 'hono';
 import { env } from 'hono/adapter';
-import jwtService from './jwt.service';
-import passwordService from './password.service';
-import emailService from './email.service';
+import jwtService from './jwt';
+import passwordService from './password';
+import emailService from './email';
 
 const EXPIRES_IN = 60 * 60; // 1 hour
 const STATUS_PENDING = 'pending';

@@ -1,6 +1,6 @@
 import { Context } from 'hono';
-import { Resend } from 'resend';
 import { env } from 'hono/adapter';
+import { Resend } from 'resend';
 
 const VERIFICATION_EXPIRES_IN = 24 * 60 * 60; // 24 hours
 
