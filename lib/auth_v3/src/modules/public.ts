@@ -3,6 +3,8 @@ import { env } from 'hono/adapter';
 import jwtService from './jwt';
 import passwordService from './password';
 import emailService from './email';
+import { ZodError } from 'zod';
+import responseService from './response';
 
 const EXPIRES_IN = 60 * 60; // 1 hour
 const STATUS_PENDING = 'pending';
@@ -70,6 +72,9 @@ const publicService = {
 		});
 
 		try {
+			// Zod validation logic here
+			responseService.signUpSchema.parse({ email, password, confirmPassword });
+
 			// check for existing email
 			const existingUserResult = await db.prepare('SELECT id FROM users WHERE email = ?').bind(email).run();
 			if (existingUserResult.success && existingUserResult.results?.length) {
@@ -90,7 +95,7 @@ const publicService = {
 
 			const user = d1Result.results?.[0] as { id: string };
 			if (!user) {
-				throw new Error(ERROR_MESSAGES.USER_CREATION_FAILED);
+				return c.json(createResponse(false, ERROR_MESSAGES.USER_CREATION_FAILED, ERROR_CODES.USER_CREATION_FAILED), 500);
 			}
 
 			// add the password to the password history
@@ -132,6 +137,10 @@ const publicService = {
 				})
 			);
 		} catch (error) {
+			if (error instanceof ZodError) {
+				const issues = error.errors.map((err) => err.message).join(', ');
+				return c.json(createResponse(false, `Validation error: ${issues}`, 'VALIDATION_ERROR'), 400);
+			}
 			return c.json(
 				createResponse(false, error instanceof Error ? error.message : ERROR_MESSAGES.UNEXPECTED_ERROR, ERROR_CODES.UNEXPECTED_ERROR),
 				500

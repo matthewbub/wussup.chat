@@ -60,7 +60,7 @@ const adminAuthMiddleware = async (c: Context, next: () => Promise<void>) => {
 };
 
 // routes
-app.post('/v3/public/sign-up', zValidator('json', responseService.signUpSchema), async (c) => {
+app.post('/v3/public/sign-up', async (c) => {
 	const { email, password, confirmPassword } = await c.req.json();
 	const result = await publicService.signUp({ email, password, confirmPassword }, c);
 	return result;
