@@ -63,7 +63,7 @@ describe("Public Auth Endpoints", () => {
       });
 
       const data = await response.json();
-      console.log(data);
+
       expect(response.status).toBe(400);
       expect(data).toMatchObject({
         success: false,
@@ -185,9 +185,13 @@ describe("Public Auth Endpoints", () => {
 
       expect(loginResponse.status).toBe(200);
       expect(loginData).toMatchObject({
-        access_token: expect.any(String),
-        token_type: "Bearer",
-        expires_in: expect.any(Number),
+        success: true,
+        message: expect.any(String),
+        data: {
+          access_token: expect.any(String),
+          token_type: "Bearer",
+          expires_in: expect.any(Number),
+        },
       });
     });
 
@@ -219,7 +223,11 @@ describe("Public Auth Endpoints", () => {
       const loginData = await loginResponse.json();
 
       expect(loginResponse.status).toBe(401);
-      expect(loginData).toHaveProperty("error");
+      expect(loginData).toMatchObject({
+        success: false,
+        message: "Invalid password",
+        code: "LOGIN_ATTEMPT_FAILED",
+      });
     });
 
     it("should fail with non-existent user", async () => {
@@ -234,7 +242,11 @@ describe("Public Auth Endpoints", () => {
 
       const loginData = await loginResponse.json();
       expect(loginResponse.status).toBe(404);
-      expect(loginData).toHaveProperty("error");
+      expect(loginData).toMatchObject({
+        success: false,
+        message: "Invalid email or password",
+        code: "USER_NOT_FOUND",
+      });
     });
   });
 });

@@ -59,17 +59,17 @@ interface ResendEmailResponse {
 	message: string;
 }
 
+// standard response format with error code
+const createResponse = (success: boolean, message: string, code: string, data: any = null) => ({
+	success,
+	message,
+	code,
+	data,
+});
+
 const publicService = {
 	signUp: async ({ email, password, confirmPassword }: { email: string; password: string; confirmPassword: string }, c: Context) => {
 		const db = env(c).DB;
-
-		// standard response format with error code
-		const createResponse = (success: boolean, message: string, code: string, data: any = null) => ({
-			success,
-			message,
-			code,
-			data,
-		});
 
 		try {
 			// Zod validation logic here
@@ -133,7 +133,7 @@ const publicService = {
 					access_token: token,
 					token_type: 'Bearer',
 					expires_in: EXPIRES_IN,
-					...(env(c).ENV === 'development' && { verificationToken: emailResult.verificationToken }),
+					...(env(c).ENV === 'test' && { verificationToken: emailResult.verificationToken }),
 				})
 			);
 		} catch (error) {
@@ -151,13 +151,16 @@ const publicService = {
 		const db = env(c).DB;
 
 		try {
+			// zod validation logic here
+			responseService.loginSchema.parse({ email, password });
+
 			const d1Result: D1Result = await db
 				.prepare('SELECT id, password, status, failed_login_attempts, locked_until FROM users WHERE email = ?')
 				.bind(email)
 				.run();
 
 			if (!d1Result.success) {
-				return c.json({ error: d1Result.error, code: 'DB_ERROR' }, 500);
+				return c.json(createResponse(false, d1Result.error || 'Database error', 'DB_ERROR'), 500);
 			}
 
 			const user = d1Result.results?.[0] as {
@@ -169,26 +172,24 @@ const publicService = {
 			};
 
 			if (!user) {
-				return c.json({ error: 'Invalid email or password', code: 'USER_NOT_FOUND' }, 404);
+				return c.json(createResponse(false, 'Invalid email or password', 'USER_NOT_FOUND'), 404);
 			}
 
-			// Check account status
+			// check account status
 			if (user.status === 'deleted') {
-				return c.json({ error: 'Account has been deleted', code: 'ACCOUNT_DELETED' }, 403);
+				return c.json(createResponse(false, 'Account has been deleted', 'ACCOUNT_DELETED'), 403);
 			}
 
 			if (user.status === 'suspended') {
-				return c.json({ error: 'Account has been suspended. Please contact support.', code: 'ACCOUNT_SUSPENDED' }, 403);
+				return c.json(createResponse(false, 'Account has been suspended. Please contact support.', 'ACCOUNT_SUSPENDED'), 403);
 			}
 
-			// Check if account is locked
+			// check if account is locked
 			if (user.locked_until && new Date(user.locked_until) > new Date() && user.status === 'temporarily_locked') {
 				return c.json(
-					{
-						error: 'Account is temporarily locked. Please reset your password via email.',
-						code: 'ACCOUNT_LOCKED',
+					createResponse(false, 'Account is temporarily locked. Please reset your password via email.', 'ACCOUNT_LOCKED', {
 						lockedUntil: user.locked_until,
-					},
+					}),
 					403
 				);
 			}
@@ -196,10 +197,11 @@ const publicService = {
 			const loginAttemptResult = await passwordService.handleLoginAttempt({ user, passwordAttempt: password }, c);
 			if (loginAttemptResult instanceof Error || loginAttemptResult.error) {
 				return c.json(
-					{
-						error: loginAttemptResult instanceof Error ? loginAttemptResult.message : loginAttemptResult.error,
-						code: 'LOGIN_ATTEMPT_FAILED',
-					},
+					createResponse(
+						false,
+						loginAttemptResult instanceof Error ? loginAttemptResult.message : loginAttemptResult.error || 'Unknown error',
+						'LOGIN_ATTEMPT_FAILED'
+					),
 					401
 				);
 			}
@@ -211,22 +213,22 @@ const publicService = {
 
 			const token = await jwtService.assignRefreshToken(c, payload);
 			if (token instanceof Error) {
-				return c.json({ error: token.message, code: 'TOKEN_GENERATION_FAILED' }, 500);
+				return c.json(createResponse(false, token.message, 'TOKEN_GENERATION_FAILED'), 500);
 			}
 
-			return c.json<LoginResponse>({
-				access_token: token,
-				token_type: 'Bearer',
-				expires_in: EXPIRES_IN,
-			});
-		} catch (error) {
 			return c.json(
-				{
-					error: error instanceof Error ? error.message : 'Unknown error',
-					code: 'UNEXPECTED_ERROR',
-				},
-				500
+				createResponse(true, 'Login successful', 'SUCCESS', {
+					access_token: token,
+					token_type: 'Bearer',
+					expires_in: EXPIRES_IN,
+				})
 			);
+		} catch (error) {
+			if (error instanceof ZodError) {
+				const issues = error.errors.map((err) => err.message).join(', ');
+				return c.json(createResponse(false, `Validation error: ${issues}`, 'VALIDATION_ERROR'), 400);
+			}
+			return c.json(createResponse(false, error instanceof Error ? error.message : 'Unknown error', 'UNEXPECTED_ERROR'), 500);
 		}
 	},
 	refreshToken: async ({ refreshToken }: { refreshToken: string }, c: Context) => {

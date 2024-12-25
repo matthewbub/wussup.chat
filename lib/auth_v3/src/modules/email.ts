@@ -5,18 +5,14 @@ import { Resend } from 'resend';
 const VERIFICATION_EXPIRES_IN = 24 * 60 * 60; // 24 hours
 
 const emailService = {
-	/**
-	 * sends an email using the resend service
-	 * @param {object} params - email parameters
-	 * @param {string} params.to - recipient email address
-	 * @param {string} params.subject - email subject
-	 * @param {string} params.body - email body content
-	 * @param {Context} c - hono context containing environment variables
-	 * @returns {Promise<object>} response from resend api
-	 * @throws {Error} if email sending fails
-	 */
+	// sends an email using the resend service
 	sendEmail: async ({ to, subject, body }: { to: string; subject: string; body: string }, c: Context) => {
 		try {
+			if (env(c).ENV === 'test') {
+				// mock response in test mode
+				return { data: { message: 'Email sent (mocked)' } };
+			}
+
 			const resend = new Resend(c.env.RESEND_KEY);
 			const from = `${c.env.NO_REPLY_NAME} <${c.env.NO_REPLY_EMAIL}>`;
 			const html = `<p>${body}</p>`;
@@ -41,15 +37,7 @@ const emailService = {
 			throw new Error(`Failed to send email: ${errorMessage} ${errorStack}`);
 		}
 	},
-	/**
-	 * sends a verification email to a user
-	 * @param {object} params - verification email parameters
-	 * @param {string} params.to - recipient email address
-	 * @param {object} params.user - user object containing id
-	 * @param {Context} c - hono context containing environment variables and db
-	 * @returns {Promise<object>} email sending result
-	 * @throws {Error} if verification token creation or email sending fails
-	 */
+	// sends a verification email to a user
 	sendVerificationEmail: async ({ to, user }: { to: string; user: any }, c: Context) => {
 		try {
 			const db = env(c).DB;
@@ -88,10 +76,9 @@ const emailService = {
 				c
 			);
 
-			// Return token in development environment
 			return {
 				...emailResult,
-				...(env(c).ENV === 'development' && { verificationToken }),
+				...(env(c).ENV === 'test' && { verificationToken }),
 			};
 		} catch (error) {
 			const errorMessage = error instanceof Error ? error.message : 'Unknown error';
