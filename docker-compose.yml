@@ -32,7 +32,7 @@ services:
 
   pdf-service:
     build:
-      context: ./lib/pdf-service
+      context: ./lib/pdf_service
       dockerfile: Dockerfile
     ports:
       - "8082:8082"
