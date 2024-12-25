@@ -8,6 +8,34 @@ const EXPIRES_IN = 60 * 60; // 1 hour
 const STATUS_PENDING = 'pending';
 const STATUS_ACTIVE = 'active';
 
+// error codes
+const ERROR_CODES = {
+	INVALID_EMAIL_FORMAT: 'INVALID_EMAIL_FORMAT',
+	WEAK_PASSWORD: 'WEAK_PASSWORD',
+	PASSWORDS_DO_NOT_MATCH: 'PASSWORDS_DO_NOT_MATCH',
+	EMAIL_ALREADY_IN_USE: 'EMAIL_ALREADY_IN_USE',
+	USER_CREATION_FAILED: 'USER_CREATION_FAILED',
+	PASSWORD_HISTORY_ERROR: 'PASSWORD_HISTORY_ERROR',
+	EMAIL_SEND_ERROR: 'EMAIL_SEND_ERROR',
+	TOKEN_GENERATION_ERROR: 'TOKEN_GENERATION_ERROR',
+	UNEXPECTED_ERROR: 'UNEXPECTED_ERROR',
+	SUCCESS: 'SUCCESS',
+};
+
+// error messages
+const ERROR_MESSAGES = {
+	INVALID_EMAIL_FORMAT: 'Invalid email format',
+	WEAK_PASSWORD: 'Password must be at least 8 characters long',
+	PASSWORDS_DO_NOT_MATCH: 'Passwords do not match',
+	EMAIL_ALREADY_IN_USE: 'Email already in use',
+	USER_CREATION_FAILED: 'Failed to create user',
+	PASSWORD_HISTORY_ERROR: 'Error adding password to history',
+	EMAIL_SEND_ERROR: 'Failed to send verification email',
+	TOKEN_GENERATION_ERROR: 'Error generating token',
+	UNEXPECTED_ERROR: 'Unknown error',
+	SUCCESS: 'User created successfully',
+};
+
 interface CommonAuthResponse {
 	access_token: string;
 	token_type: string;
@@ -31,12 +59,23 @@ interface ResendEmailResponse {
 
 const publicService = {
 	signUp: async ({ email, password, confirmPassword }: { email: string; password: string; confirmPassword: string }, c: Context) => {
-		if (password !== confirmPassword) {
-			return c.json({ error: 'Passwords do not match' }, 400);
-		}
-
 		const db = env(c).DB;
+
+		// standard response format with error code
+		const createResponse = (success: boolean, message: string, code: string, data: any = null) => ({
+			success,
+			message,
+			code,
+			data,
+		});
+
 		try {
+			// check for existing email
+			const existingUserResult = await db.prepare('SELECT id FROM users WHERE email = ?').bind(email).run();
+			if (existingUserResult.success && existingUserResult.results?.length) {
+				return c.json(createResponse(false, ERROR_MESSAGES.EMAIL_ALREADY_IN_USE, ERROR_CODES.EMAIL_ALREADY_IN_USE), 409);
+			}
+
 			const hashedPassword = await passwordService.hashPassword(password);
 			const d1Result: D1Result = await db
 				.prepare('INSERT INTO users (id, email, username, password, status) VALUES (?, ?, ?, ?, ?) RETURNING id, email, username')
@@ -46,24 +85,27 @@ const publicService = {
 				.run();
 
 			if (!d1Result.success) {
-				return c.json({ error: d1Result.error }, 500);
+				return c.json(createResponse(false, ERROR_MESSAGES.USER_CREATION_FAILED, ERROR_CODES.USER_CREATION_FAILED, d1Result.error), 500);
 			}
 
 			const user = d1Result.results?.[0] as { id: string };
 			if (!user) {
-				throw new Error('Failed to create user');
+				throw new Error(ERROR_MESSAGES.USER_CREATION_FAILED);
 			}
 
 			// add the password to the password history
 			const passwordHistoryResult = await passwordService.addToPasswordHistory({ userId: user.id, passwordHash: hashedPassword }, c);
 			if (passwordHistoryResult instanceof Error) {
-				return c.json({ error: passwordHistoryResult.message }, 500);
+				return c.json(createResponse(false, ERROR_MESSAGES.PASSWORD_HISTORY_ERROR, ERROR_CODES.PASSWORD_HISTORY_ERROR), 500);
 			}
 
 			// this is the point at which we send the initial verification email
 			const emailResult = await emailService.sendVerificationEmail({ to: email, user }, c);
 			if (emailResult instanceof Error || emailResult?.error?.message) {
-				return c.json({ error: emailResult?.error?.message }, 500);
+				return c.json(
+					createResponse(false, emailResult?.error?.message || ERROR_MESSAGES.EMAIL_SEND_ERROR, ERROR_CODES.EMAIL_SEND_ERROR),
+					500
+				);
 			}
 
 			// create a "payload" object
@@ -78,19 +120,22 @@ const publicService = {
 			// we need the auth key to decrypt at validation time
 			const token = await jwtService.assignRefreshToken(c, payload);
 			if (token instanceof Error) {
-				// throw new Error(token.message);
-				return c.json({ error: token.message }, 500);
+				return c.json(createResponse(false, token.message, ERROR_CODES.TOKEN_GENERATION_ERROR), 500);
 			}
 
-			// standardized OAuth-style response
-			return c.json<SignUpResponse>({
-				access_token: token,
-				token_type: 'Bearer',
-				expires_in: EXPIRES_IN,
-				...(env(c).ENV === 'development' && { verificationToken: emailResult.verificationToken }),
-			});
+			return c.json(
+				createResponse(true, ERROR_MESSAGES.SUCCESS, ERROR_CODES.SUCCESS, {
+					access_token: token,
+					token_type: 'Bearer',
+					expires_in: EXPIRES_IN,
+					...(env(c).ENV === 'development' && { verificationToken: emailResult.verificationToken }),
+				})
+			);
 		} catch (error) {
-			return c.json({ error: error instanceof Error ? error.message : 'Unknown error' }, 500);
+			return c.json(
+				createResponse(false, error instanceof Error ? error.message : ERROR_MESSAGES.UNEXPECTED_ERROR, ERROR_CODES.UNEXPECTED_ERROR),
+				500
+			);
 		}
 	},
 	login: async ({ email, password }: { email: string; password: string }, c: Context) => {

@@ -23,10 +23,15 @@ describe("Public Auth Endpoints", () => {
     const data = await response.json();
     expect(response.status).toBe(200);
     expect(data).toMatchObject({
-      access_token: expect.any(String),
-      token_type: "Bearer",
-      expires_in: expect.any(Number),
-      verificationToken: expect.any(String),
+      success: true,
+      code: "SUCCESS",
+      message: "User created successfully",
+      data: {
+        access_token: expect.any(String),
+        token_type: "Bearer",
+        expires_in: expect.any(Number),
+        verificationToken: expect.any(String),
+      },
     });
   });
 
