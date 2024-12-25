@@ -7,52 +7,26 @@ import TabItem from '@theme/TabItem';
 
 # Public API
 
-This is a document that covers alot of ground in our internal authentication system. This is a good point of refernce if you are someone who is needing to work in this functional area. We tend to keep it locked down so this is probably the most your going to see on it. We'll try to be comprehensive.
+API routes that are listed with the `/v3/public` prefix do not require a Bearer token but generally revolve around gaining a valid token.
 
-What you can expect to see in this service is a comprehensive jwt based authentication system. This service is hosted directly on cloudflare.
-
-The system as it is, in-progress
-
-```sh
-/* Public Routes (No Auth Required) ------------------------------*/
-OK    POST    /v3/public/sign-up             // new user registration returns JWT
-OK    POST    /v3/public/login               // user login, returns JWT
-OK    POST    /v3/public/refresh-token       // refresh access token using refresh token
-OK    POST    /v3/public/forgot-password     // initiate password reset
-OK    POST    /v3/public/reset-password      // complete password reset with token
-OK    GET     /v3/public/verify-email/:token // verify email with token
-OK    POST    /v3/public/resend-verification // resend verification email
-
-/* Protected Routes (Valid JWT Required) ---------------------------------*/
-TODO  POST    /v3/auth/logout              // invalidate current token
-TODO  PUT     /v3/auth/change-password     // change password while logged in
-TODO  GET     /v3/auth/me                  // get current user info
-TODO  PUT     /v3/auth/me                  // update user info
-TODO  DELETE  /v3/auth/me                  // delete account
-
-/* Admin Routes (Admin JWT Required) -----------------------------*/
-TODO  GET     /v3/auth/users               // list all users
-TODO  GET     /v3/auth/users/:id           // get specific user
-TODO  PUT     /v3/auth/users/:id/status    // modify user status (suspend/activate)
-TODO  DELETE  /v3/auth/users/:id           // delete user account
-```
-
-## Sign Up
+## POST `/v3/public/sign-up`
 
 To sign up for a new account, you just need to pass a unique email and strong password (twice)
 
-### Request
+**Request**
 
 - **Endpoint:** `POST /v3/public/sign-up`
 - **Content-Type:** `application/json`
 
 The sign-up endpoint requires three fields to create a new account. Make sure your password meets the strength requirements.
 
-### Request Body
+**Request Body**
 
-- **email** (string): User's email address. Must be valid format and maximum 255 characters.
-- **password** (string): Password must be 8-20 characters with at least one uppercase letter, lowercase letter, number, and special character (!@#$%^&\*).
-- **confirmPassword** (string): Must match exactly with the password field.
+| Field               | Type   | Description                                                                                                                       |
+| ------------------- | ------ | --------------------------------------------------------------------------------------------------------------------------------- |
+| **email**           | string | User's email address. Must be valid format and maximum 255 characters.                                                            |
+| **password**        | string | Password must be 8-20 characters with at least one uppercase letter, lowercase letter, number, and special character (!@#$%^&\*). |
+| **confirmPassword** | string | Must match exactly with the password field.                                                                                       |
 
 <Tabs>
   <TabItem value="curl" label="cURL">
@@ -113,7 +87,7 @@ The sign-up endpoint requires three fields to create a new account. Make sure yo
   </TabItem>
 </Tabs>
 
-### Response
+**Response**
 
 **Success Response:** `200 OK`
 
@@ -140,19 +114,21 @@ When we send this request, theres quite a few steps happening. Here's the genera
 7. Use `jwtService.assignRefreshToken` to create refresh token
 8. Send `SignUpResponse`
 
-## Login
+## POST `/v3/public/login`
 
 To login to an existing account, provide your email and password.
 
-### Request
+**Request**
 
 - **Endpoint:** `POST /v3/public/login`
 - **Content-Type:** `application/json`
 
-### Request Parameters
+**Request Parameters**
 
-- **email** (string): Your registered email address.
-- **password** (string): Your account password.
+| Parameter | Type   | Description                   |
+| --------- | ------ | ----------------------------- |
+| email     | string | Your registered email address |
+| password  | string | Your account password         |
 
 <Tabs>
   <TabItem value="curl" label="cURL">
@@ -216,7 +192,7 @@ http.Post(
   </TabItem>
 </Tabs>
 
-### Response
+**Response**
 
 **Success Response:** `200 OK`
 
@@ -243,23 +219,27 @@ When we send this request, the following steps occur:
 
 **Error Cases:**
 
-- Account deleted: "Account has been deleted"
-- Account suspended: "Account has been suspended. Please contact support."
-- Account locked: "Account is temporarily locked. Please reset your password via email."
-- Invalid credentials: Increments failed login attempts
+| Error Case          | Message                                                                |
+| ------------------- | ---------------------------------------------------------------------- |
+| Account deleted     | "Account has been deleted"                                             |
+| Account suspended   | "Account has been suspended. Please contact support."                  |
+| Account locked      | "Account is temporarily locked. Please reset your password via email." |
+| Invalid credentials | Increments failed login attempts                                       |
 
-## Refresh Token
+## POST `/v3/public/refresh-token`
 
 Use this endpoint to obtain a new access token using your refresh token.
 
-### Request
+**Request**
 
 - **Endpoint:** `POST /v3/public/refresh-token`
 - **Content-Type:** `application/json`
 
-### Request Parameters
+**Request Parameters**
 
-- **refreshToken** (string): The refresh token received from a previous login or token refresh.
+| Parameter    | Type   | Description                                                       |
+| ------------ | ------ | ----------------------------------------------------------------- |
+| refreshToken | string | The refresh token received from a previous login or token refresh |
 
 <Tabs>
   <TabItem value="curl" label="cURL">
@@ -319,7 +299,7 @@ http.Post(
   </TabItem>
 </Tabs>
 
-### Response
+**Response**
 
 **Success Response:** `200 OK`
 
@@ -344,24 +324,28 @@ When we send this request, the following steps occur:
 
 **Error Cases:**
 
-- Invalid refresh token: "Invalid refresh token"
-- Expired token: "Invalid refresh token"
-- Revoked token: "Invalid refresh token"
-- Failed token rotation: "Failed to revoke refresh token"
+| Error Case            | Message                          |
+| --------------------- | -------------------------------- |
+| Invalid refresh token | "Invalid refresh token"          |
+| Expired token         | "Invalid refresh token"          |
+| Revoked token         | "Invalid refresh token"          |
+| Failed token rotation | "Failed to revoke refresh token" |
 
-## Verify Email
+## GET `/v3/public/verify-email/:token`
 
 Use this endpoint to verify a user's email address using the token sent to their email.
 
-### Request
+**Request**
 
 - **Endpoint:** `GET /v3/public/verify-email/:token`
 - **Content-Type:** `application/json`
 
-### Request Parameters
+**Request Parameters**
 
-- **token** (string): The verification token received in the email.
-- **email** (string): The email address being verified.
+| Parameter | Type   | Description                                   |
+| --------- | ------ | --------------------------------------------- |
+| token     | string | The verification token received in the email. |
+| email     | string | The email address being verified.             |
 
 <Tabs>
   <TabItem value="curl" label="cURL">
@@ -408,7 +392,7 @@ http.Get("http://example.com/v3/public/verify-email?token=verification-token&ema
   </TabItem>
 </Tabs>
 
-### Response
+**Response**
 
 **Success Response:** `200 OK`
 
@@ -433,22 +417,26 @@ When we send this request, the following steps occur:
 
 **Error Cases:**
 
-- Invalid token: "Invalid verification token"
-- Expired token: "Token expired or already used"
-- Database error: "Failed to verify email"
+| Error Case     | Message                         |
+| -------------- | ------------------------------- |
+| Invalid token  | "Invalid verification token"    |
+| Expired token  | "Token expired or already used" |
+| Database error | "Failed to verify email"        |
 
-## Forgot Password
+## POST `/v3/public/forgot-password`
 
 Use this endpoint to initiate the password reset process. A reset token will be sent to the provided email address if the account exists.
 
-### Request
+**Request**
 
 - **Endpoint:** `POST /v3/public/forgot-password`
 - **Content-Type:** `application/json`
 
-### Request Body
+**Request Body**
 
-- **email** (string): The email address associated with the account.
+| Field | Type   | Description                                   |
+| ----- | ------ | --------------------------------------------- |
+| email | string | The email address associated with the account |
 
 <Tabs>
   <TabItem value="curl" label="cURL">
@@ -501,7 +489,7 @@ Use this endpoint to initiate the password reset process. A reset token will be 
   </TabItem>
 </Tabs>
 
-### Response
+**Response**
 
 **Success Response:** `200 OK`
 
@@ -529,30 +517,36 @@ When we send this request, the following steps occur:
 
 **Error Cases:**
 
-- Account not eligible: "Account is not eligible for password reset"
-- Token creation failure: "Failed to create reset token"
-- Email sending failure: Internal server error
-- Database errors: Internal server error
+| Error Case             | Message                                      |
+| ---------------------- | -------------------------------------------- |
+| Account not eligible   | "Account is not eligible for password reset" |
+| Token creation failure | "Failed to create reset token"               |
+| Email sending failure  | Internal server error                        |
+| Database errors        | Internal server error                        |
 
-**Security Notes:**
+:::info
 
 - Response message is intentionally vague to prevent email enumeration
 - Reset tokens expire after 1 hour
 - Reset links are single-use only
 
-## Reset Password
+:::
+
+## POST `/reset-password`
 
 Use this endpoint to complete the password reset process using the token received via email.
 
-### Request
+**Request**
 
 - **Endpoint:** `POST /reset-password`
 - **Content-Type:** `application/json`
 
-### Request Parameters
+**Request Parameters**
 
-- **token** (string): The reset token received from the forgot password email.
-- **password** (string): The new password. Must meet password strength requirements.
+| Parameter | Type   | Description                                                 |
+| --------- | ------ | ----------------------------------------------------------- |
+| token     | string | The reset token received from the forgot password email.    |
+| password  | string | The new password. Must meet password strength requirements. |
 
 <Tabs>
   <TabItem value="curl" label="cURL">
@@ -616,7 +610,7 @@ http.Post(
   </TabItem>
 </Tabs>
 
-### Response
+**Response**
 
 **Success Response:** `200 OK`
 
@@ -647,30 +641,36 @@ When we send this request, the following steps occur:
 
 **Error Cases:**
 
-- Invalid/expired token: "Invalid or expired reset token"
-- Account not eligible: "Account is not eligible for password reset"
-- Password reuse: "Cannot reuse a recent password"
-- Transaction failure: "Failed to update password"
+| Error Case            | Message                                      |
+| --------------------- | -------------------------------------------- |
+| Invalid/expired token | "Invalid or expired reset token"             |
+| Account not eligible  | "Account is not eligible for password reset" |
+| Password reuse        | "Cannot reuse a recent password"             |
+| Transaction failure   | "Failed to update password"                  |
 
-**Security Notes:**
+:::info
 
 - Password must meet strength requirements
 - Previous passwords cannot be reused
 - Reset tokens are single-use only
 - Account status is verified before allowing reset
 
-## Resend Verification Email
+:::
+
+## POST `/v3/public/resend-verification`
 
 Use this endpoint to request a new verification email if the original one expired or was lost.
 
-### Request
+**Request**
 
 - **Endpoint:** `POST /v3/public/resend-verification`
 - **Content-Type:** `application/json`
 
-### Request Parameters
+**Request Parameters**
 
-- **email** (string): The email address that needs verification.
+| Parameter | Type   | Description                               |
+| --------- | ------ | ----------------------------------------- |
+| email     | string | The email address that needs verification |
 
 <Tabs>
   <TabItem value="curl" label="cURL">
@@ -730,7 +730,7 @@ http.Post(
   </TabItem>
 </Tabs>
 
-### Response
+**Response**
 
 **Success Response:** `200 OK`
 
@@ -759,9 +759,11 @@ When we send this request, the following steps occur:
 - Rate limit: "Please wait 5 minutes before requesting another verification email"
 - Email sending failure: "Failed to send verification email"
 
-**Security Notes:**
+:::info
 
 - Rate limiting prevents abuse
 - Same response is returned whether email exists or not
 - Only pending accounts can receive verification emails
 - Previous verification tokens remain valid until used or expired
+
+:::

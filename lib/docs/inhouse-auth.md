@@ -1,4 +1,7 @@
-# In-house Authentication System
+# Legacy In-house Authentication System
+
+> LEGACY SYSTEM
+> We're using the `/lib/auth` service now
 
 This document describes the database schema for the authentication system.
 

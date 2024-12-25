@@ -213,13 +213,15 @@ When we send this request, the following steps occur:
 - Invalid new password: Various password strength requirement messages
 - Transaction failure: "Failed to update password"
 
-**Security Notes:**
+:::info
 
 - Requires current password verification
 - Enforces password strength requirements
 - Prevents password reuse
 - Revokes all active sessions (requires re-login)
 - Transaction ensures atomic updates
+
+:::
 
 ## Get Current User
 
@@ -387,8 +389,6 @@ client.Do(req)
 
   </TabItem>
 </Tabs>
-
-### Response
 
 **Success Response:** `200 OK`
 
