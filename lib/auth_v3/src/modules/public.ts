@@ -14,7 +14,10 @@ interface CommonAuthResponse {
 	expires_in: number;
 }
 
-export interface SignUpResponse extends CommonAuthResponse {}
+export interface SignUpResponse extends CommonAuthResponse {
+	verificationToken?: string; // Optional since it's only included in development
+}
+
 export interface LoginResponse extends CommonAuthResponse {}
 interface RefreshTokenResponse extends CommonAuthResponse {}
 interface VerifyEmailResponse {
@@ -75,7 +78,6 @@ const publicService = {
 			// we need the auth key to decrypt at validation time
 			const token = await jwtService.assignRefreshToken(c, payload);
 			if (token instanceof Error) {
-				console.log('token failed', token);
 				// throw new Error(token.message);
 				return c.json({ error: token.message }, 500);
 			}
@@ -85,6 +87,7 @@ const publicService = {
 				access_token: token,
 				token_type: 'Bearer',
 				expires_in: EXPIRES_IN,
+				...(env(c).ENV === 'development' && { verificationToken: emailResult.verificationToken }),
 			});
 		} catch (error) {
 			return c.json({ error: error instanceof Error ? error.message : 'Unknown error' }, 500);
@@ -100,7 +103,7 @@ const publicService = {
 				.run();
 
 			if (!d1Result.success) {
-				return c.json({ error: d1Result.error }, 500);
+				return c.json({ error: d1Result.error, code: 'DB_ERROR' }, 500);
 			}
 
 			const user = d1Result.results?.[0] as {
@@ -112,26 +115,39 @@ const publicService = {
 			};
 
 			if (!user) {
-				throw new Error('User not found');
+				return c.json({ error: 'Invalid email or password', code: 'USER_NOT_FOUND' }, 404);
 			}
 
 			// Check account status
 			if (user.status === 'deleted') {
-				throw new Error('Account has been deleted');
+				return c.json({ error: 'Account has been deleted', code: 'ACCOUNT_DELETED' }, 403);
 			}
 
 			if (user.status === 'suspended') {
-				throw new Error('Account has been suspended. Please contact support.');
+				return c.json({ error: 'Account has been suspended. Please contact support.', code: 'ACCOUNT_SUSPENDED' }, 403);
 			}
 
 			// Check if account is locked
 			if (user.locked_until && new Date(user.locked_until) > new Date() && user.status === 'temporarily_locked') {
-				throw new Error('Account is temporarily locked. Please reset your password via email.');
+				return c.json(
+					{
+						error: 'Account is temporarily locked. Please reset your password via email.',
+						code: 'ACCOUNT_LOCKED',
+						lockedUntil: user.locked_until,
+					},
+					403
+				);
 			}
 
 			const loginAttemptResult = await passwordService.handleLoginAttempt({ user, passwordAttempt: password }, c);
 			if (loginAttemptResult instanceof Error || loginAttemptResult.error) {
-				return c.json({ error: loginAttemptResult.error }, 500);
+				return c.json(
+					{
+						error: loginAttemptResult instanceof Error ? loginAttemptResult.message : loginAttemptResult.error,
+						code: 'LOGIN_ATTEMPT_FAILED',
+					},
+					401
+				);
 			}
 
 			const payload = {
@@ -141,7 +157,7 @@ const publicService = {
 
 			const token = await jwtService.assignRefreshToken(c, payload);
 			if (token instanceof Error) {
-				return c.json({ error: token.message }, 500);
+				return c.json({ error: token.message, code: 'TOKEN_GENERATION_FAILED' }, 500);
 			}
 
 			return c.json<LoginResponse>({
@@ -150,7 +166,13 @@ const publicService = {
 				expires_in: EXPIRES_IN,
 			});
 		} catch (error) {
-			return c.json({ error: error instanceof Error ? error.message : 'Unknown error' }, 500);
+			return c.json(
+				{
+					error: error instanceof Error ? error.message : 'Unknown error',
+					code: 'UNEXPECTED_ERROR',
+				},
+				500
+			);
 		}
 	},
 	refreshToken: async ({ refreshToken }: { refreshToken: string }, c: Context) => {
@@ -199,47 +221,52 @@ const publicService = {
 	},
 	verifyEmail: async ({ token }: { token: string }, c: Context) => {
 		const db = env(c).DB;
-		// check for valid token of type 'email' that hasn't been used and hasn't expired
-		const d1Result: D1Result = await db
-			.prepare(
+
+		try {
+			// check for valid token of type 'email' that hasn't been used and hasn't expired
+			const d1Result: D1Result = await db
+				.prepare(
+					`
+					SELECT * FROM verification_tokens 
+					WHERE token = ? 
+					AND type = 'email' 
+					AND used_at IS NULL 
+					AND expires_at > CURRENT_TIMESTAMP
 				`
-				SELECT * FROM verification_tokens 
-				WHERE token = ? 
-				AND type = 'email' 
-				AND used_at IS NULL 
-				AND expires_at > CURRENT_TIMESTAMP
-			`
-			)
-			.bind(token)
-			.run();
+				)
+				.bind(token)
+				.run();
 
-		if (!d1Result.success) {
-			return c.json({ error: 'Invalid verification token' }, 401);
+			if (!d1Result.success) {
+				return c.json({ error: 'Invalid verification token', code: 'DB_ERROR' }, 401);
+			}
+
+			const tokenData = d1Result.results?.[0] as {
+				expires_at: string;
+				user_id: string;
+			};
+
+			if (!tokenData) {
+				return c.json({ error: 'Token expired or already used', code: 'TOKEN_INVALID' }, 401);
+			}
+
+			// start a transaction for updating both user status and token usage
+			const transaction = db.batch([
+				db.prepare('UPDATE users SET status = ?, email_verified = true WHERE id = ?').bind(STATUS_ACTIVE, tokenData.user_id),
+				db.prepare('UPDATE verification_tokens SET used_at = CURRENT_TIMESTAMP WHERE token = ?').bind(token),
+			]);
+
+			const results = await transaction;
+			const [updateUserResult, updateTokenResult] = results;
+
+			if (!updateUserResult.success || !updateTokenResult.success) {
+				return c.json({ error: 'Failed to verify email', code: 'TRANSACTION_FAILED' }, 500);
+			}
+
+			return c.json<VerifyEmailResponse>({ success: true, message: 'Email verified successfully' });
+		} catch (error) {
+			return c.json({ error: error instanceof Error ? error.message : 'Unknown error', code: 'UNEXPECTED_ERROR' }, 500);
 		}
-
-		const tokenData = d1Result.results?.[0] as {
-			expires_at: string;
-			user_id: string;
-		};
-
-		if (!tokenData) {
-			return c.json({ error: 'Token expired or already used' }, 401);
-		}
-
-		// start a transaction for updating both user status and token usage
-		const transaction = db.batch([
-			db.prepare('UPDATE users SET status = ?, email_verified_at = CURRENT_TIMESTAMP WHERE id = ?').bind(STATUS_ACTIVE, tokenData.user_id),
-			db.prepare('UPDATE verification_tokens SET used_at = CURRENT_TIMESTAMP WHERE token = ?').bind(token),
-		]);
-
-		const results = await transaction;
-		const [updateUserResult, updateTokenResult] = results;
-
-		if (!updateUserResult.success || !updateTokenResult.success) {
-			return c.json({ error: 'Failed to verify email' }, 500);
-		}
-
-		return c.json<VerifyEmailResponse>({ success: true, message: 'Email verified successfully' });
 	},
 	forgotPassword: async ({ email }: { email: string }, c: Context) => {
 		try {

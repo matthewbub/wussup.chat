@@ -79,8 +79,8 @@ app.post('/v3/public/refresh-token', zValidator('json', responseService.refreshS
 });
 
 app.post('/v3/public/verify-email', zValidator('json', responseService.verifyEmailSchema), async (c) => {
-	const { token, email } = await c.req.json();
-	const result = await publicService.verifyEmail({ token, email }, c);
+	const { token } = await c.req.json();
+	const result = await publicService.verifyEmail({ token }, c);
 	return result;
 });
 

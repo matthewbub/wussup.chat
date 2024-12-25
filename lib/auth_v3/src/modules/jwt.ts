@@ -10,13 +10,28 @@ const jwtService = {
 				throw new Error('AUTH_KEY environment variable not found');
 			}
 
-			const token = await sign(payload, authKey);
-			const expiresAt = new Date(payload.exp * 1000).toISOString();
-
+			let token;
 			const db = env(c).DB;
 			if (!db) {
 				throw new Error('Database connection not found in context');
 			}
+
+			// Attempt to generate a unique token
+			for (let attempts = 0; attempts < 5; attempts++) {
+				token = await sign(payload, authKey);
+
+				const existingTokenResult: D1Result = await db.prepare('SELECT token FROM refresh_tokens WHERE token = ?').bind(token).run();
+
+				if (!existingTokenResult.success || !existingTokenResult.results?.length) {
+					break; // Token is unique
+				}
+			}
+
+			if (!token) {
+				throw new Error('Failed to generate a unique token');
+			}
+
+			const expiresAt = new Date(payload.exp * 1000).toISOString();
 
 			const d1Result: D1Result = await db
 				.prepare('INSERT INTO refresh_tokens (token, user_id, expires_at) VALUES (?, ?, ?)')
@@ -112,7 +127,6 @@ const jwtService = {
 				.run();
 			return d1Result.success;
 		} catch (error) {
-			console.error(error);
 			return false;
 		}
 	},
@@ -125,7 +139,6 @@ const jwtService = {
 			const decoded = await decode(token);
 			return decoded.payload as { id: string; exp: number };
 		} catch (error) {
-			console.error('Token decode error:', error);
 			return null;
 		}
 	},

@@ -88,7 +88,11 @@ const emailService = {
 				c
 			);
 
-			return emailResult;
+			// Return token in development environment
+			return {
+				...emailResult,
+				...(env(c).ENV === 'development' && { verificationToken }),
+			};
 		} catch (error) {
 			const errorMessage = error instanceof Error ? error.message : 'Unknown error';
 			throw new Error(`Failed to send verification email: ${errorMessage}`);

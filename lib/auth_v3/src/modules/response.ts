@@ -44,7 +44,6 @@ const responseService = {
 	}),
 	verifyEmailSchema: z.object({
 		token: z.string().min(1).max(255),
-		email: z.string().email().max(255),
 	}),
 	forgotPasswordSchema: z.object({
 		email: z.string().email().max(255),
