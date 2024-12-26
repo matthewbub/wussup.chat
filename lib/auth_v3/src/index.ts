@@ -66,37 +66,37 @@ app.post('/v3/public/sign-up', async (c) => {
 	return result;
 });
 
-app.post('/v3/public/login', zValidator('json', responseService.loginSchema), async (c) => {
+app.post('/v3/public/login', async (c) => {
 	const { email, password } = await c.req.json();
 	const result = await publicService.login({ email, password }, c);
 	return result;
 });
 
-app.post('/v3/public/refresh-token', zValidator('json', responseService.refreshSchema), async (c) => {
+app.post('/v3/public/refresh-token', async (c) => {
 	const { refreshToken } = await c.req.json();
 	const result = await publicService.refreshToken({ refreshToken }, c);
 	return result;
 });
 
-app.post('/v3/public/verify-email', zValidator('json', responseService.verifyEmailSchema), async (c) => {
+app.post('/v3/public/verify-email', async (c) => {
 	const { token } = await c.req.json();
 	const result = await publicService.verifyEmail({ token }, c);
 	return result;
 });
 
-app.post('/v3/public/forgot-password', zValidator('json', responseService.forgotPasswordSchema), async (c) => {
+app.post('/v3/public/forgot-password', async (c) => {
 	const { email } = await c.req.json();
 	const result = await publicService.forgotPassword({ email }, c);
 	return result;
 });
 
-app.post('/v3/public/reset-password', zValidator('json', responseService.resetPasswordSchema), async (c) => {
-	const { token, password } = await c.req.json();
-	const result = await publicService.resetPassword({ token, password }, c);
+app.post('/v3/public/reset-password', async (c) => {
+	const { token, password, confirmPassword } = await c.req.json();
+	const result = await publicService.resetPassword({ token, password, confirmPassword }, c);
 	return result;
 });
 
-app.post('/v3/public/resend-verification-email', zValidator('json', responseService.resendVerificationEmailSchema), async (c) => {
+app.post('/v3/public/resend-verification-email', async (c) => {
 	const { email } = await c.req.json();
 	const result = await publicService.resendVerificationEmail({ email }, c);
 	return result;

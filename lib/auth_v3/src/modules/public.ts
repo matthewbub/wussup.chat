@@ -60,19 +60,27 @@ interface ResendEmailResponse {
 }
 
 // standard response format with error code
-const createResponse = (success: boolean, message: string, code: string, data: any = null) => ({
+export const createResponse = (success: boolean, message: string, code: string, data: any = null) => ({
 	success,
 	message,
 	code,
 	data,
 });
 
+export function commonErrorHandler(error: unknown, c: Context) {
+	if (error instanceof ZodError) {
+		console.log(error);
+		const issues = error.errors.map((err) => err.message).join(', ');
+		return c.json(createResponse(false, `Validation error: ${issues}`, 'VALIDATION_ERROR'), 400);
+	}
+	return c.json(createResponse(false, error instanceof Error ? error.message : 'Unknown error', 'UNEXPECTED_ERROR'), 500);
+}
+
 const publicService = {
 	signUp: async ({ email, password, confirmPassword }: { email: string; password: string; confirmPassword: string }, c: Context) => {
 		const db = env(c).DB;
 
 		try {
-			// Zod validation logic here
 			responseService.signUpSchema.parse({ email, password, confirmPassword });
 
 			// check for existing email
@@ -137,21 +145,13 @@ const publicService = {
 				})
 			);
 		} catch (error) {
-			if (error instanceof ZodError) {
-				const issues = error.errors.map((err) => err.message).join(', ');
-				return c.json(createResponse(false, `Validation error: ${issues}`, 'VALIDATION_ERROR'), 400);
-			}
-			return c.json(
-				createResponse(false, error instanceof Error ? error.message : ERROR_MESSAGES.UNEXPECTED_ERROR, ERROR_CODES.UNEXPECTED_ERROR),
-				500
-			);
+			return commonErrorHandler(error, c);
 		}
 	},
 	login: async ({ email, password }: { email: string; password: string }, c: Context) => {
 		const db = env(c).DB;
 
 		try {
-			// zod validation logic here
 			responseService.loginSchema.parse({ email, password });
 
 			const d1Result: D1Result = await db
@@ -224,61 +224,67 @@ const publicService = {
 				})
 			);
 		} catch (error) {
-			if (error instanceof ZodError) {
-				const issues = error.errors.map((err) => err.message).join(', ');
-				return c.json(createResponse(false, `Validation error: ${issues}`, 'VALIDATION_ERROR'), 400);
-			}
-			return c.json(createResponse(false, error instanceof Error ? error.message : 'Unknown error', 'UNEXPECTED_ERROR'), 500);
+			return commonErrorHandler(error, c);
 		}
 	},
 	refreshToken: async ({ refreshToken }: { refreshToken: string }, c: Context) => {
 		const db = env(c).DB;
 
-		const d1Result: D1Result = await db.prepare('SELECT * FROM refresh_tokens WHERE token = ?').bind(refreshToken).run();
+		try {
+			responseService.refreshSchema.parse({ refreshToken });
 
-		if (!d1Result.success) {
-			return c.json({ error: 'Invalid refresh token' }, 401);
+			const d1Result: D1Result = await db.prepare('SELECT * FROM refresh_tokens WHERE token = ?').bind(refreshToken).run();
+
+			if (!d1Result.success) {
+				return c.json(createResponse(false, 'Invalid refresh token', 'INVALID_REFRESH_TOKEN'), 401);
+			}
+
+			const tokenData = d1Result.results?.[0] as { expires_at: string; revoked_at: string | null; user_id: string };
+			if (!tokenData) {
+				return c.json(createResponse(false, 'Invalid refresh token', 'INVALID_REFRESH_TOKEN'), 401);
+			}
+
+			// verify the refresh token
+			const isValid = await jwtService.validateTokenAndUser(tokenData, c);
+			if (!isValid) {
+				return c.json(createResponse(false, 'Invalid refresh token', 'INVALID_REFRESH_TOKEN'), 401);
+			}
+
+			// revoke the old refresh token first
+			const revoked = await jwtService.revokeRefreshToken(refreshToken, c);
+			if (!revoked) {
+				return c.json(createResponse(false, 'Failed to revoke refresh token', 'REVOKE_FAILED'), 500);
+			}
+
+			const payload = {
+				id: tokenData.user_id,
+				exp: Math.floor(Date.now() / 1000) + EXPIRES_IN,
+			};
+
+			// create a new access token
+			const newToken = await jwtService.assignRefreshToken(c, payload);
+			if (newToken instanceof Error) {
+				return c.json(createResponse(false, newToken.message, 'TOKEN_GENERATION_ERROR'), 500);
+			}
+
+			// return the new access token
+			return c.json(
+				createResponse(true, 'Token refreshed successfully', 'SUCCESS', {
+					access_token: newToken,
+					token_type: 'Bearer',
+					expires_in: EXPIRES_IN,
+				})
+			);
+		} catch (error) {
+			return commonErrorHandler(error, c);
 		}
-
-		const tokenData = d1Result.results?.[0] as { expires_at: string; revoked_at: string | null; user_id: string };
-		if (!tokenData) {
-			return c.json({ error: 'Invalid refresh token' }, 401);
-		}
-
-		// verify the refresh token
-		const isValid = await jwtService.validateTokenAndUser(tokenData, c);
-		if (!isValid) {
-			return c.json({ error: 'Invalid refresh token' }, 401);
-		}
-
-		// revoke the old refresh token first
-		const revoked = await jwtService.revokeRefreshToken(refreshToken, c);
-		if (!revoked) {
-			return c.json({ error: 'Failed to revoke refresh token' }, 500);
-		}
-
-		const payload = {
-			id: tokenData.user_id,
-			exp: Math.floor(Date.now() / 1000) + EXPIRES_IN,
-		};
-
-		// create a new access token
-		const newToken = await jwtService.assignRefreshToken(c, payload);
-		if (newToken instanceof Error) {
-			return c.json({ error: newToken.message }, 500);
-		}
-
-		// return the new access token
-		return c.json<RefreshTokenResponse>({
-			access_token: newToken,
-			token_type: 'Bearer',
-			expires_in: EXPIRES_IN,
-		});
 	},
 	verifyEmail: async ({ token }: { token: string }, c: Context) => {
 		const db = env(c).DB;
 
 		try {
+			responseService.verifyEmailSchema.parse({ token });
+
 			// check for valid token of type 'email' that hasn't been used and hasn't expired
 			const d1Result: D1Result = await db
 				.prepare(
@@ -294,7 +300,7 @@ const publicService = {
 				.run();
 
 			if (!d1Result.success) {
-				return c.json({ error: 'Invalid verification token', code: 'DB_ERROR' }, 401);
+				return c.json(createResponse(false, 'Invalid verification token', 'DB_ERROR'), 401);
 			}
 
 			const tokenData = d1Result.results?.[0] as {
@@ -303,7 +309,7 @@ const publicService = {
 			};
 
 			if (!tokenData) {
-				return c.json({ error: 'Token expired or already used', code: 'TOKEN_INVALID' }, 401);
+				return c.json(createResponse(false, 'Token expired or already used', 'TOKEN_INVALID'), 401);
 			}
 
 			// start a transaction for updating both user status and token usage
@@ -316,46 +322,39 @@ const publicService = {
 			const [updateUserResult, updateTokenResult] = results;
 
 			if (!updateUserResult.success || !updateTokenResult.success) {
-				return c.json({ error: 'Failed to verify email', code: 'TRANSACTION_FAILED' }, 500);
+				return c.json(createResponse(false, 'Failed to verify email', 'TRANSACTION_FAILED'), 500);
 			}
 
-			return c.json<VerifyEmailResponse>({ success: true, message: 'Email verified successfully' });
+			return c.json(createResponse(true, 'Email verified successfully', 'SUCCESS'));
 		} catch (error) {
-			return c.json({ error: error instanceof Error ? error.message : 'Unknown error', code: 'UNEXPECTED_ERROR' }, 500);
+			return commonErrorHandler(error, c);
 		}
 	},
 	forgotPassword: async ({ email }: { email: string }, c: Context) => {
 		try {
+			responseService.forgotPasswordSchema.parse({ email });
 			const result = await passwordService.initiateReset(email, c);
-			return c.json(result);
+			return c.json(createResponse(true, 'If a user exists with this email, they will receive reset instructions.', 'SUCCESS', result));
 		} catch (error) {
-			return c.json(
-				{
-					success: false,
-					message: 'Failed to process password reset request',
-				},
-				500
-			);
+			return commonErrorHandler(error, c);
 		}
 	},
-	resetPassword: async ({ token, password }: { token: string; password: string }, c: Context) => {
+	resetPassword: async ({ token, password, confirmPassword }: { token: string; password: string; confirmPassword: string }, c: Context) => {
 		try {
+			responseService.resetPasswordSchema.parse({ token, password, confirmPassword });
 			const result = await passwordService.completeReset({ token, newPassword: password }, c);
+			console.log('result/LOG', result);
 			return c.json(result);
 		} catch (error) {
-			return c.json(
-				{
-					success: false,
-					message: 'Failed to reset password',
-				},
-				500
-			);
+			return commonErrorHandler(error, c);
 		}
 	},
 	resendVerificationEmail: async ({ email }: { email: string }, c: Context) => {
 		const db = env(c).DB;
 
 		try {
+			responseService.resendVerificationEmailSchema.parse({ email });
+
 			// Find the user and verify they exist and are still pending
 			const userResult = await db.prepare('SELECT id, email, status FROM users WHERE email = ?').bind(email).run();
 
@@ -428,13 +427,7 @@ const publicService = {
 				message: 'Verification email has been resent',
 			});
 		} catch (error) {
-			return c.json<ResendEmailResponse>(
-				{
-					success: false,
-					message: error instanceof Error ? error.message : 'Failed to resend verification email',
-				},
-				500
-			);
+			return commonErrorHandler(error, c);
 		}
 	},
 };

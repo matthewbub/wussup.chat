@@ -1,6 +1,7 @@
 import { Context } from 'hono';
 import { env } from 'hono/adapter';
 import emailService from './email';
+import { createResponse } from './public';
 
 interface LoginAttemptResult {
 	success: boolean;
@@ -246,6 +247,13 @@ const passwordService = {
 				},
 				c
 			);
+			if (env(c).ENV === 'test') {
+				return {
+					success: true,
+					message: 'If a user exists with this email, they will receive reset instructions.',
+					resetToken: resetToken,
+				};
+			}
 
 			return {
 				success: true,
@@ -285,12 +293,12 @@ const passwordService = {
 				.run();
 			const tokenData = tokenResult.results?.[0] as { user_id: string; status: string };
 			if (!tokenData) {
-				return { success: false, message: 'Invalid or expired reset token' };
+				return createResponse(false, 'Invalid or expired reset token', 'INVALID_RESET_TOKEN');
 			}
 
 			// Check if user is in a state that doesn't allow password reset
 			if (tokenData.status === 'deleted' || tokenData.status === 'suspended') {
-				return { success: false, message: 'Account is not eligible for password reset' };
+				return createResponse(false, 'Account is not eligible for password reset', 'ACCOUNT_NOT_ELIGIBLE_FOR_RESET');
 			}
 
 			// Hash new password and check history
@@ -298,7 +306,7 @@ const passwordService = {
 			const isPasswordReused = await passwordService.isPasswordReused({ userId: tokenData.user_id, newPasswordHash: hashedPassword }, c);
 
 			if (isPasswordReused) {
-				return { success: false, message: 'Cannot reuse a recent password' };
+				return createResponse(false, 'Cannot reuse a recent password', 'CANNOT_REUSE_RECENT_PASSWORD');
 			}
 
 			// Update password, mark token as used, and update user status in transaction
@@ -333,7 +341,7 @@ const passwordService = {
 				throw new Error('Failed to update password');
 			}
 
-			return { success: true, message: 'Password has been reset successfully' };
+			return createResponse(true, 'Password has been reset successfully', 'PASSWORD_RESET_SUCCESS');
 		} catch (error) {
 			console.error('Password reset completion error:', error);
 			throw error;
