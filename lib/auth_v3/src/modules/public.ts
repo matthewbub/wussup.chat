@@ -49,11 +49,6 @@ export interface SignUpResponse extends CommonAuthResponse {
 }
 
 export interface LoginResponse extends CommonAuthResponse {}
-interface RefreshTokenResponse extends CommonAuthResponse {}
-interface VerifyEmailResponse {
-	success: boolean;
-	message: string;
-}
 interface ResendEmailResponse {
 	success: boolean;
 	message: string;
@@ -70,8 +65,14 @@ export const createResponse = (success: boolean, message: string, code: string, 
 export function commonErrorHandler(error: unknown, c: Context) {
 	if (error instanceof ZodError) {
 		console.log(error);
-		const issues = error.errors.map((err) => err.message).join(', ');
-		return c.json(createResponse(false, `Validation error: ${issues}`, 'VALIDATION_ERROR'), 400);
+		// map each error to a structured object
+		const issues = error.errors.map((err) => ({
+			message: err.message,
+			path: err.path,
+			code: err.code,
+		}));
+		// return a structured response with all issues
+		return c.json(createResponse(false, 'Validation error', 'VALIDATION_ERROR', { issues }), 400);
 	}
 	return c.json(createResponse(false, error instanceof Error ? error.message : 'Unknown error', 'UNEXPECTED_ERROR'), 500);
 }

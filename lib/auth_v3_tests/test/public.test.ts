@@ -67,9 +67,17 @@ describe("Public Auth Endpoints", () => {
       expect(response.status).toBe(400);
       expect(data).toMatchObject({
         success: false,
-        message: "Validation error: Invalid email",
+        message: "Validation error",
         code: "VALIDATION_ERROR",
-        data: null,
+        data: {
+          issues: [
+            {
+              message: "Invalid email",
+              path: ["email"],
+              code: "invalid_string",
+            },
+          ],
+        },
       });
     });
 
@@ -90,10 +98,54 @@ describe("Public Auth Endpoints", () => {
       expect(response.status).toBe(400);
       expect(data).toMatchObject({
         success: false,
-        message:
-          "Validation error: Password must be at least 8 characters, Password must contain at least one uppercase letter, Password must contain at least one lowercase letter, Password must contain at least one special character (!@#$%^&*), Password must be at least 8 characters, Password must contain at least one uppercase letter, Password must contain at least one lowercase letter, Password must contain at least one special character (!@#$%^&*)",
+        message: "Validation error",
         code: "VALIDATION_ERROR",
-        data: null,
+        data: {
+          issues: [
+            {
+              message: "Password must be at least 8 characters",
+              path: ["password"],
+              code: "too_small",
+            },
+            {
+              message: "Password must contain at least one uppercase letter",
+              path: ["password"],
+              code: "custom",
+            },
+            {
+              message: "Password must contain at least one lowercase letter",
+              path: ["password"],
+              code: "custom",
+            },
+            {
+              message:
+                "Password must contain at least one special character (!@#$%^&*)",
+              path: ["password"],
+              code: "custom",
+            },
+            {
+              message: "Password must be at least 8 characters",
+              path: ["confirmPassword"],
+              code: "too_small",
+            },
+            {
+              message: "Password must contain at least one uppercase letter",
+              path: ["confirmPassword"],
+              code: "custom",
+            },
+            {
+              message: "Password must contain at least one lowercase letter",
+              path: ["confirmPassword"],
+              code: "custom",
+            },
+            {
+              message:
+                "Password must contain at least one special character (!@#$%^&*)",
+              path: ["confirmPassword"],
+              code: "custom",
+            },
+          ],
+        },
       });
     });
 
@@ -114,9 +166,17 @@ describe("Public Auth Endpoints", () => {
       expect(response.status).toBe(400);
       expect(data).toMatchObject({
         success: false,
-        message: "Validation error: Passwords don't match",
+        message: "Validation error",
         code: "VALIDATION_ERROR",
-        data: null,
+        data: {
+          issues: [
+            {
+              message: "Passwords don't match",
+              path: ["confirmPassword"],
+              code: "custom",
+            },
+          ],
+        },
       });
     });
 
