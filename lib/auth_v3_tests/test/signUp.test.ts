@@ -62,7 +62,6 @@ describe("Public Auth Endpoints - Sign Up", () => {
     });
 
     const data = await response.json();
-
     expect(response.status).toBe(400);
     expect(data).toMatchObject({
       success: false,

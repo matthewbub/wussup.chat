@@ -25,10 +25,8 @@ describe('Auth Routes', () => {
 				body: JSON.stringify(payload),
 			});
 
-			console.log('response', response);
 			expect(response.status).toBe(200);
 			const data = await response.json();
-			console.log('data', data);
 			expect(data).toMatchObject({
 				access_token: expect.any(String),
 				token_type: 'Bearer',

@@ -3,41 +3,13 @@ import { env } from 'hono/adapter';
 import jwtService from './jwt';
 import passwordService from './password';
 import emailService from './email';
-import { ZodError } from 'zod';
 import responseService from './response';
+import { signUp } from './lib/signUp';
+import { createResponse } from '../helpers/createResponse';
+import { commonErrorHandler } from '../helpers/commonErrorHandler';
 
 const EXPIRES_IN = 60 * 60; // 1 hour
-const STATUS_PENDING = 'pending';
 const STATUS_ACTIVE = 'active';
-
-// error codes
-const ERROR_CODES = {
-	INVALID_EMAIL_FORMAT: 'INVALID_EMAIL_FORMAT',
-	WEAK_PASSWORD: 'WEAK_PASSWORD',
-	PASSWORDS_DO_NOT_MATCH: 'PASSWORDS_DO_NOT_MATCH',
-	EMAIL_ALREADY_IN_USE: 'EMAIL_ALREADY_IN_USE',
-	USER_CREATION_FAILED: 'USER_CREATION_FAILED',
-	PASSWORD_HISTORY_ERROR: 'PASSWORD_HISTORY_ERROR',
-	EMAIL_SEND_ERROR: 'EMAIL_SEND_ERROR',
-	TOKEN_GENERATION_ERROR: 'TOKEN_GENERATION_ERROR',
-	UNEXPECTED_ERROR: 'UNEXPECTED_ERROR',
-	SUCCESS: 'SUCCESS',
-};
-
-// error messages
-const ERROR_MESSAGES = {
-	INVALID_EMAIL_FORMAT: 'Invalid email format',
-	WEAK_PASSWORD: 'Password must be at least 8 characters long',
-	PASSWORDS_DO_NOT_MATCH: 'Passwords do not match',
-	EMAIL_ALREADY_IN_USE: 'Email already in use',
-	USER_CREATION_FAILED: 'Failed to create user',
-	PASSWORD_HISTORY_ERROR: 'Error adding password to history',
-	EMAIL_SEND_ERROR: 'Failed to send verification email',
-	TOKEN_GENERATION_ERROR: 'Error generating token',
-	UNEXPECTED_ERROR: 'Unknown error',
-	SUCCESS: 'User created successfully',
-};
-
 interface CommonAuthResponse {
 	access_token: string;
 	token_type: string;
@@ -54,101 +26,8 @@ interface ResendEmailResponse {
 	message: string;
 }
 
-// standard response format with error code
-export const createResponse = (success: boolean, message: string, code: string, data: any = null) => ({
-	success,
-	message,
-	code,
-	data,
-});
-
-export function commonErrorHandler(error: unknown, c: Context) {
-	if (error instanceof ZodError) {
-		console.log(error);
-		// map each error to a structured object
-		const issues = error.errors.map((err) => ({
-			message: err.message,
-			path: err.path,
-			code: err.code,
-		}));
-		// return a structured response with all issues
-		return c.json(createResponse(false, 'Validation error', 'VALIDATION_ERROR', { issues }), 400);
-	}
-	return c.json(createResponse(false, error instanceof Error ? error.message : 'Unknown error', 'UNEXPECTED_ERROR'), 500);
-}
-
 const publicService = {
-	signUp: async ({ email, password, confirmPassword }: { email: string; password: string; confirmPassword: string }, c: Context) => {
-		const db = env(c).DB;
-
-		try {
-			responseService.signUpSchema.parse({ email, password, confirmPassword });
-
-			// check for existing email
-			const existingUserResult = await db.prepare('SELECT id FROM users WHERE email = ?').bind(email).run();
-			if (existingUserResult.success && existingUserResult.results?.length) {
-				return c.json(createResponse(false, ERROR_MESSAGES.EMAIL_ALREADY_IN_USE, ERROR_CODES.EMAIL_ALREADY_IN_USE), 409);
-			}
-
-			const hashedPassword = await passwordService.hashPassword(password);
-			const d1Result: D1Result = await db
-				.prepare('INSERT INTO users (id, email, username, password, status) VALUES (?, ?, ?, ?, ?) RETURNING id, email, username')
-				// we are use the email as the username by default
-				// account status is pending til user verifies their email
-				.bind(crypto.randomUUID(), email, email, hashedPassword, STATUS_PENDING)
-				.run();
-
-			if (!d1Result.success) {
-				return c.json(createResponse(false, ERROR_MESSAGES.USER_CREATION_FAILED, ERROR_CODES.USER_CREATION_FAILED, d1Result.error), 500);
-			}
-
-			const user = d1Result.results?.[0] as { id: string };
-			if (!user) {
-				return c.json(createResponse(false, ERROR_MESSAGES.USER_CREATION_FAILED, ERROR_CODES.USER_CREATION_FAILED), 500);
-			}
-
-			// add the password to the password history
-			const passwordHistoryResult = await passwordService.addToPasswordHistory({ userId: user.id, passwordHash: hashedPassword }, c);
-			if (passwordHistoryResult instanceof Error) {
-				return c.json(createResponse(false, ERROR_MESSAGES.PASSWORD_HISTORY_ERROR, ERROR_CODES.PASSWORD_HISTORY_ERROR), 500);
-			}
-
-			// this is the point at which we send the initial verification email
-			const emailResult = await emailService.sendVerificationEmail({ to: email, user }, c);
-			if (emailResult instanceof Error || emailResult?.error?.message) {
-				return c.json(
-					createResponse(false, emailResult?.error?.message || ERROR_MESSAGES.EMAIL_SEND_ERROR, ERROR_CODES.EMAIL_SEND_ERROR),
-					500
-				);
-			}
-
-			// create a "payload" object
-			// were gonna encrypt this and then
-			// decrypt it at validation time
-			const payload = {
-				id: user.id,
-				exp: Math.floor(Date.now() / 1000) + EXPIRES_IN,
-			};
-
-			// encrypt the payload with an auth key
-			// we need the auth key to decrypt at validation time
-			const token = await jwtService.assignRefreshToken(c, payload);
-			if (token instanceof Error) {
-				return c.json(createResponse(false, token.message, ERROR_CODES.TOKEN_GENERATION_ERROR), 500);
-			}
-
-			return c.json(
-				createResponse(true, ERROR_MESSAGES.SUCCESS, ERROR_CODES.SUCCESS, {
-					access_token: token,
-					token_type: 'Bearer',
-					expires_in: EXPIRES_IN,
-					...(env(c).ENV === 'test' && { verificationToken: emailResult.verificationToken }),
-				})
-			);
-		} catch (error) {
-			return commonErrorHandler(error, c);
-		}
-	},
+	signUp: signUp,
 	login: async ({ email, password }: { email: string; password: string }, c: Context) => {
 		const db = env(c).DB;
 
@@ -344,7 +223,6 @@ const publicService = {
 		try {
 			responseService.resetPasswordSchema.parse({ token, password, confirmPassword });
 			const result = await passwordService.completeReset({ token, newPassword: password }, c);
-			console.log('result/LOG', result);
 			return c.json(result);
 		} catch (error) {
 			return commonErrorHandler(error, c);

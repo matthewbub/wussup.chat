@@ -109,7 +109,8 @@ describe("Public Auth Endpoints - Reset Password", () => {
     expect(resetPasswordData).toMatchObject({
       success: false,
       message: "Invalid or expired reset token",
-      code: "TOKEN_INVALID",
+      code: "INVALID_RESET_TOKEN",
+      data: null,
     });
   });
 });
