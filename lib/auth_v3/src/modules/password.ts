@@ -2,6 +2,7 @@ import { Context } from 'hono';
 import { env } from 'hono/adapter';
 import emailService from './email';
 import { createResponse } from '../helpers/createResponse';
+import dbService from './database';
 
 interface LoginAttemptResult {
 	success: boolean;
@@ -85,18 +86,16 @@ const passwordService = {
 		}
 	},
 	addToPasswordHistory: async ({ userId, passwordHash }: { userId: string; passwordHash: string }, c: Context) => {
-		const db = env(c).DB;
-		if (!db) {
-			throw new Error('Database connection not found in context');
-		}
-
 		try {
 			const id = crypto.randomUUID();
-			const result = await db
-				.prepare('INSERT INTO password_history (id, user_id, password_hash) VALUES (?, ?, ?)')
-				.bind(id, userId, passwordHash)
-				.run();
-			return result;
+			const transaction = await dbService.transaction(c, [
+				{
+					sql: 'INSERT INTO password_history (id, user_id, password_hash) VALUES (?, ?, ?)',
+					params: [id, userId, passwordHash],
+				},
+			]);
+			
+			return transaction;
 		} catch (error) {
 			// Check if error is due to unique constraint violation
 			if (error instanceof Error && error.message.includes('unique_user_password')) {
@@ -121,11 +120,6 @@ const passwordService = {
 		},
 		c: Context
 	): Promise<LoginAttemptResult> => {
-		const db = env(c).DB;
-		if (!db) {
-			throw new Error('Database connection not found in context');
-		}
-
 		const MAX_FAILED_ATTEMPTS = 3;
 
 		// Verify password
@@ -137,19 +131,23 @@ const passwordService = {
 			if (newAttempts >= MAX_FAILED_ATTEMPTS) {
 				const oneHourFromNow = new Date(Date.now() + 60 * 60 * 1000).toISOString();
 
-				await db
-					.prepare(
-						`
-						UPDATE users 
-						SET failed_login_attempts = ?, 
+				const transaction = await dbService.transaction(c, [
+					{
+						sql: `
+						UPDATE users
+						SET failed_login_attempts = ?,
 								locked_until = ?,
 								status = 'temporarily_locked',
 								status_before_lockout = ?
 						WHERE id = ?
-					`
-					)
-					.bind(newAttempts, oneHourFromNow, user.status, user.id)
-					.run();
+					`,
+						params: [newAttempts, oneHourFromNow, user.status, user.id],
+					},
+				]);
+
+				if (!transaction.success) {
+					throw new Error('Failed to lock account');
+				}
 
 				return {
 					success: false,
@@ -158,7 +156,16 @@ const passwordService = {
 			}
 
 			// Increment failed attempts
-			await db.prepare('UPDATE users SET failed_login_attempts = ? WHERE id = ?').bind(newAttempts, user.id).run();
+			const transaction = await dbService.transaction(c, [
+				{
+					sql: 'UPDATE users SET failed_login_attempts = ? WHERE id = ?',
+					params: [newAttempts, user.id],
+				},
+			]);
+
+			if (!transaction.success) {
+				throw new Error('Failed to update failed login attempts');
+			}
 
 			return {
 				success: false,
@@ -171,29 +178,34 @@ const passwordService = {
 		// attempt to restore the status before lockout if it exists
 		// if the check fails, set the status to pending
 		// worst case user will need to reverify their email
-		await db
-			.prepare(
-				`
-				UPDATE users 
-				SET failed_login_attempts = 0, 
-					locked_until = NULL, 
+		const transaction = await dbService.transaction(c, [
+			{
+				sql: `
+				UPDATE users
+				SET failed_login_attempts = 0,
+					locked_until = NULL,
 					last_login_at = CURRENT_TIMESTAMP,
-					status = CASE 
-						WHEN status = 'temporarily_locked' AND status_before_lockout IS NOT NULL 
+					status = CASE
+						WHEN status = 'temporarily_locked' AND status_before_lockout IS NOT NULL
 							THEN status_before_lockout
-						WHEN status = 'temporarily_locked' 
+						WHEN status = 'temporarily_locked'
 							THEN 'pending'
-						ELSE status 
+						ELSE status
 					END,
 					status_before_lockout = NULL
 				WHERE id = ?
-			`
-			)
-			.bind(user.id)
-			.run();
+			`,
+				params: [user.id],
+			},
+		]);
+
+		if (!transaction.success) {
+			throw new Error('Failed to update user status');
+		}
 
 		return { success: true };
 	},
+
 	/**
 	 * initiates password reset process by creating a token and sending email
 	 * @param {string} email - user's email address
@@ -201,12 +213,17 @@ const passwordService = {
 	 * @returns {Promise<{success: boolean, message: string}>}
 	 */
 	initiateReset: async (email: string, c: Context) => {
-		const db = env(c).DB;
 		try {
 			// Find user
-			const userResult = await db.prepare('SELECT id, email, status FROM users WHERE email = ?').bind(email).run();
+			const userResult = await dbService.query<{
+				results: {
+					id: string;
+					email: string;
+					status: string;
+				}[];
+			}>(c, 'SELECT id, email, status FROM users WHERE email = ?', [email]);
 
-			const user = userResult.results?.[0] as { id: string; email: string; status: string };
+			const user = userResult.data?.results?.[0];
 			if (!user) {
 				return { success: false, message: 'If a user exists with this email, they will receive reset instructions.' };
 			}
@@ -219,17 +236,17 @@ const passwordService = {
 			const resetToken = crypto.randomUUID();
 
 			// Store reset token
-			const tokenResult = await db
-				.prepare(
-					`INSERT INTO verification_tokens (
-										token, 
-										user_id, 
-										type, 
+			const tokenResult = await dbService.transaction(c, [
+				{
+					sql: `INSERT INTO verification_tokens (
+										token,
+										user_id,
+										type,
 										expires_at
-								) VALUES (?, ?, ?, ?)`
-				)
-				.bind(resetToken, user.id, 'password_reset', new Date(Date.now() + PASSWORD_RESET_EXPIRES_IN * 1000).toISOString())
-				.run();
+								) VALUES (?, ?, ?, ?)`,
+					params: [resetToken, user.id, 'password_reset', new Date(Date.now() + PASSWORD_RESET_EXPIRES_IN * 1000).toISOString()],
+				},
+			]);
 
 			if (!tokenResult.success) {
 				throw new Error('Failed to create reset token');
@@ -273,24 +290,27 @@ const passwordService = {
 	 * @returns {Promise<{success: boolean, message: string}>}
 	 */
 	completeReset: async ({ token, newPassword }: { token: string; newPassword: string }, c: Context) => {
-		const db = env(c).DB;
 		try {
 			// Verify token and get user status
-			const tokenResult = await db
-				.prepare(
-					`
+			const tokenResult = await dbService.query<{
+				results: {
+					user_id: string;
+					status: string;
+				}[];
+			}>(
+				c,
+				`
 					SELECT vt.*, u.id as user_id, u.status
 					FROM verification_tokens vt
 					JOIN users u ON u.id = vt.user_id
-					WHERE vt.token = ? 
+					WHERE vt.token = ?
 					AND vt.type = 'password_reset'
-					AND vt.used_at IS NULL 
+					AND vt.used_at IS NULL
 					AND vt.expires_at > CURRENT_TIMESTAMP
-					`
-				)
-				.bind(token)
-				.run();
-			const tokenData = tokenResult.results?.[0] as { user_id: string; status: string };
+					`,
+				[token]
+			);
+			const tokenData = tokenResult.data?.results?.[0] as { user_id: string; status: string };
 			if (!tokenData) {
 				return createResponse(false, 'Invalid or expired reset token', 'INVALID_RESET_TOKEN', null, 401);
 			}
@@ -309,36 +329,41 @@ const passwordService = {
 			}
 
 			// Update password, mark token as used, and update user status in transaction
-			const transaction = db.batch([
-				db
-					.prepare(
-						`
-					UPDATE users 
+			const transaction = await dbService.transaction(c, [
+				{
+					sql: `
+					UPDATE users
 					SET password = ?,
 						failed_login_attempts = 0,
 						locked_until = NULL,
-						status = CASE 
-							WHEN status = 'temporarily_locked' AND status_before_lockout IS NOT NULL 
+						status = CASE
+							WHEN status = 'temporarily_locked' AND status_before_lockout IS NOT NULL
 								THEN status_before_lockout
-							WHEN status = 'temporarily_locked' 
+							WHEN status = 'temporarily_locked'
 								THEN 'pending'
-							ELSE status 
+							ELSE status
 						END,
 						status_before_lockout = NULL
 					WHERE id = ?
-				`
-					)
-					.bind(hashedPassword, tokenData.user_id),
-				db.prepare('UPDATE verification_tokens SET used_at = CURRENT_TIMESTAMP WHERE token = ?').bind(token),
-				db
-					.prepare('INSERT INTO password_history (id, user_id, password_hash) VALUES (?, ?, ?)')
-					.bind(crypto.randomUUID(), tokenData.user_id, hashedPassword),
+				`,
+					params: [hashedPassword, tokenData.user_id],
+				},
+				{
+					sql: 'UPDATE verification_tokens SET used_at = CURRENT_TIMESTAMP WHERE token = ?',
+					params: [token],
+				},
 			]);
 
-			const results = await transaction;
-			if (!results.every((result: { success: boolean }) => result.success)) {
+			if (!transaction.success) {
 				throw new Error('Failed to update password');
 			}
+
+			await dbService.transaction(c, [
+				{
+					sql: 'INSERT INTO password_history (id, user_id, password_hash) VALUES (?, ?, ?)',
+					params: [crypto.randomUUID(), tokenData.user_id, hashedPassword],
+				},
+			]);
 
 			return createResponse(true, 'Password has been reset successfully', 'PASSWORD_RESET_SUCCESS', null, 200);
 		} catch (error) {
@@ -347,22 +372,18 @@ const passwordService = {
 	},
 
 	isPasswordReused: async ({ userId, newPasswordHash }: { userId: string; newPasswordHash: string }, c: Context) => {
-		const db = env(c).DB;
-		if (!db) {
-			throw new Error('Database connection not found in context');
-		}
-
 		try {
-			const result = await db
-				.prepare('SELECT COUNT(*) as count FROM password_history WHERE user_id = ? AND password_hash = ?')
-				.bind(userId, newPasswordHash)
-				.run();
+			const result = await dbService.query<{
+				results: {
+					count: number;
+				}[];
+			}>(c, 'SELECT COUNT(*) as count FROM password_history WHERE user_id = ? AND password_hash = ?', [userId, newPasswordHash]);
 
 			if (!result.success) {
 				throw new Error('Failed to check password history');
 			}
 
-			return (result.results?.[0]?.count as number) || 0;
+			return (result.data?.results?.[0]?.count as number) || 0;
 		} catch (error) {
 			throw new Error(`Failed to check password reuse: ${error instanceof Error ? error.message : 'Unknown error'}`);
 		}
