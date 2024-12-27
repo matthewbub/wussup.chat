@@ -234,40 +234,31 @@ const publicService = {
 		try {
 			responseService.resendVerificationEmailSchema.parse({ email });
 
-			// Find the user and verify they exist and are still pending
+			// find the user and verify they exist and are still pending
 			const userResult = await db.prepare('SELECT id, email, status FROM users WHERE email = ?').bind(email).run();
 
 			if (!userResult.success) {
-				throw new Error('Database error while looking up user');
+				return c.json(createResponse(false, 'Database error while looking up user', 'DB_ERROR'), 500);
 			}
 
 			const user = userResult.results?.[0] as { id: string; email: string; status: string } | undefined;
 
 			if (!user) {
-				return c.json<ResendEmailResponse>({
-					success: false,
-					message: 'If a matching account was found, a verification email has been sent.',
-				});
+				return c.json(createResponse(false, 'If a matching account was found, a verification email has been sent.', 'USER_NOT_FOUND'));
 			}
 
-			// Check if user is already verified
+			// check if user is already verified
 			if (user.status === STATUS_ACTIVE) {
-				return c.json<ResendEmailResponse>({
-					success: false,
-					message: 'Email is already verified',
-				});
+				return c.json(createResponse(false, 'Email is already verified', 'EMAIL_ALREADY_VERIFIED'));
 			}
 
-			// Check if user is pending
+			// check if user is pending
 			const allowedStatuses = ['pending'];
 			if (!allowedStatuses.includes(user.status)) {
-				return c.json<ResendEmailResponse>({
-					success: false,
-					message: 'Unable to resend verification email',
-				});
+				return c.json(createResponse(false, 'Unable to resend verification email', 'UNABLE_TO_RESEND'));
 			}
 
-			// Check for rate limiting (optional but recommended)
+			// check for rate limiting (optional but recommended)
 			const lastEmailResult = await db
 				.prepare(
 					`
@@ -288,23 +279,17 @@ const publicService = {
 				const MIN_RESEND_INTERVAL = 5 * 60 * 1000; // 5 minutes
 
 				if (timeSinceLastEmail < MIN_RESEND_INTERVAL) {
-					return c.json<ResendEmailResponse>({
-						success: false,
-						message: 'Please wait 5 minutes before requesting another verification email',
-					});
+					return c.json(createResponse(false, 'Please wait 5 minutes before requesting another verification email', 'RATE_LIMIT_EXCEEDED'));
 				}
 			}
 
-			// Send new verification email
+			// send new verification email
 			const emailResult = await emailService.sendVerificationEmail({ to: email, user }, c);
 			if (emailResult instanceof Error || emailResult?.error?.message) {
-				throw new Error(emailResult?.error?.message || 'Failed to send verification email');
+				return c.json(createResponse(false, emailResult?.error?.message || 'Failed to send verification email', 'EMAIL_SEND_FAILED'), 500);
 			}
 
-			return c.json<ResendEmailResponse>({
-				success: true,
-				message: 'Verification email has been resent',
-			});
+			return c.json(createResponse(true, 'Verification email has been resent', 'SUCCESS'));
 		} catch (error) {
 			return commonErrorHandler(error, c);
 		}
