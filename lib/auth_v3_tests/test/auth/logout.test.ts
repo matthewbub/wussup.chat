@@ -1,7 +1,8 @@
 import { describe, it, expect } from "vitest";
 import { createFakeUser } from "../../src/helpers";
+import constants from "../../src/constants";
 
-const API_URL = "http://localhost:8787"; // adjust this to match your dev server
+const API_URL = constants.API_URL;
 
 describe("Auth Endpoints - Logout", () => {
   it("should successfully log out a user", async () => {

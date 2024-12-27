@@ -1,7 +1,8 @@
 import { describe, it, expect, beforeAll } from "vitest";
 import { createFakeUser } from "../../src/helpers";
+import constants from "../../src/constants";
 
-const API_URL = "http://localhost:8787"; // adjust this to match your dev server
+const API_URL = constants.API_URL;
 
 describe("Auth Endpoints - /v3/auth/me", () => {
   let token: string;

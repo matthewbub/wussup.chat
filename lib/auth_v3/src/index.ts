@@ -148,9 +148,23 @@ app.delete('/v3/auth/me', async (c) => {
 });
 
 // Admin routes
-// app.use('/v3/admin/*', adminAuthMiddleware);
+app.use('/v3/admin/*', adminAuthMiddleware);
 
 app.post('/v3/admin/users/:id/promote', async (c) => {
+	const token = c.req.header('Authorization')?.split(' ')[1];
+	if (!token) {
+		return c.json(createResponse(false, 'No token provided', 'ERR_NO_TOKEN_PROVIDED'), 401);
+	}
+
+	const userId = c.req.param('id');
+	return await adminService.promoteUser(userId, c);
+});
+
+app.post('/test/v3/test/admin/test/users/test/:id/test/promote/test', async (c) => {
+	if (env(c).ENV !== 'test') {
+		return c.json(createResponse(false, 'Not allowed', 'ERR_NOT_ALLOWED'), 403);
+	}
+
 	const token = c.req.header('Authorization')?.split(' ')[1];
 	if (!token) {
 		return c.json(createResponse(false, 'No token provided', 'ERR_NO_TOKEN_PROVIDED'), 401);
