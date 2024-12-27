@@ -9,10 +9,10 @@ const suspendUser = async (userId: string, c: Context) => {
 		const result = await dbService.query<AdminResponse>(c, 'UPDATE users SET status = ? WHERE id = ?', ['suspended', userId]);
 
 		if (!result.success) {
-			return c.json(createResponse(false, 'Failed to suspend user', 'ERR_SUSPEND_FAILED'), 500);
+			return createResponse(false, 'Failed to suspend user', 'ERR_SUSPEND_FAILED', null, 500);
 		}
 
-		return c.json(createResponse(true, 'User suspended successfully', 'SUCCESS'));
+		return createResponse(true, 'User suspended successfully', 'SUCCESS', null, 200);
 	} catch (error) {
 		return commonErrorHandler(error, c);
 	}

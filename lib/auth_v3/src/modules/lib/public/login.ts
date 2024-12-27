@@ -20,7 +20,7 @@ export const login = async ({ email, password }: { email: string; password: stri
 			.run();
 
 		if (!d1Result.success) {
-			return c.json(createResponse(false, d1Result.error || 'Database error', 'DB_ERROR'), 500);
+			return createResponse(false, d1Result.error || 'Database error', 'DB_ERROR', null, 500);
 		}
 
 		const user = d1Result.results?.[0] as {
@@ -32,36 +32,40 @@ export const login = async ({ email, password }: { email: string; password: stri
 		};
 
 		if (!user) {
-			return c.json(createResponse(false, 'Invalid email or password', 'USER_NOT_FOUND'), 404);
+			return createResponse(false, 'Invalid email or password', 'USER_NOT_FOUND', null, 404);
 		}
 
 		// check account status
 		if (user.status === 'deleted') {
-			return c.json(createResponse(false, 'Account has been deleted', 'ACCOUNT_DELETED'), 403);
+			return createResponse(false, 'Account has been deleted', 'ACCOUNT_DELETED', null, 403);
 		}
 
 		if (user.status === 'suspended') {
-			return c.json(createResponse(false, 'Account has been suspended. Please contact support.', 'ACCOUNT_SUSPENDED'), 403);
+			return createResponse(false, 'Account has been suspended. Please contact support.', 'ACCOUNT_SUSPENDED', null, 403);
 		}
 
 		// check if account is locked
 		if (user.locked_until && new Date(user.locked_until) > new Date() && user.status === 'temporarily_locked') {
-			return c.json(
-				createResponse(false, 'Account is temporarily locked. Please reset your password via email.', 'ACCOUNT_LOCKED', {
+			return createResponse(
+				false,
+				'Account is temporarily locked. Please reset your password via email.',
+				'ACCOUNT_LOCKED',
+				{
 					lockedUntil: user.locked_until,
-				}),
+				},
 				403
 			);
 		}
 
 		const loginAttemptResult = await passwordService.handleLoginAttempt({ user, passwordAttempt: password }, c);
 		if (loginAttemptResult instanceof Error || loginAttemptResult.error) {
-			return c.json(
-				createResponse(
-					false,
-					loginAttemptResult instanceof Error ? loginAttemptResult.message : loginAttemptResult.error || 'Unknown error',
-					'LOGIN_ATTEMPT_FAILED'
-				),
+			return createResponse(
+				false,
+				loginAttemptResult instanceof Error ? loginAttemptResult.message : loginAttemptResult.error || 'Unknown error',
+				'LOGIN_ATTEMPT_FAILED',
+				{
+					lockedUntil: user.locked_until,
+				},
 				401
 			);
 		}
@@ -73,15 +77,19 @@ export const login = async ({ email, password }: { email: string; password: stri
 
 		const token = await jwtService.assignRefreshToken(c, payload);
 		if (token instanceof Error) {
-			return c.json(createResponse(false, token.message, 'TOKEN_GENERATION_FAILED'), 500);
+			return createResponse(false, token.message, 'TOKEN_GENERATION_FAILED', null, 500);
 		}
 
-		return c.json(
-			createResponse(true, 'Login successful', 'SUCCESS', {
+		return createResponse(
+			true,
+			'Login successful',
+			'SUCCESS',
+			{
 				access_token: token,
 				token_type: 'Bearer',
 				expires_in: EXPIRES_IN,
-			})
+			},
+			200
 		);
 	} catch (error) {
 		return commonErrorHandler(error, c);

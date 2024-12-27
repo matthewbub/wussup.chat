@@ -1,24 +1,8 @@
 import { Context } from 'hono';
 import { env } from 'hono/adapter';
 import jwtService from '../../jwt';
-import passwordService from '../../password';
-import emailService from '../../email';
 import { createResponse } from '../../../helpers/createResponse';
 import { commonErrorHandler } from '../../../helpers/commonErrorHandler';
-import logout from './logout';
-import changePassword from './changePassword';
-import getCurrentUser from './getCurrentUser';
-import updateUser from './updateUser';
-
-interface UpdateUserResponse {
-	success: boolean;
-	message: string;
-	user?: {
-		email: string;
-		username: string;
-		email_verified: boolean;
-	};
-}
 
 export const deleteAccount = async (token: string, c: Context) => {
 	const db = env(c).DB;
@@ -26,7 +10,7 @@ export const deleteAccount = async (token: string, c: Context) => {
 	try {
 		const payload = await jwtService.decodeToken(token, c);
 		if (!payload?.id) {
-			return createResponse(false, 'Invalid token', 'ERR_INVALID_TOKEN');
+			return createResponse(false, 'Invalid token', 'ERR_INVALID_TOKEN', null, 401);
 		}
 
 		// Update user status to deleted and revoke all tokens
@@ -37,10 +21,10 @@ export const deleteAccount = async (token: string, c: Context) => {
 
 		const results = await transaction;
 		if (!results.every((result: { success: boolean }) => result.success)) {
-			return createResponse(false, 'Failed to delete account', 'ERR_DELETE_FAILED');
+			return createResponse(false, 'Failed to delete account', 'ERR_DELETE_FAILED', null, 500);
 		}
 
-		return createResponse(true, 'Account successfully deleted', 'SUCCESS');
+		return createResponse(true, 'Account successfully deleted', 'SUCCESS', null, 200);
 	} catch (error) {
 		return commonErrorHandler(error, c);
 	}

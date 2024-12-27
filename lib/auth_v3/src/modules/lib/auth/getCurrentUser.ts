@@ -1,29 +1,16 @@
 import { Context } from 'hono';
 import { env } from 'hono/adapter';
 import jwtService from '../../jwt';
-import passwordService from '../../password';
-import emailService from '../../email';
 import { createResponse } from '../../../helpers/createResponse';
 import { commonErrorHandler } from '../../../helpers/commonErrorHandler';
-import logout from './logout';
-import changePassword from './changePassword';
 
-interface UpdateUserResponse {
-	success: boolean;
-	message: string;
-	user?: {
-		email: string;
-		username: string;
-		email_verified: boolean;
-	};
-}
 export const getCurrentUser = async (token: string, c: Context) => {
 	const db = env(c).DB;
 
 	try {
 		const payload = await jwtService.decodeToken(token, c);
 		if (!payload?.id) {
-			return createResponse(false, 'Invalid token', 'ERR_INVALID_TOKEN');
+			return createResponse(false, 'Invalid token', 'ERR_INVALID_TOKEN', null, 401);
 		}
 
 		const userResult = await db
@@ -41,10 +28,10 @@ export const getCurrentUser = async (token: string, c: Context) => {
 		const user = userResult.results?.[0];
 
 		if (!user) {
-			return createResponse(false, 'User not found', 'ERR_USER_NOT_FOUND');
+			return createResponse(false, 'User not found', 'ERR_USER_NOT_FOUND', null, 404);
 		}
 
-		return createResponse(true, 'User retrieved successfully', 'SUCCESS', user);
+		return createResponse(true, 'User retrieved successfully', 'SUCCESS', user, 200);
 	} catch (error) {
 		return commonErrorHandler(error, c);
 	}

@@ -10,6 +10,7 @@ import jwtService from './modules/jwt';
 import responseService from './modules/response';
 import adminService from './modules/lib/admin';
 import { createResponse } from './helpers/createResponse';
+import { StatusCode } from 'hono/utils/http-status';
 
 export interface Env {
 	AUTH_KEY: string;
@@ -60,7 +61,7 @@ const adminAuthMiddleware = async (c: Context, next: () => Promise<void>) => {
 // routes
 app.post('/v3/public/sign-up', async (c) => {
 	const { email, password, confirmPassword } = await c.req.json();
-	return await publicService.signUp(
+	const response = await publicService.signUp(
 		{
 			email,
 			password,
@@ -68,31 +69,36 @@ app.post('/v3/public/sign-up', async (c) => {
 		},
 		c
 	);
+	return c.json(response, response.status);
 });
 
 app.post('/v3/public/login', async (c) => {
 	const { email, password } = await c.req.json();
-	return await publicService.login({ email, password }, c);
+	const response = await publicService.login({ email, password }, c);
+	return c.json(response, response.status);
 });
 
 app.post('/v3/public/refresh-token', async (c) => {
 	const { refreshToken } = await c.req.json();
-	return await publicService.refreshToken({ refreshToken }, c);
+	const response = await publicService.refreshToken({ refreshToken }, c);
+	return c.json(response, response.status);
 });
 
 app.post('/v3/public/verify-email', async (c) => {
 	const { token } = await c.req.json();
-	return await publicService.verifyEmail({ token }, c);
+	const response = await publicService.verifyEmail({ token }, c);
+	return c.json(response, response.status);
 });
 
 app.post('/v3/public/forgot-password', async (c) => {
 	const { email } = await c.req.json();
-	return await publicService.forgotPassword({ email }, c);
+	const response = await publicService.forgotPassword({ email }, c);
+	return c.json(response, response.status);
 });
 
 app.post('/v3/public/reset-password', async (c) => {
 	const { token, password, confirmPassword } = await c.req.json();
-	return await publicService.resetPassword(
+	const response = await publicService.resetPassword(
 		{
 			token,
 			password,
@@ -100,20 +106,22 @@ app.post('/v3/public/reset-password', async (c) => {
 		},
 		c
 	);
+	return c.json(response, response.status);
 });
 
 app.post('/v3/public/resend-verification-email', async (c) => {
 	const { email } = await c.req.json();
-	return await publicService.resendVerificationEmail({ email }, c);
+	const response = await publicService.resendVerificationEmail({ email }, c);
+	return c.json(response, response.status);
 });
 
 app.get('/v3/auth/logout', async (c) => {
 	const token = c.req.header('Authorization')?.split(' ')[1];
 	if (!token) {
-		console.log('No token provided');
-		return c.json(createResponse(false, 'No token provided', 'ERR_NO_TOKEN_PROVIDED'), 401);
+		return c.json(createResponse(false, 'No token provided', 'ERR_NO_TOKEN_PROVIDED', null, 401));
 	}
-	return await authService.logout(token, c);
+	const response = await authService.logout(token, c);
+	return c.json(response, response.status);
 });
 
 app.get('/v3/auth/me', async (c) => {
@@ -122,8 +130,7 @@ app.get('/v3/auth/me', async (c) => {
 		return c.json(createResponse(false, 'No token provided', 'ERR_NO_TOKEN_PROVIDED'), 401);
 	}
 	const result = await authService.getCurrentUser(token, c);
-	console.log('Result for /v3/auth/me BIG DOG:', result);
-	return c.json(result);
+	return c.json(result, result.status);
 });
 
 app.put('/v3/auth/me', zValidator('json', responseService.updateUserSchema), async (c) => {
@@ -133,7 +140,7 @@ app.put('/v3/auth/me', zValidator('json', responseService.updateUserSchema), asy
 	}
 	const updates = await c.req.json();
 	const result = await authService.updateUser(token, updates, c);
-	return c.json(result);
+	return c.json(result, result.status);
 });
 
 app.delete('/v3/auth/me', async (c) => {
@@ -142,7 +149,7 @@ app.delete('/v3/auth/me', async (c) => {
 		return c.json(createResponse(false, 'No token provided', 'ERR_NO_TOKEN_PROVIDED'), 401);
 	}
 	const result = await authService.deleteAccount(token, c);
-	return c.json(result);
+	return c.json(result, result.status);
 });
 
 // Admin routes
@@ -155,7 +162,8 @@ app.post('/v3/admin/users/:id/promote', async (c) => {
 	}
 
 	const userId = c.req.param('id');
-	return await adminService.promoteUser(userId, c);
+	const result = await adminService.promoteUser(userId, c);
+	return c.json(result, result.status);
 });
 
 app.post('/test/v3/test/admin/test/users/test/:id/test/promote/test', async (c) => {
@@ -169,7 +177,8 @@ app.post('/test/v3/test/admin/test/users/test/:id/test/promote/test', async (c) 
 	}
 
 	const userId = c.req.param('id');
-	return await adminService.promoteUser(userId, c);
+	const result = await adminService.promoteUser(userId, c);
+	return c.json(result, result.status);
 });
 
 app.get('/v3/admin/users', async (c) => {
@@ -178,7 +187,8 @@ app.get('/v3/admin/users', async (c) => {
 		return c.json(createResponse(false, 'No token provided', 'ERR_NO_TOKEN_PROVIDED'), 401);
 	}
 
-	return await adminService.listUsers(c);
+	const result = await adminService.listUsers(c);
+	return c.json(result, result.status);
 });
 
 app.post('/v3/admin/users/:id/suspend', async (c) => {
@@ -188,7 +198,8 @@ app.post('/v3/admin/users/:id/suspend', async (c) => {
 	}
 
 	const userId = c.req.param('id');
-	return await adminService.suspendUser(userId, c);
+	const result = await adminService.suspendUser(userId, c);
+	return c.json(result, result.status);
 });
 
 export default app;

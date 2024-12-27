@@ -26,7 +26,7 @@ export const verifyEmail = async ({ token }: { token: string }, c: Context) => {
 			.run();
 
 		if (!d1Result.success) {
-			return c.json(createResponse(false, 'Invalid verification token', 'DB_ERROR'), 401);
+			return createResponse(false, 'Invalid verification token', 'DB_ERROR', null, 401);
 		}
 
 		const tokenData = d1Result.results?.[0] as {
@@ -35,7 +35,7 @@ export const verifyEmail = async ({ token }: { token: string }, c: Context) => {
 		};
 
 		if (!tokenData) {
-			return c.json(createResponse(false, 'Token expired or already used', 'TOKEN_INVALID'), 401);
+			return createResponse(false, 'Token expired or already used', 'TOKEN_INVALID', null, 401);
 		}
 
 		// start a transaction for updating both user status and token usage
@@ -48,10 +48,10 @@ export const verifyEmail = async ({ token }: { token: string }, c: Context) => {
 		const [updateUserResult, updateTokenResult] = results;
 
 		if (!updateUserResult.success || !updateTokenResult.success) {
-			return c.json(createResponse(false, 'Failed to verify email', 'TRANSACTION_FAILED'), 500);
+			return createResponse(false, 'Failed to verify email', 'TRANSACTION_FAILED', null, 500);
 		}
 
-		return c.json(createResponse(true, 'Email verified successfully', 'SUCCESS'));
+		return createResponse(true, 'Email verified successfully', 'SUCCESS', null, 200);
 	} catch (error) {
 		return commonErrorHandler(error, c);
 	}

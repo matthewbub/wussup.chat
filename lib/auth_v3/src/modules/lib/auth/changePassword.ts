@@ -10,14 +10,14 @@ export const changePassword = async ({ currentPassword, newPassword }: { current
 	const token = c.req.header('Authorization')?.split(' ')[1];
 
 	if (!token) {
-		return c.json(createResponse(false, 'Authentication required', 'ERR_AUTH_REQUIRED'), 401);
+		return createResponse(false, 'Authentication required', 'ERR_AUTH_REQUIRED', null, 401);
 	}
 
 	try {
 		// Get user from the token
 		const payload = await jwtService.decodeToken(token, c);
 		if (!payload?.id) {
-			return c.json(createResponse(false, 'Invalid token', 'ERR_INVALID_TOKEN'), 401);
+			return createResponse(false, 'Invalid token', 'ERR_INVALID_TOKEN', null, 401);
 		}
 
 		// Get user's current password hash
@@ -25,13 +25,13 @@ export const changePassword = async ({ currentPassword, newPassword }: { current
 
 		const user = userResult.results?.[0] as { id: string; password: string; status: string };
 		if (!user) {
-			return c.json(createResponse(false, 'User not found', 'ERR_USER_NOT_FOUND'), 404);
+			return createResponse(false, 'User not found', 'ERR_USER_NOT_FOUND', null, 404);
 		}
 
 		// Verify current password
 		const isCurrentPasswordValid = await passwordService.verifyPassword(user.password, currentPassword);
 		if (!isCurrentPasswordValid) {
-			return c.json(createResponse(false, 'Current password is incorrect', 'ERR_INCORRECT_PASSWORD'), 400);
+			return createResponse(false, 'Current password is incorrect', 'ERR_INCORRECT_PASSWORD', null, 400);
 		}
 
 		// Hash new password
@@ -41,7 +41,7 @@ export const changePassword = async ({ currentPassword, newPassword }: { current
 		const isPasswordReused = await passwordService.isPasswordReused({ userId: user.id, newPasswordHash: hashedNewPassword }, c);
 
 		if (isPasswordReused) {
-			return c.json(createResponse(false, 'Cannot reuse a recent password', 'ERR_PASSWORD_REUSED'), 400);
+			return createResponse(false, 'Cannot reuse a recent password', 'ERR_PASSWORD_REUSED', null, 400);
 		}
 
 		// Update password and add to history in a transaction
@@ -54,7 +54,7 @@ export const changePassword = async ({ currentPassword, newPassword }: { current
 
 		const results = await transaction;
 		if (!results.every((result: { success: boolean }) => result.success)) {
-			return c.json(createResponse(false, 'Failed to update password', 'ERR_UPDATE_FAILED'), 500);
+			return createResponse(false, 'Failed to update password', 'ERR_UPDATE_FAILED', null, 500);
 		}
 
 		// Revoke all refresh tokens for this user for security
@@ -63,7 +63,7 @@ export const changePassword = async ({ currentPassword, newPassword }: { current
 			.bind(user.id)
 			.run();
 
-		return c.json(createResponse(true, 'Password changed successfully. Please log in with your new password.', 'SUCCESS'));
+		return createResponse(true, 'Password changed successfully. Please log in with your new password.', 'SUCCESS', null, 200);
 	} catch (error) {
 		return commonErrorHandler(error, c);
 	}

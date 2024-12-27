@@ -1,13 +1,9 @@
 import { Context } from 'hono';
 import { env } from 'hono/adapter';
 import jwtService from '../../jwt';
-import passwordService from '../../password';
 import emailService from '../../email';
 import { createResponse } from '../../../helpers/createResponse';
 import { commonErrorHandler } from '../../../helpers/commonErrorHandler';
-import logout from './logout';
-import changePassword from './changePassword';
-import getCurrentUser from './getCurrentUser';
 
 interface UpdateUserResponse {
 	success: boolean;
@@ -26,7 +22,7 @@ export const updateUser = async (token: string, updates: { email?: string; usern
 		// Decode the token to extract user information
 		const payload = await jwtService.decodeToken(token, c);
 		if (!payload?.id) {
-			return createResponse(false, 'Invalid token', 'ERR_INVALID_TOKEN');
+			return createResponse(false, 'Invalid token', 'ERR_INVALID_TOKEN', null, 401);
 		}
 
 		const transaction = [];
@@ -40,7 +36,7 @@ export const updateUser = async (token: string, updates: { email?: string; usern
 				.run();
 
 			if (existingUsername.results?.length) {
-				return createResponse(false, 'Username already taken', 'ERR_USERNAME_TAKEN');
+				return createResponse(false, 'Username already taken', 'ERR_USERNAME_TAKEN', null, 400);
 			}
 
 			updates_array.push('username = ?');
@@ -51,7 +47,7 @@ export const updateUser = async (token: string, updates: { email?: string; usern
 			const existingEmail = await db.prepare('SELECT id FROM users WHERE email = ? AND id != ?').bind(updates.email, payload.id).run();
 
 			if (existingEmail.results?.length) {
-				return createResponse(false, 'Email already registered', 'ERR_EMAIL_REGISTERED');
+				return createResponse(false, 'Email already registered', 'ERR_EMAIL_REGISTERED', null, 400);
 			}
 
 			updates_array.push('email = ?');
@@ -83,7 +79,7 @@ export const updateUser = async (token: string, updates: { email?: string; usern
 		const results = await db.batch(transaction);
 
 		if (!results.every((result: { success: boolean }) => result.success)) {
-			return createResponse(false, 'Failed to update user information', 'ERR_UPDATE_FAILED');
+			return createResponse(false, 'Failed to update user information', 'ERR_UPDATE_FAILED', null, 500);
 		}
 
 		const updatedUser = results[results.length - 1].results?.[0] as UpdateUserResponse['user'];
@@ -102,7 +98,8 @@ export const updateUser = async (token: string, updates: { email?: string; usern
 			true,
 			updates.email ? 'Profile updated. Please verify your new email address.' : 'Profile updated successfully',
 			'SUCCESS',
-			{ user: updatedUser }
+			{ user: updatedUser },
+			updates.email ? 200 : 201
 		);
 	} catch (error) {
 		return commonErrorHandler(error, c);

@@ -25,14 +25,14 @@ export const signUp = async (
 		// if no users, promote this user to admin
 		const adminCheckResult = await dbService.query<{ count: number }>(c, 'SELECT COUNT(*) as count FROM users WHERE role = "admin"');
 		if (!adminCheckResult.success) {
-			return c.json(createResponse(false, 'Failed to check admin count', 'ERR_ADMIN_CHECK_FAILED'), 500);
+			return createResponse(false, 'Failed to check admin count', 'ERR_ADMIN_CHECK_FAILED', null, 500);
 		}
 		const adminCount = adminCheckResult.data?.count || 0;
 
 		// check for existing email
 		const existingUserResult = await db.prepare('SELECT id FROM users WHERE email = ?').bind(email).run();
 		if (existingUserResult.success && existingUserResult.results?.length) {
-			return c.json(createResponse(false, ERROR_MESSAGES.EMAIL_ALREADY_IN_USE, ERROR_CODES.EMAIL_ALREADY_IN_USE), 409);
+			return createResponse(false, ERROR_MESSAGES.EMAIL_ALREADY_IN_USE, ERROR_CODES.EMAIL_ALREADY_IN_USE, null, 409);
 		}
 
 		const hashedPassword = await passwordService.hashPassword(password);
@@ -44,32 +44,32 @@ export const signUp = async (
 			.run();
 
 		if (!d1Result.success) {
-			return c.json(createResponse(false, ERROR_MESSAGES.USER_CREATION_FAILED, ERROR_CODES.USER_CREATION_FAILED, d1Result.error), 500);
+			return createResponse(false, ERROR_MESSAGES.USER_CREATION_FAILED, ERROR_CODES.USER_CREATION_FAILED, d1Result.error, 500);
 		}
 
 		const user = d1Result.results?.[0] as { id: string };
 		if (!user) {
-			return c.json(createResponse(false, ERROR_MESSAGES.USER_CREATION_FAILED, ERROR_CODES.USER_CREATION_FAILED), 500);
+			return createResponse(false, ERROR_MESSAGES.USER_CREATION_FAILED, ERROR_CODES.USER_CREATION_FAILED, null, 500);
 		}
 
 		// if no users, promote this user to admin
 		if (adminCount === 0) {
 			const adminResult = await adminService.promoteUser(user.id, c);
 			if (adminResult instanceof Error) {
-				return createResponse(false, 'Failed to promote user', 'ERR_PROMOTE_FAILED');
+				return createResponse(false, 'Failed to promote user', 'ERR_PROMOTE_FAILED', null, 500);
 			}
 		}
 
 		// add the password to the password history
 		const passwordHistoryResult = await passwordService.addToPasswordHistory({ userId: user.id, passwordHash: hashedPassword }, c);
 		if (passwordHistoryResult instanceof Error) {
-			return c.json(createResponse(false, ERROR_MESSAGES.PASSWORD_HISTORY_ERROR, ERROR_CODES.PASSWORD_HISTORY_ERROR), 500);
+			return createResponse(false, ERROR_MESSAGES.PASSWORD_HISTORY_ERROR, ERROR_CODES.PASSWORD_HISTORY_ERROR, null, 500);
 		}
 
 		// this is the point at which we send the initial verification email
 		const emailResult = await emailService.sendVerificationEmail({ to: email, user }, c);
 		if (emailResult instanceof Error) {
-			return c.json(createResponse(false, ERROR_MESSAGES.EMAIL_SEND_ERROR, ERROR_CODES.EMAIL_SEND_ERROR), 500);
+			return createResponse(false, ERROR_MESSAGES.EMAIL_SEND_ERROR, ERROR_CODES.EMAIL_SEND_ERROR, null, 500);
 		}
 
 		// create a "payload" object
@@ -84,16 +84,20 @@ export const signUp = async (
 		// we need the auth key to decrypt at validation time
 		const token = await jwtService.assignRefreshToken(c, payload);
 		if (token instanceof Error) {
-			return c.json(createResponse(false, token.message, ERROR_CODES.TOKEN_GENERATION_ERROR), 500);
+			return createResponse(false, token.message, ERROR_CODES.TOKEN_GENERATION_ERROR, null, 500);
 		}
 
-		return c.json(
-			createResponse(true, ERROR_MESSAGES.SUCCESS, ERROR_CODES.SUCCESS, {
+		return createResponse(
+			true,
+			ERROR_MESSAGES.SUCCESS,
+			ERROR_CODES.SUCCESS,
+			{
 				access_token: token,
 				token_type: 'Bearer',
 				expires_in: EXPIRES_IN,
 				...(env(c).ENV === 'test' && { verificationToken: emailResult.verificationToken }),
-			})
+			},
+			200
 		);
 	} catch (error) {
 		return commonErrorHandler(error, c);

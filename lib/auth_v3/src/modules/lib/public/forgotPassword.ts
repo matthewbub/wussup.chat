@@ -8,7 +8,7 @@ export const forgotPassword = async ({ email }: { email: string }, c: Context) =
 	try {
 		responseService.forgotPasswordSchema.parse({ email });
 		const result = await passwordService.initiateReset(email, c);
-		return c.json(createResponse(true, 'If a user exists with this email, they will receive reset instructions.', 'SUCCESS', result));
+		return createResponse(true, 'If a user exists with this email, they will receive reset instructions.', 'SUCCESS', result, 200);
 	} catch (error) {
 		return commonErrorHandler(error, c);
 	}

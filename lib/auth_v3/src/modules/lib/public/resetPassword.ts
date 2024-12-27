@@ -9,8 +9,7 @@ export const resetPassword = async (
 ) => {
 	try {
 		responseService.resetPasswordSchema.parse({ token, password, confirmPassword });
-		const result = await passwordService.completeReset({ token, newPassword: password }, c);
-		return c.json(result);
+		return await passwordService.completeReset({ token, newPassword: password }, c);
 	} catch (error) {
 		return commonErrorHandler(error, c);
 	}

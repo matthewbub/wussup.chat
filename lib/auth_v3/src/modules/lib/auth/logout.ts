@@ -6,20 +6,19 @@ import { commonErrorHandler } from '../../../helpers/commonErrorHandler';
 
 export const logout = async (token: string, c: Context) => {
 	try {
-		// zod schema validation
 		const schema = z.object({ token: z.string() });
 		const validation = schema.safeParse({ token });
 		if (!validation.success) {
-			return c.json(createResponse(false, 'Invalid token format', 'ERR_INVALID_TOKEN_FORMAT'), 400);
+			return createResponse(false, 'Invalid token format', 'ERR_INVALID_TOKEN_FORMAT', null, 400);
 		}
 
 		// revoke the current token
 		const revoked = await jwtService.revokeRefreshToken(token, c);
 		if (!revoked) {
-			return c.json(createResponse(false, 'Failed to logout', 'ERR_LOGOUT_FAILED'), 500);
+			return createResponse(false, 'Failed to logout', 'ERR_LOGOUT_FAILED', null, 500);
 		}
 
-		return c.json(createResponse(true, 'Successfully logged out', 'SUCCESS'));
+		return createResponse(true, 'Successfully logged out', 'SUCCESS', null, 200);
 	} catch (error) {
 		return commonErrorHandler(error, c);
 	}

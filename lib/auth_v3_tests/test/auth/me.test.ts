@@ -107,7 +107,7 @@ describe("Auth Endpoints - /v3/auth/me", () => {
 
     const data = await response.json();
 
-    expect(response.status).toBe(200);
+    expect(response.status).toBe(201);
     expect(data).toMatchObject({
       success: true,
       message: "Profile updated successfully",
@@ -149,7 +149,7 @@ describe("Auth Endpoints - /v3/auth/me", () => {
     });
 
     const data = await response.json();
-    expect(response.status).toBe(200);
+    expect(response.status).toBe(400);
     expect(data).toMatchObject({
       success: false,
       message: "Email already registered",

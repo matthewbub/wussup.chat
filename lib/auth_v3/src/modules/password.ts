@@ -292,12 +292,12 @@ const passwordService = {
 				.run();
 			const tokenData = tokenResult.results?.[0] as { user_id: string; status: string };
 			if (!tokenData) {
-				return createResponse(false, 'Invalid or expired reset token', 'INVALID_RESET_TOKEN');
+				return createResponse(false, 'Invalid or expired reset token', 'INVALID_RESET_TOKEN', null, 401);
 			}
 
 			// Check if user is in a state that doesn't allow password reset
 			if (tokenData.status === 'deleted' || tokenData.status === 'suspended') {
-				return createResponse(false, 'Account is not eligible for password reset', 'ACCOUNT_NOT_ELIGIBLE_FOR_RESET');
+				return createResponse(false, 'Account is not eligible for password reset', 'ACCOUNT_NOT_ELIGIBLE_FOR_RESET', null, 401);
 			}
 
 			// Hash new password and check history
@@ -305,7 +305,7 @@ const passwordService = {
 			const isPasswordReused = await passwordService.isPasswordReused({ userId: tokenData.user_id, newPasswordHash: hashedPassword }, c);
 
 			if (isPasswordReused) {
-				return createResponse(false, 'Cannot reuse a recent password', 'CANNOT_REUSE_RECENT_PASSWORD');
+				return createResponse(false, 'Cannot reuse a recent password', 'CANNOT_REUSE_RECENT_PASSWORD', null, 401);
 			}
 
 			// Update password, mark token as used, and update user status in transaction
@@ -340,7 +340,7 @@ const passwordService = {
 				throw new Error('Failed to update password');
 			}
 
-			return createResponse(true, 'Password has been reset successfully', 'PASSWORD_RESET_SUCCESS');
+			return createResponse(true, 'Password has been reset successfully', 'PASSWORD_RESET_SUCCESS', null, 200);
 		} catch (error) {
 			throw error;
 		}

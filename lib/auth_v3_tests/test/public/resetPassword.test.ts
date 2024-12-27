@@ -106,7 +106,7 @@ describe("Public Auth Endpoints - Reset Password", () => {
     );
 
     const resetPasswordData = await resetPasswordResponse.json();
-    expect(resetPasswordResponse.status).toBe(200);
+    expect(resetPasswordResponse.status).toBe(401);
     expect(resetPasswordData).toMatchObject({
       success: false,
       message: "Invalid or expired reset token",

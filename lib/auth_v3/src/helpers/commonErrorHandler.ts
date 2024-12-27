@@ -10,7 +10,7 @@ export function commonErrorHandler(error: unknown, c: Context) {
 			code: err.code,
 		}));
 		// return a structured response with all issues
-		return c.json(createResponse(false, 'Validation error', 'VALIDATION_ERROR', { issues }), 400);
+		return createResponse(false, 'Validation error', 'VALIDATION_ERROR', { issues }, 400);
 	}
-	return c.json(createResponse(false, error instanceof Error ? error.message : 'Unknown error', 'UNEXPECTED_ERROR'), 500);
+	return createResponse(false, error instanceof Error ? error.message : 'Unknown error', 'UNEXPECTED_ERROR', null, 500);
 }
