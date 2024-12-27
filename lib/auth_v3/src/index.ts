@@ -9,6 +9,7 @@ import jwtService from './modules/jwt';
 import responseService from './modules/response';
 import authService from './modules/auth';
 import adminService from './modules/admin';
+import { createResponse } from './helpers/createResponse';
 
 export interface Env {
 	AUTH_KEY: string;
@@ -109,19 +110,15 @@ app.post('/v3/public/resend-verification-email', async (c) => {
 app.get('/v3/auth/logout', async (c) => {
 	const token = c.req.header('Authorization')?.split(' ')[1];
 	if (!token) {
-		return c.json({ success: false, message: 'No token provided' }, 401);
+		return c.json(createResponse(false, 'No token provided', 'ERR_NO_TOKEN_PROVIDED'), 401);
 	}
 	return await authService.logout(token, c);
-});
-
-app.get('/v3/auth/test', (c) => {
-	return c.json({ message: 'Hello World' });
 });
 
 app.get('/v3/auth/me', async (c) => {
 	const token = c.req.header('Authorization')?.split(' ')[1];
 	if (!token) {
-		return c.json({ success: false, message: 'No token provided' }, 401);
+		return c.json(createResponse(false, 'No token provided', 'ERR_NO_TOKEN_PROVIDED'), 401);
 	}
 	const result = await authService.getCurrentUser(token, c);
 	return c.json(result);
@@ -130,7 +127,7 @@ app.get('/v3/auth/me', async (c) => {
 app.put('/v3/auth/me', zValidator('json', responseService.updateUserSchema), async (c) => {
 	const token = c.req.header('Authorization')?.split(' ')[1];
 	if (!token) {
-		return c.json({ success: false, message: 'No token provided' }, 401);
+		return c.json(createResponse(false, 'No token provided', 'ERR_NO_TOKEN_PROVIDED'), 401);
 	}
 	const updates = await c.req.json();
 	const result = await authService.updateUser(token, updates, c);
@@ -140,7 +137,7 @@ app.put('/v3/auth/me', zValidator('json', responseService.updateUserSchema), asy
 app.delete('/v3/auth/me', async (c) => {
 	const token = c.req.header('Authorization')?.split(' ')[1];
 	if (!token) {
-		return c.json({ success: false, message: 'No token provided' }, 401);
+		return c.json(createResponse(false, 'No token provided', 'ERR_NO_TOKEN_PROVIDED'), 401);
 	}
 	const result = await authService.deleteAccount(token, c);
 	return c.json(result);
@@ -150,17 +147,32 @@ app.delete('/v3/auth/me', async (c) => {
 // app.use('/v3/admin/*', adminAuthMiddleware);
 
 app.post('/v3/admin/users/:id/promote', async (c) => {
+	const token = c.req.header('Authorization')?.split(' ')[1];
+	if (!token) {
+		return c.json(createResponse(false, 'No token provided', 'ERR_NO_TOKEN_PROVIDED'), 401);
+	}
+
 	const userId = c.req.param('id');
 	const result = await adminService.promoteUser(userId, c);
 	return c.json(result);
 });
 
 app.get('/v3/admin/users', async (c) => {
+	const token = c.req.header('Authorization')?.split(' ')[1];
+	if (!token) {
+		return c.json(createResponse(false, 'No token provided', 'ERR_NO_TOKEN_PROVIDED'), 401);
+	}
+
 	const result = await adminService.listUsers(c);
 	return c.json(result);
 });
 
 app.post('/v3/admin/users/:id/suspend', async (c) => {
+	const token = c.req.header('Authorization')?.split(' ')[1];
+	if (!token) {
+		return c.json(createResponse(false, 'No token provided', 'ERR_NO_TOKEN_PROVIDED'), 401);
+	}
+
 	const userId = c.req.param('id');
 	const result = await adminService.suspendUser(userId, c);
 	return c.json(result);

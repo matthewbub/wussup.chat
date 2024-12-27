@@ -1,6 +1,7 @@
 import { Context } from 'hono';
-import { env } from 'hono/adapter';
 import dbService from './database';
+import { createResponse } from '../helpers/createResponse';
+import { commonErrorHandler } from '../helpers/commonErrorHandler';
 
 interface AdminResponse {
 	success: boolean;
@@ -23,30 +24,21 @@ interface UserListResponse {
 
 const adminService = {
 	// promote user to admin role
-	promoteUser: async (userId: string, c: Context): Promise<AdminResponse> => {
+	promoteUser: async (userId: string, c: Context) => {
 		try {
 			const result = await dbService.query<AdminResponse>(c, 'UPDATE users SET role = ? WHERE id = ?', ['admin', userId]);
 			if (!result.success) {
-				return {
-					success: false,
-					message: 'Failed to promote user',
-				};
+				return c.json(createResponse(false, 'Failed to promote user', 'ERR_PROMOTE_FAILED'), 500);
 			}
 
-			return {
-				success: true,
-				message: 'User promoted to admin successfully',
-			};
+			return c.json(createResponse(true, 'User promoted to admin successfully', 'SUCCESS'));
 		} catch (error) {
-			return {
-				success: false,
-				message: error instanceof Error ? error.message : 'Unknown error',
-			};
+			return commonErrorHandler(error, c);
 		}
 	},
 
 	// list all users (admin only)
-	listUsers: async (c: Context): Promise<UserListResponse> => {
+	listUsers: async (c: Context) => {
 		try {
 			const result = await dbService.query<UserListResponse['users']>(
 				c,
@@ -54,45 +46,27 @@ const adminService = {
 			);
 
 			if (!result.success) {
-				return {
-					success: false,
-					message: 'Failed to fetch users',
-				};
+				return c.json(createResponse(false, 'Failed to fetch users', 'ERR_FETCH_USERS_FAILED'), 500);
 			}
 
-			return {
-				success: true,
-				users: result.data as UserListResponse['users'],
-			};
+			return c.json(createResponse(true, 'Users fetched successfully', 'SUCCESS', { users: result.data as UserListResponse['users'] }));
 		} catch (error) {
-			return {
-				success: false,
-				message: error instanceof Error ? error.message : 'Unknown error',
-			};
+			return commonErrorHandler(error, c);
 		}
 	},
 
 	// suspend user account
-	suspendUser: async (userId: string, c: Context): Promise<AdminResponse> => {
+	suspendUser: async (userId: string, c: Context) => {
 		try {
 			const result = await dbService.query<AdminResponse>(c, 'UPDATE users SET status = ? WHERE id = ?', ['suspended', userId]);
 
 			if (!result.success) {
-				return {
-					success: false,
-					message: 'Failed to suspend user. Please try again or contact support if the issue persists.',
-				};
+				return c.json(createResponse(false, 'Failed to suspend user', 'ERR_SUSPEND_FAILED'), 500);
 			}
 
-			return {
-				success: true,
-				message: 'User suspended successfully',
-			};
+			return c.json(createResponse(true, 'User suspended successfully', 'SUCCESS'));
 		} catch (error) {
-			return {
-				success: false,
-				message: error instanceof Error ? error.message : 'Unknown error',
-			};
+			return commonErrorHandler(error, c);
 		}
 	},
 };

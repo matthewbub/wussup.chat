@@ -3,6 +3,10 @@ import { env } from 'hono/adapter';
 import jwtService from './jwt';
 import passwordService from './password';
 import emailService from './email';
+import { z } from 'zod';
+import { createResponse } from '../helpers/createResponse';
+import { commonErrorHandler } from '../helpers/commonErrorHandler';
+import { zValidator } from '@hono/zod-validator';
 
 interface LogoutResponse {
 	success: boolean;
@@ -48,55 +52,38 @@ const authService = {
 	logout: async (token: string, c: Context) => {
 		const db = env(c).DB;
 		try {
-			// Revoke the current token
-			const revoked = await jwtService.revokeRefreshToken(token, c);
-			if (!revoked) {
-				return c.json<LogoutResponse>(
-					{
-						success: false,
-						message: 'Failed to logout',
-					},
-					500
-				);
+			// zod schema validation
+			const schema = z.object({ token: z.string() });
+			const validation = schema.safeParse({ token });
+			if (!validation.success) {
+				return c.json(createResponse(false, 'Invalid token format', 'ERR_INVALID_TOKEN_FORMAT'), 400);
 			}
 
-			return c.json<LogoutResponse>({
-				success: true,
-				message: 'Successfully logged out',
-			});
+			// revoke the current token
+			const revoked = await jwtService.revokeRefreshToken(token, c);
+			if (!revoked) {
+				return c.json(createResponse(false, 'Failed to logout', 'ERR_LOGOUT_FAILED'), 500);
+			}
+
+			return c.json(createResponse(true, 'Successfully logged out', 'SUCCESS'));
 		} catch (error) {
-			return c.json<LogoutResponse>(
-				{
-					success: false,
-					message: error instanceof Error ? error.message : 'Unknown error',
-				},
-				500
-			);
+			return commonErrorHandler(error, c);
 		}
 	},
 
-	changePassword: async (
-		{ currentPassword, newPassword }: { currentPassword: string; newPassword: string },
-		c: Context
-	): Promise<ChangePasswordResponse> => {
+	changePassword: async ({ currentPassword, newPassword }: { currentPassword: string; newPassword: string }, c: Context) => {
 		const db = env(c).DB;
 		const token = c.req.header('Authorization')?.split(' ')[1];
 
 		if (!token) {
-			return {
-				success: false,
-				message: 'Authentication required',
-			};
+			return c.json(createResponse(false, 'Authentication required', 'ERR_AUTH_REQUIRED'), 401);
 		}
 
 		try {
 			// Get user from the token
 			const payload = await jwtService.decodeToken(token, c);
 			if (!payload?.id) {
-				return {
-					success: false,
-					message: 'Invalid token',
-				};
+				return c.json(createResponse(false, 'Invalid token', 'ERR_INVALID_TOKEN'), 401);
 			}
 
 			// Get user's current password hash
@@ -104,19 +91,13 @@ const authService = {
 
 			const user = userResult.results?.[0] as { id: string; password: string; status: string };
 			if (!user) {
-				return {
-					success: false,
-					message: 'User not found',
-				};
+				return c.json(createResponse(false, 'User not found', 'ERR_USER_NOT_FOUND'), 404);
 			}
 
 			// Verify current password
 			const isCurrentPasswordValid = await passwordService.verifyPassword(user.password, currentPassword);
 			if (!isCurrentPasswordValid) {
-				return {
-					success: false,
-					message: 'Current password is incorrect',
-				};
+				return c.json(createResponse(false, 'Current password is incorrect', 'ERR_INCORRECT_PASSWORD'), 400);
 			}
 
 			// Hash new password
@@ -126,10 +107,7 @@ const authService = {
 			const isPasswordReused = await passwordService.isPasswordReused({ userId: user.id, newPasswordHash: hashedNewPassword }, c);
 
 			if (isPasswordReused) {
-				return {
-					success: false,
-					message: 'Cannot reuse a recent password',
-				};
+				return c.json(createResponse(false, 'Cannot reuse a recent password', 'ERR_PASSWORD_REUSED'), 400);
 			}
 
 			// Update password and add to history in a transaction
@@ -142,7 +120,7 @@ const authService = {
 
 			const results = await transaction;
 			if (!results.every((result: { success: boolean }) => result.success)) {
-				throw new Error('Failed to update password');
+				return c.json(createResponse(false, 'Failed to update password', 'ERR_UPDATE_FAILED'), 500);
 			}
 
 			// Revoke all refresh tokens for this user for security
@@ -151,28 +129,19 @@ const authService = {
 				.bind(user.id)
 				.run();
 
-			return {
-				success: true,
-				message: 'Password changed successfully. Please log in with your new password.',
-			};
+			return c.json(createResponse(true, 'Password changed successfully. Please log in with your new password.', 'SUCCESS'));
 		} catch (error) {
-			return {
-				success: false,
-				message: error instanceof Error ? error.message : 'Failed to change password',
-			};
+			return commonErrorHandler(error, c);
 		}
 	},
 
-	getCurrentUser: async (token: string, c: Context): Promise<UserResponse> => {
+	getCurrentUser: async (token: string, c: Context) => {
 		const db = env(c).DB;
 
 		try {
 			const payload = await jwtService.decodeToken(token, c);
 			if (!payload?.id) {
-				return {
-					success: false,
-					message: 'Invalid token',
-				};
+				return c.json(createResponse(false, 'Invalid token', 'ERR_INVALID_TOKEN'), 401);
 			}
 
 			const userResult = await db
@@ -189,83 +158,60 @@ const authService = {
 
 			const user = userResult.results?.[0];
 			if (!user) {
-				return {
-					success: false,
-					message: 'User not found',
-				};
+				return c.json(createResponse(false, 'User not found', 'ERR_USER_NOT_FOUND'), 404);
 			}
 
-			return {
-				success: true,
-				user: user as UserResponse['user'],
-			};
+			return c.json(createResponse(true, 'User retrieved successfully', 'SUCCESS', { user }));
 		} catch (error) {
-			return {
-				success: false,
-				message: error instanceof Error ? error.message : 'Failed to fetch user data',
-			};
+			return commonErrorHandler(error, c);
 		}
 	},
 
-	updateUser: async (token: string, updates: { email?: string; username?: string }, c: Context): Promise<UpdateUserResponse> => {
+	updateUser: async (token: string, updates: { email?: string; username?: string }, c: Context) => {
 		const db = env(c).DB;
 
 		try {
 			// Decode the token to extract user information
 			const payload = await jwtService.decodeToken(token, c);
 			if (!payload?.id) {
-				// If the token is invalid or doesn't contain an ID, return an error
-				return { success: false, message: 'Invalid token' };
+				return c.json(createResponse(false, 'Invalid token', 'ERR_INVALID_TOKEN'), 401);
 			}
 
-			// Initialize some arrays to hold SQL transaction steps and update fields
 			const transaction = [];
 			const updates_array = [];
 
 			// Check if a username update is requested
 			if (updates.username) {
-				// Verify if the new username is already taken by another user
 				const existingUsername = await db
 					.prepare('SELECT id FROM users WHERE username = ? AND id != ?')
 					.bind(updates.username, payload.id)
 					.run();
 
 				if (existingUsername.results?.length) {
-					// If the username is taken, return an error
-					return { success: false, message: 'Username already taken' };
+					return c.json(createResponse(false, 'Username already taken', 'ERR_USERNAME_TAKEN'), 409);
 				}
 
-				// Add the username update to the list of updates
 				updates_array.push('username = ?');
 			}
 
 			// Check if an email update is requested
 			if (updates.email) {
-				// Verify if the new email is already registered to another user
 				const existingEmail = await db.prepare('SELECT id FROM users WHERE email = ? AND id != ?').bind(updates.email, payload.id).run();
 
 				if (existingEmail.results?.length) {
-					// If the email is already registered, return an error
-					return { success: false, message: 'Email already registered' };
+					return c.json(createResponse(false, 'Email already registered', 'ERR_EMAIL_REGISTERED'), 409);
 				}
 
-				// Add the email update and reset email verification status
 				updates_array.push('email = ?');
-				// updates_array.push('email_verified = false');
 
-				// Generate a verification token for the new email
 				const verificationToken = crypto.randomUUID();
 				transaction.push(
-					db.prepare('INSERT INTO verification_tokens (token, user_id, type, expires_at) VALUES (?, ?, ?, ?)').bind(
-						verificationToken,
-						payload.id,
-						'email',
-						new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() // Token expires in 24 hours
-					)
+					db
+						.prepare('INSERT INTO verification_tokens (token, user_id, type, expires_at) VALUES (?, ?, ?, ?)')
+						.bind(verificationToken, payload.id, 'email', new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString())
 				);
 			}
 
-			// Construct the SQL update query using the collected updates
 			const updateQuery = `
             UPDATE users 
             SET ${updates_array.join(', ')}
@@ -273,7 +219,6 @@ const authService = {
             RETURNING email, username
         `;
 
-			// Prepare the parameters for the update query
 			const bindParams = [];
 			if (updates.username) bindParams.push(updates.username);
 			if (updates.email) {
@@ -281,21 +226,16 @@ const authService = {
 			}
 			bindParams.push(payload.id);
 
-			// Add the update query to the transaction
 			transaction.push(db.prepare(updateQuery).bind(...bindParams));
 
-			// Execute the transaction to apply all changes
 			const results = await db.batch(transaction);
 
-			// Check if all transaction steps were successful
 			if (!results.every((result: { success: boolean }) => result.success)) {
-				throw new Error('Failed to update user information');
+				return c.json(createResponse(false, 'Failed to update user information', 'ERR_UPDATE_FAILED'), 500);
 			}
 
-			// Extract the updated user information from the transaction results
 			const updatedUser = results[results.length - 1].results?.[0] as UpdateUserResponse['user'];
 
-			// If the email was updated, send a verification email
 			if (updates.email) {
 				await emailService.sendVerificationEmail(
 					{
@@ -306,28 +246,26 @@ const authService = {
 				);
 			}
 
-			// Return a success response with the updated user information
-			return {
-				success: true,
-				message: updates.email ? 'Profile updated. Please verify your new email address.' : 'Profile updated successfully',
-				user: updatedUser,
-			};
+			return c.json(
+				createResponse(
+					true,
+					updates.email ? 'Profile updated. Please verify your new email address.' : 'Profile updated successfully',
+					'SUCCESS',
+					{ user: updatedUser }
+				)
+			);
 		} catch (error) {
-			// Handle any errors that occur during the update process
-			return {
-				success: false,
-				message: error instanceof Error ? error.message : 'Failed to update profile',
-			};
+			return commonErrorHandler(error, c);
 		}
 	},
 
-	deleteAccount: async (token: string, c: Context): Promise<DeleteAccountResponse> => {
+	deleteAccount: async (token: string, c: Context) => {
 		const db = env(c).DB;
 
 		try {
 			const payload = await jwtService.decodeToken(token, c);
 			if (!payload?.id) {
-				return { success: false, message: 'Invalid token' };
+				return c.json(createResponse(false, 'Invalid token', 'ERR_INVALID_TOKEN'), 401);
 			}
 
 			// Update user status to deleted and revoke all tokens
@@ -338,18 +276,12 @@ const authService = {
 
 			const results = await transaction;
 			if (!results.every((result: { success: boolean }) => result.success)) {
-				throw new Error('Failed to delete account');
+				return c.json(createResponse(false, 'Failed to delete account', 'ERR_DELETE_FAILED'), 500);
 			}
 
-			return {
-				success: true,
-				message: 'Account successfully deleted',
-			};
+			return c.json(createResponse(true, 'Account successfully deleted', 'SUCCESS'));
 		} catch (error) {
-			return {
-				success: false,
-				message: error instanceof Error ? error.message : 'Failed to delete account',
-			};
+			return commonErrorHandler(error, c);
 		}
 	},
 
