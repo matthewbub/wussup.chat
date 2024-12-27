@@ -24,5 +24,6 @@ export default defineWorkersProject(async () => {
 				},
 			},
 		},
+		timeout: 50000 * 5,
 	};
 });

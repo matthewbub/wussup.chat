@@ -8,6 +8,8 @@ import ERROR_CODES from '../../../constants/errorCodes';
 import ERROR_MESSAGES from '../../../constants/errorMessages';
 import { createResponse } from '../../../helpers/createResponse';
 import { commonErrorHandler } from '../../../helpers/commonErrorHandler';
+import dbService from '../../database';
+import adminService from '../admin';
 const EXPIRES_IN = 60 * 60; // 1 hour
 const STATUS_PENDING = 'pending';
 
@@ -19,6 +21,13 @@ export const signUp = async (
 
 	try {
 		responseService.signUpSchema.parse({ email, password, confirmPassword });
+
+		// if no users, promote this user to admin
+		const adminCheckResult = await dbService.query<{ count: number }>(c, 'SELECT COUNT(*) as count FROM users WHERE role = "admin"');
+		if (!adminCheckResult.success) {
+			return c.json(createResponse(false, 'Failed to check admin count', 'ERR_ADMIN_CHECK_FAILED'), 500);
+		}
+		const adminCount = adminCheckResult.data?.count || 0;
 
 		// check for existing email
 		const existingUserResult = await db.prepare('SELECT id FROM users WHERE email = ?').bind(email).run();
@@ -41,6 +50,14 @@ export const signUp = async (
 		const user = d1Result.results?.[0] as { id: string };
 		if (!user) {
 			return c.json(createResponse(false, ERROR_MESSAGES.USER_CREATION_FAILED, ERROR_CODES.USER_CREATION_FAILED), 500);
+		}
+
+		// if no users, promote this user to admin
+		if (adminCount === 0) {
+			const adminResult = await adminService.promoteUser(user.id, c);
+			if (adminResult instanceof Error) {
+				return createResponse(false, 'Failed to promote user', 'ERR_PROMOTE_FAILED');
+			}
 		}
 
 		// add the password to the password history

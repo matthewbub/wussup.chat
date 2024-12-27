@@ -8,7 +8,7 @@ import publicService from './modules/lib/public';
 import authService from './modules/lib/auth';
 import jwtService from './modules/jwt';
 import responseService from './modules/response';
-import adminService from './modules/admin';
+import adminService from './modules/lib/admin';
 import { createResponse } from './helpers/createResponse';
 
 export interface Env {
@@ -157,8 +157,7 @@ app.post('/v3/admin/users/:id/promote', async (c) => {
 	}
 
 	const userId = c.req.param('id');
-	const result = await adminService.promoteUser(userId, c);
-	return c.json(result);
+	return await adminService.promoteUser(userId, c);
 });
 
 app.get('/v3/admin/users', async (c) => {
@@ -167,8 +166,7 @@ app.get('/v3/admin/users', async (c) => {
 		return c.json(createResponse(false, 'No token provided', 'ERR_NO_TOKEN_PROVIDED'), 401);
 	}
 
-	const result = await adminService.listUsers(c);
-	return c.json(result);
+	return await adminService.listUsers(c);
 });
 
 app.post('/v3/admin/users/:id/suspend', async (c) => {
@@ -178,8 +176,7 @@ app.post('/v3/admin/users/:id/suspend', async (c) => {
 	}
 
 	const userId = c.req.param('id');
-	const result = await adminService.suspendUser(userId, c);
-	return c.json(result);
+	return await adminService.suspendUser(userId, c);
 });
 
 export default app;

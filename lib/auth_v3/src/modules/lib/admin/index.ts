@@ -1,7 +1,7 @@
 import { Context } from 'hono';
-import dbService from './database';
-import { createResponse } from '../helpers/createResponse';
-import { commonErrorHandler } from '../helpers/commonErrorHandler';
+import dbService from '../../database';
+import { createResponse } from '../../../helpers/createResponse';
+import { commonErrorHandler } from '../../../helpers/commonErrorHandler';
 
 interface AdminResponse {
 	success: boolean;
