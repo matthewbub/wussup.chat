@@ -24,7 +24,7 @@ const dbService = {
 
 			return {
 				success: result.success,
-				data: result.results?.[0] as T,
+				data: result as T,
 			};
 		} catch (error) {
 			return {

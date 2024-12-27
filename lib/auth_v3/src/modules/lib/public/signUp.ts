@@ -22,13 +22,6 @@ export const signUp = async (
 	try {
 		responseService.signUpSchema.parse({ email, password, confirmPassword });
 
-		// if no users, promote this user to admin
-		const adminCheckResult = await dbService.query<{ count: number }>(c, 'SELECT COUNT(*) as count FROM users WHERE role = "admin"');
-		if (!adminCheckResult.success) {
-			return createResponse(false, 'Failed to check admin count', 'ERR_ADMIN_CHECK_FAILED', null, 500);
-		}
-		const adminCount = adminCheckResult.data?.count || 0;
-
 		// check for existing email
 		const existingUserResult = await db.prepare('SELECT id FROM users WHERE email = ?').bind(email).run();
 		if (existingUserResult.success && existingUserResult.results?.length) {
@@ -50,14 +43,6 @@ export const signUp = async (
 		const user = d1Result.results?.[0] as { id: string };
 		if (!user) {
 			return createResponse(false, ERROR_MESSAGES.USER_CREATION_FAILED, ERROR_CODES.USER_CREATION_FAILED, null, 500);
-		}
-
-		// if no users, promote this user to admin
-		if (adminCount === 0) {
-			const adminResult = await adminService.promoteUser(user.id, c);
-			if (adminResult instanceof Error) {
-				return createResponse(false, 'Failed to promote user', 'ERR_PROMOTE_FAILED', null, 500);
-			}
 		}
 
 		// add the password to the password history
