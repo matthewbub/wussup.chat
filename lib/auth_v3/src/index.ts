@@ -25,11 +25,9 @@ app.use(
 	'/v3/auth/*',
 	bearerAuth({
 		verifyToken: async (token, c) => {
-			console.log('Verifying token:', token);
 			try {
 				return await jwtService.verifyRefreshToken(token, c);
 			} catch {
-				console.log('Token verification failed');
 				return false;
 			}
 		},
