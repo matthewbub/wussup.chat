@@ -1,27 +1,15 @@
 import { Context } from 'hono';
 import { env } from 'hono/adapter';
-import jwtService from '../jwt';
-import passwordService from '../password';
-import emailService from '../email';
-import responseService from '../response';
-import ERROR_CODES from '../../constants/errorCodes';
-import ERROR_MESSAGES from '../../constants/errorMessages';
-import { createResponse } from '../../helpers/createResponse';
-import { commonErrorHandler } from '../../helpers/commonErrorHandler';
+import jwtService from '../../jwt';
+import passwordService from '../../password';
+import emailService from '../../email';
+import responseService from '../../response';
+import ERROR_CODES from '../../../constants/errorCodes';
+import ERROR_MESSAGES from '../../../constants/errorMessages';
+import { createResponse } from '../../../helpers/createResponse';
+import { commonErrorHandler } from '../../../helpers/commonErrorHandler';
 const EXPIRES_IN = 60 * 60; // 1 hour
 const STATUS_PENDING = 'pending';
-
-interface CommonAuthResponse {
-	access_token: string;
-	token_type: string;
-	expires_in: number;
-}
-
-export interface SignUpResponse extends CommonAuthResponse {
-	verificationToken?: string; // Optional since it's only included in development
-}
-
-export interface LoginResponse extends CommonAuthResponse {}
 
 export const signUp = async (
 	{ email, password, confirmPassword }: { email: string; password: string; confirmPassword: string },

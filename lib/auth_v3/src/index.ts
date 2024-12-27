@@ -4,7 +4,7 @@ import { bearerAuth } from 'hono/bearer-auth';
 import { env } from 'hono/adapter';
 import { zValidator } from '@hono/zod-validator';
 import { D1Database } from '@cloudflare/workers-types';
-import publicService from './modules/public';
+import publicService from './modules/lib/public';
 import jwtService from './modules/jwt';
 import responseService from './modules/response';
 import authService from './modules/auth';
@@ -13,6 +13,7 @@ import adminService from './modules/admin';
 export interface Env {
 	AUTH_KEY: string;
 	DB: D1Database;
+	ENV: string;
 }
 
 const app = new Hono<{ Bindings: Env }>();
@@ -24,11 +25,7 @@ app.use(
 	bearerAuth({
 		verifyToken: async (token, c) => {
 			try {
-				const isTokenValid = await jwtService.verifyRefreshToken(token, c);
-				if (!isTokenValid) {
-					return false;
-				}
-				return true;
+				return await jwtService.verifyRefreshToken(token, c);
 			} catch {
 				return false;
 			}
@@ -62,44 +59,51 @@ const adminAuthMiddleware = async (c: Context, next: () => Promise<void>) => {
 // routes
 app.post('/v3/public/sign-up', async (c) => {
 	const { email, password, confirmPassword } = await c.req.json();
-	const result = await publicService.signUp({ email, password, confirmPassword }, c);
-	return result;
+	return await publicService.signUp(
+		{
+			email,
+			password,
+			confirmPassword,
+		},
+		c
+	);
 });
 
 app.post('/v3/public/login', async (c) => {
 	const { email, password } = await c.req.json();
-	const result = await publicService.login({ email, password }, c);
-	return result;
+	return await publicService.login({ email, password }, c);
 });
 
 app.post('/v3/public/refresh-token', async (c) => {
 	const { refreshToken } = await c.req.json();
-	const result = await publicService.refreshToken({ refreshToken }, c);
-	return result;
+	return await publicService.refreshToken({ refreshToken }, c);
 });
 
 app.post('/v3/public/verify-email', async (c) => {
 	const { token } = await c.req.json();
-	const result = await publicService.verifyEmail({ token }, c);
-	return result;
+	return await publicService.verifyEmail({ token }, c);
 });
 
 app.post('/v3/public/forgot-password', async (c) => {
 	const { email } = await c.req.json();
-	const result = await publicService.forgotPassword({ email }, c);
-	return result;
+	return await publicService.forgotPassword({ email }, c);
 });
 
 app.post('/v3/public/reset-password', async (c) => {
 	const { token, password, confirmPassword } = await c.req.json();
-	const result = await publicService.resetPassword({ token, password, confirmPassword }, c);
-	return result;
+	return await publicService.resetPassword(
+		{
+			token,
+			password,
+			confirmPassword,
+		},
+		c
+	);
 });
 
 app.post('/v3/public/resend-verification-email', async (c) => {
 	const { email } = await c.req.json();
-	const result = await publicService.resendVerificationEmail({ email }, c);
-	return result;
+	return await publicService.resendVerificationEmail({ email }, c);
 });
 
 app.get('/v3/auth/logout', async (c) => {
@@ -107,8 +111,7 @@ app.get('/v3/auth/logout', async (c) => {
 	if (!token) {
 		return c.json({ success: false, message: 'No token provided' }, 401);
 	}
-	const result = await authService.logout(token, c);
-	return result;
+	return await authService.logout(token, c);
 });
 
 app.get('/v3/auth/test', (c) => {
