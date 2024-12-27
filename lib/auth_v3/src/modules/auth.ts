@@ -8,31 +8,6 @@ import { createResponse } from '../helpers/createResponse';
 import { commonErrorHandler } from '../helpers/commonErrorHandler';
 import { zValidator } from '@hono/zod-validator';
 
-interface LogoutResponse {
-	success: boolean;
-	message: string;
-}
-
-interface ChangePasswordResponse {
-	success: boolean;
-	message: string;
-}
-
-interface UserResponse {
-	success: boolean;
-	message?: string;
-	user?: {
-		id: string;
-		email: string;
-		username: string;
-		status: string;
-		role: string;
-		email_verified: boolean;
-		last_login_at: string | null;
-		created_at: string;
-	};
-}
-
 interface UpdateUserResponse {
 	success: boolean;
 	message: string;
@@ -41,11 +16,6 @@ interface UpdateUserResponse {
 		username: string;
 		email_verified: boolean;
 	};
-}
-
-interface DeleteAccountResponse {
-	success: boolean;
-	message: string;
 }
 
 const authService = {
@@ -141,7 +111,7 @@ const authService = {
 		try {
 			const payload = await jwtService.decodeToken(token, c);
 			if (!payload?.id) {
-				return c.json(createResponse(false, 'Invalid token', 'ERR_INVALID_TOKEN'), 401);
+				return createResponse(false, 'Invalid token', 'ERR_INVALID_TOKEN');
 			}
 
 			const userResult = await db
@@ -157,11 +127,12 @@ const authService = {
 				.run();
 
 			const user = userResult.results?.[0];
+
 			if (!user) {
-				return c.json(createResponse(false, 'User not found', 'ERR_USER_NOT_FOUND'), 404);
+				return createResponse(false, 'User not found', 'ERR_USER_NOT_FOUND');
 			}
 
-			return c.json(createResponse(true, 'User retrieved successfully', 'SUCCESS', { user }));
+			return createResponse(true, 'User retrieved successfully', 'SUCCESS', user);
 		} catch (error) {
 			return commonErrorHandler(error, c);
 		}
@@ -174,7 +145,7 @@ const authService = {
 			// Decode the token to extract user information
 			const payload = await jwtService.decodeToken(token, c);
 			if (!payload?.id) {
-				return c.json(createResponse(false, 'Invalid token', 'ERR_INVALID_TOKEN'), 401);
+				return createResponse(false, 'Invalid token', 'ERR_INVALID_TOKEN');
 			}
 
 			const transaction = [];
@@ -188,7 +159,7 @@ const authService = {
 					.run();
 
 				if (existingUsername.results?.length) {
-					return c.json(createResponse(false, 'Username already taken', 'ERR_USERNAME_TAKEN'), 409);
+					return createResponse(false, 'Username already taken', 'ERR_USERNAME_TAKEN');
 				}
 
 				updates_array.push('username = ?');
@@ -199,7 +170,7 @@ const authService = {
 				const existingEmail = await db.prepare('SELECT id FROM users WHERE email = ? AND id != ?').bind(updates.email, payload.id).run();
 
 				if (existingEmail.results?.length) {
-					return c.json(createResponse(false, 'Email already registered', 'ERR_EMAIL_REGISTERED'), 409);
+					return createResponse(false, 'Email already registered', 'ERR_EMAIL_REGISTERED');
 				}
 
 				updates_array.push('email = ?');
@@ -231,7 +202,7 @@ const authService = {
 			const results = await db.batch(transaction);
 
 			if (!results.every((result: { success: boolean }) => result.success)) {
-				return c.json(createResponse(false, 'Failed to update user information', 'ERR_UPDATE_FAILED'), 500);
+				return createResponse(false, 'Failed to update user information', 'ERR_UPDATE_FAILED');
 			}
 
 			const updatedUser = results[results.length - 1].results?.[0] as UpdateUserResponse['user'];
@@ -246,13 +217,11 @@ const authService = {
 				);
 			}
 
-			return c.json(
-				createResponse(
-					true,
-					updates.email ? 'Profile updated. Please verify your new email address.' : 'Profile updated successfully',
-					'SUCCESS',
-					{ user: updatedUser }
-				)
+			return createResponse(
+				true,
+				updates.email ? 'Profile updated. Please verify your new email address.' : 'Profile updated successfully',
+				'SUCCESS',
+				{ user: updatedUser }
 			);
 		} catch (error) {
 			return commonErrorHandler(error, c);
@@ -265,7 +234,7 @@ const authService = {
 		try {
 			const payload = await jwtService.decodeToken(token, c);
 			if (!payload?.id) {
-				return c.json(createResponse(false, 'Invalid token', 'ERR_INVALID_TOKEN'), 401);
+				return createResponse(false, 'Invalid token', 'ERR_INVALID_TOKEN');
 			}
 
 			// Update user status to deleted and revoke all tokens
@@ -276,10 +245,10 @@ const authService = {
 
 			const results = await transaction;
 			if (!results.every((result: { success: boolean }) => result.success)) {
-				return c.json(createResponse(false, 'Failed to delete account', 'ERR_DELETE_FAILED'), 500);
+				return createResponse(false, 'Failed to delete account', 'ERR_DELETE_FAILED');
 			}
 
-			return c.json(createResponse(true, 'Account successfully deleted', 'SUCCESS'));
+			return createResponse(true, 'Account successfully deleted', 'SUCCESS');
 		} catch (error) {
 			return commonErrorHandler(error, c);
 		}

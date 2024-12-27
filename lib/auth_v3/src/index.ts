@@ -25,9 +25,11 @@ app.use(
 	'/v3/auth/*',
 	bearerAuth({
 		verifyToken: async (token, c) => {
+			console.log('Verifying token:', token);
 			try {
 				return await jwtService.verifyRefreshToken(token, c);
 			} catch {
+				console.log('Token verification failed');
 				return false;
 			}
 		},
@@ -110,6 +112,7 @@ app.post('/v3/public/resend-verification-email', async (c) => {
 app.get('/v3/auth/logout', async (c) => {
 	const token = c.req.header('Authorization')?.split(' ')[1];
 	if (!token) {
+		console.log('No token provided');
 		return c.json(createResponse(false, 'No token provided', 'ERR_NO_TOKEN_PROVIDED'), 401);
 	}
 	return await authService.logout(token, c);
@@ -121,6 +124,7 @@ app.get('/v3/auth/me', async (c) => {
 		return c.json(createResponse(false, 'No token provided', 'ERR_NO_TOKEN_PROVIDED'), 401);
 	}
 	const result = await authService.getCurrentUser(token, c);
+	console.log('Result for /v3/auth/me BIG DOG:', result);
 	return c.json(result);
 });
 

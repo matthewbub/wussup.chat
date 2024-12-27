@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { createFakeUser } from "../src/helpers";
+import { createFakeUser } from "../../src/helpers";
 
 const API_URL = "http://localhost:8787"; // adjust this to match your dev server
 
