@@ -5,9 +5,9 @@ import { env } from 'hono/adapter';
 import { zValidator } from '@hono/zod-validator';
 import { D1Database } from '@cloudflare/workers-types';
 import publicService from './modules/lib/public';
+import authService from './modules/lib/auth';
 import jwtService from './modules/jwt';
 import responseService from './modules/response';
-import authService from './modules/auth';
 import adminService from './modules/admin';
 import { createResponse } from './helpers/createResponse';
 
