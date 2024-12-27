@@ -260,7 +260,6 @@ const passwordService = {
 				message: 'If a user exists with this email, they will receive reset instructions.',
 			};
 		} catch (error) {
-			console.error('Password reset initiation error:', error);
 			throw error;
 		}
 	},
@@ -343,7 +342,6 @@ const passwordService = {
 
 			return createResponse(true, 'Password has been reset successfully', 'PASSWORD_RESET_SUCCESS');
 		} catch (error) {
-			console.error('Password reset completion error:', error);
 			throw error;
 		}
 	},

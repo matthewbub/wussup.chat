@@ -2,25 +2,7 @@ import { Context } from 'hono';
 import dbService from '../../database';
 import { createResponse } from '../../../helpers/createResponse';
 import { commonErrorHandler } from '../../../helpers/commonErrorHandler';
-
-interface AdminResponse {
-	success: boolean;
-	message: string;
-}
-
-interface UserListResponse {
-	success: boolean;
-	message?: string;
-	users?: Array<{
-		id: string;
-		email: string;
-		username: string;
-		status: string;
-		role: string;
-		email_verified: boolean;
-		created_at: string;
-	}>;
-}
+import { AdminResponse } from './admin.types';
 
 const promoteUser = async (userId: string, c: Context) => {
 	try {
