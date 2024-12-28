@@ -1,6 +1,7 @@
 import { Context } from 'hono';
 import { decode, sign, verify } from 'hono/jwt';
 import { env } from 'hono/adapter';
+import dbService from './database';
 
 const jwtService = {
 	assignRefreshToken: async (c: Context, payload: { id: string; exp: number }): Promise<string | Error> => {
@@ -11,18 +12,18 @@ const jwtService = {
 			}
 
 			let token;
-			const db = env(c).DB;
-			if (!db) {
-				throw new Error('Database connection not found in context');
-			}
 
 			// Attempt to generate a unique token
 			for (let attempts = 0; attempts < 5; attempts++) {
 				token = await sign(payload, authKey);
 
-				const existingTokenResult: D1Result = await db.prepare('SELECT token FROM refresh_tokens WHERE token = ?').bind(token).run();
+				const existingTokenResult = await dbService.query<{ results: { token: string }[] }>(
+					c,
+					'SELECT token FROM refresh_tokens WHERE token = ?',
+					[token]
+				);
 
-				if (!existingTokenResult.success || !existingTokenResult.results?.length) {
+				if (!existingTokenResult.success || !existingTokenResult.data?.results?.length) {
 					break; // Token is unique
 				}
 			}
@@ -33,13 +34,15 @@ const jwtService = {
 
 			const expiresAt = new Date(payload.exp * 1000).toISOString();
 
-			const d1Result: D1Result = await db
-				.prepare('INSERT INTO refresh_tokens (token, user_id, expires_at) VALUES (?, ?, ?)')
-				.bind(token, payload.id, expiresAt)
-				.run();
+			const res = await dbService.transaction(c, [
+				{
+					sql: 'INSERT INTO refresh_tokens (token, user_id, expires_at) VALUES (?, ?, ?)',
+					params: [token, payload.id, expiresAt],
+				},
+			]);
 
-			if (!d1Result.success) {
-				throw new Error(d1Result.error + 'DEV');
+			if (!res.success) {
+				throw new Error(res.error + 'DEV');
 			}
 
 			return token;
@@ -67,13 +70,17 @@ const jwtService = {
 			return false;
 		}
 
-		const d1Result: D1Result = await db.prepare('SELECT * FROM refresh_tokens WHERE token = ?').bind(token).run();
+		const res = await dbService.query<{ results: { expires_at: string; revoked_at: string | null; user_id: string }[] }>(
+			c,
+			'SELECT * FROM refresh_tokens WHERE token = ?',
+			[token]
+		);
 
-		if (!d1Result.success) {
+		if (!res.success) {
 			return false;
 		}
 
-		const tokenData = d1Result.results?.[0] as { expires_at: string; revoked_at: string | null; user_id: string };
+		const tokenData = res.data?.results?.[0] as { expires_at: string; revoked_at: string | null; user_id: string };
 		if (!tokenData) {
 			return false;
 		}
@@ -84,7 +91,11 @@ const jwtService = {
 			return false;
 		}
 
-		const user = await db.prepare('SELECT * FROM users WHERE id = ? AND status = ?').bind(tokenData.user_id, 'active').run();
+		const user = await dbService.query<{ results: { id: string; status: string }[] }>(
+			c,
+			'SELECT * FROM users WHERE id = ? AND status = ?',
+			[tokenData.user_id, 'active']
+		);
 		if (!user.success) {
 			return false;
 		}
@@ -107,7 +118,11 @@ const jwtService = {
 			return false;
 		}
 
-		const user = await db.prepare('SELECT * FROM users WHERE id = ? AND status = ?').bind(tokenData.user_id, 'active').run();
+		const user = await dbService.query<{ results: { id: string; status: string }[] }>(
+			c,
+			'SELECT * FROM users WHERE id = ? AND status = ?',
+			[tokenData.user_id, 'active']
+		);
 		if (!user.success) {
 			return false;
 		}
@@ -121,11 +136,13 @@ const jwtService = {
 		}
 
 		try {
-			const d1Result: D1Result = await db
-				.prepare('UPDATE refresh_tokens SET revoked_at = CURRENT_TIMESTAMP WHERE token = ? AND revoked_at IS NULL')
-				.bind(token)
-				.run();
-			return d1Result.success;
+			const res = await dbService.transaction(c, [
+				{
+					sql: 'UPDATE refresh_tokens SET revoked_at = CURRENT_TIMESTAMP WHERE token = ? AND revoked_at IS NULL',
+					params: [token],
+				},
+			]);
+			return res.success;
 		} catch (error) {
 			return false;
 		}
