@@ -5,6 +5,35 @@ import constants from "../../src/constants";
 const API_URL = constants.API_URL;
 
 describe("Public Auth Endpoints - Login", () => {
+  it("should fail without content-type header", async () => {
+    const loginResponse = await fetch(`${API_URL}/v3/public/login`, {
+      method: "POST",
+      body: JSON.stringify({
+        email: "test@example.com",
+        password: "TestPassword123!",
+      }),
+    });
+
+    expect(loginResponse.status).toBe(400);
+    const loginData = await loginResponse.json();
+    expect(loginData.success).toBe(false);
+  });
+
+  it("should fail with invalid email format", async () => {
+    const loginResponse = await fetch(`${API_URL}/v3/public/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: "invalid-email",
+        password: "TestPassword123!",
+      }),
+    });
+
+    expect(loginResponse.status).toBe(400);
+    const loginData = await loginResponse.json();
+    expect(loginData.success).toBe(false);
+  });
+
   it("should successfully login an existing user", async () => {
     const fakeUser = createFakeUser();
     const password = "TestPassword123!";

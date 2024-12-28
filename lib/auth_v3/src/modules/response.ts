@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { z as zOpenApi } from '@hono/zod-openapi';
 
 // error messages for password validation
 const minLengthErrorMessage = 'Password must be at least 8 characters';
@@ -24,6 +25,47 @@ const passwordSchema = z
 		message: specialCharacterErrorMessage,
 	});
 
+const LoginRequestSchema = zOpenApi
+	.object({
+		email: zOpenApi.string().email().openapi({
+			example: 'user@example.com',
+			description: "User's email address",
+		}),
+		password: zOpenApi.string().min(8).openapi({
+			example: 'TestPassword123!',
+			description: "User's password",
+		}),
+	})
+	.openapi('LoginRequest');
+
+const LoginResponseSchema = zOpenApi
+	.object({
+		success: zOpenApi.boolean(),
+		message: zOpenApi.string(),
+		code: zOpenApi.string(),
+		data: zOpenApi
+			.object({
+				access_token: zOpenApi.string(),
+				token_type: zOpenApi.literal('Bearer'),
+				expires_in: zOpenApi.number(),
+			})
+			.optional(),
+	})
+	.openapi('LoginResponse');
+
+const LoginErrorSchema = zOpenApi
+	.object({
+		success: zOpenApi.boolean(),
+		message: zOpenApi.string(),
+		code: zOpenApi.string(),
+		data: zOpenApi
+			.object({
+				lockedUntil: zOpenApi.string().nullable(),
+			})
+			.optional(),
+	})
+	.openapi('LoginError');
+
 const responseService = {
 	signUpSchema: z
 		.object({
@@ -39,6 +81,11 @@ const responseService = {
 		email: z.string().email().max(255),
 		password: passwordSchema,
 	}),
+	loginSchemas: {
+		request: LoginRequestSchema,
+		response: LoginResponseSchema,
+		error: LoginErrorSchema,
+	},
 	refreshSchema: z.object({
 		refreshToken: z.string().min(1).max(255),
 	}),

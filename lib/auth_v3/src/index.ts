@@ -10,7 +10,8 @@ import jwtService from './modules/jwt';
 import responseService from './modules/response';
 import adminService from './modules/lib/admin';
 import { createResponse } from './helpers/createResponse';
-import { StatusCode } from 'hono/utils/http-status';
+import { createRoute, OpenAPIHono } from '@hono/zod-openapi';
+import { commonErrorHandler, commonErrorResponse } from './helpers/commonErrorHandler';
 
 export interface Env {
 	AUTH_KEY: string;
@@ -18,7 +19,26 @@ export interface Env {
 	ENV: string;
 }
 
-const app = new Hono<{ Bindings: Env }>();
+// const app = new Hono<{ Bindings: Env }>();
+const app = new OpenAPIHono<{ Bindings: Env }>({
+	defaultHook: (result, c) => {
+		if (!result.success) {
+			return c.json(
+				createResponse(
+					false,
+					'Validation error',
+					'VALIDATION_ERROR',
+					{
+						errors: result.error.errors,
+					},
+					400
+				)
+			);
+		}
+	},
+});
+
+app.onError(commonErrorResponse);
 
 // middleware
 app.use(logger());
@@ -72,11 +92,93 @@ app.post('/v3/public/sign-up', async (c) => {
 	return c.json(response, response.status);
 });
 
-app.post('/v3/public/login', async (c) => {
-	const { email, password } = await c.req.json();
-	const response = await publicService.login({ email, password }, c);
-	return c.json(response, response.status);
+// app.post('/v3/public/login', async (c) => {
+// 	const { email, password } = await c.req.json();
+// 	const response = await publicService.login({ email, password }, c);
+// 	return c.json(response, response.status);
+// });
+
+const loginRoute = createRoute({
+	method: 'post',
+	path: '/v3/public/login',
+	request: {
+		body: {
+			content: {
+				'application/json': {
+					schema: responseService.loginSchemas.request,
+				},
+			},
+			required: true,
+		},
+	},
+	responses: {
+		200: {
+			content: {
+				'application/json': {
+					schema: responseService.loginSchemas.response,
+				},
+			},
+			description: 'Login successful',
+		},
+		401: {
+			content: {
+				'application/json': {
+					schema: responseService.loginSchemas.error,
+				},
+			},
+			description: 'Invalid credentials',
+		},
+		403: {
+			content: {
+				'application/json': {
+					schema: responseService.loginSchemas.error,
+				},
+			},
+			description: 'Account suspended or deleted',
+		},
+		404: {
+			content: {
+				'application/json': {
+					schema: responseService.loginSchemas.error,
+				},
+			},
+			description: 'User not found',
+		},
+		400: {
+			content: {
+				'application/json': {
+					schema: responseService.loginSchemas.error,
+				},
+			},
+			description: 'Validation error',
+		},
+	},
 });
+
+app.openapi(
+	loginRoute,
+	async (c) => {
+		const { email, password } = c.req.valid('json');
+		const response = await publicService.login({ email, password }, c);
+		return c.json(response, response.status || 400);
+	},
+	(result, c) => {
+		if (!result.success) {
+			return c.json(
+				createResponse(
+					false,
+					'Validation error',
+					'VALIDATION_ERROR',
+					{
+						errors: result.error.errors,
+					},
+					400
+				),
+				400
+			);
+		}
+	}
+);
 
 app.post('/v3/public/refresh-token', async (c) => {
 	const { refreshToken } = await c.req.json();
@@ -200,6 +302,15 @@ app.post('/v3/admin/users/:id/suspend', async (c) => {
 	const userId = c.req.param('id');
 	const result = await adminService.suspendUser(userId, c);
 	return c.json(result, result.status);
+});
+
+app.doc('/docs', {
+	openapi: '3.0.0',
+	info: {
+		title: 'Auth API',
+		version: '3.0.0',
+		description: 'Authentication service API',
+	},
 });
 
 export default app;
