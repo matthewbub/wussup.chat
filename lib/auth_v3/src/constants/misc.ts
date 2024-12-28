@@ -10,6 +10,8 @@ export const HTTP_STATUS = {
 	OK: 200,
 	CONFLICT: 409,
 	INTERNAL_SERVER_ERROR: 500,
+	UNAUTHORIZED: 401,
+	NOT_FOUND: 404,
 } as const;
 
 export const TEST_ENV = 'test';
@@ -27,6 +29,17 @@ export const ERROR_MESSAGES = {
 	TOKEN_GENERATION_ERROR: 'Error generating token',
 	UNEXPECTED_ERROR: 'Unknown error',
 	SUCCESS: 'User created successfully',
+	INVALID_VERIFICATION_TOKEN: 'Invalid verification token',
+	TOKEN_EXPIRED_OR_USED: 'Token expired or already used',
+	EMAIL_VERIFICATION_FAILED: 'Failed to verify email',
+	EMAIL_VERIFIED_SUCCESS: 'Email verified successfully',
+	DATABASE_ERROR: 'Database error while looking up user',
+	VERIFICATION_EMAIL_SENT: 'If a matching account was found, a verification email has been sent.',
+	EMAIL_ALREADY_VERIFIED: 'Email is already verified',
+	UNABLE_TO_RESEND: 'Unable to resend verification email',
+	RATE_LIMIT_MESSAGE: 'Please wait 5 minutes before requesting another verification email',
+	EMAIL_SEND_FAILED: 'Failed to send verification email',
+	VERIFICATION_EMAIL_SUCCESS: 'Verification email has been resent',
 };
 
 export const RESPONSE_CODES = {
@@ -40,4 +53,17 @@ export const RESPONSE_CODES = {
 	TOKEN_GENERATION_ERROR: 'TOKEN_GENERATION_ERROR',
 	UNEXPECTED_ERROR: 'UNEXPECTED_ERROR',
 	SUCCESS: 'SUCCESS',
+	INVALID_VERIFICATION_TOKEN: 'INVALID_VERIFICATION_TOKEN',
+	TOKEN_INVALID: 'TOKEN_INVALID',
+	EMAIL_VERIFICATION_FAILED: 'EMAIL_VERIFICATION_FAILED',
+	DB_ERROR: 'DB_ERROR',
+	USER_NOT_FOUND: 'USER_NOT_FOUND',
+	EMAIL_ALREADY_VERIFIED: 'EMAIL_ALREADY_VERIFIED',
+	UNABLE_TO_RESEND: 'UNABLE_TO_RESEND',
+	RATE_LIMIT_EXCEEDED: 'RATE_LIMIT_EXCEEDED',
+	EMAIL_SEND_FAILED: 'EMAIL_SEND_FAILED',
 };
+
+export const TIMING = {
+	VERIFICATION_EMAIL_COOLDOWN: 5 * 60 * 1000, // 5 minutes in milliseconds
+} as const;

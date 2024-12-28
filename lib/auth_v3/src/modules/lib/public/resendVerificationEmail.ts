@@ -1,18 +1,15 @@
 import { Context } from 'hono';
-import { env } from 'hono/adapter';
 import emailService from '../../email';
 import responseService from '../../response';
 import { createResponse } from '../../../helpers/createResponse';
 import { commonErrorHandler } from '../../../helpers/commonErrorHandler';
+import { codes, errorMessages, httpStatus, userStatuses, timing } from '../../../constants';
 import dbService from '../../database';
-
-const STATUS_ACTIVE = 'active';
 
 export const resendVerificationEmail = async ({ email }: { email: string }, c: Context) => {
 	try {
 		responseService.resendVerificationEmailSchema.parse({ email });
 
-		// find the user and verify they exist and are still pending
 		const userResult = await dbService.query<{ results: { id: string; email: string; status: string }[] }>(
 			c,
 			'SELECT id, email, status FROM users WHERE email = ?',
@@ -20,27 +17,24 @@ export const resendVerificationEmail = async ({ email }: { email: string }, c: C
 		);
 
 		if (!userResult.success) {
-			return createResponse(false, 'Database error while looking up user', 'DB_ERROR', null, 500);
+			return createResponse(false, errorMessages.DATABASE_ERROR, codes.DB_ERROR, null, httpStatus.INTERNAL_SERVER_ERROR);
 		}
 
 		const user = userResult.data?.results?.[0];
 
 		if (!user) {
-			return createResponse(false, 'If a matching account was found, a verification email has been sent.', 'USER_NOT_FOUND', null, 404);
+			return createResponse(false, errorMessages.VERIFICATION_EMAIL_SENT, codes.USER_NOT_FOUND, null, httpStatus.NOT_FOUND);
 		}
 
-		// check if user is already verified
-		if (user.status === STATUS_ACTIVE) {
-			return createResponse(false, 'Email is already verified', 'EMAIL_ALREADY_VERIFIED', null, 409);
+		if (user.status === userStatuses.ACTIVE) {
+			return createResponse(false, errorMessages.EMAIL_ALREADY_VERIFIED, codes.EMAIL_ALREADY_VERIFIED, null, httpStatus.CONFLICT);
 		}
 
-		// check if user is pending
-		const allowedStatuses = ['pending'];
+		const allowedStatuses = [userStatuses.PENDING];
 		if (!allowedStatuses.includes(user.status)) {
-			return createResponse(false, 'Unable to resend verification email', 'UNABLE_TO_RESEND', null, 401);
+			return createResponse(false, errorMessages.UNABLE_TO_RESEND, codes.UNABLE_TO_RESEND, null, httpStatus.UNAUTHORIZED);
 		}
 
-		// check for rate limiting (optional but recommended)
 		const lastEmailResult = await dbService.query<{ results: { created_at: string }[] }>(
 			c,
 			`
@@ -57,26 +51,18 @@ export const resendVerificationEmail = async ({ email }: { email: string }, c: C
 		if (lastEmailResult.success && lastEmailResult.data?.results?.[0]) {
 			const lastSent = new Date(lastEmailResult.data.results[0].created_at);
 			const timeSinceLastEmail = Date.now() - lastSent.getTime();
-			const MIN_RESEND_INTERVAL = 5 * 60 * 1000; // 5 minutes
 
-			if (timeSinceLastEmail < MIN_RESEND_INTERVAL) {
-				return createResponse(
-					false,
-					'Please wait 5 minutes before requesting another verification email',
-					'RATE_LIMIT_EXCEEDED',
-					null,
-					401
-				);
+			if (timeSinceLastEmail < timing.VERIFICATION_EMAIL_COOLDOWN) {
+				return createResponse(false, errorMessages.RATE_LIMIT_MESSAGE, codes.RATE_LIMIT_EXCEEDED, null, httpStatus.UNAUTHORIZED);
 			}
 		}
 
-		// send new verification email
 		const emailResult = await emailService.sendVerificationEmail({ to: email, user }, c);
 		if (emailResult instanceof Error) {
-			return createResponse(false, 'Failed to send verification email', 'EMAIL_SEND_FAILED', null, 500);
+			return createResponse(false, errorMessages.EMAIL_SEND_FAILED, codes.EMAIL_SEND_FAILED, null, httpStatus.INTERNAL_SERVER_ERROR);
 		}
 
-		return createResponse(true, 'Verification email has been resent', 'SUCCESS', null, 200);
+		return createResponse(true, errorMessages.VERIFICATION_EMAIL_SUCCESS, codes.SUCCESS, null, httpStatus.OK);
 	} catch (error) {
 		return commonErrorHandler(error, c);
 	}
