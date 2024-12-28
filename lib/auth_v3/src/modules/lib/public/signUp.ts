@@ -4,58 +4,62 @@ import jwtService from '../../jwt';
 import passwordService from '../../password';
 import emailService from '../../email';
 import responseService from '../../response';
-import ERROR_CODES from '../../../constants/errorCodes';
-import ERROR_MESSAGES from '../../../constants/errorMessages';
+import { codes, errorMessages, httpStatus, testEnv, userStatuses, bearer, expiresIn } from '../../../constants';
 import { createResponse } from '../../../helpers/createResponse';
 import { commonErrorHandler } from '../../../helpers/commonErrorHandler';
 import dbService from '../../database';
-import adminService from '../admin';
-const EXPIRES_IN = 60 * 60; // 1 hour
-const STATUS_PENDING = 'pending';
 
 export const signUp = async (
 	{ email, password, confirmPassword }: { email: string; password: string; confirmPassword: string },
 	c: Context
 ) => {
-	const db = env(c).DB;
-
 	try {
 		responseService.signUpSchema.parse({ email, password, confirmPassword });
 
 		// check for existing email
 		const existingEmailResult = await dbService.query<{ results: { id: string }[] }>(c, 'SELECT id FROM users WHERE email = ?', [email]);
 		if (existingEmailResult.success && existingEmailResult.data?.results?.length) {
-			return createResponse(false, ERROR_MESSAGES.EMAIL_ALREADY_IN_USE, ERROR_CODES.EMAIL_ALREADY_IN_USE, null, 409);
+			return createResponse(false, errorMessages.EMAIL_ALREADY_IN_USE, codes.EMAIL_ALREADY_IN_USE, null, httpStatus.CONFLICT);
 		}
 
 		const hashedPassword = await passwordService.hashPassword(password);
-		// this guy is hard to migrate to the new db service
-		const d1Result: D1Result = await db
-			.prepare('INSERT INTO users (id, email, username, password, status) VALUES (?, ?, ?, ?, ?) RETURNING id, email, username')
-			// we are use the email as the username by default
-			// account status is pending til user verifies their email
-			.bind(crypto.randomUUID(), email, email, hashedPassword, STATUS_PENDING)
-			.run();
+		const queryResult = await dbService.query<{ results: { id: string; email: string; username: string }[] }>(
+			c,
+			'INSERT INTO users (id, email, username, password, status) VALUES (?, ?, ?, ?, ?) RETURNING id, email, username',
+			[crypto.randomUUID(), email, email, hashedPassword, userStatuses.PENDING]
+		);
 
-		if (!d1Result.success) {
-			return createResponse(false, ERROR_MESSAGES.USER_CREATION_FAILED, ERROR_CODES.USER_CREATION_FAILED, d1Result.error, 500);
+		if (!queryResult.success) {
+			return createResponse(
+				false,
+				errorMessages.USER_CREATION_FAILED,
+				codes.USER_CREATION_FAILED,
+				queryResult.error,
+				httpStatus.INTERNAL_SERVER_ERROR
+			);
 		}
 
-		const user = d1Result.results?.[0] as { id: string };
+		const user = queryResult.data?.results?.[0];
 		if (!user) {
-			return createResponse(false, ERROR_MESSAGES.USER_CREATION_FAILED, ERROR_CODES.USER_CREATION_FAILED, null, 500);
+			return createResponse(false, errorMessages.USER_CREATION_FAILED, codes.USER_CREATION_FAILED, null, httpStatus.INTERNAL_SERVER_ERROR);
 		}
 
 		// add the password to the password history
 		const passwordHistoryResult = await passwordService.addToPasswordHistory({ userId: user.id, passwordHash: hashedPassword }, c);
 		if (passwordHistoryResult instanceof Error) {
-			return createResponse(false, ERROR_MESSAGES.PASSWORD_HISTORY_ERROR, ERROR_CODES.PASSWORD_HISTORY_ERROR, null, 500);
+			return createResponse(
+				false,
+				errorMessages.PASSWORD_HISTORY_ERROR,
+				codes.PASSWORD_HISTORY_ERROR,
+				null,
+				httpStatus.INTERNAL_SERVER_ERROR
+			);
 		}
 
 		// this is the point at which we send the initial verification email
 		const emailResult = await emailService.sendVerificationEmail({ to: email, user }, c);
 		if (emailResult instanceof Error) {
-			return createResponse(false, ERROR_MESSAGES.EMAIL_SEND_ERROR, ERROR_CODES.EMAIL_SEND_ERROR, null, 500);
+			return createResponse(false, errorMessages.EMAIL_SEND_ERROR, codes.EMAIL_SEND_ERROR, null, httpStatus.INTERNAL_SERVER_ERROR);
 		}
 
 		// create a "payload" object
@@ -63,27 +67,29 @@ export const signUp = async (
 		// decrypt it at validation time
 		const payload = {
 			id: user.id,
-			exp: Math.floor(Date.now() / 1000) + EXPIRES_IN,
+			exp: Math.floor(Date.now() / 1000) + expiresIn,
 		};
 
 		// encrypt the payload with an auth key
 		// we need the auth key to decrypt at validation time
 		const token = await jwtService.assignRefreshToken(c, payload);
 		if (token instanceof Error) {
-			return createResponse(false, token.message, ERROR_CODES.TOKEN_GENERATION_ERROR, null, 500);
+			return createResponse(false, token.message, codes.TOKEN_GENERATION_ERROR, null, httpStatus.INTERNAL_SERVER_ERROR);
 		}
 
 		return createResponse(
 			true,
-			ERROR_MESSAGES.SUCCESS,
-			ERROR_CODES.SUCCESS,
+			errorMessages.SUCCESS,
+			codes.SUCCESS,
 			{
 				access_token: token,
-				token_type: 'Bearer',
-				expires_in: EXPIRES_IN,
-				...(env(c).ENV === 'test' && { verificationToken: emailResult.verificationToken }),
+				token_type: bearer,
+				expires_in: expiresIn,
+				// when testing, we don't need to actually send an email thats obnoxious
+				// instead just return the same verification token as the email service would
+				...(env(c).ENV === testEnv && { verificationToken: emailResult.verificationToken }),
 			},
-			200
+			httpStatus.OK
 		);
 	} catch (error) {
 		return commonErrorHandler(error, c);
