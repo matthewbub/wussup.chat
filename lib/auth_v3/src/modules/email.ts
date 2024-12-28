@@ -1,6 +1,7 @@
 import { Context } from 'hono';
 import { env } from 'hono/adapter';
 import { Resend } from 'resend';
+import dbService from './database';
 
 const VERIFICATION_EXPIRES_IN = 24 * 60 * 60; // 24 hours
 
@@ -40,25 +41,24 @@ const emailService = {
 	// sends a verification email to a user
 	sendVerificationEmail: async ({ to, user }: { to: string; user: any }, c: Context) => {
 		try {
-			const db = env(c).DB;
 			const verificationToken = crypto.randomUUID();
 
 			// store verification token in database
-			const verificationResult = await db
-				.prepare(
-					`
+			const res = await dbService.transaction(c, [
+				{
+					sql: `
 						INSERT INTO verification_tokens (
 							token, 
 							user_id, 
 							type, 
 							expires_at
 						) VALUES (?, ?, ?, ?)
-					`
-				)
-				.bind(verificationToken, user.id, 'email', new Date(Date.now() + VERIFICATION_EXPIRES_IN * 1000).toISOString())
-				.run();
+					`,
+					params: [verificationToken, user.id, 'email', new Date(Date.now() + VERIFICATION_EXPIRES_IN * 1000).toISOString()],
+				},
+			]);
 
-			if (!verificationResult.success) {
+			if (!res.success) {
 				throw new Error('Failed to create verification token in database');
 			}
 
