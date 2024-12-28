@@ -23,12 +23,13 @@ export const signUp = async (
 		responseService.signUpSchema.parse({ email, password, confirmPassword });
 
 		// check for existing email
-		const existingUserResult = await db.prepare('SELECT id FROM users WHERE email = ?').bind(email).run();
-		if (existingUserResult.success && existingUserResult.results?.length) {
+		const existingEmailResult = await dbService.query<{ results: { id: string }[] }>(c, 'SELECT id FROM users WHERE email = ?', [email]);
+		if (existingEmailResult.success && existingEmailResult.data?.results?.length) {
 			return createResponse(false, ERROR_MESSAGES.EMAIL_ALREADY_IN_USE, ERROR_CODES.EMAIL_ALREADY_IN_USE, null, 409);
 		}
 
 		const hashedPassword = await passwordService.hashPassword(password);
+		// this guy is hard to migrate to the new db service
 		const d1Result: D1Result = await db
 			.prepare('INSERT INTO users (id, email, username, password, status) VALUES (?, ?, ?, ?, ?) RETURNING id, email, username')
 			// we are use the email as the username by default

@@ -57,7 +57,7 @@ const dbService = {
 	 * 	{ sql: 'INSERT INTO roles (name) VALUES (?)', params: ['admin'] }
 	 * ]);
 	 */
-	async transaction(c: Context, queries: { sql: string; params: any[] }[]): Promise<{ success: boolean; error?: string }> {
+	async transaction<T>(c: Context, queries: { sql: string; params: any[] }[]): Promise<{ success: boolean; error?: string; data?: T }> {
 		try {
 			const db = this.getDb(c);
 			const batch = db.batch(queries.map(({ sql, params }) => db.prepare(sql).bind(...params)));
@@ -65,7 +65,7 @@ const dbService = {
 			const results = await batch;
 			const success = results.every((result) => result.success);
 
-			return { success };
+			return { success, data: results };
 		} catch (error) {
 			return {
 				success: false,

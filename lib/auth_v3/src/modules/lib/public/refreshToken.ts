@@ -4,25 +4,26 @@ import jwtService from '../../jwt';
 import responseService from '../../response';
 import { createResponse } from '../../../helpers/createResponse';
 import { commonErrorHandler } from '../../../helpers/commonErrorHandler';
+import dbService from '../../database';
 
 const EXPIRES_IN = 60 * 60; // 1 hour
 
 export const refreshToken = async ({ refreshToken }: { refreshToken: string }, c: Context) => {
-	const db = env(c).DB;
-
 	try {
 		responseService.refreshSchema.parse({ refreshToken });
 
-		const d1Result: D1Result = await db.prepare('SELECT * FROM refresh_tokens WHERE token = ?').bind(refreshToken).run();
+		// use dbService to execute the query
+		const refreshTokenResult = await dbService.query<{ results: { expires_at: string; revoked_at: string | null; user_id: string }[] }>(
+			c,
+			'SELECT * FROM refresh_tokens WHERE token = ?',
+			[refreshToken]
+		);
 
-		if (!d1Result.success) {
+		if (!refreshTokenResult.success || !refreshTokenResult.data?.results?.[0]) {
 			return createResponse(false, 'Invalid refresh token', 'INVALID_REFRESH_TOKEN', null, 401);
 		}
 
-		const tokenData = d1Result.results?.[0] as { expires_at: string; revoked_at: string | null; user_id: string };
-		if (!tokenData) {
-			return createResponse(false, 'Invalid refresh token', 'INVALID_REFRESH_TOKEN', null, 401);
-		}
+		const tokenData = refreshTokenResult.data.results[0];
 
 		// verify the refresh token
 		const isValid = await jwtService.validateTokenAndUser(tokenData, c);

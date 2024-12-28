@@ -4,23 +4,26 @@ import emailService from '../../email';
 import responseService from '../../response';
 import { createResponse } from '../../../helpers/createResponse';
 import { commonErrorHandler } from '../../../helpers/commonErrorHandler';
+import dbService from '../../database';
 
 const STATUS_ACTIVE = 'active';
 
 export const resendVerificationEmail = async ({ email }: { email: string }, c: Context) => {
-	const db = env(c).DB;
-
 	try {
 		responseService.resendVerificationEmailSchema.parse({ email });
 
 		// find the user and verify they exist and are still pending
-		const userResult = await db.prepare('SELECT id, email, status FROM users WHERE email = ?').bind(email).run();
+		const userResult = await dbService.query<{ results: { id: string; email: string; status: string }[] }>(
+			c,
+			'SELECT id, email, status FROM users WHERE email = ?',
+			[email]
+		);
 
 		if (!userResult.success) {
 			return createResponse(false, 'Database error while looking up user', 'DB_ERROR', null, 500);
 		}
 
-		const user = userResult.results?.[0] as { id: string; email: string; status: string } | undefined;
+		const user = userResult.data?.results?.[0];
 
 		if (!user) {
 			return createResponse(false, 'If a matching account was found, a verification email has been sent.', 'USER_NOT_FOUND', null, 404);
@@ -38,22 +41,21 @@ export const resendVerificationEmail = async ({ email }: { email: string }, c: C
 		}
 
 		// check for rate limiting (optional but recommended)
-		const lastEmailResult = await db
-			.prepare(
-				`
-					SELECT created_at
-					FROM verification_tokens
-					WHERE user_id = ?
-					AND type = 'email'
-					ORDER BY created_at DESC
-					LIMIT 1
-				`
-			)
-			.bind(user.id)
-			.run();
+		const lastEmailResult = await dbService.query<{ results: { created_at: string }[] }>(
+			c,
+			`
+				SELECT created_at
+				FROM verification_tokens
+				WHERE user_id = ?
+				AND type = 'email'
+				ORDER BY created_at DESC
+				LIMIT 1
+			`,
+			[user.id]
+		);
 
-		if (lastEmailResult.success && lastEmailResult.results?.[0]) {
-			const lastSent = new Date(lastEmailResult.results[0].created_at);
+		if (lastEmailResult.success && lastEmailResult.data?.results?.[0]) {
+			const lastSent = new Date(lastEmailResult.data.results[0].created_at);
 			const timeSinceLastEmail = Date.now() - lastSent.getTime();
 			const MIN_RESEND_INTERVAL = 5 * 60 * 1000; // 5 minutes
 

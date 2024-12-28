@@ -1,35 +1,32 @@
 import { Context } from 'hono';
-import { env } from 'hono/adapter';
 import responseService from '../../response';
 import { createResponse } from '../../../helpers/createResponse';
 import { commonErrorHandler } from '../../../helpers/commonErrorHandler';
+import dbService from '../../database';
 const STATUS_ACTIVE = 'active';
 
 export const verifyEmail = async ({ token }: { token: string }, c: Context) => {
-	const db = env(c).DB;
-
 	try {
 		responseService.verifyEmailSchema.parse({ token });
 
 		// check for valid token of type 'email' that hasn't been used and hasn't expired
-		const d1Result: D1Result = await db
-			.prepare(
-				`
+		const res = await dbService.query<{ results: { expires_at: string; used_at: string | null; user_id: string }[] }>(
+			c,
+			`
 					SELECT * FROM verification_tokens
 					WHERE token = ?
 					AND type = 'email'
 					AND used_at IS NULL
 					AND expires_at > CURRENT_TIMESTAMP
-				`
-			)
-			.bind(token)
-			.run();
+				`,
+			[token]
+		);
 
-		if (!d1Result.success) {
+		if (!res.success) {
 			return createResponse(false, 'Invalid verification token', 'DB_ERROR', null, 401);
 		}
 
-		const tokenData = d1Result.results?.[0] as {
+		const tokenData = res.data?.results?.[0] as {
 			expires_at: string;
 			user_id: string;
 		};
@@ -39,15 +36,18 @@ export const verifyEmail = async ({ token }: { token: string }, c: Context) => {
 		}
 
 		// start a transaction for updating both user status and token usage
-		const transaction = db.batch([
-			db.prepare('UPDATE users SET status = ?, email_verified = true WHERE id = ?').bind(STATUS_ACTIVE, tokenData.user_id),
-			db.prepare('UPDATE verification_tokens SET used_at = CURRENT_TIMESTAMP WHERE token = ?').bind(token),
+		const transaction = await dbService.transaction(c, [
+			{
+				sql: 'UPDATE users SET status = ?, email_verified = true WHERE id = ?',
+				params: [STATUS_ACTIVE, tokenData.user_id],
+			},
+			{
+				sql: 'UPDATE verification_tokens SET used_at = CURRENT_TIMESTAMP WHERE token = ?',
+				params: [token],
+			},
 		]);
 
-		const results = await transaction;
-		const [updateUserResult, updateTokenResult] = results;
-
-		if (!updateUserResult.success || !updateTokenResult.success) {
+		if (!transaction.success) {
 			return createResponse(false, 'Failed to verify email', 'TRANSACTION_FAILED', null, 500);
 		}
 
