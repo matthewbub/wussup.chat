@@ -19,7 +19,8 @@ import { refreshTokenRouteDefinition } from './routeDefinitions/refreshToken.def
 import { verifyEmailRouteDefinition } from './routeDefinitions/verifyEmail.def';
 import { forgotPasswordRouteDefinition } from './routeDefinitions/forgotPassword.def';
 import { resetPasswordRouteDefinition } from './routeDefinitions/resetPassword.def';
-import { resendVerificationEmailRouteDefinition } from './routeDefinitions/resendEmailVerification';
+import { resendVerificationEmailRouteDefinition } from './routeDefinitions/resendEmailVerification.def';
+import { logoutRouteDefinition } from './routeDefinitions/logout.def';
 
 export interface Env {
 	AUTH_KEY: string;
@@ -192,10 +193,10 @@ app.openapi(
 	validationErrorHook
 );
 
-app.get('/v3/auth/logout', async (c) => {
+app.openapi(logoutRouteDefinition, async (c) => {
 	const token = c.req.header('Authorization')?.split(' ')[1];
 	if (!token) {
-		return c.json(createResponse(false, 'No token provided', 'ERR_NO_TOKEN_PROVIDED', null, 401));
+		return c.json(createResponse(false, 'No token provided', 'ERR_NO_TOKEN_PROVIDED', null, 401), 401);
 	}
 	const response = await authService.logout(token, c);
 	return c.json(response, response.status);

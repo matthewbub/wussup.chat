@@ -285,6 +285,24 @@ const ResendVerificationEmailErrorSchema = zOpenApi
 	})
 	.openapi('ResendVerificationEmailError');
 
+const LogoutResponseSchema = zOpenApi
+	.object({
+		success: zOpenApi.boolean(),
+		message: zOpenApi.string(),
+		code: zOpenApi.string(),
+		data: zOpenApi.null(),
+	})
+	.openapi('LogoutResponse');
+
+const LogoutErrorSchema = zOpenApi
+	.object({
+		success: zOpenApi.boolean(),
+		message: zOpenApi.string(),
+		code: zOpenApi.string(),
+		data: zOpenApi.null(),
+	})
+	.openapi('LogoutError');
+
 const responseService = {
 	signUpSchema: z
 		.object({
@@ -367,6 +385,10 @@ const responseService = {
 		request: ResendVerificationEmailRequestSchema,
 		response: ResendVerificationEmailResponseSchema,
 		error: ResendVerificationEmailErrorSchema,
+	},
+	logoutSchemas: {
+		response: LogoutResponseSchema,
+		error: LogoutErrorSchema,
 	},
 };
 
