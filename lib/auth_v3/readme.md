@@ -44,6 +44,13 @@ npx wrangler secret list
 
 # drop local db
 npx wrangler d1 execute auth_storage --local --command="DELETE FROM password_history; DELETE FROM verification_tokens; DELETE FROM refresh_tokens; DELETE FROM users;"
+
+# view schema
+npx wrangler d1 execute auth_storage --local --command="
+SELECT sql FROM sqlite_master
+WHERE type IN ('table', 'index')
+AND name NOT LIKE 'sqlite_%'
+ORDER BY type DESC, name;"
 ```
 
 We're using Hono as an HTTP framework, and hosting on Cloudflare workers. First time here? Watch this vid: https://www.youtube.com/watch?v=H7Qe96fqg1M to get up to speed on Cloudflare Workers and Hono.

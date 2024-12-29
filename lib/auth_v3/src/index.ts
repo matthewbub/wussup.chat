@@ -263,7 +263,7 @@ app.post('/v3/admin/users/:id/promote', async (c) => {
 	return c.json(result, result.status);
 });
 
-app.post('/test/v3/test/admin/test/users/test/:id/test/promote/test', async (c) => {
+app.post('/v3/auth/promote-test-user/:id', async (c) => {
 	if (env(c).ENV !== 'test') {
 		return c.json(createResponse(false, 'Not allowed', 'ERR_NOT_ALLOWED'), 403);
 	}

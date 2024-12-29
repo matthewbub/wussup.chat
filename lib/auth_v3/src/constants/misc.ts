@@ -58,6 +58,8 @@ export const ERROR_MESSAGES = {
 	PROFILE_UPDATED_VERIFY: 'Profile updated. Please verify your new email address.',
 	LOGOUT_SUCCESS: 'Successfully logged out',
 	USER_RETRIEVED: 'User retrieved successfully',
+	ACCOUNT_INACTIVE: 'Account is inactive',
+	ACCOUNT_PENDING: 'Account is pending',
 };
 
 export const RESPONSE_CODES = {
@@ -91,6 +93,9 @@ export const RESPONSE_CODES = {
 	ERR_USERNAME_TAKEN: 'ERR_USERNAME_TAKEN',
 	ERR_EMAIL_REGISTERED: 'ERR_EMAIL_REGISTERED',
 	ERR_UPDATE_FAILED: 'ERR_UPDATE_FAILED',
+	ERR_USER_NOT_FOUND: 'ERR_USER_NOT_FOUND',
+	ACCOUNT_INACTIVE: 'ACCOUNT_INACTIVE',
+	ACCOUNT_PENDING: 'ACCOUNT_PENDING',
 };
 
 export const TIMING = {
