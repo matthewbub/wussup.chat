@@ -2,21 +2,6 @@
 
 "z cauldron"
 
-TODO FOR LAUNCH:
-
-- Clean State / Bus Logic in the PDF Processing
-- PDF Process by page instead of in grouping all pages together at once
-- New Endpoint: Sensitive Data Detection to aid in visuals
-- Stop storing bank transactions
-- Implement Token Usage Tracker
-- Implement Web Analytics
-- Implement pages uploaded as a core feature
-- Implement Billing (Probably Reg/ Business plans only)
-- Table data should be exportable, Download via .csv or other common options
-- Table view should be print ready
-- Launch Prod in ZCauldron for email testing, 2FA
-- Rename to **\*\*\***.\*\*!!!
-
 # Table of Contents
 
 - [Getting Started](#getting-started)

@@ -240,7 +240,7 @@ function AuthenticatedResetPasswordForm() {
 
       setMessage({
         type: "success",
-        content: "Password reset successfully.",
+        content: "Password has been reset successfullyly.",
       });
       reset();
     } catch (error) {

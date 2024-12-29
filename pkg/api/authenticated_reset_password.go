@@ -104,7 +104,7 @@ func AuthenticatedResetPasswordHandler(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, response.SuccessMessage("Password reset successfully"))
+	c.JSON(http.StatusOK, response.SuccessMessage("Password has been reset successfullyly"))
 }
 
 func getUserForAuthenticatedResetPassword(userID string) (*utils.UserWithRole, error) {
