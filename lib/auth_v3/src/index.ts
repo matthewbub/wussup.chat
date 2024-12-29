@@ -1,4 +1,3 @@
-import { Context, Hono } from 'hono';
 import { logger } from 'hono/logger';
 import { bearerAuth } from 'hono/bearer-auth';
 import { env } from 'hono/adapter';
@@ -10,10 +9,12 @@ import jwtService from './modules/jwt';
 import responseService from './modules/response';
 import adminService from './modules/lib/admin';
 import { createResponse } from './helpers/createResponse';
-import { createRoute, OpenAPIHono } from '@hono/zod-openapi';
-import { commonErrorHandler, commonErrorResponse } from './helpers/commonErrorHandler';
-import { loginRoute } from './routes/login.route';
-import { signupRoute } from './routes/signup.route';
+import { OpenAPIHono } from '@hono/zod-openapi';
+import { commonErrorResponse } from './helpers/commonErrorHandler';
+import { loginRoute as loginRouteDefinition } from './routes/login.route';
+import { signupRoute as signupRouteDefinition } from './routes/signup.route';
+import adminAuthMiddleware from './middleware/admin.middleware';
+import { refreshTokenRoute as refreshTokenRouteDefinition } from './routes/refreshToken.route';
 
 export interface Env {
 	AUTH_KEY: string;
@@ -21,7 +22,6 @@ export interface Env {
 	ENV: string;
 }
 
-// const app = new Hono<{ Bindings: Env }>();
 const app = new OpenAPIHono<{ Bindings: Env }>({
 	defaultHook: (result, c) => {
 		if (!result.success) {
@@ -57,32 +57,9 @@ app.use(
 	})
 );
 
-// Add this middleware function
-const adminAuthMiddleware = async (c: Context, next: () => Promise<void>) => {
-	const token = c.req.header('Authorization')?.split(' ')[1];
-	if (!token) {
-		return c.json({ success: false, message: 'No token provided' }, 401);
-	}
-
-	const payload = await jwtService.decodeToken(token, c);
-	if (!payload?.id) {
-		return c.json({ success: false, message: 'Invalid token' }, 401);
-	}
-
-	const db = env(c).DB;
-	const userResult = await db.prepare('SELECT role FROM users WHERE id = ?').bind(payload.id).run();
-
-	const user = userResult.results?.[0] as { role: string };
-	if (!user || user.role !== 'admin') {
-		return c.json({ success: false, message: 'Unauthorized' }, 403);
-	}
-
-	await next();
-};
-
 // routes
 app.openapi(
-	signupRoute,
+	signupRouteDefinition,
 	async (c) => {
 		const { email, password, confirmPassword } = c.req.valid('json');
 		const response = await publicService.signUp({ email, password, confirmPassword }, c);
@@ -111,7 +88,7 @@ app.openapi(
 );
 
 app.openapi(
-	loginRoute,
+	loginRouteDefinition,
 	async (c) => {
 		const { email, password } = c.req.valid('json');
 		const response = await publicService.login({ email, password }, c);
@@ -143,11 +120,38 @@ app.openapi(
 	}
 );
 
-app.post('/v3/public/refresh-token', async (c) => {
-	const { refreshToken } = await c.req.json();
-	const response = await publicService.refreshToken({ refreshToken }, c);
-	return c.json(response, response.status);
-});
+app.openapi(
+	refreshTokenRouteDefinition,
+	async (c) => {
+		const { refreshToken } = c.req.valid('json');
+		const response = await publicService.refreshToken({ refreshToken }, c);
+		return c.json(
+			{
+				success: response.success,
+				message: response.message,
+				code: response.code,
+				data: response.data,
+			},
+			response.success ? 200 : 401
+		);
+	},
+	(result, c) => {
+		if (!result.success) {
+			return c.json(
+				createResponse(
+					false,
+					'Validation error',
+					'VALIDATION_ERROR',
+					{
+						errors: result.error.errors,
+					},
+					400
+				),
+				400
+			);
+		}
+	}
+);
 
 app.post('/v3/public/verify-email', async (c) => {
 	const { token } = await c.req.json();

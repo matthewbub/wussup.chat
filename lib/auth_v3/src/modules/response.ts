@@ -127,6 +127,39 @@ const SignupErrorSchema = zOpenApi
 	})
 	.openapi('SignupError');
 
+const RefreshTokenRequestSchema = zOpenApi
+	.object({
+		refreshToken: zOpenApi.string().min(1).openapi({
+			example: 'eyJhbGciOiJIUzI1NiIs...',
+			description: 'Refresh token received from login or previous refresh',
+		}),
+	})
+	.openapi('RefreshTokenRequest');
+
+const RefreshTokenResponseSchema = zOpenApi
+	.object({
+		success: zOpenApi.boolean(),
+		message: zOpenApi.string(),
+		code: zOpenApi.string(),
+		data: zOpenApi
+			.object({
+				access_token: zOpenApi.string(),
+				token_type: zOpenApi.literal('Bearer'),
+				expires_in: zOpenApi.number(),
+			})
+			.optional(),
+	})
+	.openapi('RefreshTokenResponse');
+
+const RefreshTokenErrorSchema = zOpenApi
+	.object({
+		success: zOpenApi.boolean(),
+		message: zOpenApi.string(),
+		code: zOpenApi.string(),
+		data: zOpenApi.null(),
+	})
+	.openapi('RefreshTokenError');
+
 const responseService = {
 	signUpSchema: z
 		.object({
@@ -184,6 +217,11 @@ const responseService = {
 		request: SignupRequestSchema,
 		response: SignupResponseSchema,
 		error: SignupErrorSchema,
+	},
+	refreshTokenSchemas: {
+		request: RefreshTokenRequestSchema,
+		response: RefreshTokenResponseSchema,
+		error: RefreshTokenErrorSchema,
 	},
 };
 
