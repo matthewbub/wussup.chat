@@ -12,6 +12,7 @@ import adminService from './modules/lib/admin';
 import { createResponse } from './helpers/createResponse';
 import { createRoute, OpenAPIHono } from '@hono/zod-openapi';
 import { commonErrorHandler, commonErrorResponse } from './helpers/commonErrorHandler';
+import { loginRoute } from './routes/login.route';
 
 export interface Env {
 	AUTH_KEY: string;
@@ -92,75 +93,20 @@ app.post('/v3/public/sign-up', async (c) => {
 	return c.json(response, response.status);
 });
 
-// app.post('/v3/public/login', async (c) => {
-// 	const { email, password } = await c.req.json();
-// 	const response = await publicService.login({ email, password }, c);
-// 	return c.json(response, response.status);
-// });
-
-const loginRoute = createRoute({
-	method: 'post',
-	path: '/v3/public/login',
-	request: {
-		body: {
-			content: {
-				'application/json': {
-					schema: responseService.loginSchemas.request,
-				},
-			},
-			required: true,
-		},
-	},
-	responses: {
-		200: {
-			content: {
-				'application/json': {
-					schema: responseService.loginSchemas.response,
-				},
-			},
-			description: 'Login successful',
-		},
-		401: {
-			content: {
-				'application/json': {
-					schema: responseService.loginSchemas.error,
-				},
-			},
-			description: 'Invalid credentials',
-		},
-		403: {
-			content: {
-				'application/json': {
-					schema: responseService.loginSchemas.error,
-				},
-			},
-			description: 'Account suspended or deleted',
-		},
-		404: {
-			content: {
-				'application/json': {
-					schema: responseService.loginSchemas.error,
-				},
-			},
-			description: 'User not found',
-		},
-		400: {
-			content: {
-				'application/json': {
-					schema: responseService.loginSchemas.error,
-				},
-			},
-			description: 'Validation error',
-		},
-	},
-});
-
 app.openapi(
 	loginRoute,
 	async (c) => {
 		const { email, password } = c.req.valid('json');
 		const response = await publicService.login({ email, password }, c);
-		return c.json(response, response.status || 400);
+		return c.json(
+			{
+				success: response.success,
+				message: response.message,
+				code: response.code,
+				data: response.data,
+			},
+			response.success ? 200 : 401
+		);
 	},
 	(result, c) => {
 		if (!result.success) {
