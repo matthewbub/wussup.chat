@@ -21,6 +21,7 @@ import { forgotPasswordRouteDefinition } from './routeDefinitions/forgotPassword
 import { resetPasswordRouteDefinition } from './routeDefinitions/resetPassword.def';
 import { resendVerificationEmailRouteDefinition } from './routeDefinitions/resendEmailVerification.def';
 import { logoutRouteDefinition } from './routeDefinitions/logout.def';
+import { resetPasswordHandler } from './handlers/resetPassword.handler';
 
 export interface Env {
 	AUTH_KEY: string;
@@ -64,134 +65,13 @@ app.use(
 );
 
 // routes
-app.openapi(
-	signupRouteDefinition,
-	async (c) => {
-		const { email, password, confirmPassword } = c.req.valid('json');
-		const response = await publicService.signUp({ email, password, confirmPassword }, c);
-
-		if (!response.success) {
-			return c.json(response, response.status as 400 | 409);
-		}
-		return c.json(response, 200);
-	},
-	validationErrorHook
-);
-
-app.openapi(
-	loginRouteDefinition,
-	async (c) => {
-		const { email, password } = c.req.valid('json');
-		const response = await publicService.login({ email, password }, c);
-		return c.json(
-			{
-				success: response.success,
-				message: response.message,
-				code: response.code,
-				data: response.data,
-			},
-			response.success ? 200 : 401
-		);
-	},
-	validationErrorHook
-);
-
-app.openapi(
-	refreshTokenRouteDefinition,
-	async (c) => {
-		const { refreshToken } = c.req.valid('json');
-		const response = await publicService.refreshToken({ refreshToken }, c);
-		return c.json(
-			{
-				success: response.success,
-				message: response.message,
-				code: response.code,
-				data: response.data,
-			},
-			response.success ? 200 : 401
-		);
-	},
-	validationErrorHook
-);
-
-app.openapi(
-	verifyEmailRouteDefinition,
-	async (c) => {
-		const { token } = c.req.valid('json');
-		const response = await publicService.verifyEmail({ token }, c);
-		return c.json(
-			{
-				success: response.success,
-				message: response.message,
-				code: response.code,
-				data: response.data,
-			},
-			response.success ? 200 : 401
-		);
-	},
-	validationErrorHook
-);
-
-app.openapi(
-	forgotPasswordRouteDefinition,
-	async (c) => {
-		const { email } = c.req.valid('json');
-		const response = await publicService.forgotPassword({ email }, c);
-		return c.json(
-			{
-				success: response.success,
-				message: response.message,
-				code: response.code,
-				data: response.data,
-			},
-			response.success ? 200 : 400
-		);
-	},
-	validationErrorHook
-);
-
-app.openapi(
-	resetPasswordRouteDefinition,
-	async (c) => {
-		const { token, password, confirmPassword } = c.req.valid('json');
-		const response = await publicService.resetPassword(
-			{
-				token,
-				password,
-				confirmPassword,
-			},
-			c
-		);
-		return c.json(
-			{
-				success: response.success,
-				message: response.message,
-				code: response.code,
-				data: response.data,
-			},
-			response.code === 'INVALID_RESET_TOKEN' ? 401 : (response.status as 200 | 400) || 409
-		);
-	},
-	validationErrorHook
-);
-
-app.openapi(
-	resendVerificationEmailRouteDefinition,
-	async (c) => {
-		const { email } = c.req.valid('json');
-		const response = await publicService.resendVerificationEmail({ email }, c);
-		return c.json(
-			{
-				success: response.success,
-				message: response.message,
-				code: response.code,
-				data: response.data,
-			},
-			(response.status as 200 | 400) || 409
-		);
-	},
-	validationErrorHook
-);
+app.openapi(signupRouteDefinition, publicService.routes.signUpRoute, validationErrorHook);
+app.openapi(loginRouteDefinition, publicService.routes.loginRoute, validationErrorHook);
+app.openapi(refreshTokenRouteDefinition, publicService.routes.refreshTokenRoute, validationErrorHook);
+app.openapi(verifyEmailRouteDefinition, publicService.routes.verifyEmailRoute, validationErrorHook);
+app.openapi(forgotPasswordRouteDefinition, publicService.routes.forgotPasswordRoute, validationErrorHook);
+app.openapi(resetPasswordRouteDefinition, publicService.routes.resetPasswordHandler, validationErrorHook);
+app.openapi(resendVerificationEmailRouteDefinition, publicService.routes.resendVerificationEmailRoute, validationErrorHook);
 
 app.openapi(logoutRouteDefinition, async (c) => {
 	const token = c.req.header('Authorization')?.split(' ')[1];

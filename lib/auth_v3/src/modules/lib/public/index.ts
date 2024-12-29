@@ -5,6 +5,7 @@ import { verifyEmail } from './verifyEmail';
 import { forgotPassword } from './forgotPassword';
 import { resetPassword } from './resetPassword';
 import { resendVerificationEmail } from './resendVerificationEmail';
+import { publicRoutesService } from './routes';
 
 const publicService = {
 	signUp: signUp,
@@ -14,6 +15,7 @@ const publicService = {
 	forgotPassword: forgotPassword,
 	resetPassword: resetPassword,
 	resendVerificationEmail: resendVerificationEmail,
+	routes: publicRoutesService,
 };
 
 export default publicService;
