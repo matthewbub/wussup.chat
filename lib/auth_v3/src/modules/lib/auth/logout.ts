@@ -3,22 +3,22 @@ import jwtService from '../../jwt';
 import { z } from 'zod';
 import { createResponse } from '../../../helpers/createResponse';
 import { commonErrorHandler } from '../../../helpers/commonErrorHandler';
+import { codes, errorMessages, httpStatus } from '../../../constants';
 
 export const logout = async (token: string, c: Context) => {
 	try {
 		const schema = z.object({ token: z.string() });
 		const validation = schema.safeParse({ token });
 		if (!validation.success) {
-			return createResponse(false, 'Invalid token format', 'ERR_INVALID_TOKEN_FORMAT', null, 400);
+			return createResponse(false, errorMessages.INVALID_TOKEN, codes.ERR_INVALID_TOKEN, null, httpStatus.BAD_REQUEST);
 		}
 
-		// revoke the current token
 		const revoked = await jwtService.revokeRefreshToken(token, c);
 		if (!revoked) {
-			return createResponse(false, 'Failed to logout', 'ERR_LOGOUT_FAILED', null, 500);
+			return createResponse(false, errorMessages.REVOKE_FAILED, codes.REVOKE_FAILED, null, httpStatus.INTERNAL_SERVER_ERROR);
 		}
 
-		return createResponse(true, 'Successfully logged out', 'SUCCESS', null, 200);
+		return createResponse(true, 'Successfully logged out', codes.SUCCESS, null, httpStatus.OK);
 	} catch (error) {
 		return commonErrorHandler(error, c);
 	}

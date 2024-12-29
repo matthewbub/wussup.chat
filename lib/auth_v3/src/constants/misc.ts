@@ -56,6 +56,8 @@ export const ERROR_MESSAGES = {
 	UPDATE_FAILED: 'Failed to update user information',
 	PROFILE_UPDATED: 'Profile updated successfully',
 	PROFILE_UPDATED_VERIFY: 'Profile updated. Please verify your new email address.',
+	LOGOUT_SUCCESS: 'Successfully logged out',
+	USER_RETRIEVED: 'User retrieved successfully',
 };
 
 export const RESPONSE_CODES = {

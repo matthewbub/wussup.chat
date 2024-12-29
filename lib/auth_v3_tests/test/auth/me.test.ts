@@ -174,7 +174,7 @@ describe("Auth Endpoints - /v3/auth/me", () => {
     expect(response.status).toBe(200);
     expect(data).toMatchObject({
       success: true,
-      message: "Account successfully deleted",
+      message: "Account has been deleted",
     });
   });
 
