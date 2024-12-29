@@ -66,6 +66,100 @@ const LoginErrorSchema = zOpenApi
 	})
 	.openapi('LoginError');
 
+const SignupRequestSchema = zOpenApi
+	.object({
+		email: zOpenApi.string().email().max(255).openapi({
+			example: 'user@example.com',
+			description: "User's email address",
+		}),
+		password: zOpenApi.string().min(8).max(20).openapi({
+			example: 'TestPassword123!',
+			description: 'Password meeting security requirements',
+		}),
+		confirmPassword: zOpenApi.string().min(8).max(20).openapi({
+			example: 'TestPassword123!',
+			description: 'Must match password field',
+		}),
+	})
+	.refine((data) => data.password === data.confirmPassword, {
+		message: "Passwords don't match",
+		path: ['confirmPassword'],
+	})
+	.openapi('SignupRequest');
+
+const SignupResponseSchema = zOpenApi
+	.object({
+		success: zOpenApi.boolean(),
+		message: zOpenApi.string(),
+		code: zOpenApi.string(),
+		data: zOpenApi
+			.object({
+				access_token: zOpenApi.string(),
+				token_type: zOpenApi.literal('Bearer'),
+				expires_in: zOpenApi.number(),
+				verificationToken: zOpenApi.string().optional(),
+			})
+			.optional(),
+	})
+	.openapi('SignupResponse');
+
+const SignupErrorSchema = zOpenApi
+	.object({
+		success: zOpenApi.boolean(),
+		message: zOpenApi.string(),
+		code: zOpenApi.string(),
+		data: zOpenApi
+			.object({
+				errors: zOpenApi.array(
+					zOpenApi.object({
+						message: zOpenApi.string(),
+						path: zOpenApi.array(zOpenApi.string()),
+						code: zOpenApi.string(),
+						validation: zOpenApi.string().optional(),
+						type: zOpenApi.string().optional(),
+						exact: zOpenApi.boolean().optional(),
+						inclusive: zOpenApi.boolean().optional(),
+						minimum: zOpenApi.number().optional(),
+					})
+				),
+			})
+			.optional(),
+	})
+	.openapi('SignupError');
+
+const RefreshTokenRequestSchema = zOpenApi
+	.object({
+		refreshToken: zOpenApi.string().min(1).openapi({
+			example: 'eyJhbGciOiJIUzI1NiIs...',
+			description: 'Refresh token received from login or previous refresh',
+		}),
+	})
+	.openapi('RefreshTokenRequest');
+
+const RefreshTokenResponseSchema = zOpenApi
+	.object({
+		success: zOpenApi.boolean(),
+		message: zOpenApi.string(),
+		code: zOpenApi.string(),
+		data: zOpenApi
+			.object({
+				access_token: zOpenApi.string(),
+				token_type: zOpenApi.literal('Bearer'),
+				expires_in: zOpenApi.number(),
+			})
+			.optional(),
+	})
+	.openapi('RefreshTokenResponse');
+
+const RefreshTokenErrorSchema = zOpenApi
+	.object({
+		success: zOpenApi.boolean(),
+		message: zOpenApi.string(),
+		code: zOpenApi.string(),
+		data: zOpenApi.null(),
+	})
+	.openapi('RefreshTokenError');
+
 const responseService = {
 	signUpSchema: z
 		.object({
@@ -119,6 +213,16 @@ const responseService = {
 		.refine((data) => data.email !== undefined || data.username !== undefined, {
 			message: 'At least one field (email or username) must be provided',
 		}),
+	signupSchemas: {
+		request: SignupRequestSchema,
+		response: SignupResponseSchema,
+		error: SignupErrorSchema,
+	},
+	refreshTokenSchemas: {
+		request: RefreshTokenRequestSchema,
+		response: RefreshTokenResponseSchema,
+		error: RefreshTokenErrorSchema,
+	},
 };
 
 export default responseService;

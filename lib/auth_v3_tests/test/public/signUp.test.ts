@@ -69,11 +69,12 @@ describe("Public Auth Endpoints - Sign Up", () => {
       message: "Validation error",
       code: "VALIDATION_ERROR",
       data: {
-        issues: [
+        errors: [
           {
             message: "Invalid email",
             path: ["email"],
             code: "invalid_string",
+            validation: "email",
           },
         ],
       },
@@ -100,48 +101,22 @@ describe("Public Auth Endpoints - Sign Up", () => {
       message: "Validation error",
       code: "VALIDATION_ERROR",
       data: {
-        issues: [
+        errors: [
           {
-            message: "Password must be at least 8 characters",
+            message: "String must contain at least 8 character(s)",
             path: ["password"],
             code: "too_small",
+            type: "string",
+            inclusive: true,
+            minimum: 8,
           },
           {
-            message: "Password must contain at least one uppercase letter",
-            path: ["password"],
-            code: "custom",
-          },
-          {
-            message: "Password must contain at least one lowercase letter",
-            path: ["password"],
-            code: "custom",
-          },
-          {
-            message:
-              "Password must contain at least one special character (!@#$%^&*)",
-            path: ["password"],
-            code: "custom",
-          },
-          {
-            message: "Password must be at least 8 characters",
+            message: "String must contain at least 8 character(s)",
             path: ["confirmPassword"],
             code: "too_small",
-          },
-          {
-            message: "Password must contain at least one uppercase letter",
-            path: ["confirmPassword"],
-            code: "custom",
-          },
-          {
-            message: "Password must contain at least one lowercase letter",
-            path: ["confirmPassword"],
-            code: "custom",
-          },
-          {
-            message:
-              "Password must contain at least one special character (!@#$%^&*)",
-            path: ["confirmPassword"],
-            code: "custom",
+            type: "string",
+            inclusive: true,
+            minimum: 8,
           },
         ],
       },
@@ -168,7 +143,7 @@ describe("Public Auth Endpoints - Sign Up", () => {
       message: "Validation error",
       code: "VALIDATION_ERROR",
       data: {
-        issues: [
+        errors: [
           {
             message: "Passwords don't match",
             path: ["confirmPassword"],

@@ -101,4 +101,28 @@ describe("Public Auth Endpoints - Refresh Token", () => {
       data: null,
     });
   });
+
+  it("should fail with missing refresh token", async () => {
+    const refreshResponse = await fetch(`${API_URL}/v3/public/refresh-token`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({}),
+    });
+
+    const refreshData = await refreshResponse.json();
+
+    expect(refreshResponse.status).toBe(400);
+    expect(refreshData).toMatchObject({
+      success: false,
+      message: "Validation error",
+      code: "VALIDATION_ERROR",
+      data: {
+        errors: expect.arrayContaining([
+          expect.objectContaining({
+            message: expect.any(String),
+          }),
+        ]),
+      },
+    });
+  });
 });
