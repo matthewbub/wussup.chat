@@ -223,6 +223,41 @@ const ForgotPasswordErrorSchema = zOpenApi
 	})
 	.openapi('ForgotPasswordError');
 
+const ResetPasswordRequestSchema = zOpenApi
+	.object({
+		token: zOpenApi.string().min(1).openapi({
+			example: 'reset_token_123',
+			description: 'Password reset token',
+		}),
+		password: zOpenApi.string().min(8).max(20).openapi({
+			example: 'NewPassword123!',
+			description: 'New password meeting security requirements',
+		}),
+		confirmPassword: zOpenApi.string().min(8).max(20).openapi({
+			example: 'NewPassword123!',
+			description: 'Must match password field',
+		}),
+	})
+	.openapi('ResetPasswordRequest');
+
+const ResetPasswordResponseSchema = zOpenApi
+	.object({
+		success: zOpenApi.boolean(),
+		message: zOpenApi.string(),
+		code: zOpenApi.string(),
+		data: zOpenApi.null(),
+	})
+	.openapi('ResetPasswordResponse');
+
+const ResetPasswordErrorSchema = zOpenApi
+	.object({
+		success: zOpenApi.boolean(),
+		message: zOpenApi.string(),
+		code: zOpenApi.string(),
+		data: zOpenApi.null(),
+	})
+	.openapi('ResetPasswordError');
+
 const responseService = {
 	signUpSchema: z
 		.object({
@@ -295,6 +330,11 @@ const responseService = {
 		request: VerifyEmailRequestSchema,
 		response: VerifyEmailResponseSchema,
 		error: VerifyEmailErrorSchema,
+	},
+	resetPasswordSchemas: {
+		request: ResetPasswordRequestSchema,
+		response: ResetPasswordResponseSchema,
+		error: ResetPasswordErrorSchema,
 	},
 };
 

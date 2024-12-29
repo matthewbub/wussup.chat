@@ -18,6 +18,7 @@ import { signupRouteDefinition } from './routeDefinitions/signup.def';
 import { refreshTokenRouteDefinition } from './routeDefinitions/refreshToken.def';
 import { verifyEmailRouteDefinition } from './routeDefinitions/verifyEmail.def';
 import { forgotPasswordRouteDefinition } from './routeDefinitions/forgotPassword.def';
+import { resetPasswordRouteDefinition } from './routeDefinitions/resetPassword.def';
 
 export interface Env {
 	AUTH_KEY: string;
@@ -147,18 +148,30 @@ app.openapi(
 	validationErrorHook
 );
 
-app.post('/v3/public/reset-password', async (c) => {
-	const { token, password, confirmPassword } = await c.req.json();
-	const response = await publicService.resetPassword(
-		{
-			token,
-			password,
-			confirmPassword,
-		},
-		c
-	);
-	return c.json(response, response.status);
-});
+app.openapi(
+	resetPasswordRouteDefinition,
+	async (c) => {
+		const { token, password, confirmPassword } = c.req.valid('json');
+		const response = await publicService.resetPassword(
+			{
+				token,
+				password,
+				confirmPassword,
+			},
+			c
+		);
+		return c.json(
+			{
+				success: response.success,
+				message: response.message,
+				code: response.code,
+				data: response.data,
+			},
+			response.code === 'INVALID_RESET_TOKEN' ? 401 : (response.status as 200 | 400)
+		);
+	},
+	validationErrorHook
+);
 
 app.post('/v3/public/resend-verification-email', async (c) => {
 	const { email } = await c.req.json();
