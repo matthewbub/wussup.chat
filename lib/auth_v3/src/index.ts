@@ -13,6 +13,7 @@ import { createResponse } from './helpers/createResponse';
 import { createRoute, OpenAPIHono } from '@hono/zod-openapi';
 import { commonErrorHandler, commonErrorResponse } from './helpers/commonErrorHandler';
 import { loginRoute } from './routes/login.route';
+import { signupRoute } from './routes/signup.route';
 
 export interface Env {
 	AUTH_KEY: string;
@@ -80,18 +81,34 @@ const adminAuthMiddleware = async (c: Context, next: () => Promise<void>) => {
 };
 
 // routes
-app.post('/v3/public/sign-up', async (c) => {
-	const { email, password, confirmPassword } = await c.req.json();
-	const response = await publicService.signUp(
-		{
-			email,
-			password,
-			confirmPassword,
-		},
-		c
-	);
-	return c.json(response, response.status);
-});
+app.openapi(
+	signupRoute,
+	async (c) => {
+		const { email, password, confirmPassword } = c.req.valid('json');
+		const response = await publicService.signUp({ email, password, confirmPassword }, c);
+
+		if (!response.success) {
+			return c.json(response, response.status as 400 | 409);
+		}
+		return c.json(response, 200);
+	},
+	(result, c) => {
+		if (!result.success) {
+			return c.json(
+				createResponse(
+					false,
+					'Validation error',
+					'VALIDATION_ERROR',
+					{
+						errors: result.error.errors,
+					},
+					400
+				),
+				400
+			);
+		}
+	}
+);
 
 app.openapi(
 	loginRoute,
