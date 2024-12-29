@@ -187,6 +187,42 @@ const VerifyEmailErrorSchema = zOpenApi
 	})
 	.openapi('VerifyEmailError');
 
+const ForgotPasswordRequestSchema = zOpenApi
+	.object({
+		email: zOpenApi.string().email().openapi({
+			example: 'user@example.com',
+			description: "User's email address",
+		}),
+	})
+	.openapi('ForgotPasswordRequest');
+
+const ForgotPasswordResponseSchema = zOpenApi
+	.object({
+		success: zOpenApi.boolean(),
+		message: zOpenApi.string(),
+		code: zOpenApi.string(),
+		data: zOpenApi.null(),
+	})
+	.openapi('ForgotPasswordResponse');
+
+const ForgotPasswordErrorSchema = zOpenApi
+	.object({
+		success: zOpenApi.boolean(),
+		message: zOpenApi.string(),
+		code: zOpenApi.string(),
+		data: zOpenApi
+			.object({
+				errors: zOpenApi.array(
+					zOpenApi.object({
+						message: zOpenApi.string(),
+						path: zOpenApi.array(zOpenApi.string()),
+					})
+				),
+			})
+			.optional(),
+	})
+	.openapi('ForgotPasswordError');
+
 const responseService = {
 	signUpSchema: z
 		.object({
@@ -216,6 +252,11 @@ const responseService = {
 	forgotPasswordSchema: z.object({
 		email: z.string().email().max(255),
 	}),
+	forgotPasswordSchemas: {
+		request: ForgotPasswordRequestSchema,
+		response: ForgotPasswordResponseSchema,
+		error: ForgotPasswordErrorSchema,
+	},
 	resendForgotPasswordSchema: z.object({
 		email: z.string().email().max(255),
 	}),

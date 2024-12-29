@@ -16,6 +16,8 @@ import { signupRoute as signupRouteDefinition } from './routes/signup.route';
 import adminAuthMiddleware from './middleware/admin.middleware';
 import { refreshTokenRoute as refreshTokenRouteDefinition } from './routes/refreshToken.route';
 import { verifyEmailRoute as verifyEmailRouteDefinition } from './routes/verifyEmail.route';
+import { forgotPasswordRoute as forgotPasswordRouteDefinition } from './routes/forgotPassword.route';
+import validationErrorHook from './hooks/validationError.hook';
 
 export interface Env {
 	AUTH_KEY: string;
@@ -70,22 +72,7 @@ app.openapi(
 		}
 		return c.json(response, 200);
 	},
-	(result, c) => {
-		if (!result.success) {
-			return c.json(
-				createResponse(
-					false,
-					'Validation error',
-					'VALIDATION_ERROR',
-					{
-						errors: result.error.errors,
-					},
-					400
-				),
-				400
-			);
-		}
-	}
+	validationErrorHook
 );
 
 app.openapi(
@@ -103,22 +90,7 @@ app.openapi(
 			response.success ? 200 : 401
 		);
 	},
-	(result, c) => {
-		if (!result.success) {
-			return c.json(
-				createResponse(
-					false,
-					'Validation error',
-					'VALIDATION_ERROR',
-					{
-						errors: result.error.errors,
-					},
-					400
-				),
-				400
-			);
-		}
-	}
+	validationErrorHook
 );
 
 app.openapi(
@@ -136,22 +108,7 @@ app.openapi(
 			response.success ? 200 : 401
 		);
 	},
-	(result, c) => {
-		if (!result.success) {
-			return c.json(
-				createResponse(
-					false,
-					'Validation error',
-					'VALIDATION_ERROR',
-					{
-						errors: result.error.errors,
-					},
-					400
-				),
-				400
-			);
-		}
-	}
+	validationErrorHook
 );
 
 app.openapi(
@@ -169,29 +126,26 @@ app.openapi(
 			response.success ? 200 : 401
 		);
 	},
-	(result, c) => {
-		if (!result.success) {
-			return c.json(
-				createResponse(
-					false,
-					'Validation error',
-					'VALIDATION_ERROR',
-					{
-						errors: result.error.errors,
-					},
-					400
-				),
-				400
-			);
-		}
-	}
+	validationErrorHook
 );
 
-app.post('/v3/public/forgot-password', async (c) => {
-	const { email } = await c.req.json();
-	const response = await publicService.forgotPassword({ email }, c);
-	return c.json(response, response.status);
-});
+app.openapi(
+	forgotPasswordRouteDefinition,
+	async (c) => {
+		const { email } = c.req.valid('json');
+		const response = await publicService.forgotPassword({ email }, c);
+		return c.json(
+			{
+				success: response.success,
+				message: response.message,
+				code: response.code,
+				data: response.data,
+			},
+			response.success ? 200 : 400
+		);
+	},
+	validationErrorHook
+);
 
 app.post('/v3/public/reset-password', async (c) => {
 	const { token, password, confirmPassword } = await c.req.json();

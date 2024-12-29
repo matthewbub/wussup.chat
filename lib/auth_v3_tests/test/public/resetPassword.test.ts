@@ -1,51 +1,13 @@
 import { describe, it, expect } from "vitest";
 import { createFakeUser } from "../../src/helpers";
 import constants from "../../src/constants";
+import { getRegularUser } from "../../src/getRegularUser";
 
 const API_URL = constants.API_URL;
 
 describe("Public Auth Endpoints - Reset Password", () => {
   it("should successfully reset the password", async () => {
-    const fakeUser = createFakeUser();
-    const password = "TestPassword123!";
-
-    // Sign up the user
-    const signUpResponse = await fetch(`${API_URL}/v3/public/sign-up`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        email: fakeUser.email,
-        password: password,
-        confirmPassword: password,
-      }),
-    });
-
-    const signUpData = await signUpResponse.json();
-
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    // Verify the email
-    const verifyEmailResponse = await fetch(
-      `${API_URL}/v3/public/verify-email`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          token: signUpData.data.verificationToken,
-        }),
-      }
-    );
-
-    const verifyEmailData = await verifyEmailResponse.json();
-
-    expect(verifyEmailResponse.status).toBe(200);
-    expect(verifyEmailData).toMatchObject({
-      success: true,
-      message: "Email verified successfully",
-    });
-
-    // Wait for the email verification process to complete
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    const fakeUser = await getRegularUser();
 
     // Initiate forgot password to get the reset token
     const forgotPasswordResponse = await fetch(
@@ -54,12 +16,13 @@ describe("Public Auth Endpoints - Reset Password", () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          email: fakeUser.email,
+          email: fakeUser.userData.email,
         }),
       }
     );
 
     const forgotPasswordData = await forgotPasswordResponse.json();
+    console.log("forgotPasswordResponse", forgotPasswordData);
     const resetToken = forgotPasswordData.data?.resetToken; // Ensure resetToken is available
     if (!resetToken) {
       throw new Error("Reset token not provided in response");
