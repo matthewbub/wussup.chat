@@ -160,6 +160,33 @@ const RefreshTokenErrorSchema = zOpenApi
 	})
 	.openapi('RefreshTokenError');
 
+const VerifyEmailRequestSchema = zOpenApi
+	.object({
+		token: zOpenApi.string().min(1).openapi({
+			example: 'verification_token_123',
+			description: 'Email verification token',
+		}),
+	})
+	.openapi('VerifyEmailRequest');
+
+const VerifyEmailResponseSchema = zOpenApi
+	.object({
+		success: zOpenApi.boolean(),
+		message: zOpenApi.string(),
+		code: zOpenApi.string(),
+		data: zOpenApi.null(),
+	})
+	.openapi('VerifyEmailResponse');
+
+const VerifyEmailErrorSchema = zOpenApi
+	.object({
+		success: zOpenApi.boolean(),
+		message: zOpenApi.string(),
+		code: zOpenApi.string(),
+		data: zOpenApi.null(),
+	})
+	.openapi('VerifyEmailError');
+
 const responseService = {
 	signUpSchema: z
 		.object({
@@ -222,6 +249,11 @@ const responseService = {
 		request: RefreshTokenRequestSchema,
 		response: RefreshTokenResponseSchema,
 		error: RefreshTokenErrorSchema,
+	},
+	verifyEmailSchemas: {
+		request: VerifyEmailRequestSchema,
+		response: VerifyEmailResponseSchema,
+		error: VerifyEmailErrorSchema,
 	},
 };
 

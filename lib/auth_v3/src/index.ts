@@ -15,6 +15,7 @@ import { loginRoute as loginRouteDefinition } from './routes/login.route';
 import { signupRoute as signupRouteDefinition } from './routes/signup.route';
 import adminAuthMiddleware from './middleware/admin.middleware';
 import { refreshTokenRoute as refreshTokenRouteDefinition } from './routes/refreshToken.route';
+import { verifyEmailRoute as verifyEmailRouteDefinition } from './routes/verifyEmail.route';
 
 export interface Env {
 	AUTH_KEY: string;
@@ -153,11 +154,38 @@ app.openapi(
 	}
 );
 
-app.post('/v3/public/verify-email', async (c) => {
-	const { token } = await c.req.json();
-	const response = await publicService.verifyEmail({ token }, c);
-	return c.json(response, response.status);
-});
+app.openapi(
+	verifyEmailRouteDefinition,
+	async (c) => {
+		const { token } = c.req.valid('json');
+		const response = await publicService.verifyEmail({ token }, c);
+		return c.json(
+			{
+				success: response.success,
+				message: response.message,
+				code: response.code,
+				data: response.data,
+			},
+			response.success ? 200 : 401
+		);
+	},
+	(result, c) => {
+		if (!result.success) {
+			return c.json(
+				createResponse(
+					false,
+					'Validation error',
+					'VALIDATION_ERROR',
+					{
+						errors: result.error.errors,
+					},
+					400
+				),
+				400
+			);
+		}
+	}
+);
 
 app.post('/v3/public/forgot-password', async (c) => {
 	const { email } = await c.req.json();

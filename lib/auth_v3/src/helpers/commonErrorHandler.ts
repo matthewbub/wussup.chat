@@ -17,12 +17,6 @@ export function commonErrorHandler(error: unknown, c: Context) {
 	return createResponse(false, error instanceof Error ? error.message : 'Unknown error', 'UNEXPECTED_ERROR', null, 500);
 }
 
-// export const commonErrorResponse = (error: unknown, c: Context) => {
-// 	console.log('commonErrorResponse', error);
-// 	console.log('commonErrorHandler', commonErrorHandler(error, c));
-// 	return c.json(commonErrorHandler(error, c), commonErrorHandler(error, c).status);
-// };
-
 export const commonErrorResponse = (err: Error, c: Context) => {
 	// Handle bearer auth errors
 	if (err instanceof HTTPException) {

@@ -67,5 +67,29 @@ describe("Public Auth Endpoints", () => {
         code: "TOKEN_INVALID",
       });
     });
+
+    it("should fail with validation error when token is missing", async () => {
+      const verifyResponse = await fetch(`${API_URL}/v3/public/verify-email`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      });
+
+      const verifyData = await verifyResponse.json();
+
+      expect(verifyResponse.status).toBe(400);
+      expect(verifyData).toMatchObject({
+        success: false,
+        message: "Validation error",
+        code: "VALIDATION_ERROR",
+        data: {
+          errors: expect.arrayContaining([
+            expect.objectContaining({
+              message: expect.any(String),
+            }),
+          ]),
+        },
+      });
+    });
   });
 });
