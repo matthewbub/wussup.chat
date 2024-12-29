@@ -1,7 +1,7 @@
 import { createRoute } from '@hono/zod-openapi';
 import responseService from '../modules/response';
 
-export const loginRoute = createRoute({
+export const loginRouteDefinition = createRoute({
 	method: 'post',
 	path: '/v3/public/login',
 	request: {

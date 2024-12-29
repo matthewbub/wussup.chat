@@ -1,7 +1,7 @@
 import { createRoute } from '@hono/zod-openapi';
 import responseService from '../modules/response';
 
-export const verifyEmailRoute = createRoute({
+export const verifyEmailRouteDefinition = createRoute({
 	method: 'post',
 	path: '/v3/public/verify-email',
 	request: {

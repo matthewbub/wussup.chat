@@ -10,14 +10,14 @@ import responseService from './modules/response';
 import adminService from './modules/lib/admin';
 import { createResponse } from './helpers/createResponse';
 import { OpenAPIHono } from '@hono/zod-openapi';
-import { commonErrorResponse } from './helpers/commonErrorHandler';
-import { loginRoute as loginRouteDefinition } from './routes/login.route';
-import { signupRoute as signupRouteDefinition } from './routes/signup.route';
 import adminAuthMiddleware from './middleware/admin.middleware';
-import { refreshTokenRoute as refreshTokenRouteDefinition } from './routes/refreshToken.route';
-import { verifyEmailRoute as verifyEmailRouteDefinition } from './routes/verifyEmail.route';
-import { forgotPasswordRoute as forgotPasswordRouteDefinition } from './routes/forgotPassword.route';
 import validationErrorHook from './hooks/validationError.hook';
+import { commonErrorResponse } from './helpers/commonErrorHandler';
+import { loginRouteDefinition } from './routeDefinitions/login.def';
+import { signupRouteDefinition } from './routeDefinitions/signup.def';
+import { refreshTokenRouteDefinition } from './routeDefinitions/refreshToken.def';
+import { verifyEmailRouteDefinition } from './routeDefinitions/verifyEmail.def';
+import { forgotPasswordRouteDefinition } from './routeDefinitions/forgotPassword.def';
 
 export interface Env {
 	AUTH_KEY: string;

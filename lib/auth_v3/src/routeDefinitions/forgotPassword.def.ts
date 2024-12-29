@@ -1,7 +1,7 @@
 import { createRoute } from '@hono/zod-openapi';
 import responseService from '../modules/response';
 
-export const forgotPasswordRoute = createRoute({
+export const forgotPasswordRouteDefinition = createRoute({
 	method: 'post',
 	path: '/v3/public/forgot-password',
 	request: {
