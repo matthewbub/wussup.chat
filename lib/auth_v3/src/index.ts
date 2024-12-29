@@ -299,6 +299,24 @@ app.post('/v3/admin/users/:id/suspend', async (c) => {
 	return c.json(result, result.status);
 });
 
+// create app
+app.post('/v3/admin/create-app', async (c) => {
+	const token = c.req.header('Authorization')?.split(' ')[1];
+	if (!token) {
+		return c.json(createResponse(false, 'No token provided', 'ERR_NO_TOKEN_PROVIDED'), 401);
+	}
+
+	const { name, description, domain, userId } = await c.req.json();
+
+	const result = await adminService.createApp(c, {
+		name,
+		description,
+		domain,
+		userId,
+	});
+	return c.json(result, result.status);
+});
+
 app.doc('/docs', {
 	openapi: '3.0.0',
 	info: {

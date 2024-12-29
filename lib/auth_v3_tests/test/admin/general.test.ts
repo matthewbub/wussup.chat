@@ -2,7 +2,7 @@ import { describe, it, expect, beforeAll } from "vitest";
 import constants from "../../src/constants";
 import { getRegularUser } from "../../src/getRegularUser.js";
 import { createAdminUser } from "../../src/getAdminUser.js";
-
+import { faker } from "@faker-js/faker";
 const API_URL = constants.API_URL;
 
 describe("Admin Endpoints", () => {
@@ -24,6 +24,23 @@ describe("Admin Endpoints", () => {
       expect(data.code).toBe("SUCCESS");
       expect(Array.isArray(data.data.results)).toBe(true);
       expect(data.data.results.length).toBeGreaterThan(0);
+    });
+
+    it("should not allow regular users to list all users", async () => {
+      const { accessToken: regularUserToken } = await getRegularUser();
+
+      const response = await fetch(`${API_URL}/v3/admin/users`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${regularUserToken}`,
+        },
+      });
+
+      const data = await response.json();
+
+      expect(response.status).toBe(403);
+      expect(data.success).toBe(false);
+      expect(data.message).toBe("Unauthorized");
     });
   });
 
@@ -84,7 +101,6 @@ describe("Admin Endpoints", () => {
 
       const postSuspensionData = await postSuspensionMeResponse.json();
 
-      console.log("postSuspensionData", postSuspensionData);
       // Check either for 401 status or for an error response
       expect(postSuspensionData.success).toBe(false);
       expect(postSuspensionData.code).toBe("ACCOUNT_SUSPENDED");
