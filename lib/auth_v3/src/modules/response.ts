@@ -258,6 +258,33 @@ const ResetPasswordErrorSchema = zOpenApi
 	})
 	.openapi('ResetPasswordError');
 
+const ResendVerificationEmailRequestSchema = zOpenApi
+	.object({
+		email: zOpenApi.string().email().openapi({
+			example: 'user@example.com',
+			description: "User's email address",
+		}),
+	})
+	.openapi('ResendVerificationEmailRequest');
+
+const ResendVerificationEmailResponseSchema = zOpenApi
+	.object({
+		success: zOpenApi.boolean(),
+		message: zOpenApi.string(),
+		code: zOpenApi.string(),
+		data: zOpenApi.null(),
+	})
+	.openapi('ResendVerificationEmailResponse');
+
+const ResendVerificationEmailErrorSchema = zOpenApi
+	.object({
+		success: zOpenApi.boolean(),
+		message: zOpenApi.string(),
+		code: zOpenApi.string(),
+		data: zOpenApi.null(),
+	})
+	.openapi('ResendVerificationEmailError');
+
 const responseService = {
 	signUpSchema: z
 		.object({
@@ -335,6 +362,11 @@ const responseService = {
 		request: ResetPasswordRequestSchema,
 		response: ResetPasswordResponseSchema,
 		error: ResetPasswordErrorSchema,
+	},
+	resendVerificationEmailSchemas: {
+		request: ResendVerificationEmailRequestSchema,
+		response: ResendVerificationEmailResponseSchema,
+		error: ResendVerificationEmailErrorSchema,
 	},
 };
 

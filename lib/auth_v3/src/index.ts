@@ -19,6 +19,7 @@ import { refreshTokenRouteDefinition } from './routeDefinitions/refreshToken.def
 import { verifyEmailRouteDefinition } from './routeDefinitions/verifyEmail.def';
 import { forgotPasswordRouteDefinition } from './routeDefinitions/forgotPassword.def';
 import { resetPasswordRouteDefinition } from './routeDefinitions/resetPassword.def';
+import { resendVerificationEmailRouteDefinition } from './routeDefinitions/resendEmailVerification';
 
 export interface Env {
 	AUTH_KEY: string;
@@ -167,17 +168,29 @@ app.openapi(
 				code: response.code,
 				data: response.data,
 			},
-			response.code === 'INVALID_RESET_TOKEN' ? 401 : (response.status as 200 | 400)
+			response.code === 'INVALID_RESET_TOKEN' ? 401 : (response.status as 200 | 400) || 409
 		);
 	},
 	validationErrorHook
 );
 
-app.post('/v3/public/resend-verification-email', async (c) => {
-	const { email } = await c.req.json();
-	const response = await publicService.resendVerificationEmail({ email }, c);
-	return c.json(response, response.status);
-});
+app.openapi(
+	resendVerificationEmailRouteDefinition,
+	async (c) => {
+		const { email } = c.req.valid('json');
+		const response = await publicService.resendVerificationEmail({ email }, c);
+		return c.json(
+			{
+				success: response.success,
+				message: response.message,
+				code: response.code,
+				data: response.data,
+			},
+			(response.status as 200 | 400) || 409
+		);
+	},
+	validationErrorHook
+);
 
 app.get('/v3/auth/logout', async (c) => {
 	const token = c.req.header('Authorization')?.split(' ')[1];
