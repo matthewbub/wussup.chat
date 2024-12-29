@@ -4,7 +4,7 @@ import jwtService from '../../jwt';
 import passwordService from '../../password';
 import emailService from '../../email';
 import responseService from '../../response';
-import { codes, errorMessages, httpStatus, testEnv, userStatuses, bearer, expiresIn } from '../../../constants';
+import { codes, errorMessages, httpStatus, testEnv, userStatuses, tokenConstants } from '../../../constants';
 import { createResponse } from '../../../helpers/createResponse';
 import { commonErrorHandler } from '../../../helpers/commonErrorHandler';
 import dbService from '../../database';
@@ -67,7 +67,7 @@ export const signUp = async (
 		// decrypt it at validation time
 		const payload = {
 			id: user.id,
-			exp: Math.floor(Date.now() / 1000) + expiresIn,
+			exp: Math.floor(Date.now() / 1000) + tokenConstants.EXPIRES_IN,
 		};
 
 		// encrypt the payload with an auth key
@@ -83,8 +83,8 @@ export const signUp = async (
 			codes.SUCCESS,
 			{
 				access_token: token,
-				token_type: bearer,
-				expires_in: expiresIn,
+				token_type: tokenConstants.TYPE,
+				expires_in: tokenConstants.EXPIRES_IN,
 				// when testing, we don't need to actually send an email thats obnoxious
 				// instead just return the same verification token as the email service would
 				...(env(c).ENV === testEnv && { verificationToken: emailResult.verificationToken }),

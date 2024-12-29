@@ -118,7 +118,7 @@ describe("Public Auth Endpoints - Login", () => {
     expect(loginData).toMatchObject({
       success: false,
       message: "Invalid password",
-      code: "LOGIN_ATTEMPT_FAILED",
+      code: "LOGIN_FAILED",
     });
   });
 
@@ -133,11 +133,11 @@ describe("Public Auth Endpoints - Login", () => {
     });
 
     const loginData = await loginResponse.json();
-    expect(loginResponse.status).toBe(404);
+    expect(loginResponse.status).toBe(401);
     expect(loginData).toMatchObject({
       success: false,
       message: "Invalid email or password",
-      code: "USER_NOT_FOUND",
+      code: "LOGIN_FAILED",
     });
   });
 });

@@ -1,9 +1,10 @@
 import { Context } from 'hono';
-import { env } from 'hono/adapter';
 import jwtService from '../../jwt';
 import emailService from '../../email';
 import { createResponse } from '../../../helpers/createResponse';
 import { commonErrorHandler } from '../../../helpers/commonErrorHandler';
+import { codes, errorMessages, httpStatus, tokenTypes, timing } from '../../../constants';
+import dbService from '../../database';
 
 interface UpdateUserResponse {
 	success: boolean;
@@ -15,74 +16,76 @@ interface UpdateUserResponse {
 	};
 }
 
+/**
+ * updates user information and handles email verification if email is changed
+ */
 export const updateUser = async (token: string, updates: { email?: string; username?: string }, c: Context) => {
-	const db = env(c).DB;
-
 	try {
-		// Decode the token to extract user information
 		const payload = await jwtService.decodeToken(token, c);
 		if (!payload?.id) {
-			return createResponse(false, 'Invalid token', 'ERR_INVALID_TOKEN', null, 401);
+			return createResponse(false, errorMessages.INVALID_TOKEN, codes.ERR_INVALID_TOKEN, null, httpStatus.UNAUTHORIZED);
 		}
 
 		const transaction = [];
 		const updates_array = [];
 
-		// Check if a username update is requested
 		if (updates.username) {
-			const existingUsername = await db
-				.prepare('SELECT id FROM users WHERE username = ? AND id != ?')
-				.bind(updates.username, payload.id)
-				.run();
+			const existingUsername = await dbService.query<{ results: { id: string }[] }>(
+				c,
+				'SELECT id FROM users WHERE username = ? AND id != ?',
+				[updates.username, payload.id]
+			);
 
-			if (existingUsername.results?.length) {
-				return createResponse(false, 'Username already taken', 'ERR_USERNAME_TAKEN', null, 400);
+			if (existingUsername.data?.results?.length) {
+				return createResponse(false, errorMessages.USERNAME_TAKEN, codes.ERR_USERNAME_TAKEN, null, httpStatus.BAD_REQUEST);
 			}
 
 			updates_array.push('username = ?');
 		}
 
-		// Check if an email update is requested
 		if (updates.email) {
-			const existingEmail = await db.prepare('SELECT id FROM users WHERE email = ? AND id != ?').bind(updates.email, payload.id).run();
+			const existingEmail = await dbService.query<{ results: { id: string }[] }>(c, 'SELECT id FROM users WHERE email = ? AND id != ?', [
+				updates.email,
+				payload.id,
+			]);
 
-			if (existingEmail.results?.length) {
-				return createResponse(false, 'Email already registered', 'ERR_EMAIL_REGISTERED', null, 400);
+			if (existingEmail.data?.results?.length) {
+				return createResponse(false, errorMessages.EMAIL_REGISTERED, codes.ERR_EMAIL_REGISTERED, null, httpStatus.BAD_REQUEST);
 			}
 
 			updates_array.push('email = ?');
 
 			const verificationToken = crypto.randomUUID();
-			transaction.push(
-				db
-					.prepare('INSERT INTO verification_tokens (token, user_id, type, expires_at) VALUES (?, ?, ?, ?)')
-					.bind(verificationToken, payload.id, 'email', new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString())
-			);
+			transaction.push({
+				sql: 'INSERT INTO verification_tokens (token, user_id, type, expires_at) VALUES (?, ?, ?, ?)',
+				params: [verificationToken, payload.id, tokenTypes.EMAIL, new Date(Date.now() + timing.EMAIL_VERIFICATION_EXPIRY).toISOString()],
+			});
 		}
 
 		const updateQuery = `
-            UPDATE users 
-            SET ${updates_array.join(', ')}
-            WHERE id = ?
-            RETURNING email, username
-        `;
+			UPDATE users 
+			SET ${updates_array.join(', ')}
+			WHERE id = ?
+			RETURNING email, username
+		`;
 
 		const bindParams = [];
 		if (updates.username) bindParams.push(updates.username);
-		if (updates.email) {
-			bindParams.push(updates.email);
-		}
+		if (updates.email) bindParams.push(updates.email);
 		bindParams.push(payload.id);
 
-		transaction.push(db.prepare(updateQuery).bind(...bindParams));
+		transaction.push({
+			sql: updateQuery,
+			params: bindParams,
+		});
 
-		const results = await db.batch(transaction);
+		const transactionResult = await dbService.transaction<{ results: UpdateUserResponse['user'][] }[]>(c, transaction);
 
-		if (!results.every((result: { success: boolean }) => result.success)) {
-			return createResponse(false, 'Failed to update user information', 'ERR_UPDATE_FAILED', null, 500);
+		if (!transactionResult.success) {
+			return createResponse(false, errorMessages.UPDATE_FAILED, codes.ERR_UPDATE_FAILED, null, httpStatus.INTERNAL_SERVER_ERROR);
 		}
 
-		const updatedUser = results[results.length - 1].results?.[0] as UpdateUserResponse['user'];
+		const updatedUser = transactionResult.data?.[transactionResult.data.length - 1].results?.[0];
 
 		if (updates.email) {
 			await emailService.sendVerificationEmail(
@@ -96,10 +99,10 @@ export const updateUser = async (token: string, updates: { email?: string; usern
 
 		return createResponse(
 			true,
-			updates.email ? 'Profile updated. Please verify your new email address.' : 'Profile updated successfully',
-			'SUCCESS',
+			updates.email ? errorMessages.PROFILE_UPDATED_VERIFY : errorMessages.PROFILE_UPDATED,
+			codes.SUCCESS,
 			{ user: updatedUser },
-			updates.email ? 200 : 201
+			httpStatus.CREATED
 		);
 	} catch (error) {
 		return commonErrorHandler(error, c);

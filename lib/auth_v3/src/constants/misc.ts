@@ -12,11 +12,12 @@ export const HTTP_STATUS = {
 	INTERNAL_SERVER_ERROR: 500,
 	UNAUTHORIZED: 401,
 	NOT_FOUND: 404,
+	FORBIDDEN: 403,
+	BAD_REQUEST: 400,
+	CREATED: 201,
 } as const;
 
 export const TEST_ENV = 'test';
-export const BEARER = 'Bearer';
-export const EXPIRES_IN = 60 * 60; // 1 hour
 
 export const ERROR_MESSAGES = {
 	INVALID_EMAIL_FORMAT: 'Invalid email format',
@@ -40,6 +41,21 @@ export const ERROR_MESSAGES = {
 	RATE_LIMIT_MESSAGE: 'Please wait 5 minutes before requesting another verification email',
 	EMAIL_SEND_FAILED: 'Failed to send verification email',
 	VERIFICATION_EMAIL_SUCCESS: 'Verification email has been resent',
+	INVALID_REFRESH_TOKEN: 'Invalid refresh token',
+	REVOKE_FAILED: 'Failed to revoke refresh token',
+	TOKEN_REFRESHED: 'Token refreshed successfully',
+	ACCOUNT_DELETED: 'Account has been deleted',
+	ACCOUNT_SUSPENDED: 'Account has been suspended. Please contact support.',
+	ACCOUNT_LOCKED: 'Account is temporarily locked. Please reset your password via email.',
+	LOGIN_FAILED: 'Invalid email or password',
+	LOGIN_SUCCESS: 'Login successful',
+	PASSWORD_RESET_INITIATED: 'If a user exists with this email, they will receive reset instructions.',
+	INVALID_TOKEN: 'Invalid token',
+	USERNAME_TAKEN: 'Username already taken',
+	EMAIL_REGISTERED: 'Email already registered',
+	UPDATE_FAILED: 'Failed to update user information',
+	PROFILE_UPDATED: 'Profile updated successfully',
+	PROFILE_UPDATED_VERIFY: 'Profile updated. Please verify your new email address.',
 };
 
 export const RESPONSE_CODES = {
@@ -62,8 +78,29 @@ export const RESPONSE_CODES = {
 	UNABLE_TO_RESEND: 'UNABLE_TO_RESEND',
 	RATE_LIMIT_EXCEEDED: 'RATE_LIMIT_EXCEEDED',
 	EMAIL_SEND_FAILED: 'EMAIL_SEND_FAILED',
+	INVALID_REFRESH_TOKEN: 'INVALID_REFRESH_TOKEN',
+	REVOKE_FAILED: 'REVOKE_FAILED',
+	ACCOUNT_DELETED: 'ACCOUNT_DELETED',
+	ACCOUNT_SUSPENDED: 'ACCOUNT_SUSPENDED',
+	ACCOUNT_LOCKED: 'ACCOUNT_LOCKED',
+	LOGIN_FAILED: 'LOGIN_FAILED',
+	PASSWORD_RESET_INITIATED: 'PASSWORD_RESET_INITIATED',
+	ERR_INVALID_TOKEN: 'ERR_INVALID_TOKEN',
+	ERR_USERNAME_TAKEN: 'ERR_USERNAME_TAKEN',
+	ERR_EMAIL_REGISTERED: 'ERR_EMAIL_REGISTERED',
+	ERR_UPDATE_FAILED: 'ERR_UPDATE_FAILED',
 };
 
 export const TIMING = {
 	VERIFICATION_EMAIL_COOLDOWN: 5 * 60 * 1000, // 5 minutes in milliseconds
+	EMAIL_VERIFICATION_EXPIRY: 24 * 60 * 60 * 1000, // 24 hours in milliseconds
+} as const;
+
+export const TOKEN_CONSTANTS = {
+	TYPE: 'Bearer',
+	EXPIRES_IN: 60 * 60, // 1 hour
+} as const;
+
+export const TOKEN_TYPES = {
+	EMAIL: 'email',
 } as const;
