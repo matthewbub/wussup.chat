@@ -7,9 +7,26 @@ import { commonErrorHandler } from '../../../helpers/commonErrorHandler';
 import { codes, errorMessages, httpStatus, userStatuses, tokenConstants } from '../../../constants';
 import dbService from '../../database';
 
-export const login = async ({ email, password }: { email: string; password: string }, c: Context) => {
+export const login = async ({ email, password, appId }: { email: string; password: string; appId: string | null }, c: Context) => {
 	try {
-		responseService.loginSchema.parse({ email, password });
+		responseService.loginSchema.parse({ email, password, appId: appId || null });
+
+		let query = `
+			SELECT u.id, u.password, u.status, u.failed_login_attempts, u.locked_until, u.app_id 
+			FROM users u
+			WHERE u.email = ?`;
+		let params = [email];
+
+		if (appId) {
+			query += `
+				AND u.app_id = ?
+				AND EXISTS (
+					SELECT 1 FROM apps a 
+					WHERE a.id = u.app_id 
+					AND a.id = ?
+				)`;
+			params.push(appId, appId);
+		}
 
 		const userResult = await dbService.query<{
 			results: {
@@ -18,8 +35,9 @@ export const login = async ({ email, password }: { email: string; password: stri
 				status: string;
 				failed_login_attempts: number;
 				locked_until: string | null;
+				app_id: string | null;
 			}[];
-		}>(c, 'SELECT id, password, status, failed_login_attempts, locked_until FROM users WHERE email = ?', [email]);
+		}>(c, query, params);
 
 		if (!userResult.success) {
 			return createResponse(false, errorMessages.DATABASE_ERROR, codes.DB_ERROR, null, httpStatus.INTERNAL_SERVER_ERROR);
@@ -68,6 +86,7 @@ export const login = async ({ email, password }: { email: string; password: stri
 
 		const payload = {
 			id: user.id,
+			appId: user.app_id || null,
 			exp: Math.floor(Date.now() / 1000) + tokenConstants.EXPIRES_IN,
 		};
 

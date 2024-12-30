@@ -5,7 +5,7 @@ import { createResponse } from '../../../helpers/createResponse';
 
 export const publicRoutesService = {
 	signUpRoute: async (c: Context<{ Bindings: Env }>) => {
-		const appId = c.req.header('x-app-id'); // optional at code level but actually required for anything to work
+		const appId = c.req.header('x-app-id');
 		const { email, password, confirmPassword } = await c.req.json();
 		const response = await publicService.signUp({ email, password, confirmPassword, appId: appId || null }, c);
 
@@ -15,8 +15,9 @@ export const publicRoutesService = {
 		return c.json(response, 200);
 	},
 	loginRoute: async (c: Context<{ Bindings: Env }>) => {
+		const appId = c.req.header('x-app-id');
 		const { email, password } = await c.req.json();
-		const response = await publicService.login({ email, password }, c);
+		const response = await publicService.login({ email, password, appId: appId || null }, c);
 		return c.json(
 			{
 				success: response.success,

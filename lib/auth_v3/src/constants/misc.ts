@@ -47,7 +47,7 @@ export const ERROR_MESSAGES = {
 	ACCOUNT_DELETED: 'Account has been deleted',
 	ACCOUNT_SUSPENDED: 'Account has been suspended. Please contact support.',
 	ACCOUNT_LOCKED: 'Account is temporarily locked. Please reset your password via email.',
-	LOGIN_FAILED: 'Invalid email or password',
+	LOGIN_FAILED: 'Invalid data. Could be email, password, appId or something else',
 	LOGIN_SUCCESS: 'Login successful',
 	PASSWORD_RESET_INITIATED: 'If a user exists with this email, they will receive reset instructions.',
 	INVALID_TOKEN: 'Invalid token',

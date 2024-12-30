@@ -395,6 +395,7 @@ const responseService = {
 	loginSchema: z.object({
 		email: z.string().email().max(255),
 		password: passwordSchema,
+		appId: z.string().min(1).max(255).optional().nullable(),
 	}),
 	loginSchemas: {
 		request: LoginRequestSchema,

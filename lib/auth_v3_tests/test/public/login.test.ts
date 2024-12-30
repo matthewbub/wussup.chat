@@ -1,6 +1,11 @@
 import { describe, it, expect } from "vitest";
 import { createFakeUser } from "../../src/helpers";
 import constants from "../../src/constants";
+import initApp from "../../src/initApp";
+import {
+  getRegularUser,
+  getRegularUserWithAppId,
+} from "../../src/getRegularUser";
 
 const API_URL = constants.API_URL;
 
@@ -136,7 +141,31 @@ describe("Public Auth Endpoints - Login", () => {
     expect(loginResponse.status).toBe(401);
     expect(loginData).toMatchObject({
       success: false,
-      message: "Invalid email or password",
+      message:
+        "Invalid data. Could be email, password, appId or something else",
+      code: "LOGIN_FAILED",
+    });
+  });
+
+  it("should login with appId", async () => {
+    const { loginData } = await getRegularUserWithAppId();
+    expect(loginData).toMatchObject({
+      success: true,
+      message: expect.any(String),
+      data: {
+        access_token: expect.any(String),
+        token_type: "Bearer",
+        expires_in: expect.any(Number),
+      },
+    });
+  });
+
+  it("should fail with incorrect appId", async () => {
+    const { loginData } = await getRegularUserWithAppId("wrong-app-id");
+    expect(loginData).toMatchObject({
+      success: false,
+      message:
+        "Invalid data. Could be email, password, appId or something else",
       code: "LOGIN_FAILED",
     });
   });
