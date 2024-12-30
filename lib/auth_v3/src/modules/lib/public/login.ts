@@ -49,6 +49,19 @@ export const login = async ({ email, password, appId }: { email: string; passwor
 			return createResponse(false, errorMessages.LOGIN_FAILED, codes.LOGIN_FAILED, null, httpStatus.UNAUTHORIZED);
 		}
 
+		const loginAttemptResult = await passwordService.handleLoginAttempt({ user, passwordAttempt: password }, c);
+		if (loginAttemptResult instanceof Error || loginAttemptResult.error) {
+			return createResponse(
+				false,
+				loginAttemptResult instanceof Error ? loginAttemptResult.message : loginAttemptResult.error || errorMessages.LOGIN_FAILED,
+				codes.LOGIN_FAILED,
+				{
+					lockedUntil: user.locked_until,
+				},
+				httpStatus.UNAUTHORIZED
+			);
+		}
+
 		// check account status
 		if (user.status === userStatuses.DELETED) {
 			return createResponse(false, errorMessages.ACCOUNT_DELETED, codes.ACCOUNT_DELETED, null, httpStatus.FORBIDDEN);
@@ -71,17 +84,9 @@ export const login = async ({ email, password, appId }: { email: string; passwor
 			);
 		}
 
-		const loginAttemptResult = await passwordService.handleLoginAttempt({ user, passwordAttempt: password }, c);
-		if (loginAttemptResult instanceof Error || loginAttemptResult.error) {
-			return createResponse(
-				false,
-				loginAttemptResult instanceof Error ? loginAttemptResult.message : loginAttemptResult.error || errorMessages.LOGIN_FAILED,
-				codes.LOGIN_FAILED,
-				{
-					lockedUntil: user.locked_until,
-				},
-				httpStatus.UNAUTHORIZED
-			);
+		// check if account is pending
+		if (user.status === userStatuses.PENDING) {
+			return createResponse(false, errorMessages.ACCOUNT_PENDING, codes.ACCOUNT_PENDING, null, httpStatus.FORBIDDEN);
 		}
 
 		const payload = {

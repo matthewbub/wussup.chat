@@ -26,18 +26,17 @@ describe("Public Auth Endpoints - Refresh Token", () => {
     await new Promise((resolve) => setTimeout(resolve, 1000));
 
     // Verify the email
-    if (signUpResponse.ok && signUpData.verificationToken) {
-      await fetch(`${API_URL}/v3/public/verify-email`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          token: signUpData.verificationToken,
-        }),
-      });
 
-      // Wait for the verification to be processed
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-    }
+    await fetch(`${API_URL}/v3/public/verify-email`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        token: signUpData.data.verificationToken,
+      }),
+    });
+
+    // Wait for the verification to be processed
+    await new Promise((resolve) => setTimeout(resolve, 1000));
 
     // Login to get the refresh token
     const loginResponse = await fetch(`${API_URL}/v3/public/login`, {

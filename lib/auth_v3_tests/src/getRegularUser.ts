@@ -79,13 +79,34 @@ export const getRegularUserWithAppId = async (overrideId?: string) => {
 
   await new Promise((resolve) => setTimeout(resolve, 1000));
 
-  await fetch(`${API_URL}/v3/public/verify-email`, {
+  if (!signUpData.success) {
+    return {
+      userData: null,
+      appId,
+      loginData: null,
+      error: signUpData.message,
+      code: signUpData.code,
+    };
+  }
+
+  const verifyEmailResponse = await fetch(`${API_URL}/v3/public/verify-email`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      token: signUpData.verificationToken,
+      token: signUpData.data.verificationToken,
     }),
   });
+
+  const verifyEmailData = await verifyEmailResponse.json();
+  if (!verifyEmailData.success) {
+    return {
+      userData: null,
+      appId,
+      loginData: null,
+      error: verifyEmailData.message,
+      code: verifyEmailData.code,
+    };
+  }
 
   await new Promise((resolve) => setTimeout(resolve, 1000));
 
@@ -104,5 +125,7 @@ export const getRegularUserWithAppId = async (overrideId?: string) => {
     userData: fakeUser,
     appId,
     loginData,
+    error: null,
+    code: null,
   };
 };

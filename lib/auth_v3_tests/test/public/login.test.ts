@@ -1,11 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { createFakeUser } from "../../src/helpers";
 import constants from "../../src/constants";
-import initApp from "../../src/initApp";
-import {
-  getRegularUser,
-  getRegularUserWithAppId,
-} from "../../src/getRegularUser";
+import { getRegularUserWithAppId } from "../../src/getRegularUser";
 
 const API_URL = constants.API_URL;
 
@@ -54,20 +50,21 @@ describe("Public Auth Endpoints - Login", () => {
     });
 
     const signUpData = await signUpResponse.json();
-
     await new Promise((resolve) => setTimeout(resolve, 1000));
-
-    if (signUpResponse.ok && signUpData.verificationToken) {
-      await fetch(`${API_URL}/v3/public/verify-email`, {
+    const verifyEmailResponse = await fetch(
+      `${API_URL}/v3/public/verify-email`,
+      {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          token: signUpData.verificationToken,
+          token: signUpData.data.verificationToken,
         }),
-      });
+      }
+    );
 
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-    }
+    const verifyEmailData = await verifyEmailResponse.json();
+
+    await new Promise((resolve) => setTimeout(resolve, 1000));
 
     const loginResponse = await fetch(`${API_URL}/v3/public/login`, {
       method: "POST",
@@ -161,12 +158,12 @@ describe("Public Auth Endpoints - Login", () => {
   });
 
   it("should fail with incorrect appId", async () => {
-    const { loginData } = await getRegularUserWithAppId("wrong-app-id");
-    expect(loginData).toMatchObject({
-      success: false,
-      message:
-        "Invalid data. Could be email, password, appId or something else",
-      code: "LOGIN_FAILED",
-    });
+    const { loginData, error, code } = await getRegularUserWithAppId(
+      "wrong-app-id"
+    );
+
+    expect(code).toBe("INVALID_APP_ID");
+    expect(error).toBe("Invalid app ID");
+    expect(loginData).toBeNull();
   });
 });

@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   const { email, password, confirmPassword } = await req.json();
-  console.log(email, password, confirmPassword);
 
   const data = await fetch(
     "https://auth.6matbub.workers.dev/v3/public/sign-up",
@@ -16,7 +15,6 @@ export async function POST(req: Request) {
   );
 
   const response = await data.json();
-  console.log(response);
 
   return NextResponse.json(response);
 }
