@@ -303,6 +303,83 @@ const LogoutErrorSchema = zOpenApi
 	})
 	.openapi('LogoutError');
 
+const UpdateUserRequestSchema = zOpenApi
+	.object({
+		email: zOpenApi.string().email().max(255).optional(),
+		username: zOpenApi.string().min(3).max(255).optional(),
+	})
+	.openapi('UpdateUserRequest');
+
+const UpdateUserResponseSchema = zOpenApi
+	.object({
+		success: zOpenApi.boolean(),
+		message: zOpenApi.string(),
+		code: zOpenApi.string(),
+		data: zOpenApi
+			.object({
+				user: zOpenApi.object({
+					email: zOpenApi.string().optional(),
+					username: zOpenApi.string().optional(),
+				}),
+			})
+			.optional(),
+	})
+	.openapi('UpdateUserResponse');
+
+const UpdateUserErrorSchema = zOpenApi
+	.object({
+		success: zOpenApi.boolean(),
+		message: zOpenApi.string(),
+		code: zOpenApi.string(),
+		data: zOpenApi.null(),
+	})
+	.openapi('UpdateUserError');
+
+const DeleteUserResponseSchema = zOpenApi
+	.object({
+		success: zOpenApi.boolean(),
+		message: zOpenApi.string(),
+		code: zOpenApi.string(),
+		data: zOpenApi.null(),
+	})
+	.openapi('DeleteUserResponse');
+
+const DeleteUserErrorSchema = zOpenApi
+	.object({
+		success: zOpenApi.boolean(),
+		message: zOpenApi.string(),
+		code: zOpenApi.string(),
+		data: zOpenApi.null(),
+	})
+	.openapi('DeleteUserError');
+
+const GetCurrentUserResponseSchema = zOpenApi
+	.object({
+		success: zOpenApi.boolean(),
+		message: zOpenApi.string(),
+		code: zOpenApi.string(),
+		data: zOpenApi.object({
+			id: zOpenApi.string(),
+			email: zOpenApi.string(),
+			username: zOpenApi.string(),
+			status: zOpenApi.string(),
+			role: zOpenApi.string(),
+			email_verified: zOpenApi.number(),
+			last_login_at: zOpenApi.string().nullable(),
+			created_at: zOpenApi.string(),
+		}),
+	})
+	.openapi('GetCurrentUserResponse');
+
+const GetCurrentUserErrorSchema = zOpenApi
+	.object({
+		success: zOpenApi.boolean(),
+		message: zOpenApi.string(),
+		code: zOpenApi.string(),
+		data: zOpenApi.null(),
+	})
+	.openapi('GetCurrentUserError');
+
 const responseService = {
 	signUpSchema: z
 		.object({
@@ -389,6 +466,15 @@ const responseService = {
 	logoutSchemas: {
 		response: LogoutResponseSchema,
 		error: LogoutErrorSchema,
+	},
+	UpdateUserRequestSchema,
+	UpdateUserResponseSchema,
+	UpdateUserErrorSchema,
+	DeleteUserResponseSchema,
+	DeleteUserErrorSchema,
+	getCurrentUserSchemas: {
+		response: GetCurrentUserResponseSchema,
+		error: GetCurrentUserErrorSchema,
 	},
 };
 

@@ -22,7 +22,6 @@ describe("Public Auth Endpoints - Reset Password", () => {
     );
 
     const forgotPasswordData = await forgotPasswordResponse.json();
-    console.log("forgotPasswordResponse", forgotPasswordData);
     const resetToken = forgotPasswordData.data?.resetToken; // Ensure resetToken is available
     if (!resetToken) {
       throw new Error("Reset token not provided in response");

@@ -21,7 +21,9 @@ import { forgotPasswordRouteDefinition } from './routeDefinitions/forgotPassword
 import { resetPasswordRouteDefinition } from './routeDefinitions/resetPassword.def';
 import { resendVerificationEmailRouteDefinition } from './routeDefinitions/resendEmailVerification.def';
 import { logoutRouteDefinition } from './routeDefinitions/logout.def';
-import { resetPasswordHandler } from './handlers/resetPassword.handler';
+import { getCurrentUserRouteDefinition } from './routeDefinitions/getCurrentUser.def';
+import { updateUserRouteDefinition } from './routeDefinitions/updateUser.def';
+import { deleteUserRouteDefinition } from './routeDefinitions/deleteUser.def';
 
 export interface Env {
 	AUTH_KEY: string;
@@ -64,7 +66,7 @@ app.use(
 	})
 );
 
-// routes
+// public routes
 app.openapi(signupRouteDefinition, publicService.routes.signUpRoute, validationErrorHook);
 app.openapi(loginRouteDefinition, publicService.routes.loginRoute, validationErrorHook);
 app.openapi(refreshTokenRouteDefinition, publicService.routes.refreshTokenRoute, validationErrorHook);
@@ -73,42 +75,11 @@ app.openapi(forgotPasswordRouteDefinition, publicService.routes.forgotPasswordRo
 app.openapi(resetPasswordRouteDefinition, publicService.routes.resetPasswordHandler, validationErrorHook);
 app.openapi(resendVerificationEmailRouteDefinition, publicService.routes.resendVerificationEmailRoute, validationErrorHook);
 
-app.openapi(logoutRouteDefinition, async (c) => {
-	const token = c.req.header('Authorization')?.split(' ')[1];
-	if (!token) {
-		return c.json(createResponse(false, 'No token provided', 'ERR_NO_TOKEN_PROVIDED', null, 401), 401);
-	}
-	const response = await authService.logout(token, c);
-	return c.json(response, response.status);
-});
-
-app.get('/v3/auth/me', async (c) => {
-	const token = c.req.header('Authorization')?.split(' ')[1];
-	if (!token) {
-		return c.json(createResponse(false, 'No token provided', 'ERR_NO_TOKEN_PROVIDED'), 401);
-	}
-	const result = await authService.getCurrentUser(token, c);
-	return c.json(result, result.status);
-});
-
-app.put('/v3/auth/me', zValidator('json', responseService.updateUserSchema), async (c) => {
-	const token = c.req.header('Authorization')?.split(' ')[1];
-	if (!token) {
-		return c.json(createResponse(false, 'No token provided', 'ERR_NO_TOKEN_PROVIDED'), 401);
-	}
-	const updates = await c.req.json();
-	const result = await authService.updateUser(token, updates, c);
-	return c.json(result, result.status);
-});
-
-app.delete('/v3/auth/me', async (c) => {
-	const token = c.req.header('Authorization')?.split(' ')[1];
-	if (!token) {
-		return c.json(createResponse(false, 'No token provided', 'ERR_NO_TOKEN_PROVIDED'), 401);
-	}
-	const result = await authService.deleteAccount(token, c);
-	return c.json(result, result.status);
-});
+// auth routes
+app.openapi(logoutRouteDefinition, authService.routes.logout);
+app.openapi(getCurrentUserRouteDefinition, authService.routes.getCurrentUser);
+app.openapi(updateUserRouteDefinition, authService.routes.updateUser);
+app.openapi(deleteUserRouteDefinition, authService.routes.deleteAccount);
 
 // Admin routes
 app.use('/v3/admin/*', adminAuthMiddleware);

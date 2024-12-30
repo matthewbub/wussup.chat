@@ -4,6 +4,7 @@ import getCurrentUser from './getCurrentUser';
 import updateUser from './updateUser';
 import deleteAccount from './deleteAccount';
 import validateUserStatus from './validateUserStatus';
+import { authRoutes } from './routes';
 
 const authService = {
 	logout: logout,
@@ -12,6 +13,7 @@ const authService = {
 	updateUser: updateUser,
 	deleteAccount: deleteAccount,
 	validateUserStatus: validateUserStatus,
+	routes: authRoutes,
 };
 
 export default authService;
