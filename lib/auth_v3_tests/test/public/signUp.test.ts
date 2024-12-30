@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeAll } from "vitest";
 import { createFakeUser } from "../../src/helpers";
 import constants from "../../src/constants";
+import initApp from "../../src/initApp";
 
 const API_URL = constants.API_URL;
 
@@ -171,6 +172,57 @@ describe("Public Auth Endpoints - Sign Up", () => {
       success: false,
       message: "Email already in use",
       code: "EMAIL_ALREADY_IN_USE",
+    });
+  });
+
+  it("should sign up a user tied to an app", async () => {
+    const { appId } = await initApp();
+
+    const fakeUser = createFakeUser();
+
+    const response = await fetch(`${API_URL}/v3/public/sign-up`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-app-id": appId,
+      },
+      body: JSON.stringify({
+        email: fakeUser.email,
+        password: validPassword,
+        confirmPassword: validPassword,
+      }),
+    });
+
+    const data = await response.json();
+    expect(response.status).toBe(200);
+    expect(data).toMatchObject({
+      success: true,
+      message: expect.any(String),
+    });
+  });
+
+  it("should fail with invalid app id", async () => {
+    const fakeUser = createFakeUser();
+
+    const response = await fetch(`${API_URL}/v3/public/sign-up`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-app-id": "invalid-app-id",
+      },
+      body: JSON.stringify({
+        email: fakeUser.email,
+        password: validPassword,
+        confirmPassword: validPassword,
+      }),
+    });
+
+    const data = await response.json();
+    expect(response.status).toBe(400);
+    expect(data).toMatchObject({
+      success: false,
+      message: "Invalid app ID",
+      code: "INVALID_APP_ID",
     });
   });
 });

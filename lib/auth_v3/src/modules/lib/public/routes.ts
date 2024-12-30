@@ -1,11 +1,13 @@
 import { Context } from 'hono';
 import { Env } from '../../../index';
 import publicService from '../public';
+import { createResponse } from '../../../helpers/createResponse';
 
 export const publicRoutesService = {
 	signUpRoute: async (c: Context<{ Bindings: Env }>) => {
+		const appId = c.req.header('x-app-id'); // optional at code level but actually required for anything to work
 		const { email, password, confirmPassword } = await c.req.json();
-		const response = await publicService.signUp({ email, password, confirmPassword }, c);
+		const response = await publicService.signUp({ email, password, confirmPassword, appId: appId || null }, c);
 
 		if (!response.success) {
 			return c.json(response, response.status as 400 | 409);

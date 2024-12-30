@@ -10,9 +10,9 @@ export const resendVerificationEmail = async ({ email }: { email: string }, c: C
 	try {
 		responseService.resendVerificationEmailSchema.parse({ email });
 
-		const userResult = await dbService.query<{ results: { id: string; email: string; status: string }[] }>(
+		const userResult = await dbService.query<{ results: { id: string; email: string; status: string; app_id: string }[] }>(
 			c,
-			'SELECT id, email, status FROM users WHERE email = ?',
+			'SELECT id, email, status, app_id FROM users WHERE email = ?',
 			[email]
 		);
 
@@ -57,7 +57,7 @@ export const resendVerificationEmail = async ({ email }: { email: string }, c: C
 			}
 		}
 
-		const emailResult = await emailService.sendVerificationEmail({ to: email, user }, c);
+		const emailResult = await emailService.sendVerificationEmail({ to: email, user, appId: user.app_id }, c);
 		if (emailResult instanceof Error) {
 			return createResponse(false, errorMessages.EMAIL_SEND_FAILED, codes.EMAIL_SEND_FAILED, null, httpStatus.INTERNAL_SERVER_ERROR);
 		}

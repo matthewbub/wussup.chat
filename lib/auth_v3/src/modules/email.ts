@@ -2,6 +2,7 @@ import { Context } from 'hono';
 import { env } from 'hono/adapter';
 import { Resend } from 'resend';
 import dbService from './database';
+import validationServices from './validations';
 
 const VERIFICATION_EXPIRES_IN = 24 * 60 * 60; // 24 hours
 
@@ -39,10 +40,17 @@ const emailService = {
 		}
 	},
 	// sends a verification email to a user
-	sendVerificationEmail: async ({ to, user }: { to: string; user: any }, c: Context) => {
+	sendVerificationEmail: async ({ to, user, appId }: { to: string; user: any; appId: string | null }, c: Context) => {
 		try {
 			const verificationToken = crypto.randomUUID();
 
+			// validate app id
+			if (appId) {
+				const appValidationError = await validationServices.validateAppId(appId, c);
+				if (appValidationError) {
+					return appValidationError;
+				}
+			}
 			// store verification token in database
 			const res = await dbService.transaction(c, [
 				{
@@ -51,10 +59,11 @@ const emailService = {
 							token, 
 							user_id, 
 							type, 
-							expires_at
-						) VALUES (?, ?, ?, ?)
+							expires_at,
+							app_id
+						) VALUES (?, ?, ?, ?, ?)
 					`,
-					params: [verificationToken, user.id, 'email', new Date(Date.now() + VERIFICATION_EXPIRES_IN * 1000).toISOString()],
+					params: [verificationToken, user.id, 'email', new Date(Date.now() + VERIFICATION_EXPIRES_IN * 1000).toISOString(), appId || null],
 				},
 			]);
 

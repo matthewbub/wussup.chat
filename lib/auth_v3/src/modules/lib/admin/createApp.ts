@@ -30,9 +30,6 @@ const createApp = async (c: Context, body: CreateAppRequest) => {
 			[crypto.randomUUID(), body.name, body.description || null, body.domain || null, body.userId]
 		);
 
-		console.log('body/fcreateApp', body);
-		console.log('result/fcreateApp', result);
-
 		if (!result.success) {
 			return createResponse(false, 'Failed to create app', 'ERR_CREATE_APP_FAILED', null, 500);
 		}

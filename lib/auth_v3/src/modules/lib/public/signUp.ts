@@ -8,13 +8,22 @@ import { codes, errorMessages, httpStatus, testEnv, userStatuses, tokenConstants
 import { createResponse } from '../../../helpers/createResponse';
 import { commonErrorHandler } from '../../../helpers/commonErrorHandler';
 import dbService from '../../database';
+import validationServices from '../../validations';
 
 export const signUp = async (
-	{ email, password, confirmPassword }: { email: string; password: string; confirmPassword: string },
+	{ email, password, confirmPassword, appId }: { email: string; password: string; confirmPassword: string; appId: string | null },
 	c: Context
 ) => {
 	try {
-		responseService.signUpSchema.parse({ email, password, confirmPassword });
+		responseService.signUpSchema.parse({ email, password, confirmPassword, appId });
+
+		if (appId) {
+			// validate app id
+			const appValidationError = await validationServices.validateAppId(appId, c);
+			if (appValidationError) {
+				return appValidationError;
+			}
+		}
 
 		// check for existing email
 		const existingEmailResult = await dbService.query<{ results: { id: string }[] }>(c, 'SELECT id FROM users WHERE email = ?', [email]);
@@ -25,8 +34,8 @@ export const signUp = async (
 		const hashedPassword = await passwordService.hashPassword(password);
 		const queryResult = await dbService.query<{ results: { id: string; email: string; username: string }[] }>(
 			c,
-			'INSERT INTO users (id, email, username, password, status) VALUES (?, ?, ?, ?, ?) RETURNING id, email, username',
-			[crypto.randomUUID(), email, email, hashedPassword, userStatuses.PENDING]
+			'INSERT INTO users (id, email, username, password, status, app_id) VALUES (?, ?, ?, ?, ?, ?) RETURNING id, email, username',
+			[crypto.randomUUID(), email, email, hashedPassword, userStatuses.PENDING, appId || null]
 		);
 
 		if (!queryResult.success) {
@@ -57,7 +66,7 @@ export const signUp = async (
 		}
 
 		// this is the point at which we send the initial verification email
-		const emailResult = await emailService.sendVerificationEmail({ to: email, user }, c);
+		const emailResult = await emailService.sendVerificationEmail({ to: email, user, appId }, c);
 		if (emailResult instanceof Error) {
 			return createResponse(false, errorMessages.EMAIL_SEND_ERROR, codes.EMAIL_SEND_ERROR, null, httpStatus.INTERNAL_SERVER_ERROR);
 		}

@@ -386,6 +386,7 @@ const responseService = {
 			email: z.string().email().max(255),
 			password: passwordSchema,
 			confirmPassword: passwordSchema,
+			appId: z.string().min(1).max(255).optional(),
 		})
 		.refine((data) => data.password === data.confirmPassword, {
 			message: "Passwords don't match",
@@ -476,6 +477,9 @@ const responseService = {
 		response: GetCurrentUserResponseSchema,
 		error: GetCurrentUserErrorSchema,
 	},
+	listAppsOwnedByUserSchema: z.object({
+		userId: z.string().min(1).max(255),
+	}),
 };
 
 export default responseService;

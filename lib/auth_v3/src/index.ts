@@ -1,12 +1,10 @@
 import { logger } from 'hono/logger';
 import { bearerAuth } from 'hono/bearer-auth';
 import { env } from 'hono/adapter';
-import { zValidator } from '@hono/zod-validator';
 import { D1Database } from '@cloudflare/workers-types';
 import publicService from './modules/lib/public';
 import authService from './modules/lib/auth';
 import jwtService from './modules/jwt';
-import responseService from './modules/response';
 import adminService from './modules/lib/admin';
 import { createResponse } from './helpers/createResponse';
 import { OpenAPIHono } from '@hono/zod-openapi';
@@ -146,6 +144,17 @@ app.post('/v3/admin/create-app', async (c) => {
 		domain,
 		userId,
 	});
+	return c.json(result, result.status);
+});
+
+app.get('/v3/admin/apps/:userId', async (c) => {
+	const token = c.req.header('Authorization')?.split(' ')[1];
+	if (!token) {
+		return c.json(createResponse(false, 'No token provided', 'ERR_NO_TOKEN_PROVIDED'), 401);
+	}
+
+	const userId = c.req.param('userId');
+	const result = await adminService.listAppsOwnedByUser(c, { userId });
 	return c.json(result, result.status);
 });
 
