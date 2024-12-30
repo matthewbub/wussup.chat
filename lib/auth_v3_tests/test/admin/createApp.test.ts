@@ -27,6 +27,7 @@ describe("Admin - Create App", () => {
     });
 
     const data = await response.json();
+
     expect(response.status).toBe(201);
     expect(data.success).toBe(true);
     expect(data.code).toBe("SUCCESS");

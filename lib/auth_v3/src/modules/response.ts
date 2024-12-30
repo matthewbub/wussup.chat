@@ -386,7 +386,7 @@ const responseService = {
 			email: z.string().email().max(255),
 			password: passwordSchema,
 			confirmPassword: passwordSchema,
-			appId: z.string().min(1).max(255).optional(),
+			appId: z.string().min(1).max(255).optional().nullable(),
 		})
 		.refine((data) => data.password === data.confirmPassword, {
 			message: "Passwords don't match",

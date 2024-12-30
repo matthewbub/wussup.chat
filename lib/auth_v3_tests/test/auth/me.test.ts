@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeAll } from "vitest";
 import { createFakeUser } from "../../src/helpers";
 import constants from "../../src/constants";
+import { getRegularUser } from "../../src/getRegularUser";
 
 const API_URL = constants.API_URL;
 
@@ -9,37 +10,14 @@ describe("Auth Endpoints - /v3/auth/me", () => {
   let fakeUser: { email: string; username: string };
 
   beforeAll(async () => {
-    fakeUser = createFakeUser();
-    const password = "TestPassword123!";
-
-    // Sign up the user
-    const signUpResponse = await fetch(`${API_URL}/v3/public/sign-up`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        email: fakeUser.email,
-        password: password,
-        confirmPassword: password,
-      }),
-    });
-
-    const signUpData = await signUpResponse.json();
-    const verificationToken = signUpData.data.verificationToken;
-
-    // Simulate email verification
-    await fetch(`${API_URL}/v3/public/verify-email`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        token: verificationToken,
-      }),
-    });
-
-    // Wait for the verification process to complete
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    const regularUser = await getRegularUser();
 
     // Store the access token for further tests
-    token = signUpData.data.access_token;
+    token = regularUser.accessToken;
+    fakeUser = {
+      email: regularUser.userData.email,
+      username: regularUser.userData.username,
+    };
   });
 
   it("should retrieve the current user", async () => {
@@ -66,7 +44,7 @@ describe("Auth Endpoints - /v3/auth/me", () => {
         id: expect.any(String),
         created_at: expect.any(String),
         email_verified: 1,
-        last_login_at: null,
+        last_login_at: expect.any(String),
         role: "user",
       },
     });
