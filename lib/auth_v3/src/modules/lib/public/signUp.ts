@@ -26,8 +26,24 @@ export const signUp = async (
 		}
 
 		// check for existing email
-		const existingEmailResult = await dbService.query<{ results: { id: string }[] }>(c, 'SELECT id FROM users WHERE email = ?', [email]);
+		const existingEmailResult = await dbService.query<{ results: { id: string; status: string }[] }>(
+			c,
+			'SELECT id, status FROM users WHERE email = ?',
+			[email]
+		);
+
 		if (existingEmailResult.success && existingEmailResult.data?.results?.length) {
+			const isTheUserPending = existingEmailResult.data.results[0].status === userStatuses.PENDING;
+			if (isTheUserPending) {
+				return createResponse(
+					false,
+					errorMessages.EMAIL_ALREADY_IN_USE_PENDING,
+					codes.EMAIL_ALREADY_IN_USE_PENDING,
+					null,
+					httpStatus.CONFLICT
+				);
+			}
+
 			return createResponse(false, errorMessages.EMAIL_ALREADY_IN_USE, codes.EMAIL_ALREADY_IN_USE, null, httpStatus.CONFLICT);
 		}
 

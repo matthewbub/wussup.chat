@@ -170,8 +170,8 @@ describe("Public Auth Endpoints - Sign Up", () => {
     expect(response.status).toBe(409);
     expect(data).toMatchObject({
       success: false,
-      message: "Email already in use",
-      code: "EMAIL_ALREADY_IN_USE",
+      message: "Email already in use. Please verify your email to continue.",
+      code: "EMAIL_ALREADY_IN_USE_PENDING",
     });
   });
 
