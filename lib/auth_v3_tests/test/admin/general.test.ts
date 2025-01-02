@@ -2,7 +2,7 @@ import { describe, it, expect, beforeAll } from "vitest";
 import constants from "../../src/constants";
 import { getRegularUser } from "../../src/getRegularUser.js";
 import { createAdminUser } from "../../src/getAdminUser.js";
-import { faker } from "@faker-js/faker";
+
 const API_URL = constants.API_URL;
 
 describe("Admin Endpoints", () => {

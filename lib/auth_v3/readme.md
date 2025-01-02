@@ -77,3 +77,10 @@ Here's a map of all the routes in this service. Click an endpoint ot quickly jum
 |                  | GET    | /v3/admin/users/:id            | get specific user                        |
 |                  | PUT    | /v3/admin/users/:id/status     | modify user status (suspend/activate)    |
 |                  | DELETE | /v3/admin/users/:id            | delete user account                      |
+
+## Internal Admin System Setup
+
+/v3/admin/init-admin
+
+- create user with
+- create app
