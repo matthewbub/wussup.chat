@@ -2,6 +2,10 @@
 
 "z cauldron"
 
+The `/lib/auth_v3` is the latest multi-tenant auth system, it's self documented with the open api spec. I'm actively working on a "template" `/lib/app` that talks to the multi-tenant api.
+
+---
+
 # Table of Contents
 
 - [Getting Started](#getting-started)

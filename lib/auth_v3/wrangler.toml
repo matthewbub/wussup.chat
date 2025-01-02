@@ -25,7 +25,7 @@ enabled = true
 [vars]
 # MY_SAFE_VARIABLE = "production_value"
 # Sensitive values should be set using `wrangler secret put`
-
+APP_URL = "http://localhost:3000"
 
 # Bind the Workers AI model catalog. Run machine learning models, powered by serverless GPUs, on Cloudflare’s global network
 # Docs: https://developers.cloudflare.com/workers/wrangler/configuration/#workers-ai

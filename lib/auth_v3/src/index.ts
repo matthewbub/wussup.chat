@@ -1,5 +1,6 @@
 import { logger } from 'hono/logger';
 import { bearerAuth } from 'hono/bearer-auth';
+import { cors } from 'hono/cors';
 import { env } from 'hono/adapter';
 import { D1Database } from '@cloudflare/workers-types';
 import publicService from './modules/lib/public';
@@ -51,6 +52,15 @@ app.onError(commonErrorResponse);
 
 // middleware
 app.use(logger());
+app.use(
+	'*',
+	cors({
+		origin: 'http://localhost:3000',
+		allowMethods: ['GET', 'POST', 'OPTIONS', 'PUT', 'DELETE'],
+		allowHeaders: ['Content-Type', 'Authorization'],
+		maxAge: 86400,
+	})
+);
 app.use(
 	'/v3/auth/*',
 	bearerAuth({

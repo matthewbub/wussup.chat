@@ -72,8 +72,8 @@ const emailService = {
 			}
 
 			// construct verification url from environment
-			const baseUrl = env(c).VERIFICATION_URL || 'http://localhost:3000';
-			const verificationUrl = `${baseUrl}/verify-email/${verificationToken}`;
+			const baseUrl = env(c).APP_URL || 'http://localhost:3000';
+			const verificationUrl = `${baseUrl}/verify-email?token=${verificationToken}${appId ? `&appId=${appId}` : ''}`;
 
 			// send verification email
 			const emailResult = await emailService.sendEmail(
