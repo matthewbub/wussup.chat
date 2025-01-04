@@ -44,7 +44,7 @@ export default function EmailVerification({
   useEffect(() => {
     if (status === "success") {
       const redirectTimer = setTimeout(() => {
-        router.push("/dashboard");
+        router.push("/login");
       }, 10000);
 
       return () => clearTimeout(redirectTimer);
@@ -85,10 +85,10 @@ export default function EmailVerification({
               <p className="text-sm/6 text-gray-400 mt-2">
                 {STRINGS.VERIFY_REDIRECT_MESSAGE}{" "}
                 <a
-                  href="/dashboard"
+                  href="/login"
                   className="font-semibold text-indigo-400 hover:text-indigo-300"
                 >
-                  {STRINGS.VERIFY_GO_TO_DASHBOARD}
+                  {STRINGS.VERIFY_GO_TO_LOGIN}
                 </a>
               </p>
             </div>

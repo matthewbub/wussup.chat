@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { API_CONSTANTS } from "@/constants/api";
 import { STRINGS } from "@/constants/strings";
+import { authService } from "@/services/auth";
 
 type ValidationError = {
   message: string;
@@ -58,7 +59,6 @@ export const useRegisterStore = create<RegisterStore>((set, get) => ({
       verificationToken: undefined,
     }),
   submitRegistration: async (data) => {
-    const store = get();
     try {
       set({
         isLoading: true,
@@ -80,6 +80,10 @@ export const useRegisterStore = create<RegisterStore>((set, get) => ({
       );
 
       const result = await response.json();
+
+      if (response.ok) {
+        authService.setTokens(result.data.access_token, result.data.expires_in);
+      }
 
       if (!response.ok) {
         if (response.status === 409) {

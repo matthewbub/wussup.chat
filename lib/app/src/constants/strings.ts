@@ -7,6 +7,16 @@ export const STRINGS = {
   LOGIN_SUBMIT: "Sign in",
   LOGIN_NOT_MEMBER: "Not a member?",
   LOGIN_FREE_TRIAL: "Start a 14 day free trial",
+  LOGIN_ERROR_EMAIL_REQUIRED: "Email is required",
+  LOGIN_ERROR_EMAIL_INVALID: "Invalid email address",
+  LOGIN_ERROR_PASSWORD_REQUIRED: "Password is required",
+  LOGIN_ERROR_INVALID_CREDENTIALS: "Invalid email or password",
+  LOGIN_ERROR_ACCOUNT_LOCKED:
+    "Account is temporarily locked. Please try again later.",
+  LOGIN_ERROR_ACCOUNT_SUSPENDED: "This account has been suspended",
+  LOGIN_ERROR_ACCOUNT_NOT_FOUND: "Account not found",
+  LOGIN_ERROR_GENERIC: "An error occurred during login",
+  LOGIN_LOADING: "Signing in...",
 
   // Register screen strings
   REGISTER_TITLE: "Create your account",
@@ -48,8 +58,8 @@ export const STRINGS = {
   VERIFY_ERROR_RATE_LIMIT: "Too many attempts. Please try again later.",
   VERIFY_ERROR_VALIDATION: "Please provide a valid email address.",
   VERIFY_REDIRECT_MESSAGE:
-    "You will be redirected to dashboard in 10 seconds. Or click here to go now:",
-  VERIFY_GO_TO_DASHBOARD: "Go to Dashboard",
+    "You will be redirected to login in 10 seconds. Or click here to go now:",
+  VERIFY_GO_TO_LOGIN: "Go to Login",
 
   // Common error messages
   ERROR_GENERIC: "Something went wrong. Please try again.",

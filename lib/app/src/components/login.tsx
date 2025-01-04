@@ -1,6 +1,29 @@
-import { STRINGS } from "../constants/strings";
+"use client";
+
+import { useForm } from "react-hook-form";
+import { STRINGS } from "@/constants/strings";
+import { useLoginStore } from "@/stores/loginStore";
+import { useRouter } from "next/navigation";
+
+type LoginFormData = {
+  email: string;
+  password: string;
+};
 
 export default function Login() {
+  const { isLoading, error, submitLogin } = useLoginStore();
+  const router = useRouter();
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginFormData>();
+
+  const onSubmit = async (data: LoginFormData) => {
+    await submitLogin(data, router);
+  };
+
   return (
     <>
       <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8">
@@ -10,19 +33,36 @@ export default function Login() {
           </h2>
         </div>
 
-        <div className="ch-card p-6 mt-10 sm:mx-auto sm:w-full sm:max-w-sm ">
-          <form className="space-y-6">
+        <div className="ch-card p-6 mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
+          <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
             <div>
-              <label htmlFor="email">{STRINGS.LOGIN_EMAIL_LABEL}</label>
+              <label
+                htmlFor="email"
+                className="block text-sm/6 font-medium text-white"
+              >
+                {STRINGS.LOGIN_EMAIL_LABEL}
+              </label>
               <div className="mt-2">
                 <input
+                  {...register("email", {
+                    required: STRINGS.LOGIN_ERROR_EMAIL_REQUIRED,
+                    pattern: {
+                      value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                      message: STRINGS.LOGIN_ERROR_EMAIL_INVALID,
+                    },
+                  })}
                   id="email"
-                  name="email"
                   type="email"
-                  required
                   autoComplete="email"
-                  className="ch-input"
+                  className={`ch-input ${
+                    errors.email ? "outline-red-500" : ""
+                  }`}
                 />
+                {errors.email && (
+                  <p className="mt-1 text-sm text-red-500">
+                    {errors.email.message}
+                  </p>
+                )}
               </div>
             </div>
 
@@ -45,19 +85,35 @@ export default function Login() {
               </div>
               <div className="mt-2">
                 <input
+                  {...register("password", {
+                    required: STRINGS.LOGIN_ERROR_PASSWORD_REQUIRED,
+                  })}
                   id="password"
-                  name="password"
                   type="password"
-                  required
                   autoComplete="current-password"
-                  className="ch-input"
+                  className={`ch-input ${
+                    errors.password ? "outline-red-500" : ""
+                  }`}
                 />
+                {errors.password && (
+                  <p className="mt-1 text-sm text-red-500">
+                    {errors.password.message}
+                  </p>
+                )}
               </div>
             </div>
 
+            {error && (
+              <p className="text-sm text-red-500 text-center">{error}</p>
+            )}
+
             <div>
-              <button type="submit" className="ch-button">
-                {STRINGS.LOGIN_SUBMIT}
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="ch-button disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isLoading ? STRINGS.LOGIN_LOADING : STRINGS.LOGIN_SUBMIT}
               </button>
             </div>
           </form>
