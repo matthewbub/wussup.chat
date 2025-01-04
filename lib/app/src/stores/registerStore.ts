@@ -73,6 +73,7 @@ export const useRegisterStore = create<RegisterStore>((set, get) => ({
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            "X-App-Id": API_CONSTANTS.APP_ID,
           },
           body: JSON.stringify(data),
         }

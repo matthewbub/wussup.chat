@@ -65,6 +65,7 @@ export const useVerificationStore = create<VerificationStore>((set) => ({
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            "X-App-Id": API_CONSTANTS.APP_ID,
           },
           body: JSON.stringify({ email }),
         }

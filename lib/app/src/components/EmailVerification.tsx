@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { STRINGS } from "@/constants/strings";
 import { useVerificationStore } from "@/stores/verificationStore";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 
 export default function EmailVerification({
   userEmail = null,
@@ -15,6 +15,7 @@ export default function EmailVerification({
     useVerificationStore();
   const token = searchParams.get("token");
   const appId = searchParams.get("appId");
+  const router = useRouter();
 
   useEffect(() => {
     if (token && !appId) {
@@ -39,6 +40,16 @@ export default function EmailVerification({
       useVerificationStore.getState().reset();
     };
   }, [token, appId]);
+
+  useEffect(() => {
+    if (status === "success") {
+      const redirectTimer = setTimeout(() => {
+        router.push("/dashboard");
+      }, 10000);
+
+      return () => clearTimeout(redirectTimer);
+    }
+  }, [status, token, appId, router]);
 
   const handleResendVerification = async () => {
     if (!userEmail) {
@@ -67,9 +78,20 @@ export default function EmailVerification({
           )}
 
           {status === "success" && (
-            <p className="text-sm/6 text-green-400">
-              {STRINGS.VERIFY_SUCCESS_MESSAGE}
-            </p>
+            <div className="mt-4 text-center">
+              <p className="text-sm/6 text-green-400">
+                {STRINGS.VERIFY_SUCCESS_MESSAGE}
+              </p>
+              <p className="text-sm/6 text-gray-400 mt-2">
+                {STRINGS.VERIFY_REDIRECT_MESSAGE}{" "}
+                <a
+                  href="/dashboard"
+                  className="font-semibold text-indigo-400 hover:text-indigo-300"
+                >
+                  {STRINGS.VERIFY_GO_TO_DASHBOARD}
+                </a>
+              </p>
+            </div>
           )}
 
           {status === "error" && (
@@ -89,30 +111,34 @@ export default function EmailVerification({
             </>
           )}
 
-          <div className="mt-8">
-            <p className="text-sm/6 text-gray-400">
-              {STRINGS.VERIFY_RESEND}{" "}
-              <button
-                onClick={handleResendVerification}
-                disabled={status === "loading" || !userEmail}
-                className="font-semibold text-indigo-400 hover:text-indigo-300 disabled:opacity-50"
-              >
-                {STRINGS.VERIFY_RESEND_BUTTON}
-              </button>
-            </p>
-          </div>
+          {status !== "success" && (
+            <div className="mt-8">
+              <p className="text-sm/6 text-gray-400">
+                {STRINGS.VERIFY_RESEND}{" "}
+                <button
+                  onClick={handleResendVerification}
+                  disabled={status === "loading" || !userEmail}
+                  className="font-semibold text-indigo-400 hover:text-indigo-300 disabled:opacity-50"
+                >
+                  {STRINGS.VERIFY_RESEND_BUTTON}
+                </button>
+              </p>
+            </div>
+          )}
 
-          <div className="mt-4">
-            <p className="text-sm/6 text-gray-400">
-              {STRINGS.VERIFY_WRONG_EMAIL}{" "}
-              <a
-                href="/login"
-                className="font-semibold text-indigo-400 hover:text-indigo-300"
-              >
-                {STRINGS.VERIFY_SIGN_IN}
-              </a>
-            </p>
-          </div>
+          {status !== "success" && (
+            <div className="mt-4">
+              <p className="text-sm/6 text-gray-400">
+                {STRINGS.VERIFY_WRONG_EMAIL}{" "}
+                <a
+                  href="/login"
+                  className="font-semibold text-indigo-400 hover:text-indigo-300"
+                >
+                  {STRINGS.VERIFY_SIGN_IN}
+                </a>
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -10,15 +10,10 @@ export default function Login() {
           </h2>
         </div>
 
-        <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
+        <div className="ch-card p-6 mt-10 sm:mx-auto sm:w-full sm:max-w-sm ">
           <form className="space-y-6">
             <div>
-              <label
-                htmlFor="email"
-                className="block text-sm/6 font-medium text-white"
-              >
-                {STRINGS.LOGIN_EMAIL_LABEL}
-              </label>
+              <label htmlFor="email">{STRINGS.LOGIN_EMAIL_LABEL}</label>
               <div className="mt-2">
                 <input
                   id="email"
@@ -26,7 +21,7 @@ export default function Login() {
                   type="email"
                   required
                   autoComplete="email"
-                  className="block w-full rounded-md bg-white/5 px-3 py-1.5 text-base text-white outline outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
+                  className="ch-input"
                 />
               </div>
             </div>
@@ -55,16 +50,13 @@ export default function Login() {
                   type="password"
                   required
                   autoComplete="current-password"
-                  className="block w-full rounded-md bg-white/5 px-3 py-1.5 text-base text-white outline outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6"
+                  className="ch-input"
                 />
               </div>
             </div>
 
             <div>
-              <button
-                type="submit"
-                className="flex w-full justify-center rounded-md bg-indigo-500 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-sm hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
-              >
+              <button type="submit" className="ch-button">
                 {STRINGS.LOGIN_SUBMIT}
               </button>
             </div>

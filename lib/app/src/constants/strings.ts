@@ -45,10 +45,11 @@ export const STRINGS = {
   VERIFY_SUCCESS: "Verification email sent successfully",
   VERIFY_SUCCESS_TITLE: "Email verified successfully",
   VERIFY_SUCCESS_MESSAGE: "Your email has been verified successfully",
-
-  // Additional verification error messages
   VERIFY_ERROR_RATE_LIMIT: "Too many attempts. Please try again later.",
   VERIFY_ERROR_VALIDATION: "Please provide a valid email address.",
+  VERIFY_REDIRECT_MESSAGE:
+    "You will be redirected to dashboard in 10 seconds. Or click here to go now:",
+  VERIFY_GO_TO_DASHBOARD: "Go to Dashboard",
 
   // Common error messages
   ERROR_GENERIC: "Something went wrong. Please try again.",
