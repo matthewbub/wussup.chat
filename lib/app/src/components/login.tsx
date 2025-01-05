@@ -6,6 +6,7 @@ import { useLoginStore } from "@/stores/loginStore";
 import { useRouter } from "next/navigation";
 import { Input, PasswordInput } from "@/components/ui/input";
 import { ErrorText, Label } from "./ui/prose";
+import { Card } from "./ui/Card";
 
 type LoginFormData = {
   email: string;
@@ -35,7 +36,7 @@ export default function Login() {
           </h2>
         </div>
 
-        <div className="ch-card p-6 mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
+        <Card className="p-6 mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
           <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
             <div>
               <label
@@ -78,7 +79,7 @@ export default function Login() {
                 </label>
                 <div className="text-sm">
                   <a
-                    href="#"
+                    href="/forgot-password"
                     className="font-semibold text-indigo-400 hover:text-indigo-300"
                   >
                     {STRINGS.LOGIN_FORGOT_PASSWORD}
@@ -123,13 +124,13 @@ export default function Login() {
           <p className="mt-10 text-center text-sm/6 text-gray-400">
             {STRINGS.LOGIN_NOT_MEMBER}{" "}
             <a
-              href="#"
+              href="/signup"
               className="font-semibold text-indigo-400 hover:text-indigo-300"
             >
               {STRINGS.LOGIN_FREE_TRIAL}
             </a>
           </p>
-        </div>
+        </Card>
       </div>
     </>
   );

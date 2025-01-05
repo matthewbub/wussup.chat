@@ -94,7 +94,7 @@ const passwordService = {
 					params: [id, userId, passwordHash],
 				},
 			]);
-			
+
 			return transaction;
 		} catch (error) {
 			// Check if error is due to unique constraint violation
@@ -220,8 +220,9 @@ const passwordService = {
 					id: string;
 					email: string;
 					status: string;
+					app_id: string;
 				}[];
-			}>(c, 'SELECT id, email, status FROM users WHERE email = ?', [email]);
+			}>(c, 'SELECT id, email, status, app_id FROM users WHERE email = ?', [email]);
 
 			const user = userResult.data?.results?.[0];
 			if (!user) {
@@ -254,7 +255,7 @@ const passwordService = {
 
 			// Send reset email
 			const baseUrl = env(c).PASSWORD_RESET_URL || 'http://localhost:3000';
-			const resetUrl = `${baseUrl}/reset-password/${resetToken}`;
+			const resetUrl = `${baseUrl}/reset-password?token=${resetToken}&appId=${user.app_id}`;
 
 			await emailService.sendEmail(
 				{

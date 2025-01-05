@@ -84,4 +84,35 @@ export const STRINGS = {
   LOGOUT_ERROR_GENERIC: "Failed to sign out",
   LOGOUT_ERROR_NO_TOKEN: "No access token found",
   LOGOUT_SUCCESS: "Successfully signed out",
+
+  // Password Reset
+  PASSWORD_RESET_TITLE: "Reset Your Password",
+  PASSWORD_RESET_DESCRIPTION:
+    "Enter your email address and we'll send you instructions to reset your password.",
+  PASSWORD_RESET_EMAIL_LABEL: "Email Address",
+  PASSWORD_RESET_SUBMIT: "Send Reset Link",
+  PASSWORD_RESET_LOADING: "Sending...",
+  PASSWORD_RESET_CHECK_EMAIL: "Check Your Email",
+  PASSWORD_RESET_EMAIL_SENT:
+    "If an account exists with this email, we've sent password reset instructions.",
+  PASSWORD_RESET_ERROR_EMAIL_REQUIRED: "Email is required",
+  PASSWORD_RESET_ERROR_EMAIL_INVALID: "Please enter a valid email address",
+  PASSWORD_RESET_ERROR_GENERIC:
+    "Unable to process your request. Please try again.",
+
+  PASSWORD_RESET_NEW_PASSWORD_TITLE: "Create New Password",
+  PASSWORD_RESET_NEW_PASSWORD_LABEL: "New Password",
+  PASSWORD_RESET_CONFIRM_PASSWORD_LABEL: "Confirm New Password",
+  PASSWORD_RESET_ERROR_PASSWORD_REQUIRED: "Password is required",
+  PASSWORD_RESET_ERROR_PASSWORD_LENGTH:
+    "Password must be at least 8 characters",
+  PASSWORD_RESET_ERROR_PASSWORD_TOO_LONG:
+    "Password must not exceed 20 characters",
+  PASSWORD_RESET_ERROR_CONFIRM_PASSWORD_REQUIRED:
+    "Please confirm your password",
+  PASSWORD_RESET_ERROR_PASSWORDS_DONT_MATCH: "Passwords do not match",
+  PASSWORD_RESET_ERROR_INVALID_TOKEN: "Invalid or expired reset token",
+  PASSWORD_RESET_SUCCESS_TITLE: "Password Reset Complete",
+  PASSWORD_RESET_SUCCESS_DESCRIPTION:
+    "Your password has been reset successfully. Redirecting to login...",
 } as const;

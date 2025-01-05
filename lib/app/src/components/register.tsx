@@ -6,6 +6,7 @@ import { useRegisterStore } from "@/stores/registerStore";
 import EmailVerification from "@/components/EmailVerification";
 import { Input, PasswordInput } from "@/components/ui/input";
 import { Label } from "./ui/prose";
+import { Card } from "./ui/Card";
 
 type RegisterFormData = {
   email: string;
@@ -49,7 +50,7 @@ export default function Register() {
           </h2>
         </div>
 
-        <div className="ch-card mt-10 sm:mx-auto sm:w-full sm:max-w-sm ">
+        <Card className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm ">
           <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
             <div>
               <label
@@ -178,7 +179,7 @@ export default function Register() {
               {STRINGS.REGISTER_SIGN_IN}
             </a>
           </p>
-        </div>
+        </Card>
       </div>
     </>
   );

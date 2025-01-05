@@ -237,6 +237,10 @@ const ResetPasswordRequestSchema = zOpenApi
 			example: 'NewPassword123!',
 			description: 'Must match password field',
 		}),
+		appId: zOpenApi.string().nullable().optional().openapi({
+			example: 'app_123',
+			description: 'App ID',
+		}),
 	})
 	.openapi('ResetPasswordRequest');
 

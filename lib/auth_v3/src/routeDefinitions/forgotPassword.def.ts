@@ -1,5 +1,6 @@
 import { createRoute } from '@hono/zod-openapi';
 import responseService from '../modules/response';
+import { z as zOpenApi } from '@hono/zod-openapi';
 
 export const forgotPasswordRouteDefinition = createRoute({
 	method: 'post',
@@ -13,6 +14,11 @@ export const forgotPasswordRouteDefinition = createRoute({
 			},
 			required: true,
 		},
+		headers: zOpenApi.object({
+			'x-app-id': zOpenApi.string().optional().openapi({
+				description: 'Unique identifier for the application',
+			}),
+		}),
 	},
 	responses: {
 		200: {
