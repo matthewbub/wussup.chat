@@ -1,5 +1,5 @@
 #!/bin/bash
-# example: ./create-app-remote.sh 0000001 "Internal Admin" "Root app for internal admin" "intl-admin.zcauldron.com"
+# example: ./scripts/create-app-local.sh "0000002.test" "Internal test app" "Peace and love" "test.zcauldron.com"
 
 # Get input parameters
 APP_ID=$1
