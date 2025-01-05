@@ -4,6 +4,8 @@ import { useForm } from "react-hook-form";
 import { STRINGS } from "@/constants/strings";
 import { useLoginStore } from "@/stores/loginStore";
 import { useRouter } from "next/navigation";
+import { Input, PasswordInput } from "@/components/ui/input";
+import { ErrorText, Label } from "./ui/prose";
 
 type LoginFormData = {
   email: string;
@@ -28,9 +30,7 @@ export default function Login() {
     <>
       <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8">
         <div className="sm:mx-auto sm:w-full sm:max-w-sm">
-          <h2 className="mt-10 text-center text-2xl/9 font-bold tracking-tight text-white">
-            {STRINGS.LOGIN_TITLE}
-          </h2>
+          <h2 className="ch-title ch-login-title">{STRINGS.LOGIN_TITLE}</h2>
         </div>
 
         <div className="ch-card p-6 mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
@@ -43,7 +43,7 @@ export default function Login() {
                 {STRINGS.LOGIN_EMAIL_LABEL}
               </label>
               <div className="mt-2">
-                <input
+                <Input
                   {...register("email", {
                     required: STRINGS.LOGIN_ERROR_EMAIL_REQUIRED,
                     pattern: {
@@ -84,7 +84,7 @@ export default function Login() {
                 </div>
               </div>
               <div className="mt-2">
-                <input
+                <PasswordInput
                   {...register("password", {
                     required: STRINGS.LOGIN_ERROR_PASSWORD_REQUIRED,
                   })}

@@ -70,4 +70,34 @@ export const authService = {
   clearTokens() {
     Cookies.remove("access_token");
   },
+
+  // logout user
+  async logout() {
+    try {
+      const token = Cookies.get("access_token");
+      if (!token) throw new Error("No access token found");
+
+      const response = await fetch(
+        API_CONSTANTS.BASE_URL + API_CONSTANTS.ENDPOINTS.LOGOUT,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "X-App-Id": API_CONSTANTS.APP_ID,
+          },
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Logout failed");
+      }
+
+      this.clearTokens();
+      return data;
+    } catch (error) {
+      this.clearTokens(); // Clear tokens even if API call fails
+      throw error;
+    }
+  },
 };

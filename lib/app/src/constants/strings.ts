@@ -77,4 +77,11 @@ export const STRINGS = {
   BUTTON_CONTINUE: "Continue",
   BUTTON_BACK: "Back",
   BUTTON_CLOSE: "Close",
+
+  // Logout related strings
+  LOGOUT_BUTTON: "Sign out",
+  LOGOUT_LOADING: "Signing out...",
+  LOGOUT_ERROR_GENERIC: "Failed to sign out",
+  LOGOUT_ERROR_NO_TOKEN: "No access token found",
+  LOGOUT_SUCCESS: "Successfully signed out",
 } as const;

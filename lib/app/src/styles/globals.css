@@ -55,9 +55,7 @@ body {
   background-color: var(--card-bg);
 }
 
-input[type="text"],
-input[type="email"],
-input[type="password"] {
+.ch-input {
   @apply block w-full px-3 py-2 rounded-lg;
   background-color: var(--input-bg);
   color: var(--white-text);

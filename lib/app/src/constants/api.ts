@@ -6,6 +6,7 @@ export const API_CONSTANTS = {
     VERIFY_EMAIL: "/v3/public/verify-email",
     RESEND_VERIFICATION_EMAIL: "/v3/public/resend-verification-email",
     AUTH_ME: "/v3/auth/me",
+    LOGOUT: "/v3/auth/logout",
   },
   APP_ID: "0000001",
 } as const;

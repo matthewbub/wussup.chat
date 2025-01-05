@@ -2,9 +2,10 @@
 
 import { useForm } from "react-hook-form";
 import { STRINGS } from "@/constants/strings";
-import { API_CONSTANTS } from "@/constants/api";
 import { useRegisterStore } from "@/stores/registerStore";
 import EmailVerification from "@/components/EmailVerification";
+import { Input, PasswordInput } from "@/components/ui/input";
+import { Label } from "./ui/prose";
 
 type RegisterFormData = {
   email: string;
@@ -58,7 +59,7 @@ export default function Register() {
                 {STRINGS.REGISTER_EMAIL_LABEL}
               </label>
               <div className="mt-2">
-                <input
+                <Input
                   {...register("email", {
                     required: STRINGS.REGISTER_ERROR_EMAIL_REQUIRED,
                     pattern: {
@@ -69,9 +70,7 @@ export default function Register() {
                   id="email"
                   type="email"
                   autoComplete="email"
-                  className={`block w-full rounded-md bg-white/5 px-3 py-1.5 text-base text-white outline outline-1 -outline-offset-1 outline-white/10 placeholder:text-gray-500 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-500 sm:text-sm/6 ${
-                    errors.email ? "outline-red-500" : ""
-                  }`}
+                  className={errors.email ? "outline-red-500" : ""}
                 />
                 {validationErrors.some((e) => e.path.includes("email")) && (
                   <p className="mt-1 text-sm text-red-500">
@@ -92,7 +91,7 @@ export default function Register() {
                 {STRINGS.REGISTER_PASSWORD_LABEL}
               </label>
               <div className="mt-2">
-                <input
+                <PasswordInput
                   {...register("password", {
                     required: STRINGS.REGISTER_ERROR_PASSWORD_REQUIRED,
                     minLength: {
@@ -135,7 +134,7 @@ export default function Register() {
                 {STRINGS.REGISTER_CONFIRM_PASSWORD_LABEL}
               </label>
               <div className="mt-2">
-                <input
+                <PasswordInput
                   {...register("confirmPassword", {
                     required: STRINGS.REGISTER_ERROR_CONFIRM_PASSWORD_REQUIRED,
                     validate: (value) =>
@@ -145,11 +144,11 @@ export default function Register() {
                   id="confirmPassword"
                   type="password"
                   autoComplete="new-password"
-                  className={`block w-full rounded-md bg-white/5 px-3 py-1.5 text-white ${
+                  className={
                     errors.confirmPassword
                       ? "outline-red-500"
                       : "outline-white/10"
-                  }`}
+                  }
                 />
                 {errors.confirmPassword && (
                   <p className="mt-1 text-sm text-red-500">
@@ -164,11 +163,7 @@ export default function Register() {
             )}
 
             <div>
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="flex w-full justify-center rounded-md bg-indigo-500 px-3 py-1.5 text-sm/6 font-semibold text-white shadow-sm hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
+              <button type="submit" disabled={isLoading} className="ch-button">
                 {isLoading ? STRINGS.REGISTER_LOADING : STRINGS.REGISTER_SUBMIT}
               </button>
             </div>
