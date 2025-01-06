@@ -1,7 +1,8 @@
 import { Folder, Plus, Settings, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useChatStore } from "@/stores/useChatStore";
 import { Card } from "@/components/ui/Card";
+
 export function ChatNav() {
   const [newFolderName, setNewFolderName] = useState("");
   const [isAddingFolder, setIsAddingFolder] = useState(false);
@@ -14,6 +15,12 @@ export function ChatNav() {
     deleteFolder,
     setCurrentFolder,
   } = useChatStore();
+
+  useEffect(() => {
+    if (folders.length === 0) {
+      addFolder("Default");
+    }
+  }, [folders, addFolder]);
 
   const handleAddFolder = (e: React.FormEvent) => {
     e.preventDefault();
@@ -70,12 +77,14 @@ export function ChatNav() {
               >
                 <Settings className="h-4 w-4" />
               </button>
-              <button
-                onClick={() => deleteFolder(folder.id)}
-                className="text-stone-400 hover:text-stone-300"
-              >
-                <Trash2 className="h-4 w-4" />
-              </button>
+              {folder.name !== "Default" && (
+                <button
+                  onClick={() => deleteFolder(folder.id)}
+                  className="text-stone-400 hover:text-stone-300"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              )}
             </div>
           </div>
         ))}
