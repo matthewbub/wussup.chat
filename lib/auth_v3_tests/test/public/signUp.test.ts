@@ -1,7 +1,6 @@
 import { describe, it, expect, beforeAll } from "vitest";
 import { createFakeUser } from "../../src/helpers";
 import constants from "../../src/constants";
-import initApp from "../../src/initApp";
 
 const API_URL = constants.API_URL;
 
@@ -194,15 +193,13 @@ describe("Public Auth Endpoints - Sign Up", () => {
   });
 
   it("should sign up a user tied to an app", async () => {
-    const { appId } = await initApp();
-
     const fakeUser = createFakeUser();
 
     const response = await fetch(`${API_URL}/v3/public/sign-up`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "x-app-id": appId,
+        "x-app-id": constants.APP_ID,
       },
       body: JSON.stringify({
         email: fakeUser.email,

@@ -1,7 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { createFakeUser } from "../../src/helpers";
 import constants from "../../src/constants";
-import { getRegularUserWithAppId } from "../../src/getRegularUser";
 
 const API_URL = constants.API_URL;
 
