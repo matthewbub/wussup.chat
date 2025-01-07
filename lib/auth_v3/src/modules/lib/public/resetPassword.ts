@@ -8,8 +8,10 @@ export const resetPassword = async (
 	c: Context
 ) => {
 	try {
+		const appId = c.req.header('x-app-id');
+
 		responseService.resetPasswordSchema.parse({ token, password, confirmPassword });
-		return await passwordService.completeReset({ token, newPassword: password }, c);
+		return await passwordService.completeReset({ token, newPassword: password, appId }, c);
 	} catch (error) {
 		return commonErrorHandler(error, c);
 	}

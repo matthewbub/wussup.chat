@@ -28,6 +28,7 @@ describe("Auth Endpoints - /v3/auth/me", () => {
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
+        "x-app-id": constants.APP_ID,
       },
     });
 
@@ -57,6 +58,7 @@ describe("Auth Endpoints - /v3/auth/me", () => {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
+        "x-app-id": constants.APP_ID,
       },
     });
 
@@ -77,6 +79,7 @@ describe("Auth Endpoints - /v3/auth/me", () => {
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
+        "x-app-id": constants.APP_ID,
       },
       body: JSON.stringify({
         username: uniqueUsername,
@@ -105,7 +108,10 @@ describe("Auth Endpoints - /v3/auth/me", () => {
     // Ensure the existing email is in the database
     await fetch(`${API_URL}/v3/public/sign-up`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "x-app-id": constants.APP_ID,
+      },
       body: JSON.stringify({
         email: existingEmail,
         password: "AnotherPassword123!",
@@ -120,6 +126,7 @@ describe("Auth Endpoints - /v3/auth/me", () => {
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
+        "x-app-id": constants.APP_ID,
       },
       body: JSON.stringify({
         email: existingEmail,
@@ -144,6 +151,7 @@ describe("Auth Endpoints - /v3/auth/me", () => {
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
+        "x-app-id": constants.APP_ID,
       },
     });
 
@@ -163,6 +171,7 @@ describe("Auth Endpoints - /v3/auth/me", () => {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
+        "x-app-id": constants.APP_ID,
       },
     });
 
@@ -180,6 +189,7 @@ describe("Auth Endpoints - /v3/auth/me", () => {
       headers: {
         "Content-Type": "application/json",
         Authorization: "Bearer invalidtoken",
+        "x-app-id": constants.APP_ID,
       },
     });
 

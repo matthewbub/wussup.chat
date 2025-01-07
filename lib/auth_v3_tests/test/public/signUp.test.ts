@@ -16,7 +16,10 @@ describe("Public Auth Endpoints - Sign Up", () => {
     // ensure the existing email is in the database for duplicate email test
     await fetch(`${API_URL}/v3/public/sign-up`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "x-app-id": constants.APP_ID,
+      },
       body: JSON.stringify({
         email: existingEmail,
         password: validPassword,
@@ -30,7 +33,10 @@ describe("Public Auth Endpoints - Sign Up", () => {
 
     const response = await fetch(`${API_URL}/v3/public/sign-up`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "x-app-id": constants.APP_ID,
+      },
       body: JSON.stringify({
         email: fakeUser.email,
         password: validPassword,
@@ -55,7 +61,10 @@ describe("Public Auth Endpoints - Sign Up", () => {
   it("should fail with invalid email format", async () => {
     const response = await fetch(`${API_URL}/v3/public/sign-up`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "x-app-id": constants.APP_ID,
+      },
       body: JSON.stringify({
         email: invalidEmail,
         password: validPassword,
@@ -87,7 +96,10 @@ describe("Public Auth Endpoints - Sign Up", () => {
 
     const response = await fetch(`${API_URL}/v3/public/sign-up`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "x-app-id": constants.APP_ID,
+      },
       body: JSON.stringify({
         email: fakeUser.email,
         password: weakPassword,
@@ -129,7 +141,10 @@ describe("Public Auth Endpoints - Sign Up", () => {
 
     const response = await fetch(`${API_URL}/v3/public/sign-up`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "x-app-id": constants.APP_ID,
+      },
       body: JSON.stringify({
         email: fakeUser.email,
         password: validPassword,
@@ -158,7 +173,10 @@ describe("Public Auth Endpoints - Sign Up", () => {
   it("should fail with duplicate email", async () => {
     const response = await fetch(`${API_URL}/v3/public/sign-up`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "x-app-id": constants.APP_ID,
+      },
       body: JSON.stringify({
         email: existingEmail,
         password: validPassword,

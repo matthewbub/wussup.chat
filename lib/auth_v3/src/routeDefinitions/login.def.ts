@@ -1,14 +1,16 @@
 import { createRoute } from '@hono/zod-openapi';
 import responseService from '../modules/response';
+import openApiSchemas from '../openapi';
 
 export const loginRouteDefinition = createRoute({
 	method: 'post',
 	path: '/v3/public/login',
+	headers: openApiSchemas.commonHeadersSchemas,
 	request: {
 		body: {
 			content: {
 				'application/json': {
-					schema: responseService.loginSchemas.request,
+					schema: openApiSchemas.loginSchemas.request,
 				},
 			},
 			required: true,
@@ -18,7 +20,7 @@ export const loginRouteDefinition = createRoute({
 		200: {
 			content: {
 				'application/json': {
-					schema: responseService.loginSchemas.response,
+					schema: openApiSchemas.loginSchemas.response,
 				},
 			},
 			description: 'Login successful',
@@ -26,7 +28,7 @@ export const loginRouteDefinition = createRoute({
 		401: {
 			content: {
 				'application/json': {
-					schema: responseService.loginSchemas.error,
+					schema: openApiSchemas.loginSchemas.error,
 				},
 			},
 			description: 'Invalid credentials',
@@ -34,7 +36,7 @@ export const loginRouteDefinition = createRoute({
 		403: {
 			content: {
 				'application/json': {
-					schema: responseService.loginSchemas.error,
+					schema: openApiSchemas.loginSchemas.error,
 				},
 			},
 			description: 'Account suspended or deleted',
@@ -42,7 +44,7 @@ export const loginRouteDefinition = createRoute({
 		404: {
 			content: {
 				'application/json': {
-					schema: responseService.loginSchemas.error,
+					schema: openApiSchemas.loginSchemas.error,
 				},
 			},
 			description: 'User not found',
@@ -50,7 +52,7 @@ export const loginRouteDefinition = createRoute({
 		400: {
 			content: {
 				'application/json': {
-					schema: responseService.loginSchemas.error,
+					schema: openApiSchemas.loginSchemas.error,
 				},
 			},
 			description: 'Validation error',

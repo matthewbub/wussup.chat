@@ -12,7 +12,10 @@ describe("Public Auth Endpoints - Forgot Password", () => {
     // Sign up the user
     await fetch(`${API_URL}/v3/public/sign-up`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "x-app-id": constants.APP_ID,
+      },
       body: JSON.stringify({
         email: fakeUser.email,
         password: password,
@@ -28,7 +31,10 @@ describe("Public Auth Endpoints - Forgot Password", () => {
       `${API_URL}/v3/public/forgot-password`,
       {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "x-app-id": constants.APP_ID,
+        },
         body: JSON.stringify({
           email: fakeUser.email,
         }),
@@ -50,7 +56,10 @@ describe("Public Auth Endpoints - Forgot Password", () => {
       `${API_URL}/v3/public/forgot-password`,
       {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "x-app-id": constants.APP_ID,
+        },
         body: JSON.stringify({
           email: "nonexistent@example.com",
         }),

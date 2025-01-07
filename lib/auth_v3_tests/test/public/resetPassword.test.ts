@@ -13,7 +13,10 @@ describe("Public Auth Endpoints - Reset Password", () => {
       `${API_URL}/v3/public/forgot-password`,
       {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "x-app-id": constants.APP_ID,
+        },
         body: JSON.stringify({
           email: fakeUser.userData.email,
         }),
@@ -35,7 +38,10 @@ describe("Public Auth Endpoints - Reset Password", () => {
       `${API_URL}/v3/public/reset-password`,
       {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "x-app-id": constants.APP_ID,
+        },
         body: JSON.stringify({
           token: resetToken,
           password: newPassword,
@@ -57,7 +63,10 @@ describe("Public Auth Endpoints - Reset Password", () => {
       `${API_URL}/v3/public/reset-password`,
       {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "x-app-id": constants.APP_ID,
+        },
         body: JSON.stringify({
           token: "invalidToken",
           password: "NewTestPassword123!",
@@ -73,6 +82,32 @@ describe("Public Auth Endpoints - Reset Password", () => {
       message: "Invalid or expired reset token",
       code: "INVALID_RESET_TOKEN",
       data: null,
+    });
+  });
+
+  // it should fail if the app id is not provided
+  it("should fail if the app id is not provided", async () => {
+    const resetPasswordResponse = await fetch(
+      `${API_URL}/v3/public/reset-password`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          token: "validToken",
+          password: "NewTestPassword123!",
+          confirmPassword: "NewTestPassword123!",
+        }),
+      }
+    );
+
+    const resetPasswordData = await resetPasswordResponse.json();
+
+    expect(resetPasswordResponse.status).toBe(401);
+    expect(resetPasswordData).toMatchObject({
+      success: false,
+      message: "Invalid or expired reset token",
     });
   });
 });

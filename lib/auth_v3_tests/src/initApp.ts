@@ -20,6 +20,7 @@ const initApp = async () => {
     headers: {
       Authorization: `Bearer ${adminAccessToken}`,
       "Content-Type": "application/json",
+      "x-app-id": constants.APP_ID,
     },
     body: JSON.stringify(appData),
   });
@@ -38,6 +39,7 @@ const initApp = async () => {
       method: "GET",
       headers: {
         Authorization: `Bearer ${adminAccessToken}`,
+        "x-app-id": constants.APP_ID,
       },
     }
   );

@@ -12,7 +12,10 @@ describe("Auth Endpoints - Logout", () => {
     // Sign up the user
     const signUpResponse = await fetch(`${API_URL}/v3/public/sign-up`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "x-app-id": constants.APP_ID,
+      },
       body: JSON.stringify({
         email: fakeUser.email,
         password: password,
@@ -26,7 +29,10 @@ describe("Auth Endpoints - Logout", () => {
     // Simulate email verification
     await fetch(`${API_URL}/v3/public/verify-email`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "x-app-id": constants.APP_ID,
+      },
       body: JSON.stringify({
         token: verificationToken,
       }),
@@ -43,6 +49,7 @@ describe("Auth Endpoints - Logout", () => {
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
+        "x-app-id": constants.APP_ID,
       },
     });
 
@@ -60,6 +67,7 @@ describe("Auth Endpoints - Logout", () => {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
+        "x-app-id": constants.APP_ID,
       },
     });
 

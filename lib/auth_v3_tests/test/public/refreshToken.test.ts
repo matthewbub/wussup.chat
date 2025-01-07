@@ -12,7 +12,10 @@ describe("Public Auth Endpoints - Refresh Token", () => {
     // Sign up the user
     const signUpResponse = await fetch(`${API_URL}/v3/public/sign-up`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "x-app-id": constants.APP_ID,
+      },
       body: JSON.stringify({
         email: fakeUser.email,
         password: password,
@@ -29,7 +32,10 @@ describe("Public Auth Endpoints - Refresh Token", () => {
 
     await fetch(`${API_URL}/v3/public/verify-email`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "x-app-id": constants.APP_ID,
+      },
       body: JSON.stringify({
         token: signUpData.data.verificationToken,
       }),
@@ -41,7 +47,10 @@ describe("Public Auth Endpoints - Refresh Token", () => {
     // Login to get the refresh token
     const loginResponse = await fetch(`${API_URL}/v3/public/login`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "x-app-id": constants.APP_ID,
+      },
       body: JSON.stringify({
         email: fakeUser.email,
         password: password,
@@ -57,7 +66,10 @@ describe("Public Auth Endpoints - Refresh Token", () => {
     // Test the refresh token endpoint
     const refreshResponse = await fetch(`${API_URL}/v3/public/refresh-token`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "x-app-id": constants.APP_ID,
+      },
       body: JSON.stringify({
         refreshToken: refreshToken,
       }),
@@ -84,7 +96,10 @@ describe("Public Auth Endpoints - Refresh Token", () => {
 
     const refreshResponse = await fetch(`${API_URL}/v3/public/refresh-token`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "x-app-id": constants.APP_ID,
+      },
       body: JSON.stringify({
         refreshToken: "invalidToken",
       }),
@@ -104,7 +119,10 @@ describe("Public Auth Endpoints - Refresh Token", () => {
   it("should fail with missing refresh token", async () => {
     const refreshResponse = await fetch(`${API_URL}/v3/public/refresh-token`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "x-app-id": constants.APP_ID,
+      },
       body: JSON.stringify({}),
     });
 

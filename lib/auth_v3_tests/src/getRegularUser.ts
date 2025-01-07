@@ -12,7 +12,10 @@ export const getRegularUser = async () => {
   // Sign up the user
   const signUpResponse = await fetch(`${API_URL}/v3/public/sign-up`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      "x-app-id": constants.APP_ID,
+    },
     body: JSON.stringify({
       email: fakeUser.email,
       password,
@@ -26,7 +29,10 @@ export const getRegularUser = async () => {
   // Verify email
   await fetch(`${API_URL}/v3/public/verify-email`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      "x-app-id": constants.APP_ID,
+    },
     body: JSON.stringify({
       token: signUpData.data.verificationToken,
     }),
@@ -36,7 +42,10 @@ export const getRegularUser = async () => {
   // Login
   const loginResponse = await fetch(`${API_URL}/v3/public/login`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      "x-app-id": constants.APP_ID,
+    },
     body: JSON.stringify({ email: fakeUser.email, password }),
   });
   const loginData = await loginResponse.json();
@@ -47,6 +56,7 @@ export const getRegularUser = async () => {
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${loginData.data.access_token}`,
+      "x-app-id": constants.APP_ID,
     },
   });
   const userData = await meResponse.json();
@@ -91,7 +101,10 @@ export const getRegularUserWithAppId = async (overrideId?: string) => {
 
   const verifyEmailResponse = await fetch(`${API_URL}/v3/public/verify-email`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      "x-app-id": constants.APP_ID,
+    },
     body: JSON.stringify({
       token: signUpData.data.verificationToken,
     }),

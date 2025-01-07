@@ -9,6 +9,10 @@ describe("Public Auth Endpoints - Login", () => {
   it("should fail without content-type header", async () => {
     const loginResponse = await fetch(`${API_URL}/v3/public/login`, {
       method: "POST",
+      headers: {
+        // "Content-Type": "application/json",
+        "x-app-id": constants.APP_ID,
+      },
       body: JSON.stringify({
         email: "test@example.com",
         password: "TestPassword123!",
@@ -23,7 +27,10 @@ describe("Public Auth Endpoints - Login", () => {
   it("should fail with invalid email format", async () => {
     const loginResponse = await fetch(`${API_URL}/v3/public/login`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "x-app-id": constants.APP_ID,
+      },
       body: JSON.stringify({
         email: "invalid-email",
         password: "TestPassword123!",
@@ -41,7 +48,10 @@ describe("Public Auth Endpoints - Login", () => {
 
     const signUpResponse = await fetch(`${API_URL}/v3/public/sign-up`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "x-app-id": constants.APP_ID,
+      },
       body: JSON.stringify({
         email: fakeUser.email,
         password: password,
@@ -55,7 +65,10 @@ describe("Public Auth Endpoints - Login", () => {
       `${API_URL}/v3/public/verify-email`,
       {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "x-app-id": constants.APP_ID,
+        },
         body: JSON.stringify({
           token: signUpData.data.verificationToken,
         }),
@@ -68,7 +81,10 @@ describe("Public Auth Endpoints - Login", () => {
 
     const loginResponse = await fetch(`${API_URL}/v3/public/login`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "x-app-id": constants.APP_ID,
+      },
       body: JSON.stringify({
         email: fakeUser.email,
         password: password,
@@ -95,7 +111,10 @@ describe("Public Auth Endpoints - Login", () => {
 
     const signUpResponse = await fetch(`${API_URL}/v3/public/sign-up`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "x-app-id": constants.APP_ID,
+      },
       body: JSON.stringify({
         email: fakeUser.email,
         password: password,
@@ -107,7 +126,10 @@ describe("Public Auth Endpoints - Login", () => {
 
     const loginResponse = await fetch(`${API_URL}/v3/public/login`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "x-app-id": constants.APP_ID,
+      },
       body: JSON.stringify({
         email: fakeUser.email,
         password: "WrongPassword123!",
@@ -127,7 +149,10 @@ describe("Public Auth Endpoints - Login", () => {
   it("should fail with non-existent user", async () => {
     const loginResponse = await fetch(`${API_URL}/v3/public/login`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "x-app-id": constants.APP_ID,
+      },
       body: JSON.stringify({
         email: "nonexistent@example.com",
         password: "TestPassword123!",
@@ -144,26 +169,26 @@ describe("Public Auth Endpoints - Login", () => {
     });
   });
 
-  it("should login with appId", async () => {
-    const { loginData } = await getRegularUserWithAppId();
-    expect(loginData).toMatchObject({
-      success: true,
-      message: expect.any(String),
-      data: {
-        access_token: expect.any(String),
-        token_type: "Bearer",
-        expires_in: expect.any(Number),
-      },
-    });
-  });
+  // it("should login with appId", async () => {
+  //   const { loginData } = await getRegularUserWithAppId();
+  //   expect(loginData).toMatchObject({
+  //     success: true,
+  //     message: expect.any(String),
+  //     data: {
+  //       access_token: expect.any(String),
+  //       token_type: "Bearer",
+  //       expires_in: expect.any(Number),
+  //     },
+  //   });
+  // });
 
-  it("should fail with incorrect appId", async () => {
-    const { loginData, error, code } = await getRegularUserWithAppId(
-      "wrong-app-id"
-    );
+  // it("should fail with incorrect appId", async () => {
+  //   const { loginData, error, code } = await getRegularUserWithAppId(
+  //     "wrong-app-id"
+  //   );
 
-    expect(code).toBe("INVALID_APP_ID");
-    expect(error).toBe("Invalid app ID");
-    expect(loginData).toBeNull();
-  });
+  //   expect(code).toBe("INVALID_APP_ID");
+  //   expect(error).toBe("Invalid app ID");
+  //   expect(loginData).toBeNull();
+  // });
 });

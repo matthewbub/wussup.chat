@@ -9,6 +9,11 @@ const lowercaseErrorMessage = 'Password must contain at least one lowercase lett
 const numberErrorMessage = 'Password must contain at least one number';
 const specialCharacterErrorMessage = 'Password must contain at least one special character (!@#$%^&*)';
 
+export const appIdSchema = zOpenApi.string().min(1).max(255).openapi({
+	example: 'app_123',
+	description: 'App ID',
+});
+
 // password validation schema
 const passwordSchema = z
 	.string()
@@ -25,46 +30,46 @@ const passwordSchema = z
 		message: specialCharacterErrorMessage,
 	});
 
-const LoginRequestSchema = zOpenApi
-	.object({
-		email: zOpenApi.string().email().openapi({
-			example: 'user@example.com',
-			description: "User's email address",
-		}),
-		password: zOpenApi.string().min(8).openapi({
-			example: 'TestPassword123!',
-			description: "User's password",
-		}),
-	})
-	.openapi('LoginRequest');
+// const LoginRequestSchema = zOpenApi
+// 	.object({
+// 		email: zOpenApi.string().email().openapi({
+// 			example: 'user@example.com',
+// 			description: "User's email address",
+// 		}),
+// 		password: zOpenApi.string().min(8).openapi({
+// 			example: 'TestPassword123!',
+// 			description: "User's password",
+// 		}),
+// 	})
+// 	.openapi('LoginRequest');
 
-const LoginResponseSchema = zOpenApi
-	.object({
-		success: zOpenApi.boolean(),
-		message: zOpenApi.string(),
-		code: zOpenApi.string(),
-		data: zOpenApi
-			.object({
-				access_token: zOpenApi.string(),
-				token_type: zOpenApi.literal('Bearer'),
-				expires_in: zOpenApi.number(),
-			})
-			.optional(),
-	})
-	.openapi('LoginResponse');
+// const LoginResponseSchema = zOpenApi
+// 	.object({
+// 		success: zOpenApi.boolean(),
+// 		message: zOpenApi.string(),
+// 		code: zOpenApi.string(),
+// 		data: zOpenApi
+// 			.object({
+// 				access_token: zOpenApi.string(),
+// 				token_type: zOpenApi.literal('Bearer'),
+// 				expires_in: zOpenApi.number(),
+// 			})
+// 			.optional(),
+// 	})
+// 	.openapi('LoginResponse');
 
-const LoginErrorSchema = zOpenApi
-	.object({
-		success: zOpenApi.boolean(),
-		message: zOpenApi.string(),
-		code: zOpenApi.string(),
-		data: zOpenApi
-			.object({
-				lockedUntil: zOpenApi.string().nullable(),
-			})
-			.optional(),
-	})
-	.openapi('LoginError');
+// const LoginErrorSchema = zOpenApi
+// 	.object({
+// 		success: zOpenApi.boolean(),
+// 		message: zOpenApi.string(),
+// 		code: zOpenApi.string(),
+// 		data: zOpenApi
+// 			.object({
+// 				lockedUntil: zOpenApi.string().nullable(),
+// 			})
+// 			.optional(),
+// 	})
+// 	.openapi('LoginError');
 
 const SignupRequestSchema = zOpenApi
 	.object({
@@ -196,32 +201,56 @@ const ForgotPasswordRequestSchema = zOpenApi
 	})
 	.openapi('ForgotPasswordRequest');
 
-const ForgotPasswordResponseSchema = zOpenApi
-	.object({
-		success: zOpenApi.boolean(),
-		message: zOpenApi.string(),
-		code: zOpenApi.string(),
-		data: zOpenApi.null(),
-	})
-	.openapi('ForgotPasswordResponse');
+// const ForgotPasswordResponseSchema = zOpenApi
+// 	.object({
+// 		success: zOpenApi.boolean().openapi({
+// 			example: true,
+// 			description: 'Whether the request was successful',
+// 		}),
+// 		message: zOpenApi.string().openapi({
+// 			example: 'Password reset initiated successfully',
+// 			description: 'Message describing the result of the request',
+// 		}),
+// 		code: zOpenApi.string().openapi({
+// 			example: '200',
+// 			description: 'HTTP status code',
+// 		}),
+// 		data: zOpenApi.null(),
+// 	})
+// 	.openapi('ForgotPasswordResponse');
 
-const ForgotPasswordErrorSchema = zOpenApi
-	.object({
-		success: zOpenApi.boolean(),
-		message: zOpenApi.string(),
-		code: zOpenApi.string(),
-		data: zOpenApi
-			.object({
-				errors: zOpenApi.array(
-					zOpenApi.object({
-						message: zOpenApi.string(),
-						path: zOpenApi.array(zOpenApi.string()),
-					})
-				),
-			})
-			.optional(),
-	})
-	.openapi('ForgotPasswordError');
+// const ForgotPasswordErrorSchema = zOpenApi
+// 	.object({
+// 		success: zOpenApi.boolean().openapi({
+// 			example: true,
+// 			description: 'Whether the request was successful',
+// 		}),
+// 		message: zOpenApi.string().openapi({
+// 			example: 'Password reset initiated successfully',
+// 			description: 'Message describing the result of the request',
+// 		}),
+// 		code: zOpenApi.string().openapi({
+// 			example: '200',
+// 			description: 'HTTP status code',
+// 		}),
+// 		data: zOpenApi
+// 			.object({
+// 				errors: zOpenApi.array(
+// 					zOpenApi.object({
+// 						message: zOpenApi.string().openapi({
+// 							example: 'Password reset initiated successfully',
+// 							description: 'Message describing the result of the request',
+// 						}),
+// 						path: zOpenApi.array(zOpenApi.string()).openapi({
+// 							example: ['email'],
+// 							description: 'Path to the field that caused the error',
+// 						}),
+// 					})
+// 				),
+// 			})
+// 			.optional(),
+// 	})
+// 	.openapi('ForgotPasswordError');
 
 const ResetPasswordRequestSchema = zOpenApi
 	.object({
@@ -236,10 +265,6 @@ const ResetPasswordRequestSchema = zOpenApi
 		confirmPassword: zOpenApi.string().min(8).max(20).openapi({
 			example: 'NewPassword123!',
 			description: 'Must match password field',
-		}),
-		appId: zOpenApi.string().nullable().optional().openapi({
-			example: 'app_123',
-			description: 'App ID',
 		}),
 	})
 	.openapi('ResetPasswordRequest');
@@ -390,7 +415,6 @@ const responseService = {
 			email: z.string().email().max(255),
 			password: passwordSchema,
 			confirmPassword: passwordSchema,
-			appId: z.string().min(1).max(255).optional().nullable(),
 		})
 		.refine((data) => data.password === data.confirmPassword, {
 			message: "Passwords don't match",
@@ -399,13 +423,12 @@ const responseService = {
 	loginSchema: z.object({
 		email: z.string().email().max(255),
 		password: passwordSchema,
-		appId: z.string().min(1).max(255).optional().nullable(),
 	}),
-	loginSchemas: {
-		request: LoginRequestSchema,
-		response: LoginResponseSchema,
-		error: LoginErrorSchema,
-	},
+	// loginSchemas: {
+	// 	request: LoginRequestSchema,
+	// 	response: LoginResponseSchema,
+	// 	error: LoginErrorSchema,
+	// },
 	refreshSchema: z.object({
 		refreshToken: z.string().min(1).max(255),
 	}),
@@ -415,11 +438,11 @@ const responseService = {
 	forgotPasswordSchema: z.object({
 		email: z.string().email().max(255),
 	}),
-	forgotPasswordSchemas: {
-		request: ForgotPasswordRequestSchema,
-		response: ForgotPasswordResponseSchema,
-		error: ForgotPasswordErrorSchema,
-	},
+	// forgotPasswordSchemas: {
+	// 	request: ForgotPasswordRequestSchema,
+	// 	response: ForgotPasswordResponseSchema,
+	// 	error: ForgotPasswordErrorSchema,
+	// },
 	resendForgotPasswordSchema: z.object({
 		email: z.string().email().max(255),
 	}),

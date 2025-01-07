@@ -14,7 +14,10 @@ describe("Public Auth Endpoints", () => {
       // Sign up the user
       const signUpResponse = await fetch(`${API_URL}/v3/public/sign-up`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "x-app-id": constants.APP_ID,
+        },
         body: JSON.stringify({
           email: fakeUser.email,
           password: password,
@@ -31,7 +34,10 @@ describe("Public Auth Endpoints", () => {
       // if (signUpResponse.ok && signUpData.verificationToken) {
       const verifyResponse = await fetch(`${API_URL}/v3/public/verify-email`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "x-app-id": constants.APP_ID,
+        },
         body: JSON.stringify({
           token: signUpData.data.verificationToken,
         }),
@@ -52,7 +58,10 @@ describe("Public Auth Endpoints", () => {
     it("should fail with invalid verification token", async () => {
       const verifyResponse = await fetch(`${API_URL}/v3/public/verify-email`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "x-app-id": constants.APP_ID,
+        },
         body: JSON.stringify({
           token: "invalidToken",
         }),
@@ -71,7 +80,10 @@ describe("Public Auth Endpoints", () => {
     it("should fail with validation error when token is missing", async () => {
       const verifyResponse = await fetch(`${API_URL}/v3/public/verify-email`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "x-app-id": constants.APP_ID,
+        },
         body: JSON.stringify({}),
       });
 
