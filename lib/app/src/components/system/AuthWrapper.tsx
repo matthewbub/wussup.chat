@@ -19,6 +19,7 @@ export function AuthWrapper({ children }: AuthWrapperProps) {
         const user = await authService.getCurrentUser();
         setUser(user);
       } catch (error) {
+        console.error(error);
         router.push("/login");
       } finally {
         setLoading(false);

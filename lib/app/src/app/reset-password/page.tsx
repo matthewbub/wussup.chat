@@ -1,20 +1,11 @@
-"use client";
-import { ResetPassword } from "@/components/system/ResetPassword";
-import { Card } from "@/components/ui/Card";
-import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
+import ResetPasswordClient from "./ResetPasswordClient";
 
+// this is the server component that wraps our client component in a suspense boundary
 export default function ResetPasswordPage() {
-  const searchParams = useSearchParams();
-  const token = searchParams.get("token");
-  const appId = searchParams.get("appId");
-
-  if (!token || !appId) {
-    return (
-      <Card className="p-6">
-        <p className="text-red-500">Invalid reset password link</p>
-      </Card>
-    );
-  }
-
-  return <ResetPassword token={token} appId={appId} />;
+  return (
+    <Suspense fallback={<div className="text-white">loading...</div>}>
+      <ResetPasswordClient />
+    </Suspense>
+  );
 }

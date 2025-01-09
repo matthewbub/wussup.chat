@@ -13,6 +13,7 @@ interface LoginStore {
   reset: () => void;
   submitLogin: (
     data: { email: string; password: string },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     router: any
   ) => Promise<void>;
 }

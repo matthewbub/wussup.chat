@@ -35,7 +35,7 @@ interface RegisterStore {
   }) => Promise<void>;
 }
 
-export const useRegisterStore = create<RegisterStore>((set, get) => ({
+export const useRegisterStore = create<RegisterStore>((set) => ({
   isLoading: false,
   error: null,
   validationErrors: [],

@@ -26,6 +26,7 @@ export const authService = {
       const data = await response.json();
       return data.success;
     } catch (error) {
+      console.error(error);
       return false;
     }
   },

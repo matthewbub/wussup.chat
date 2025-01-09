@@ -1,7 +1,6 @@
 import { create } from "zustand";
 import { User } from "@/types/user";
 import { authService } from "@/services/auth";
-import { STRINGS } from "@/constants/strings";
 
 interface LogoutOptions {
   redirectTo?: string;
