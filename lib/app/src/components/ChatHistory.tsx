@@ -18,7 +18,6 @@ export function ChatHistory() {
       setMessages((prev) => [...prev, userMessage]);
       setNewMessage("");
 
-      // Send message and history to API
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: {
@@ -27,34 +26,42 @@ export function ChatHistory() {
         body: JSON.stringify({ message: newMessage, history: messages }),
       });
 
-      const data = await response.json();
-      const botMessage = {
-        id: crypto.randomUUID(),
-        text: data.response,
-        isUser: false,
-      };
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder("utf-8");
+      let done = false;
+      let botMessage = { id: crypto.randomUUID(), text: "", isUser: false };
+
       setMessages((prev) => [...prev, botMessage]);
+
+      while (!done) {
+        const { value, done: doneReading } = await reader?.read()!;
+        done = doneReading;
+        const chunk = decoder.decode(value, { stream: true });
+
+        botMessage.text += chunk;
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === botMessage.id ? { ...msg, text: botMessage.text } : msg
+          )
+        );
+      }
     }
   };
 
   return (
     <Card>
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.map((message) => (
+      <div className="p-4">
+        {messages.map((msg) => (
           <div
-            key={message.id}
-            className={`flex ${
-              message.isUser ? "justify-end" : "justify-start"
-            }`}
+            key={msg.id}
+            className={`mb-2 ${msg.isUser ? "text-right" : "text-left"}`}
           >
             <div
-              className={`p-3 rounded-lg ${
-                message.isUser
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-300 text-black"
-              }`}
+              className={`inline-block p-2 rounded-lg ${
+                msg.isUser ? "bg-blue-500 text-white" : "bg-gray-300 text-black"
+              } max-w-[60%] whitespace-pre-wrap break-words`}
             >
-              {message.text}
+              {msg.text}
             </div>
           </div>
         ))}

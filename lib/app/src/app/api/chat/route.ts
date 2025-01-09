@@ -24,18 +24,52 @@ export async function POST(request: Request) {
       body: JSON.stringify({
         model: "gpt-3.5-turbo", // or another model you have access to
         messages: contextMessages,
+        stream: true, // Enable streaming
       }),
     });
 
-    const data = await response.json();
-
     if (!response.ok) {
-      throw new Error(data.error?.message || "Failed to fetch from OpenAI");
+      const errorData = await response.json();
+      throw new Error(
+        errorData.error?.message || "Failed to fetch from OpenAI"
+      );
     }
 
-    const chatGptResponse = data.choices[0]?.message?.content || "No response";
+    const reader = response.body?.getReader();
+    const decoder = new TextDecoder("utf-8");
 
-    return NextResponse.json({ response: chatGptResponse });
+    const stream = new ReadableStream({
+      async start(controller) {
+        let done = false;
+
+        while (!done) {
+          const { value, done: doneReading } = await reader?.read()!;
+          done = doneReading;
+          const chunk = decoder.decode(value, { stream: true });
+
+          // Process each line of the chunk
+          const lines = chunk.split("\n").filter((line) => line.trim() !== "");
+          for (const line of lines) {
+            if (line.startsWith("data: ")) {
+              const json = line.substring(6);
+              try {
+                const parsed = JSON.parse(json);
+                const content = parsed.choices[0]?.delta?.content || "";
+                controller.enqueue(content);
+              } catch (error) {
+                console.error("Error parsing JSON:", error);
+              }
+            }
+          }
+        }
+
+        controller.close();
+      },
+    });
+
+    return new Response(stream, {
+      headers: { "Content-Type": "text/event-stream" },
+    });
   } catch (error) {
     return NextResponse.json(
       { response: `Error: ${error.message}` },
