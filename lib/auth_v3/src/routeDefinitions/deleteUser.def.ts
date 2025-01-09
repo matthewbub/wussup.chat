@@ -1,9 +1,11 @@
 import { createRoute } from '@hono/zod-openapi';
 import responseService from '../modules/response';
+import openApiSchemas from '../openapi';
 
 export const deleteUserRouteDefinition = createRoute({
 	method: 'delete',
 	path: '/v3/auth/me',
+	headers: openApiSchemas.commonHeadersSchemas,
 	responses: {
 		200: {
 			content: {

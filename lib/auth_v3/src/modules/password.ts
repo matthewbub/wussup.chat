@@ -287,10 +287,11 @@ const passwordService = {
 	 * @param {object} params - reset parameters
 	 * @param {string} params.token - reset token
 	 * @param {string} params.newPassword - new password
+	 * @param {string} params.appId - app id
 	 * @param {Context} c - hono context
 	 * @returns {Promise<{success: boolean, message: string}>}
 	 */
-	completeReset: async ({ token, newPassword }: { token: string; newPassword: string }, c: Context) => {
+	completeReset: async ({ token, newPassword, appId }: { token: string; newPassword: string; appId?: string }, c: Context) => {
 		try {
 			// Verify token and get user status
 			const tokenResult = await dbService.query<{
@@ -308,8 +309,9 @@ const passwordService = {
 					AND vt.type = 'password_reset'
 					AND vt.used_at IS NULL
 					AND vt.expires_at > CURRENT_TIMESTAMP
+					AND u.app_id = ?
 					`,
-				[token]
+				[token, appId]
 			);
 			const tokenData = tokenResult.data?.results?.[0] as { user_id: string; status: string };
 			if (!tokenData) {

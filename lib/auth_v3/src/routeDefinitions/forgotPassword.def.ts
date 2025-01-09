@@ -1,6 +1,6 @@
 import { createRoute } from '@hono/zod-openapi';
 import responseService from '../modules/response';
-import { z as zOpenApi } from '@hono/zod-openapi';
+import openApiSchemas from '../openapi';
 
 export const forgotPasswordRouteDefinition = createRoute({
 	method: 'post',
@@ -9,22 +9,18 @@ export const forgotPasswordRouteDefinition = createRoute({
 		body: {
 			content: {
 				'application/json': {
-					schema: responseService.forgotPasswordSchemas.request,
+					schema: openApiSchemas.forgotPasswordSchemas.request,
 				},
 			},
 			required: true,
 		},
-		headers: zOpenApi.object({
-			'x-app-id': zOpenApi.string().optional().openapi({
-				description: 'Unique identifier for the application',
-			}),
-		}),
+		headers: openApiSchemas.commonHeadersSchemas,
 	},
 	responses: {
 		200: {
 			content: {
 				'application/json': {
-					schema: responseService.forgotPasswordSchemas.response,
+					schema: openApiSchemas.forgotPasswordSchemas.response,
 				},
 			},
 			description: 'Password reset initiated successfully',
@@ -32,7 +28,7 @@ export const forgotPasswordRouteDefinition = createRoute({
 		400: {
 			content: {
 				'application/json': {
-					schema: responseService.forgotPasswordSchemas.error,
+					schema: openApiSchemas.forgotPasswordSchemas.error,
 				},
 			},
 			description: 'Validation error',

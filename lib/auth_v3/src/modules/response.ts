@@ -9,6 +9,11 @@ const lowercaseErrorMessage = 'Password must contain at least one lowercase lett
 const numberErrorMessage = 'Password must contain at least one number';
 const specialCharacterErrorMessage = 'Password must contain at least one special character (!@#$%^&*)';
 
+export const appIdSchema = zOpenApi.string().min(1).max(255).openapi({
+	example: 'app_123',
+	description: 'App ID',
+});
+
 // password validation schema
 const passwordSchema = z
 	.string()
@@ -24,47 +29,6 @@ const passwordSchema = z
 	.refine((password) => /[!@#$%^&*]/.test(password), {
 		message: specialCharacterErrorMessage,
 	});
-
-const LoginRequestSchema = zOpenApi
-	.object({
-		email: zOpenApi.string().email().openapi({
-			example: 'user@example.com',
-			description: "User's email address",
-		}),
-		password: zOpenApi.string().min(8).openapi({
-			example: 'TestPassword123!',
-			description: "User's password",
-		}),
-	})
-	.openapi('LoginRequest');
-
-const LoginResponseSchema = zOpenApi
-	.object({
-		success: zOpenApi.boolean(),
-		message: zOpenApi.string(),
-		code: zOpenApi.string(),
-		data: zOpenApi
-			.object({
-				access_token: zOpenApi.string(),
-				token_type: zOpenApi.literal('Bearer'),
-				expires_in: zOpenApi.number(),
-			})
-			.optional(),
-	})
-	.openapi('LoginResponse');
-
-const LoginErrorSchema = zOpenApi
-	.object({
-		success: zOpenApi.boolean(),
-		message: zOpenApi.string(),
-		code: zOpenApi.string(),
-		data: zOpenApi
-			.object({
-				lockedUntil: zOpenApi.string().nullable(),
-			})
-			.optional(),
-	})
-	.openapi('LoginError');
 
 const SignupRequestSchema = zOpenApi
 	.object({
@@ -89,9 +53,18 @@ const SignupRequestSchema = zOpenApi
 
 const SignupResponseSchema = zOpenApi
 	.object({
-		success: zOpenApi.boolean(),
-		message: zOpenApi.string(),
-		code: zOpenApi.string(),
+		success: zOpenApi.boolean().openapi({
+			example: true,
+			description: 'Whether the request was successful',
+		}),
+		message: zOpenApi.string().openapi({
+			example: 'Signup successful',
+			description: 'Message describing the result of the signup request',
+		}),
+		code: zOpenApi.string().openapi({
+			example: '200',
+			description: 'HTTP status code',
+		}),
 		data: zOpenApi
 			.object({
 				access_token: zOpenApi.string(),
@@ -105,25 +78,61 @@ const SignupResponseSchema = zOpenApi
 
 const SignupErrorSchema = zOpenApi
 	.object({
-		success: zOpenApi.boolean(),
-		message: zOpenApi.string(),
-		code: zOpenApi.string(),
+		success: zOpenApi.boolean().openapi({
+			example: false,
+			description: 'Whether the request was successful',
+		}),
+		message: zOpenApi.string().openapi({
+			example: 'Signup failed',
+			description: 'Message describing the result of the signup request',
+		}),
+		code: zOpenApi.string().openapi({
+			example: '400',
+			description: 'HTTP status code',
+		}),
 		data: zOpenApi
 			.object({
 				errors: zOpenApi.array(
 					zOpenApi.object({
-						message: zOpenApi.string(),
-						path: zOpenApi.array(zOpenApi.string()),
-						code: zOpenApi.string(),
-						validation: zOpenApi.string().optional(),
-						type: zOpenApi.string().optional(),
-						exact: zOpenApi.boolean().optional(),
-						inclusive: zOpenApi.boolean().optional(),
-						minimum: zOpenApi.number().optional(),
+						message: zOpenApi.string().openapi({
+							example: 'Invalid email format',
+							description: 'Error message',
+						}),
+						path: zOpenApi.array(zOpenApi.string()).openapi({
+							example: ['email'],
+							description: 'Path to the field that caused the error',
+						}),
+						code: zOpenApi.string().openapi({
+							example: 'invalid_email',
+							description: 'Error code',
+						}),
+						validation: zOpenApi.string().optional().openapi({
+							example: 'email must be a valid email address',
+							description: 'Validation message',
+						}),
+						type: zOpenApi.string().optional().openapi({
+							example: 'string',
+							description: 'Type of the field that caused the error',
+						}),
+						exact: zOpenApi.boolean().optional().openapi({
+							example: false,
+							description: 'Whether the error is exact',
+						}),
+						inclusive: zOpenApi.boolean().optional().openapi({
+							example: false,
+							description: 'Whether the error is inclusive',
+						}),
+						minimum: zOpenApi.number().optional().openapi({
+							example: 8,
+							description: 'Minimum length of the field that caused the error',
+						}),
 					})
 				),
 			})
-			.optional(),
+			.optional()
+			.openapi({
+				description: 'Errors returned by the server',
+			}),
 	})
 	.openapi('SignupError');
 
@@ -138,25 +147,57 @@ const RefreshTokenRequestSchema = zOpenApi
 
 const RefreshTokenResponseSchema = zOpenApi
 	.object({
-		success: zOpenApi.boolean(),
-		message: zOpenApi.string(),
-		code: zOpenApi.string(),
+		success: zOpenApi.boolean().openapi({
+			example: true,
+			description: 'Whether the request was successful',
+		}),
+		message: zOpenApi.string().openapi({
+			example: 'Refresh successful',
+			description: 'Message describing the result of the refresh request',
+		}),
+		code: zOpenApi.string().openapi({
+			example: '200',
+			description: 'HTTP status code',
+		}),
 		data: zOpenApi
 			.object({
-				access_token: zOpenApi.string(),
-				token_type: zOpenApi.literal('Bearer'),
-				expires_in: zOpenApi.number(),
+				access_token: zOpenApi.string().openapi({
+					example: 'eyJhbGciOiJIUzI1NiIs...',
+					description: 'Access token',
+				}),
+				token_type: zOpenApi.literal('Bearer').openapi({
+					example: 'Bearer',
+					description: 'Token type',
+				}),
+				expires_in: zOpenApi.number().openapi({
+					example: 3600,
+					description: 'Token expiration time in seconds',
+				}),
 			})
-			.optional(),
+			.optional()
+			.openapi({
+				description: 'Data returned by the server',
+			}),
 	})
 	.openapi('RefreshTokenResponse');
 
 const RefreshTokenErrorSchema = zOpenApi
 	.object({
-		success: zOpenApi.boolean(),
-		message: zOpenApi.string(),
-		code: zOpenApi.string(),
-		data: zOpenApi.null(),
+		success: zOpenApi.boolean().openapi({
+			example: false,
+			description: 'Whether the request was successful',
+		}),
+		message: zOpenApi.string().openapi({
+			example: 'Refresh failed',
+			description: 'Message describing the result of the refresh request',
+		}),
+		code: zOpenApi.string().openapi({
+			example: '400',
+			description: 'HTTP status code',
+		}),
+		data: zOpenApi.null().openapi({
+			description: 'Data returned by the server',
+		}),
 	})
 	.openapi('RefreshTokenError');
 
@@ -171,57 +212,43 @@ const VerifyEmailRequestSchema = zOpenApi
 
 const VerifyEmailResponseSchema = zOpenApi
 	.object({
-		success: zOpenApi.boolean(),
-		message: zOpenApi.string(),
-		code: zOpenApi.string(),
-		data: zOpenApi.null(),
+		success: zOpenApi.boolean().openapi({
+			example: true,
+			description: 'Whether the request was successful',
+		}),
+		message: zOpenApi.string().openapi({
+			example: 'Email verified successfully',
+			description: 'Message describing the result of the email verification request',
+		}),
+		code: zOpenApi.string().openapi({
+			example: '200',
+			description: 'HTTP status code',
+		}),
+		data: zOpenApi.null().openapi({
+			description: 'Data returned by the server',
+		}),
 	})
 	.openapi('VerifyEmailResponse');
 
 const VerifyEmailErrorSchema = zOpenApi
 	.object({
-		success: zOpenApi.boolean(),
-		message: zOpenApi.string(),
-		code: zOpenApi.string(),
-		data: zOpenApi.null(),
-	})
-	.openapi('VerifyEmailError');
-
-const ForgotPasswordRequestSchema = zOpenApi
-	.object({
-		email: zOpenApi.string().email().openapi({
-			example: 'user@example.com',
-			description: "User's email address",
+		success: zOpenApi.boolean().openapi({
+			example: false,
+			description: 'Whether the request was successful',
+		}),
+		message: zOpenApi.string().openapi({
+			example: 'Email verification failed',
+			description: 'Message describing the result of the email verification request',
+		}),
+		code: zOpenApi.string().openapi({
+			example: '400',
+			description: 'HTTP status code',
+		}),
+		data: zOpenApi.null().openapi({
+			description: 'Data returned by the server',
 		}),
 	})
-	.openapi('ForgotPasswordRequest');
-
-const ForgotPasswordResponseSchema = zOpenApi
-	.object({
-		success: zOpenApi.boolean(),
-		message: zOpenApi.string(),
-		code: zOpenApi.string(),
-		data: zOpenApi.null(),
-	})
-	.openapi('ForgotPasswordResponse');
-
-const ForgotPasswordErrorSchema = zOpenApi
-	.object({
-		success: zOpenApi.boolean(),
-		message: zOpenApi.string(),
-		code: zOpenApi.string(),
-		data: zOpenApi
-			.object({
-				errors: zOpenApi.array(
-					zOpenApi.object({
-						message: zOpenApi.string(),
-						path: zOpenApi.array(zOpenApi.string()),
-					})
-				),
-			})
-			.optional(),
-	})
-	.openapi('ForgotPasswordError');
+	.openapi('VerifyEmailError');
 
 const ResetPasswordRequestSchema = zOpenApi
 	.object({
@@ -237,28 +264,46 @@ const ResetPasswordRequestSchema = zOpenApi
 			example: 'NewPassword123!',
 			description: 'Must match password field',
 		}),
-		appId: zOpenApi.string().nullable().optional().openapi({
-			example: 'app_123',
-			description: 'App ID',
-		}),
 	})
 	.openapi('ResetPasswordRequest');
 
 const ResetPasswordResponseSchema = zOpenApi
 	.object({
-		success: zOpenApi.boolean(),
-		message: zOpenApi.string(),
-		code: zOpenApi.string(),
-		data: zOpenApi.null(),
+		success: zOpenApi.boolean().openapi({
+			example: true,
+			description: 'Whether the request was successful',
+		}),
+		message: zOpenApi.string().openapi({
+			example: 'Password reset successful',
+			description: 'Message describing the result of the password reset request',
+		}),
+		code: zOpenApi.string().openapi({
+			example: '200',
+			description: 'HTTP status code',
+		}),
+		data: zOpenApi.null().openapi({
+			description: 'Data returned by the server',
+		}),
 	})
 	.openapi('ResetPasswordResponse');
 
 const ResetPasswordErrorSchema = zOpenApi
 	.object({
-		success: zOpenApi.boolean(),
-		message: zOpenApi.string(),
-		code: zOpenApi.string(),
-		data: zOpenApi.null(),
+		success: zOpenApi.boolean().openapi({
+			example: false,
+			description: 'Whether the request was successful',
+		}),
+		message: zOpenApi.string().openapi({
+			example: 'Password reset failed',
+			description: 'Message describing the result of the password reset request',
+		}),
+		code: zOpenApi.string().openapi({
+			example: '400',
+			description: 'HTTP status code',
+		}),
+		data: zOpenApi.null().openapi({
+			description: 'Data returned by the server',
+		}),
 	})
 	.openapi('ResetPasswordError');
 
@@ -273,37 +318,81 @@ const ResendVerificationEmailRequestSchema = zOpenApi
 
 const ResendVerificationEmailResponseSchema = zOpenApi
 	.object({
-		success: zOpenApi.boolean(),
-		message: zOpenApi.string(),
-		code: zOpenApi.string(),
-		data: zOpenApi.null(),
+		success: zOpenApi.boolean().openapi({
+			example: true,
+			description: 'Whether the request was successful',
+		}),
+		message: zOpenApi.string().openapi({
+			example: 'Verification email resent successfully',
+			description: 'Message describing the result of the resend verification email request',
+		}),
+		code: zOpenApi.string().openapi({
+			example: '200',
+			description: 'HTTP status code',
+		}),
+		data: zOpenApi.null().openapi({
+			description: 'Data returned by the server',
+		}),
 	})
 	.openapi('ResendVerificationEmailResponse');
 
 const ResendVerificationEmailErrorSchema = zOpenApi
 	.object({
-		success: zOpenApi.boolean(),
-		message: zOpenApi.string(),
-		code: zOpenApi.string(),
-		data: zOpenApi.null(),
+		success: zOpenApi.boolean().openapi({
+			example: false,
+			description: 'Whether the request was successful',
+		}),
+		message: zOpenApi.string().openapi({
+			example: 'Verification email resend failed',
+			description: 'Message describing the result of the resend verification email request',
+		}),
+		code: zOpenApi.string().openapi({
+			example: '400',
+			description: 'HTTP status code',
+		}),
+		data: zOpenApi.null().openapi({
+			description: 'Data returned by the server',
+		}),
 	})
 	.openapi('ResendVerificationEmailError');
 
 const LogoutResponseSchema = zOpenApi
 	.object({
-		success: zOpenApi.boolean(),
-		message: zOpenApi.string(),
-		code: zOpenApi.string(),
-		data: zOpenApi.null(),
+		success: zOpenApi.boolean().openapi({
+			example: true,
+			description: 'Whether the request was successful',
+		}),
+		message: zOpenApi.string().openapi({
+			example: 'Logout successful',
+			description: 'Message describing the result of the logout request',
+		}),
+		code: zOpenApi.string().openapi({
+			example: '200',
+			description: 'HTTP status code',
+		}),
+		data: zOpenApi.null().openapi({
+			description: 'Data returned by the server',
+		}),
 	})
 	.openapi('LogoutResponse');
 
 const LogoutErrorSchema = zOpenApi
 	.object({
-		success: zOpenApi.boolean(),
-		message: zOpenApi.string(),
-		code: zOpenApi.string(),
-		data: zOpenApi.null(),
+		success: zOpenApi.boolean().openapi({
+			example: false,
+			description: 'Whether the request was successful',
+		}),
+		message: zOpenApi.string().openapi({
+			example: 'Logout failed',
+			description: 'Message describing the result of the logout request',
+		}),
+		code: zOpenApi.string().openapi({
+			example: '400',
+			description: 'HTTP status code',
+		}),
+		data: zOpenApi.null().openapi({
+			description: 'Data returned by the server',
+		}),
 	})
 	.openapi('LogoutError');
 
@@ -316,119 +405,236 @@ const UpdateUserRequestSchema = zOpenApi
 
 const UpdateUserResponseSchema = zOpenApi
 	.object({
-		success: zOpenApi.boolean(),
-		message: zOpenApi.string(),
-		code: zOpenApi.string(),
+		success: zOpenApi.boolean().openapi({
+			example: true,
+			description: 'Whether the request was successful',
+		}),
+		message: zOpenApi.string().openapi({
+			example: 'User updated successfully',
+			description: 'Message describing the result of the update user request',
+		}),
+		code: zOpenApi.string().openapi({
+			example: '200',
+			description: 'HTTP status code',
+		}),
 		data: zOpenApi
 			.object({
 				user: zOpenApi.object({
-					email: zOpenApi.string().optional(),
-					username: zOpenApi.string().optional(),
+					email: zOpenApi.string().optional().openapi({
+						example: 'user@example.com',
+						description: "User's email address",
+					}),
+					username: zOpenApi.string().optional().openapi({
+						example: 'username',
+						description: 'User username',
+					}),
 				}),
 			})
-			.optional(),
+			.optional()
+			.openapi({
+				description: 'Data returned by the server',
+			}),
 	})
 	.openapi('UpdateUserResponse');
 
 const UpdateUserErrorSchema = zOpenApi
 	.object({
-		success: zOpenApi.boolean(),
-		message: zOpenApi.string(),
-		code: zOpenApi.string(),
-		data: zOpenApi.null(),
+		success: zOpenApi.boolean().openapi({
+			example: false,
+			description: 'Whether the request was successful',
+		}),
+		message: zOpenApi.string().openapi({
+			example: 'User update failed',
+			description: 'Message describing the result of the update user request',
+		}),
+		code: zOpenApi.string().openapi({
+			example: '400',
+			description: 'HTTP status code',
+		}),
+		data: zOpenApi.null().openapi({
+			description: 'Data returned by the server',
+		}),
 	})
 	.openapi('UpdateUserError');
 
 const DeleteUserResponseSchema = zOpenApi
 	.object({
-		success: zOpenApi.boolean(),
-		message: zOpenApi.string(),
-		code: zOpenApi.string(),
-		data: zOpenApi.null(),
+		success: zOpenApi.boolean().openapi({
+			example: true,
+			description: 'Whether the request was successful',
+		}),
+		message: zOpenApi.string().openapi({
+			example: 'User deleted successfully',
+			description: 'Message describing the result of the delete user request',
+		}),
+		code: zOpenApi.string().openapi({
+			example: '200',
+			description: 'HTTP status code',
+		}),
+		data: zOpenApi.null().openapi({
+			description: 'Data returned by the server',
+		}),
 	})
 	.openapi('DeleteUserResponse');
 
 const DeleteUserErrorSchema = zOpenApi
 	.object({
-		success: zOpenApi.boolean(),
-		message: zOpenApi.string(),
-		code: zOpenApi.string(),
-		data: zOpenApi.null(),
+		success: zOpenApi.boolean().openapi({
+			example: false,
+			description: 'Whether the request was successful',
+		}),
+		message: zOpenApi.string().openapi({
+			example: 'User deletion failed',
+			description: 'Message describing the result of the delete user request',
+		}),
+		code: zOpenApi.string().openapi({
+			example: '400',
+			description: 'HTTP status code',
+		}),
+		data: zOpenApi.null().openapi({
+			description: 'Data returned by the server',
+		}),
 	})
 	.openapi('DeleteUserError');
 
 const GetCurrentUserResponseSchema = zOpenApi
 	.object({
-		success: zOpenApi.boolean(),
-		message: zOpenApi.string(),
-		code: zOpenApi.string(),
+		success: zOpenApi.boolean().openapi({
+			example: true,
+			description: 'Whether the request was successful',
+		}),
+		message: zOpenApi.string().openapi({
+			example: 'User fetched successfully',
+			description: 'Message describing the result of the get current user request',
+		}),
+		code: zOpenApi.string().openapi({
+			example: '200',
+			description: 'HTTP status code',
+		}),
 		data: zOpenApi.object({
-			id: zOpenApi.string(),
-			email: zOpenApi.string(),
-			username: zOpenApi.string(),
-			status: zOpenApi.string(),
-			role: zOpenApi.string(),
-			email_verified: zOpenApi.number(),
-			last_login_at: zOpenApi.string().nullable(),
-			created_at: zOpenApi.string(),
+			id: zOpenApi.string().openapi({
+				example: '123',
+				description: 'User ID',
+			}),
+			email: zOpenApi.string().openapi({
+				example: 'user@example.com',
+				description: "User's email address",
+			}),
+			username: zOpenApi.string().openapi({
+				example: 'username',
+				description: 'User username',
+			}),
+			status: zOpenApi.string().openapi({
+				example: 'active',
+				description: 'User status',
+			}),
+			role: zOpenApi.string().openapi({
+				example: 'admin',
+				description: 'User role',
+			}),
+			email_verified: zOpenApi.number().openapi({
+				example: 1,
+				description: 'Whether the user email is verified',
+			}),
+			last_login_at: zOpenApi.string().nullable().openapi({
+				example: '2024-01-01T00:00:00Z',
+				description: 'Last login date',
+			}),
+			created_at: zOpenApi.string().openapi({
+				example: '2024-01-01T00:00:00Z',
+				description: 'User creation date',
+			}),
 		}),
 	})
 	.openapi('GetCurrentUserResponse');
 
 const GetCurrentUserErrorSchema = zOpenApi
 	.object({
-		success: zOpenApi.boolean(),
-		message: zOpenApi.string(),
-		code: zOpenApi.string(),
-		data: zOpenApi.null(),
+		success: zOpenApi.boolean().openapi({
+			example: false,
+			description: 'Whether the request was successful',
+		}),
+		message: zOpenApi.string().openapi({
+			example: 'User fetch failed',
+			description: 'Message describing the result of the get current user request',
+		}),
+		code: zOpenApi.string().openapi({
+			example: '400',
+			description: 'HTTP status code',
+		}),
+		data: zOpenApi.null().openapi({
+			description: 'Data returned by the server',
+		}),
 	})
 	.openapi('GetCurrentUserError');
 
 const responseService = {
 	signUpSchema: z
 		.object({
-			email: z.string().email().max(255),
+			email: zOpenApi.string().email().max(255).openapi({
+				example: 'user@example.com',
+				description: "User's email address",
+			}),
 			password: passwordSchema,
 			confirmPassword: passwordSchema,
-			appId: z.string().min(1).max(255).optional().nullable(),
 		})
 		.refine((data) => data.password === data.confirmPassword, {
 			message: "Passwords don't match",
 			path: ['confirmPassword'],
 		}),
 	loginSchema: z.object({
-		email: z.string().email().max(255),
+		email: zOpenApi.string().email().max(255).openapi({
+			example: 'user@example.com',
+			description: "User's email address",
+		}),
 		password: passwordSchema,
-		appId: z.string().min(1).max(255).optional().nullable(),
 	}),
-	loginSchemas: {
-		request: LoginRequestSchema,
-		response: LoginResponseSchema,
-		error: LoginErrorSchema,
-	},
+	// loginSchemas: {
+	// 	request: LoginRequestSchema,
+	// 	response: LoginResponseSchema,
+	// 	error: LoginErrorSchema,
+	// },
 	refreshSchema: z.object({
-		refreshToken: z.string().min(1).max(255),
+		refreshToken: zOpenApi.string().min(1).max(255).openapi({
+			example: 'eyJhbGciOiJIUzI1NiIs...',
+			description: 'Refresh token received from login or previous refresh',
+		}),
 	}),
 	verifyEmailSchema: z.object({
-		token: z.string().min(1).max(255),
+		token: zOpenApi.string().min(1).max(255).openapi({
+			example: 'verification_token_123',
+			description: 'Email verification token',
+		}),
 	}),
 	forgotPasswordSchema: z.object({
-		email: z.string().email().max(255),
+		email: zOpenApi.string().email().max(255).openapi({
+			example: 'user@example.com',
+			description: "User's email address",
+		}),
 	}),
-	forgotPasswordSchemas: {
-		request: ForgotPasswordRequestSchema,
-		response: ForgotPasswordResponseSchema,
-		error: ForgotPasswordErrorSchema,
-	},
+	// forgotPasswordSchemas: {
+	// 	request: ForgotPasswordRequestSchema,
+	// 	response: ForgotPasswordResponseSchema,
+	// 	error: ForgotPasswordErrorSchema,
+	// },
 	resendForgotPasswordSchema: z.object({
-		email: z.string().email().max(255),
+		email: zOpenApi.string().email().max(255).openapi({
+			example: 'user@example.com',
+			description: "User's email address",
+		}),
 	}),
 	resendVerificationEmailSchema: z.object({
-		email: z.string().email().max(255),
+		email: zOpenApi.string().email().max(255).openapi({
+			example: 'user@example.com',
+			description: "User's email address",
+		}),
 	}),
 	resetPasswordSchema: z
 		.object({
-			token: z.string().min(1).max(255),
+			token: zOpenApi.string().min(1).max(255).openapi({
+				example: 'reset_token_123',
+				description: 'Password reset token',
+			}),
 			password: passwordSchema,
 			confirmPassword: passwordSchema,
 		})
@@ -438,8 +644,14 @@ const responseService = {
 		}),
 	updateUserSchema: z
 		.object({
-			email: z.string().email().max(255).optional(),
-			username: z.string().min(3).max(255).optional(),
+			email: zOpenApi.string().email().max(255).optional().openapi({
+				example: 'user@example.com',
+				description: "User's email address",
+			}),
+			username: zOpenApi.string().min(3).max(255).optional().openapi({
+				example: 'username',
+				description: 'User username',
+			}),
 		})
 		.refine((data) => data.email !== undefined || data.username !== undefined, {
 			message: 'At least one field (email or username) must be provided',
@@ -483,7 +695,10 @@ const responseService = {
 		error: GetCurrentUserErrorSchema,
 	},
 	listAppsOwnedByUserSchema: z.object({
-		userId: z.string().min(1).max(255),
+		userId: zOpenApi.string().min(1).max(255).openapi({
+			example: '123',
+			description: 'User ID',
+		}),
 	}),
 };
 
