@@ -55,7 +55,7 @@ app.use(logger());
 app.use(
 	'*',
 	cors({
-		origin: 'http://localhost:3000',
+		origin: ['http://localhost:3000', 'https://zcauldron.vercel.app', 'https://zcauldron.com', 'https://www.zcauldron.com'],
 		allowMethods: ['GET', 'POST', 'OPTIONS', 'PUT', 'DELETE'],
 		allowHeaders: ['Content-Type', 'Authorization', 'X-App-Id'],
 		maxAge: 86400,
