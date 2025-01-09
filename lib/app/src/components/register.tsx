@@ -50,7 +50,7 @@ export default function Register() {
           </h2>
         </div>
 
-        <Card className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm ">
+        <div className="px-6 py-12 mt-10 sm:mx-auto sm:w-full sm:max-w-sm bg-stone-800/50 rounded-lg">
           <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
             <div>
               <label
@@ -173,13 +173,13 @@ export default function Register() {
           <p className="mt-10 text-center text-sm/6 text-gray-400">
             {STRINGS.REGISTER_ALREADY_MEMBER}{" "}
             <a
-              href="#"
+              href={STRINGS.REGISTER_SIGN_IN_URL}
               className="font-semibold text-indigo-400 hover:text-indigo-300"
             >
               {STRINGS.REGISTER_SIGN_IN}
             </a>
           </p>
-        </Card>
+        </div>
       </div>
     </>
   );

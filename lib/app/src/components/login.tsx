@@ -36,7 +36,7 @@ export default function Login() {
           </h2>
         </div>
 
-        <Card className="p-6 mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
+        <div className="px-6 py-12 my-10 sm:mx-auto sm:w-full sm:max-w-sm bg-stone-800/50 rounded-lg">
           <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
             <div>
               <label
@@ -79,7 +79,7 @@ export default function Login() {
                 </label>
                 <div className="text-sm">
                   <a
-                    href="/forgot-password"
+                    href={STRINGS.LOGIN_FORGOT_PASSWORD_URL}
                     className="font-semibold text-indigo-400 hover:text-indigo-300"
                   >
                     {STRINGS.LOGIN_FORGOT_PASSWORD}
@@ -124,13 +124,13 @@ export default function Login() {
           <p className="mt-10 text-center text-sm/6 text-gray-400">
             {STRINGS.LOGIN_NOT_MEMBER}{" "}
             <a
-              href="/signup"
+              href={STRINGS.LOGIN_SIGN_IN_URL}
               className="font-semibold text-indigo-400 hover:text-indigo-300"
             >
               {STRINGS.LOGIN_FREE_TRIAL}
             </a>
           </p>
-        </Card>
+        </div>
       </div>
     </>
   );

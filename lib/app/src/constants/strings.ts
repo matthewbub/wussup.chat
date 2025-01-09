@@ -1,4 +1,6 @@
 export const STRINGS = {
+  APP_NAME: "ZCauldron",
+
   // Login screen strings
   LOGIN_TITLE: "Sign in to your account",
   LOGIN_EMAIL_LABEL: "Email address",
@@ -6,7 +8,7 @@ export const STRINGS = {
   LOGIN_FORGOT_PASSWORD: "Forgot password?",
   LOGIN_SUBMIT: "Sign in",
   LOGIN_NOT_MEMBER: "Not a member?",
-  LOGIN_FREE_TRIAL: "Start a 14 day free trial",
+  LOGIN_FREE_TRIAL: "Register for an account",
   LOGIN_ERROR_EMAIL_REQUIRED: "Email is required",
   LOGIN_ERROR_EMAIL_INVALID: "Invalid email address",
   LOGIN_ERROR_PASSWORD_REQUIRED: "Password is required",
@@ -17,6 +19,8 @@ export const STRINGS = {
   LOGIN_ERROR_ACCOUNT_NOT_FOUND: "Account not found",
   LOGIN_ERROR_GENERIC: "An error occurred during login",
   LOGIN_LOADING: "Signing in...",
+  LOGIN_SIGN_IN_URL: "/register",
+  LOGIN_FORGOT_PASSWORD_URL: "/forgot-password",
 
   // Register screen strings
   REGISTER_TITLE: "Create your account",
@@ -36,7 +40,7 @@ export const STRINGS = {
   REGISTER_ERROR_CONFIRM_PASSWORD_REQUIRED: "Please confirm your password",
   REGISTER_ERROR_PASSWORDS_DONT_MATCH: "Passwords do not match",
   REGISTER_CONFIRM_PASSWORD_LABEL: "Confirm password",
-
+  REGISTER_SIGN_IN_URL: "/login",
   // Verify account screen strings
   VERIFY_TITLE: "Check your email",
   VERIFY_MESSAGE: "We sent a verification link to",

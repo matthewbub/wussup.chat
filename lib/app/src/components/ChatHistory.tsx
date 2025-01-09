@@ -1,28 +1,15 @@
-import { CheckCircle2, Circle, FolderInput, Trash2 } from "lucide-react";
+import { CheckCircle2, Circle, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { useChatStore } from "@/stores/useChatStore";
-import { Card } from "./ui/Card";
+import { Card } from "@/components/ui/Card";
 
 export function ChatHistory() {
   const [newMessage, setNewMessage] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editingText, setEditingText] = useState("");
-  const [isMoving, setIsMoving] = useState<string | null>(null);
 
-  const {
-    messages,
-    folders,
-    currentFolderId,
-    addMessage,
-    editMessage,
-    deleteMessage,
-    toggleMessage,
-    moveMessage,
-  } = useChatStore();
-
-  const filteredMessages = messages.filter(
-    (message) => message.folderId === currentFolderId
-  );
+  const { messages, addMessage, editMessage, deleteMessage, toggleMessage } =
+    useChatStore();
 
   const handleAddMessage = (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,8 +45,8 @@ export function ChatHistory() {
 
   return (
     <Card>
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 relative">
-        {filteredMessages.map((message) => (
+      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        {messages.map((message) => (
           <div key={message.id} className="flex items-start gap-2 group">
             <button
               onClick={() => toggleMessage(message.id)}
@@ -97,52 +84,17 @@ export function ChatHistory() {
                 </div>
               )}
             </div>
-            <div className="opacity-0 group-hover:opacity-100 transition-opacity mt-1 shrink-0 flex gap-2">
-              <button
-                onClick={() =>
-                  setIsMoving(isMoving === message.id ? null : message.id)
-                }
-                className="text-stone-500 hover:text-stone-400"
-              >
-                <FolderInput className="h-4 w-4" />
-              </button>
-              <button
-                onClick={() => deleteMessage(message.id)}
-                className="text-stone-500 hover:text-stone-400"
-              >
-                <Trash2 className="h-4 w-4" />
-              </button>
-            </div>
-            {isMoving === message.id && (
-              <div className="absolute right-0 mt-6 bg-stone-800 rounded-lg shadow-lg border border-stone-700 p-1">
-                {folders.map((folder) => (
-                  <button
-                    key={folder.id}
-                    onClick={() => {
-                      moveMessage(message.id, folder.id);
-                      setIsMoving(null);
-                    }}
-                    className="block w-full text-left px-3 py-1 text-stone-200 hover:bg-stone-700 rounded"
-                  >
-                    {folder.name}
-                  </button>
-                ))}
-                <button
-                  onClick={() => {
-                    moveMessage(message.id, null);
-                    setIsMoving(null);
-                  }}
-                  className="block w-full text-left px-3 py-1 text-stone-200 hover:bg-stone-700 rounded"
-                >
-                  Unfile
-                </button>
-              </div>
-            )}
+            <button
+              onClick={() => deleteMessage(message.id)}
+              className="opacity-0 group-hover:opacity-100 transition-opacity mt-1 text-stone-500 hover:text-stone-400"
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
           </div>
         ))}
       </div>
 
-      <div className="p-4 border-t border-stone-800 relative">
+      <div className="p-4 border-t border-stone-800">
         <form onSubmit={handleAddMessage} className="flex gap-2">
           <input
             type="text"

@@ -16,16 +16,25 @@ export function AuthHeader({ className = "" }: AuthHeaderProps) {
   }
 
   return (
-    <header className={`flex justify-between items-center p-4 ${className}`}>
-      <div className="flex items-center gap-2">
-        <span className="text-sm text-gray-600">{user.email}</span>
+    <header
+      className={`flex justify-between items-center py-4 px-6 md:px-10  ${className}`}
+    >
+      <div>
+        <h1 className="text-2xl font-bold">{STRINGS.APP_NAME}</h1>
       </div>
-      <LogoutButton
-        className="ch-button"
-        onLogoutError={(error) => {
-          console.error(STRINGS.LOGOUT_ERROR_GENERIC, error);
-        }}
-      />
+      <div className="flex items-center gap-10">
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-gray-600 selection:text-white selection:bg-black">
+            {user.email}
+          </span>
+        </div>
+        <LogoutButton
+          className="ch-button"
+          onLogoutError={(error) => {
+            console.error(STRINGS.LOGOUT_ERROR_GENERIC, error);
+          }}
+        />
+      </div>
     </header>
   );
 }
