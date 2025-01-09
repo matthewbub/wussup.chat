@@ -29,11 +29,12 @@ export function ChatHistory() {
       const reader = response.body?.getReader();
       const decoder = new TextDecoder("utf-8");
       let done = false;
-      let botMessage = { id: crypto.randomUUID(), text: "", isUser: false };
+      const botMessage = { id: crypto.randomUUID(), text: "", isUser: false };
 
       setMessages((prev) => [...prev, botMessage]);
 
       while (!done) {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
         const { value, done: doneReading } = await reader?.read()!;
         done = doneReading;
         const chunk = decoder.decode(value, { stream: true });

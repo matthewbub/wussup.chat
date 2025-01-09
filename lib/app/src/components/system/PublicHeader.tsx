@@ -1,6 +1,4 @@
 "use client";
-
-import { useAuthStore } from "@/stores/authStore";
 import { STRINGS } from "@/constants/strings";
 
 interface PublicHeaderProps {

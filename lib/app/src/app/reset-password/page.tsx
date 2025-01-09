@@ -1,5 +1,5 @@
 "use client";
-import { ResetPassword } from "@/components/ResetPassword";
+import { ResetPassword } from "@/components/system/ResetPassword";
 import { Card } from "@/components/ui/Card";
 import { useSearchParams } from "next/navigation";
 

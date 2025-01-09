@@ -5,8 +5,6 @@ import { STRINGS } from "@/constants/strings";
 import { useLoginStore } from "@/stores/loginStore";
 import { useRouter } from "next/navigation";
 import { Input, PasswordInput } from "@/components/ui/input";
-import { ErrorText, Label } from "./ui/prose";
-import { Card } from "./ui/Card";
 
 type LoginFormData = {
   email: string;

@@ -1,7 +1,7 @@
 "use client";
 
-import { AuthWrapper } from "@/components/AuthWrapper";
-import { AuthHeader } from "@/components/AuthHeader";
+import { AuthWrapper } from "@/components/system/AuthWrapper";
+import { AuthHeader } from "@/components/system/AuthHeader";
 import { ChatHistory } from "@/components/ChatHistory";
 
 export default function Dashboard() {

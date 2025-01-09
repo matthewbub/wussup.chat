@@ -1,5 +1,5 @@
-import Login from "@/components/login";
-import PublicHeader from "@/components/PublicHeader";
+import Login from "@/components/system/Login";
+import PublicHeader from "@/components/system/PublicHeader";
 
 export default function LoginPage() {
   return (

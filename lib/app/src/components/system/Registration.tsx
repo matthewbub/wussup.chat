@@ -3,10 +3,8 @@
 import { useForm } from "react-hook-form";
 import { STRINGS } from "@/constants/strings";
 import { useRegisterStore } from "@/stores/registerStore";
-import EmailVerification from "@/components/EmailVerification";
+import EmailVerification from "@/components/system/EmailVerification";
 import { Input, PasswordInput } from "@/components/ui/input";
-import { Label } from "./ui/prose";
-import { Card } from "./ui/Card";
 
 type RegisterFormData = {
   email: string;
@@ -14,7 +12,7 @@ type RegisterFormData = {
   confirmPassword: string;
 };
 
-export default function Register() {
+export default function Registration() {
   const {
     isLoading,
     error,

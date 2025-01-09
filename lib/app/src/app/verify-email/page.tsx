@@ -1,4 +1,4 @@
-import EmailVerification from "@/components/EmailVerification";
+import EmailVerification from "@/components/system/EmailVerification";
 
 export default function VerifyEmailPage() {
   return (

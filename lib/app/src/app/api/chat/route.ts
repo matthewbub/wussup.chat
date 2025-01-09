@@ -6,10 +6,12 @@ export async function POST(request: Request) {
   const { message, history } = await request.json();
 
   // Retain only the last CONTEXT_LENGTH messages for context
-  const contextMessages = history.slice(-CONTEXT_LENGTH).map((msg: any) => ({
-    role: msg.isUser ? "user" : "assistant",
-    content: msg.text,
-  }));
+  const contextMessages = history
+    .slice(-CONTEXT_LENGTH)
+    .map((msg: { isUser: boolean; text: string }) => ({
+      role: msg.isUser ? "user" : "assistant",
+      content: msg.text,
+    }));
 
   // Add the new message to the context
   contextMessages.push({ role: "user", content: message });
@@ -22,9 +24,9 @@ export async function POST(request: Request) {
         Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
       },
       body: JSON.stringify({
-        model: "gpt-3.5-turbo", // or another model you have access to
+        model: "gpt-3.5-turbo",
         messages: contextMessages,
-        stream: true, // Enable streaming
+        stream: true,
       }),
     });
 
@@ -43,6 +45,7 @@ export async function POST(request: Request) {
         let done = false;
 
         while (!done) {
+          // eslint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
           const { value, done: doneReading } = await reader?.read()!;
           done = doneReading;
           const chunk = decoder.decode(value, { stream: true });
@@ -71,9 +74,6 @@ export async function POST(request: Request) {
       headers: { "Content-Type": "text/event-stream" },
     });
   } catch (error) {
-    return NextResponse.json(
-      { response: `Error: ${error.message}` },
-      { status: 500 }
-    );
+    return NextResponse.json({ response: error }, { status: 500 });
   }
 }

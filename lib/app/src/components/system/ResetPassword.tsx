@@ -4,7 +4,7 @@ import { STRINGS } from "@/constants/strings";
 import { usePasswordResetStore } from "@/stores/passwordResetStore";
 import { Card } from "@/components/ui/Card";
 import { PasswordInput } from "@/components/ui/input";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 type ResetPasswordFormData = {
   password: string;
