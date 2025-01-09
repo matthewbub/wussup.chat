@@ -12,7 +12,7 @@ import { OpenAPIHono } from '@hono/zod-openapi';
 import adminAuthMiddleware from './middleware/admin.middleware';
 import validationErrorHook from './hooks/validationError.hook';
 import { commonErrorResponse } from './helpers/commonErrorHandler';
-import { loginRouteDefinition } from './routeDefinitions/login.def';
+import { loginRouteDefinition } from './openapi/loginSchemas';
 import { signupRouteDefinition } from './routeDefinitions/signup.def';
 import { refreshTokenRouteDefinition } from './routeDefinitions/refreshToken.def';
 import { verifyEmailRouteDefinition } from './routeDefinitions/verifyEmail.def';

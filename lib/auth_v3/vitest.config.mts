@@ -14,7 +14,7 @@ export default defineWorkersProject(async () => {
 					singleWorker: true,
 					wrangler: {
 						configPath: './wrangler.toml',
-						environment: 'production',
+						environment: 'test',
 					},
 					miniflare: {
 						// Add a test-only binding for migrations, so we can apply them in a

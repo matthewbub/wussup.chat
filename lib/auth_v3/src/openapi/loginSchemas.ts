@@ -1,4 +1,5 @@
-import { z as zOpenApi } from '@hono/zod-openapi';
+import { createRoute, z as zOpenApi } from '@hono/zod-openapi';
+import commonHeadersSchemas from './commonHeadersSchemas';
 
 const loginRequestSchema = zOpenApi
 	.object({
@@ -71,10 +72,60 @@ const loginErrorSchema = zOpenApi
 	})
 	.openapi('loginError');
 
-const login = {
-	request: loginRequestSchema,
-	response: loginResponseSchema,
-	error: loginErrorSchema,
-};
-
-export default login;
+export const loginRouteDefinition = createRoute({
+	method: 'post',
+	path: '/v3/public/login',
+	headers: commonHeadersSchemas,
+	request: {
+		body: {
+			content: {
+				'application/json': {
+					schema: loginRequestSchema,
+				},
+			},
+			required: true,
+		},
+	},
+	responses: {
+		200: {
+			content: {
+				'application/json': {
+					schema: loginResponseSchema,
+				},
+			},
+			description: 'Login successful',
+		},
+		401: {
+			content: {
+				'application/json': {
+					schema: loginErrorSchema,
+				},
+			},
+			description: 'Invalid credentials',
+		},
+		403: {
+			content: {
+				'application/json': {
+					schema: loginErrorSchema,
+				},
+			},
+			description: 'Account suspended or deleted',
+		},
+		404: {
+			content: {
+				'application/json': {
+					schema: loginErrorSchema,
+				},
+			},
+			description: 'User not found',
+		},
+		400: {
+			content: {
+				'application/json': {
+					schema: loginErrorSchema,
+				},
+			},
+			description: 'Validation error',
+		},
+	},
+});

@@ -1,9 +1,9 @@
-import loginSchemas from './loginSchemas';
+// import loginSchemas from './loginSchemas';
 import forgotPasswordSchemas from './forgotPasswordSchemas';
 import commonHeadersSchemas from './commonHeadersSchemas';
 
 const openApiSchemas = {
-	loginSchemas,
+	// loginSchemas,
 	forgotPasswordSchemas,
 	commonHeadersSchemas,
 };
