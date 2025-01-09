@@ -5,9 +5,7 @@ interface BackgroundProps {
 
 export function Background({ children, className = "" }: BackgroundProps) {
   return (
-    <div
-      className={`relative bg-stone-900 rounded-lg border border-stone-800 ${className}`}
-    >
+    <div className={`relative bg-stone-900 h-full ${className}`}>
       <div
         className="absolute inset-0 opacity-[0.05]"
         style={{
@@ -15,7 +13,7 @@ export function Background({ children, className = "" }: BackgroundProps) {
           backgroundSize: "16px 16px",
         }}
       />
-      <div className="relative">{children}</div>
+      <div className="relative h-full">{children}</div>
     </div>
   );
 }
