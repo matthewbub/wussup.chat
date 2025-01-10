@@ -82,13 +82,25 @@ export function ChatHistory() {
               className={`${msg.isUser ? "text-right" : "text-left"}`}
             >
               <div
-                className={`inline-block p-2 rounded-lg ${
-                  msg.isUser
-                    ? "bg-blue-500 text-white"
-                    : "bg-stone-700 text-stone-200"
-                } max-w-[60%] whitespace-pre-wrap break-words`}
+                className={
+                  "flex flex-col gap-1 " +
+                  (msg.isUser ? "items-end" : "items-start")
+                }
               >
-                {msg.text}
+                <div
+                  className={`inline-block p-2 rounded-lg ${
+                    msg.isUser
+                      ? "bg-blue-500 text-white"
+                      : "bg-stone-700 text-stone-200"
+                  } max-w-[60%] whitespace-pre-wrap break-words`}
+                >
+                  {msg.text}
+                </div>
+                <span className="text-xs text-stone-400">
+                  {formatDistanceToNow(new Date(msg.timestamp), {
+                    addSuffix: true,
+                  })}
+                </span>
               </div>
             </div>
           ))}

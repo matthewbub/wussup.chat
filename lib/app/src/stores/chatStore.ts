@@ -5,6 +5,7 @@ interface Message {
   id: string;
   text: string;
   isUser: boolean;
+  timestamp: Date;
 }
 
 interface ChatSession {
@@ -62,7 +63,12 @@ export const useChatStore = create<ChatStore>()(
           get().createNewSession();
         }
 
-        const userMessage = { id: crypto.randomUUID(), text, isUser: true };
+        const userMessage = {
+          id: crypto.randomUUID(),
+          text,
+          isUser: true,
+          timestamp: new Date(),
+        };
 
         // Update session messages
         set((state) => ({
@@ -97,7 +103,12 @@ export const useChatStore = create<ChatStore>()(
         const reader = response.body?.getReader();
         const decoder = new TextDecoder("utf-8");
         let done = false;
-        const botMessage = { id: crypto.randomUUID(), text: "", isUser: false };
+        const botMessage = {
+          id: crypto.randomUUID(),
+          text: "",
+          isUser: false,
+          timestamp: new Date(),
+        };
 
         set((state) => ({
           sessions: state.sessions.map((session) =>
