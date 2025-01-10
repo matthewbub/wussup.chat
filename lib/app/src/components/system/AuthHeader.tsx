@@ -6,6 +6,7 @@ import { useAuthStore } from "@/stores/authStore";
 import { LogoutButton } from "./LogoutButton";
 import { STRINGS } from "@/constants/strings";
 import { useClickOutside } from "react-haiku";
+import { useSidebarStore } from "@/stores/sidebarStore";
 
 interface AuthHeaderProps {
   className?: string;
@@ -15,6 +16,7 @@ export function AuthHeader({ className = "" }: AuthHeaderProps) {
   const user = useAuthStore((state) => state.user);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
+  const toggleSidebar = useSidebarStore((state) => state.toggle);
 
   useClickOutside(dropdownRef, () => {
     setIsDropdownOpen(false);
@@ -28,8 +30,14 @@ export function AuthHeader({ className = "" }: AuthHeaderProps) {
     <header
       className={`flex justify-between items-center py-4 px-6 md:px-10 bg-stone-900 text-stone-200 ${className}`}
     >
-      <div>
-        <h1 className="text-2xl font-bold">{STRINGS.APP_NAME}</h1>
+      <div className="flex items-center gap-4">
+        <button
+          onClick={toggleSidebar}
+          className="lg:hidden p-2 hover:bg-stone-800 rounded-md transition-colors"
+        >
+          ☰
+        </button>
+        <h1 className="text-lg lg:text-2xl font-bold">{STRINGS.APP_NAME}</h1>
       </div>
       <div className="flex items-center gap-10">
         <div className="relative" ref={dropdownRef}>
@@ -37,7 +45,7 @@ export function AuthHeader({ className = "" }: AuthHeaderProps) {
             className="text-sm text-stone-200 selection:text-stone-50 selection:bg-stone-800"
             onClick={() => setIsDropdownOpen((prev) => !prev)}
           >
-            My Account
+            Me
           </button>
           {isDropdownOpen && (
             <div className="absolute right-0 mt-2 bg-stone-800 border border-stone-700 rounded shadow-lg pt-2 z-50">

@@ -2,9 +2,12 @@ import { useState, useEffect } from "react";
 import { Card } from "./ui/Card";
 import { useChatStore } from "@/stores/chatStore";
 import { formatDistanceToNow } from "date-fns";
+import { useSidebarStore } from "@/stores/sidebarStore";
 
 export function ChatHistory() {
   const [newMessage, setNewMessage] = useState("");
+  const isOpen = useSidebarStore((state) => state.isOpen);
+  const closeSidebar = useSidebarStore((state) => state.close);
   const {
     sessions,
     currentSessionId,
@@ -32,12 +35,17 @@ export function ChatHistory() {
   };
 
   return (
-    <div className="flex h-[calc(100vh-100px)]">
-      {/* Session Sidebar */}
-      <div className="w-64 bg-stone-900 border-r border-stone-800 flex flex-col">
+    <div className="flex h-[calc(100vh-100px)] relative">
+      {/* Session Sidebar - Now using sidebar store */}
+      <div
+        className={`${
+          isOpen ? "translate-x-0" : "-translate-x-[100%]"
+        } lg:translate-x-0 fixed lg:relative z-40 w-64 h-full bg-stone-900 border-r border-stone-800 
+        flex flex-col transition-transform duration-300 ease-in-out left-0 top-0`}
+      >
         <button
           onClick={createNewSession}
-          className="m-4 px-4 py-2 bg-stone-700 text-stone-200 rounded-md hover:bg-stone-600 transition-colors"
+          className="m-4 mt-14 lg:mt-4 px-4 py-2 bg-stone-700 text-stone-200 rounded-md hover:bg-stone-600 transition-colors"
         >
           New Chat
         </button>
@@ -73,8 +81,16 @@ export function ChatHistory() {
         </div>
       </div>
 
-      {/* Chat Area */}
-      <Card className="flex-1 flex flex-col">
+      {/* Overlay for mobile - Now using sidebar store */}
+      {isOpen && (
+        <div
+          className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-30"
+          onClick={closeSidebar}
+        />
+      )}
+
+      {/* Chat Area - Made responsive */}
+      <Card className="flex-1 flex flex-col relative">
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {currentSession?.messages.map((msg) => (
             <div
@@ -92,7 +108,7 @@ export function ChatHistory() {
                     msg.isUser
                       ? "bg-blue-500 text-white"
                       : "bg-stone-700 text-stone-200"
-                  } max-w-[60%] whitespace-pre-wrap break-words`}
+                  } max-w-[85%] sm:max-w-[60%] whitespace-pre-wrap break-words`}
                 >
                   {msg.text}
                 </div>
@@ -106,8 +122,8 @@ export function ChatHistory() {
           ))}
         </div>
 
-        {/* Message Input - Unchanged */}
-        <div className="p-4 border-t border-stone-800 bg-stone-900/50 backdrop-blur-sm">
+        {/* Message Input - Made responsive */}
+        <div className="p-2 sm:p-4 border-t border-stone-800 bg-stone-900/50 backdrop-blur-sm">
           <form onSubmit={handleAddMessage} className="flex gap-2 items-end">
             <textarea
               value={newMessage}
@@ -126,11 +142,13 @@ export function ChatHistory() {
               placeholder="Type a message..."
               className="flex-1 p-2 rounded-md bg-stone-800 border-stone-700 border 
               text-stone-200 placeholder-stone-500 focus:outline-none focus:ring-2 
-              focus:ring-stone-600 resize-none overflow-hidden min-h-[40px] max-h-[200px]"
+              focus:ring-stone-600 resize-none overflow-hidden min-h-[40px] max-h-[200px]
+              text-sm sm:text-base"
             />
             <button
               type="submit"
-              className="px-4 py-2 bg-stone-700 text-stone-200 rounded-full hover:bg-stone-600 transition-colors h-fit"
+              className="px-3 sm:px-4 py-2 bg-stone-700 text-stone-200 rounded-full hover:bg-stone-600 
+              transition-colors h-fit text-sm sm:text-base"
             >
               Send
             </button>
