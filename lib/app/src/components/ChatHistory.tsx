@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
-import { Card } from "./ui/Card";
+import { Card } from "@/components/ui/Card";
 import { useChatStore } from "@/stores/chatStore";
 import { formatDistanceToNow } from "date-fns";
 import { useSidebarStore } from "@/stores/sidebarStore";
-import MarkdownComponent from "./ui/Markdown";
+import MarkdownComponent from "@/components/ui/Markdown";
 import { Menu, X } from "lucide-react";
+import { DateDisplay } from "@/components/ui/DateDisplay";
 
 export function ChatHistory() {
   const [newMessage, setNewMessage] = useState("");
@@ -80,11 +81,10 @@ export function ChatHistory() {
                 <span className="text-base-content truncate">
                   {session.title}
                 </span>
-                <span className="text-base-content/60 text-sm">
-                  {formatDistanceToNow(new Date(session.createdAt), {
-                    addSuffix: true,
-                  })}
-                </span>
+                <DateDisplay
+                  date={session.createdAt}
+                  className="text-base-content/60 text-sm"
+                />
               </div>
               <button
                 onClick={(e) => {
@@ -129,11 +129,10 @@ export function ChatHistory() {
                 >
                   <MarkdownComponent>{msg.text}</MarkdownComponent>
                 </div>
-                <span className="text-xs text-base-content/60">
-                  {formatDistanceToNow(new Date(msg.timestamp), {
-                    addSuffix: true,
-                  })}
-                </span>
+                <DateDisplay
+                  date={msg.timestamp}
+                  className="text-xs text-base-content/60"
+                />
               </div>
             </div>
           ))}
