@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "../styles/globals.css";
 import { Background } from "@/components/ui/Background";
 import "katex/dist/katex.min.css";
+import { ThemeProvider } from "next-themes";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,7 +30,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased h-full`}
       >
-        <Background>{children}</Background>
+        <ThemeProvider attribute="data-theme">
+          <Background>{children}</Background>
+        </ThemeProvider>
       </body>
     </html>
   );
