@@ -8,6 +8,9 @@ export { LogoutButton } from "./components/LogoutButton";
 export { default as PublicHeader } from "./components/PublicHeader";
 export { default as Registration } from "./components/Registration";
 export { ResetPassword } from "./components/ResetPassword";
+export { AccountSettings } from "./components/settings/AccountSettings";
+export { BillingSettings } from "./components/settings/BillingSettings";
+export { AppSettings } from "./components/settings/AppSettings";
 
 // UI Components
 export { Background } from "./components/ui/Background";

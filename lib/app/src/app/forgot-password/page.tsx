@@ -1,4 +1,4 @@
-import { ForgotPassword } from "@/components/system/ForgotPassword";
+import { ForgotPassword } from "@ninembs-studio/auth-ui";
 
 export default function ForgotPasswordPage() {
   return <ForgotPassword />;

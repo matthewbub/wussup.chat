@@ -1,7 +1,7 @@
 "use client";
 
 import { Background } from "@/components/ui/Background";
-import { useAuthStore } from "@/stores/authStore";
+import { useAuthStore } from "@ninembs-studio/auth-ui";
 import Link from "next/link";
 
 export default function Home() {

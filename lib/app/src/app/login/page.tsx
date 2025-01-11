@@ -1,7 +1,6 @@
 "use client";
-import Login from "@ninembs-studio/auth-ui/login";
-import PublicHeader from "@/components/system/PublicHeader";
-import { useRouter } from "next/router";
+import { Login, PublicHeader } from "@ninembs-studio/auth-ui";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
   const router = useRouter();

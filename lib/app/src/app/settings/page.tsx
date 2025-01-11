@@ -1,14 +1,18 @@
 "use client";
 
-import { AuthWrapper } from "@/components/system/AuthWrapper";
-import { AuthHeader } from "@/components/system/AuthHeader";
-import { AccountSettings } from "@/components/system/settings/AccountSettings";
-import { BillingSettings } from "@/components/system/settings/BillingSettings";
-import { AppSettings } from "@/components/system/settings/AppSettings";
+import {
+  AuthWrapper,
+  AuthHeader,
+  AccountSettings,
+  BillingSettings,
+  AppSettings,
+} from "@ninembs-studio/auth-ui";
+import { useRouter } from "next/navigation";
 
 export default function Settings() {
+  const router = useRouter();
   return (
-    <AuthWrapper>
+    <AuthWrapper history={router}>
       <div className="container mx-auto p-4">
         <AuthHeader />
 
