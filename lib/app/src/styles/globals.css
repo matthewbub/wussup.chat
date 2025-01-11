@@ -2,12 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
-html,
-body {
-  font-family: Arial, Helvetica, sans-serif;
-}
-
 :root {
+  --background: #ffffff;
+  --foreground: #1c1e21;
+
   --secondary-bg: #fffffff2;
   --secondary-color: #000000e6;
   --secondary-active-bg: #fffffff2;
@@ -40,9 +38,49 @@ body {
   --chat-bubble-primary-text: #ffffff;
   --chat-bubble-neutral-bg: #f3f2f2; /* Light Gray */
   --chat-bubble-neutral-text: #1a202c;
+
+  /* Input Styles */
+  --input-bg: #ffffff; /* White background */
+  --input-text: #1c1e21; /* Dark text */
+  --input-border-color: #d1d5db; /* Light gray border */
+  --input-focus-bg: #f9fafb; /* Very light gray on focus */
+  --input-focus-border: #6366f1; /* Indigo border on focus */
+  --input-border-radius: 0.5rem; /* consistent border radius */
+
+  /* Radio Styles */
+  --radio-bg: #ffffff; /* White background */
+  --radio-border-color: #1a202c; /* Dark Gray border */
+  --radio-hover-bg: #edf2f7; /* Light Gray on hover */
+  --radio-hover-border: #2d3748; /* Slightly Lighter Gray on hover */
+  --radio-checked-bg: #2d3748; /* Dark Gray when checked */
+  --radio-checked-border: #2d3748; /* Border color when checked */
+
+  /* Tabs Styles */
+  --tab-bg-color: #edf2f7; /* Light Gray */
+  --tab-text-color: #1a202c; /* Dark Gray text */
+  --tab-border-color: #d1d5db; /* Light Gray border */
+  --tab-hover-bg: #e2e8f0; /* Slightly Darker Gray on hover */
+  --tab-hover-text: #2d3748; /* Darker Gray text on hover */
+  --tab-hover-border: #a0aec0; /* Medium Gray border on hover */
+  --tab-active-bg: #e2e8f0; /* Active Tab Background */
+  --tab-active-text: #2d3748; /* Active Tab Text */
+  --tab-active-border: #a0aec0; /* Active Tab Border */
+  --tab-border-radius: 0.5rem; /* Tab border radius */
+  --tab-focus-shadow: #6366f1; /* Focus shadow color */
+
+  /* Textarea Styles */
+  --textarea-bg: #ffffff; /* White background */
+  --textarea-text: #1c1e21; /* Dark text */
+  --textarea-border-color: #d1d5db; /* Light gray border */
+  --textarea-focus-bg: #f9fafb; /* Very light gray on focus */
+  --textarea-focus-border: #6366f1; /* Indigo border on focus */
+  --textarea-border-radius: 0.5rem; /* Consistent border radius */
 }
 
 :root[data-theme="dark"] {
+  --background: #1d1e1f;
+  --foreground: #ffffff;
+
   --doc-sidebar-bg-color: #242224;
   --secondary-bg: #3c383a;
   --secondary-color: #fffc;
@@ -76,6 +114,50 @@ body {
   --chat-bubble-primary-text: #ffffff;
   --chat-bubble-neutral-bg: #3c383a; /* Darker Background */
   --chat-bubble-neutral-text: #e2e8f0;
+
+  /* Input Styles */
+  --input-bg: #2d3748; /* Dark Gray background */
+  --input-text: #e2e8f0; /* Light text */
+  --input-border-color: #4a5568; /* Darker gray border */
+  --input-focus-bg: #4a5568; /* Dark Gray on focus */
+  --input-focus-border: #6366f1; /* Indigo border on focus */
+  --input-border-radius: 0.5rem; /* consistent border radius */
+
+  /* Radio Styles */
+  --radio-bg: #4a5568; /* Dark Gray background */
+  --radio-border-color: #e2e8f0; /* Light Gray border */
+  --radio-hover-bg: #3c383a; /* Darker Background on hover */
+  --radio-hover-border: #a0aec0; /* Medium Gray on hover */
+  --radio-checked-bg: #2d3748; /* Dark Gray when checked */
+  --radio-checked-border: #2d3748; /* Border color when checked */
+
+  /* Tabs Styles */
+  --tab-bg-color: #2d3748; /* Dark Gray */
+  --tab-text-color: #e2e8f0; /* Light Gray text */
+  --tab-border-color: #4a5568; /* Dark Gray border */
+  --tab-hover-bg: #4a5568; /* Darker Gray on hover */
+  --tab-hover-text: #edf2f7; /* Light text on hover */
+  --tab-hover-border: #718096; /* Medium-Light Gray border on hover */
+  --tab-active-bg: #4a5568; /* Active Tab Background */
+  --tab-active-text: #edf2f7; /* Active Tab Text */
+  --tab-active-border: #718096; /* Active Tab Border */
+  --tab-border-radius: 0.5rem; /* Tab border radius */
+  --tab-focus-shadow: #6366f1; /* Focus shadow color */
+
+  /* Textarea Styles */
+  --textarea-bg: #4a5568; /* Dark Gray background */
+  --textarea-text: #e2e8f0; /* Light text */
+  --textarea-border-color: #4a5568; /* Darker gray border */
+  --textarea-focus-bg: #3c383a; /* Darker Gray on focus */
+  --textarea-focus-border: #6366f1; /* Indigo border on focus */
+  --textarea-border-radius: 0.5rem; /* Consistent border radius */
+}
+
+html,
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--background);
+  color: var(--foreground);
 }
 
 .menu__link--active {
@@ -188,4 +270,208 @@ body {
   color: var(--chat-bubble-neutral-text);
   align-self: flex-start;
   border-top-left-radius: 0;
+}
+
+.form-control {
+  display: flex;
+  flex-direction: column;
+}
+
+.label {
+  display: flex;
+  user-select: none;
+  align-items: center;
+  justify-content: space-between;
+  padding-left: 0.25rem;
+  padding-right: 0.25rem;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+}
+
+/* input styles */
+.input {
+  flex-shrink: 1;
+  appearance: none;
+  height: 3rem;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  font-size: 1rem;
+  line-height: 1.5rem;
+  border-radius: var(--input-border-radius, 0.5rem); /* input border radius */
+  border-width: 1px;
+  border-color: var(--input-border-color);
+  background-color: var(--input-bg);
+  color: var(--input-text);
+  transition: background-color 200ms ease-in-out, border-color 200ms ease-in-out,
+    color 200ms ease-in-out;
+}
+
+.input:focus {
+  background-color: var(--input-focus-bg);
+  border-color: var(--input-focus-border);
+  outline: none;
+}
+
+/* input number styles */
+.input[type="number"]::-webkit-inner-spin-button,
+.input-md[type="number"]::-webkit-inner-spin-button {
+  margin-top: -1rem;
+  margin-bottom: -1rem;
+  margin-inline-end: -1rem;
+}
+
+/* link styles */
+.link {
+  cursor: pointer;
+  text-decoration-line: underline;
+}
+/* Radio Button */
+.radio {
+  flex-shrink: 0;
+  background-color: var(--radio-bg);
+  height: 1.5rem;
+  width: 1.5rem;
+  cursor: pointer;
+  appearance: none;
+  border-radius: 9999px;
+  border-width: 1px;
+  border-color: var(--radio-border-color);
+  transition: background-color 200ms ease-in-out, border-color 200ms ease-in-out;
+}
+
+.radio:checked {
+  background-color: var(--radio-checked-bg);
+  border-color: var(--radio-checked-border);
+}
+
+.radio:hover {
+  background-color: var(--radio-hover-bg);
+  border-color: var(--radio-hover-border);
+}
+
+/* Tabs Styles */
+
+/* Tabs Container */
+.tabs {
+  display: grid;
+  align-items: flex-end;
+}
+
+/* Individual Tab */
+.tab {
+  position: relative;
+  grid-row-start: 1;
+  display: inline-flex;
+  height: 2rem;
+  cursor: pointer;
+  user-select: none;
+  appearance: none;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  border-radius: var(--tab-border-radius, 0.5rem);
+  border-width: 1px;
+  border-color: var(--tab-border-color);
+  background-color: var(--tab-bg-color);
+  color: var(--tab-text-color);
+  padding-inline-start: var(--tab-padding, 1rem);
+  padding-inline-end: var(--tab-padding, 1rem);
+  transition: background-color 200ms ease-in-out, color 200ms ease-in-out,
+    border-color 200ms ease-in-out;
+}
+
+.tab:hover {
+  background-color: var(--tab-hover-bg);
+  color: var(--tab-hover-text);
+  border-color: var(--tab-hover-border);
+}
+
+.tab:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--tab-focus-shadow);
+}
+
+.tab.active {
+  background-color: var(--tab-active-bg);
+  color: var(--tab-active-text);
+  border-color: var(--tab-active-border);
+}
+
+/* Tab Content */
+.tab-content {
+  grid-column-start: 1;
+  grid-column-end: span 9999;
+  grid-row-start: 2;
+  margin-top: calc(var(--tab-border-width, 1px) * -1);
+  display: none;
+  border-color: transparent;
+  border-width: var(--tab-border-width, 0);
+  transition: display 200ms ease-in-out;
+}
+
+.tab:checked + .tab-content,
+.tab.active + .tab-content {
+  display: block;
+  border-start-start-radius: var(--tab-content-radius-start, 0.5rem);
+}
+
+/* Textarea Styles */
+
+/* Textarea */
+.textarea {
+  min-height: 3rem;
+  flex-shrink: 1;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  border-radius: var(--textarea-border-radius, 0.5rem);
+  border-width: 1px;
+  border-color: var(--textarea-border-color);
+  background-color: var(--textarea-bg);
+  color: var(--textarea-text);
+  transition: background-color 200ms ease-in-out, border-color 200ms ease-in-out,
+    color 200ms ease-in-out;
+}
+
+.textarea:focus {
+  background-color: var(--textarea-focus-bg);
+  border-color: var(--textarea-focus-border);
+  outline: none;
+}
+
+/*  */
+
+.container {
+  width: 100%;
+}
+@media (min-width: 640px) {
+  .container {
+    max-width: 640px;
+  }
+}
+@media (min-width: 768px) {
+  .container {
+    max-width: 768px;
+  }
+}
+@media (min-width: 1024px) {
+  .container {
+    max-width: 1024px;
+  }
+}
+@media (min-width: 1280px) {
+  .container {
+    max-width: 1280px;
+  }
+}
+@media (min-width: 1536px) {
+  .container {
+    max-width: 1536px;
+  }
 }
