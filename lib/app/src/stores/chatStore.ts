@@ -19,17 +19,25 @@ const SESSIONS_KEY = "chat_sessions";
 const CURRENT_SESSION_KEY = "current_session_id";
 
 const getStoredSessions = (): ChatSession[] => {
+  if (typeof window === "undefined") return [];
+
   const stored = localStorage.getItem(SESSIONS_KEY);
   if (!stored) return [];
-  return JSON.parse(stored, (key, value) => {
-    if (key === "timestamp" || key === "createdAt") {
-      return new Date(value);
-    }
-    return value;
-  });
+
+  try {
+    return JSON.parse(stored, (key, value) => {
+      if (key === "timestamp" || key === "createdAt") {
+        return new Date(value);
+      }
+      return value;
+    });
+  } catch {
+    return [];
+  }
 };
 
 const getCurrentSessionId = (): string | null => {
+  if (typeof window === "undefined") return null;
   return localStorage.getItem(CURRENT_SESSION_KEY);
 };
 
@@ -43,8 +51,8 @@ interface ChatStore {
 }
 
 export const useChatStore = create<ChatStore>()((set, get) => ({
-  sessions: getStoredSessions(),
-  currentSessionId: getCurrentSessionId(),
+  sessions: [],
+  currentSessionId: null,
 
   createNewSession: () => {
     const newSession = {
@@ -56,8 +64,10 @@ export const useChatStore = create<ChatStore>()((set, get) => ({
 
     set((state) => {
       const newSessions = [newSession, ...state.sessions];
-      localStorage.setItem(SESSIONS_KEY, JSON.stringify(newSessions));
-      localStorage.setItem(CURRENT_SESSION_KEY, newSession.id);
+      if (typeof window !== "undefined") {
+        localStorage.setItem(SESSIONS_KEY, JSON.stringify(newSessions));
+        localStorage.setItem(CURRENT_SESSION_KEY, newSession.id);
+      }
       return {
         sessions: newSessions,
         currentSessionId: newSession.id,
@@ -66,14 +76,18 @@ export const useChatStore = create<ChatStore>()((set, get) => ({
   },
 
   setCurrentSession: (sessionId) => {
-    localStorage.setItem(CURRENT_SESSION_KEY, sessionId);
+    if (typeof window !== "undefined") {
+      localStorage.setItem(CURRENT_SESSION_KEY, sessionId);
+    }
     set({ currentSessionId: sessionId });
   },
 
   deleteSession: (sessionId) => {
     set((state) => {
       const newSessions = state.sessions.filter((s) => s.id !== sessionId);
-      localStorage.setItem(SESSIONS_KEY, JSON.stringify(newSessions));
+      if (typeof window !== "undefined") {
+        localStorage.setItem(SESSIONS_KEY, JSON.stringify(newSessions));
+      }
 
       const newState = {
         sessions: newSessions,
@@ -83,7 +97,10 @@ export const useChatStore = create<ChatStore>()((set, get) => ({
             : state.currentSessionId,
       };
 
-      if (state.currentSessionId === sessionId) {
+      if (
+        state.currentSessionId === sessionId &&
+        typeof window !== "undefined"
+      ) {
         localStorage.setItem(
           CURRENT_SESSION_KEY,
           newState.currentSessionId ?? ""
@@ -122,7 +139,9 @@ export const useChatStore = create<ChatStore>()((set, get) => ({
           : session
       );
 
-      localStorage.setItem(SESSIONS_KEY, JSON.stringify(updatedSessions));
+      if (typeof window !== "undefined") {
+        localStorage.setItem(SESSIONS_KEY, JSON.stringify(updatedSessions));
+      }
       return { sessions: updatedSessions };
     });
 
@@ -158,7 +177,9 @@ export const useChatStore = create<ChatStore>()((set, get) => ({
           : session
       );
 
-      localStorage.setItem(SESSIONS_KEY, JSON.stringify(updatedSessions));
+      if (typeof window !== "undefined") {
+        localStorage.setItem(SESSIONS_KEY, JSON.stringify(updatedSessions));
+      }
       return { sessions: updatedSessions };
     });
 
@@ -183,9 +204,19 @@ export const useChatStore = create<ChatStore>()((set, get) => ({
             : session
         );
 
-        localStorage.setItem(SESSIONS_KEY, JSON.stringify(updatedSessions));
+        if (typeof window !== "undefined") {
+          localStorage.setItem(SESSIONS_KEY, JSON.stringify(updatedSessions));
+        }
         return { sessions: updatedSessions };
       });
     }
   },
 }));
+
+// Initialize store on client-side only
+if (typeof window !== "undefined") {
+  useChatStore.setState({
+    sessions: getStoredSessions(),
+    currentSessionId: getCurrentSessionId(),
+  });
+}

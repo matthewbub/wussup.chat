@@ -10,24 +10,32 @@ export default function MarkdownComponent({ children }: { children: string }) {
     <ReactMarkdown
       remarkPlugins={[remarkGfm]}
       components={{
-        // Handle code blocks and inline code
-        code({
-          inline,
-          className,
-          children,
-          ...props
-        }: {
-          inline?: boolean;
-          className?: string;
-          children?: React.ReactNode;
-        }) {
-          const match = /language-(\w+)/.exec(className || "");
-          const language = match ? match[1] : "";
+        pre({ children }) {
+          return <div className="relative">{children}</div>;
+        },
+        // @ts-expect-error - its annoying me
+        code: ({ node }: Parameters<CodeComponent>[0]) => {
+          // Check if parent is a pre tag
+          const isCodeBlock =
+            node.position.start.line !== node.position.end.line;
 
-          return !inline ? (
+          if (!isCodeBlock) {
+            return (
+              <code className="bg-base-300 px-1 rounded">
+                {node.children[0].value}
+              </code>
+            );
+          }
+
+          // Code block
+          const language =
+            node.properties.className?.[0]?.replace("language-", "") || "";
+          const codeContent = node.children[0].value;
+
+          return (
             <div className="group relative">
               <button
-                onClick={() => navigator.clipboard.writeText(String(children))}
+                onClick={() => navigator.clipboard.writeText(codeContent)}
                 className="absolute right-2 top-2 opacity-0 group-hover:opacity-100 
                 transition-opacity duration-200 hover:text-primary"
                 aria-label="Copy code"
@@ -38,15 +46,10 @@ export default function MarkdownComponent({ children }: { children: string }) {
                 style={oneDark}
                 language={language || "text"}
                 PreTag="div"
-                {...props}
               >
-                {String(children).replace(/\n$/, "")}
+                {codeContent.replace(/\n$/, "")}
               </SyntaxHighlighter>
             </div>
-          ) : (
-            <code className="px-1 py-0.5 rounded bg-base-300" {...props}>
-              {children}
-            </code>
           );
         },
         // Style other markdown elements

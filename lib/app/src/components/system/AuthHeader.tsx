@@ -6,6 +6,8 @@ import { useAuthStore } from "@/stores/authStore";
 import { LogoutButton } from "./LogoutButton";
 import { STRINGS } from "@/constants/strings";
 import { useClickOutside } from "react-haiku";
+import { Sun, Moon } from "lucide-react";
+import { useThemeStore } from "@/stores/themeStore";
 
 interface AuthHeaderProps {
   className?: string;
@@ -15,6 +17,7 @@ export function AuthHeader({ className = "" }: AuthHeaderProps) {
   const user = useAuthStore((state) => state.user);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
+  const { theme, toggleTheme } = useThemeStore();
 
   useClickOutside(dropdownRef, () => {
     setIsDropdownOpen(false);
@@ -32,7 +35,19 @@ export function AuthHeader({ className = "" }: AuthHeaderProps) {
         <h1 className="text-lg lg:text-2xl font-bold">{STRINGS.APP_NAME}</h1>
       </Link>
 
-      <div className="flex items-center gap-10">
+      <div className="flex items-center gap-4">
+        <button
+          onClick={toggleTheme}
+          className="btn btn-ghost btn-sm px-2"
+          aria-label="Toggle theme"
+        >
+          {theme === "light" ? (
+            <Sun className="h-4 w-4" />
+          ) : (
+            <Moon className="h-4 w-4" />
+          )}
+        </button>
+
         <div className="relative" ref={dropdownRef}>
           <button
             className="text-sm text-base-content hover:text-primary"

@@ -1,11 +1,11 @@
 "use client";
 
-import { useTheme } from "next-themes";
+import { useThemeStore } from "@/stores/themeStore";
 import { useAISettingsStore } from "@/stores/aiSettingsStore";
 import { useState } from "react";
 
 export function AppSettings() {
-  const { theme, setTheme } = useTheme();
+  const { theme, setTheme } = useThemeStore();
   const { model, setModel } = useAISettingsStore();
   const [feedback, setFeedback] = useState("");
   const [feedbackStatus, setFeedbackStatus] = useState<
@@ -18,15 +18,18 @@ export function AppSettings() {
 
     setFeedbackStatus("sending");
     try {
-      // Replace with your actual feedback submission logic
       await fetch("/api/feedback", {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({ feedback }),
       });
       setFeedbackStatus("success");
       setFeedback("");
       setTimeout(() => setFeedbackStatus("idle"), 3000);
     } catch (error) {
+      console.error(error);
       setFeedbackStatus("error");
       setTimeout(() => setFeedbackStatus("idle"), 3000);
     }
@@ -44,9 +47,8 @@ export function AppSettings() {
         <select
           className="select select-bordered w-full max-w-xs"
           value={theme}
-          onChange={(e) => setTheme(e.target.value)}
+          onChange={(e) => setTheme(e.target.value as "light" | "dark")}
         >
-          <option value="system">System</option>
           <option value="light">Light</option>
           <option value="dark">Dark</option>
         </select>
