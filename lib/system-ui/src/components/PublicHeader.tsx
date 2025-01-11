@@ -1,5 +1,5 @@
-"use client";
-import { STRINGS } from "@/constants/strings";
+import React from "react";
+import { STRINGS } from "../constants/strings";
 
 interface PublicHeaderProps {
   className?: string;
@@ -14,8 +14,8 @@ export default function PublicHeader({ className = "" }: PublicHeaderProps) {
         <h1 className="text-2xl font-bold">{STRINGS.APP_NAME}</h1>
       </div>
       <div className="flex items-center gap-6">
-        <a className="ch-button-secondary">Sign in</a>
-        <a className="ch-button">Register</a>
+        <a className="btn btn-outline">Sign in</a>
+        <a className="btn btn-primary">Register</a>
       </div>
     </header>
   );

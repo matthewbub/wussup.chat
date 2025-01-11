@@ -1,10 +1,9 @@
-"use client";
+import React from "react";
 import { useForm } from "react-hook-form";
-import { STRINGS } from "@/constants/strings";
-import { usePasswordResetStore } from "@/stores/passwordResetStore";
-import { Card } from "@/components/ui/Card";
-import { PasswordInput } from "@/components/ui/input";
-import { useRouter } from "next/navigation";
+import { STRINGS } from "../constants/strings";
+import { usePasswordResetStore } from "../stores/passwordResetStore";
+import { Card } from "./ui/Card";
+import { PasswordInput } from "./ui/input";
 
 type ResetPasswordFormData = {
   password: string;
@@ -14,11 +13,12 @@ type ResetPasswordFormData = {
 export function ResetPassword({
   token,
   appId,
+  history,
 }: {
   token: string;
   appId: string;
+  history: any;
 }) {
-  const router = useRouter();
   const { isLoading, error, success, resetPassword } = usePasswordResetStore();
 
   const {
@@ -35,13 +35,13 @@ export function ResetPassword({
   };
 
   if (success) {
-    setTimeout(() => router.push("/login"), 3000);
+    setTimeout(() => history.push("/login"), 3000);
     return (
       <Card className="p-6">
-        <h2 className="text-xl font-semibold text-stone-200 mb-4">
+        <h2 className="text-xl font-semibold text-base-content mb-4">
           {STRINGS.PASSWORD_RESET_SUCCESS_TITLE}
         </h2>
-        <p className="text-stone-400">
+        <p className="text-base-content/60">
           {STRINGS.PASSWORD_RESET_SUCCESS_DESCRIPTION}
         </p>
       </Card>
@@ -50,7 +50,7 @@ export function ResetPassword({
 
   return (
     <Card className="p-6">
-      <h2 className="text-xl font-semibold text-stone-200 mb-4">
+      <h2 className="text-xl font-semibold text-base-content mb-4">
         {STRINGS.PASSWORD_RESET_NEW_PASSWORD_TITLE}
       </h2>
 
@@ -58,7 +58,7 @@ export function ResetPassword({
         <div>
           <label
             htmlFor="password"
-            className="block text-sm font-medium text-stone-200"
+            className="block text-sm font-medium text-base-content"
           >
             {STRINGS.PASSWORD_RESET_NEW_PASSWORD_LABEL}
           </label>
@@ -75,19 +75,19 @@ export function ResetPassword({
               },
             })}
             id="password"
-            className={errors.password ? "outline-red-500" : ""}
+            className={`input input-bordered w-full ${
+              errors.password ? "input-error" : ""
+            }`}
           />
           {errors.password && (
-            <p className="mt-1 text-sm text-red-500">
-              {errors.password.message}
-            </p>
+            <p className="mt-1 text-sm text-error">{errors.password.message}</p>
           )}
         </div>
 
         <div>
           <label
             htmlFor="confirmPassword"
-            className="block text-sm font-medium text-stone-200"
+            className="block text-sm font-medium text-base-content"
           >
             {STRINGS.PASSWORD_RESET_CONFIRM_PASSWORD_LABEL}
           </label>
@@ -99,18 +99,24 @@ export function ResetPassword({
                 STRINGS.PASSWORD_RESET_ERROR_PASSWORDS_DONT_MATCH,
             })}
             id="confirmPassword"
-            className={errors.confirmPassword ? "outline-red-500" : ""}
+            className={`input input-bordered w-full ${
+              errors.confirmPassword ? "input-error" : ""
+            }`}
           />
           {errors.confirmPassword && (
-            <p className="mt-1 text-sm text-red-500">
+            <p className="mt-1 text-sm text-error">
               {errors.confirmPassword.message}
             </p>
           )}
         </div>
 
-        {error && <p className="text-sm text-red-500 text-center">{error}</p>}
+        {error && <p className="text-sm text-error text-center">{error}</p>}
 
-        <button type="submit" disabled={isLoading} className="ch-button w-full">
+        <button
+          type="submit"
+          disabled={isLoading}
+          className="btn btn-primary w-full"
+        >
           {isLoading
             ? STRINGS.PASSWORD_RESET_LOADING
             : STRINGS.PASSWORD_RESET_SUBMIT}

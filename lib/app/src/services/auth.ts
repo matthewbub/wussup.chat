@@ -101,4 +101,55 @@ export const authService = {
       throw error;
     }
   },
+
+  // update user
+  async updateUser(data: { email?: string; username?: string }) {
+    const token = Cookies.get("access_token");
+    if (!token) throw new Error("No access token found");
+
+    const response = await fetch(
+      API_CONSTANTS.BASE_URL + API_CONSTANTS.ENDPOINTS.AUTH_ME,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+          "X-App-Id": API_CONSTANTS.APP_ID,
+        },
+        body: JSON.stringify(data),
+      }
+    );
+
+    const responseData = await response.json();
+    if (!response.ok) {
+      throw new Error(responseData.message || "Failed to update user");
+    }
+
+    return responseData;
+  },
+
+  // delete user
+  async deleteUser() {
+    const token = Cookies.get("access_token");
+    if (!token) throw new Error("No access token found");
+
+    const response = await fetch(
+      API_CONSTANTS.BASE_URL + API_CONSTANTS.ENDPOINTS.AUTH_ME,
+      {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "X-App-Id": API_CONSTANTS.APP_ID,
+        },
+      }
+    );
+
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.message || "Failed to delete user");
+    }
+
+    this.clearTokens();
+    return data;
+  },
 };

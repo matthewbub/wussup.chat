@@ -1,15 +1,15 @@
 import { Suspense } from "react";
-import EmailVerification from "@/components/system/EmailVerification";
+import { EmailVerification } from "@ninembs-studio/system-ui";
+import { useRouter } from "next/navigation";
 
-// this is the server component that wraps our client component in a suspense boundary
 export default function VerifyEmailPage() {
-  // by adding suspense, we avoid the missing suspense warning
+  const router = useRouter();
   return (
     <Suspense
       fallback={<div className="text-white">checking your email...</div>}
     >
       <div>
-        <EmailVerification userEmail={null} />
+        <EmailVerification userEmail={null} history={router} />
       </div>
     </Suspense>
   );

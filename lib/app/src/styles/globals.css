@@ -2,78 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --button-bg: #282828;
-  --button-hover: #342f3c;
-  --button-border-outer: #2a2422;
-  --button-border-inner: #0f0f0f;
-  --white-text: #fff;
-  --card-bg: #212023;
-  --card-border: #2a2422;
-  --input-bg: #1a1a1a;
-  --input-border: #2a2a2a;
-  --input-focus: #6366f1; /* indigo-500 */
-  --input-placeholder: #6b7280; /* gray-500 */
-}
-
 html,
 body {
   font-family: Arial, Helvetica, sans-serif;
-  background-color: #1b1b1b;
-}
-
-/* buttons */
-
-.ch-button,
-.ch-button-secondary {
-  @apply leading-5 rounded-lg outline-offset-1 outline-1 flex items-center justify-center flex-shrink-0 px-4 py-2 w-fit cursor-pointer transition-all duration-200 ease-in-out;
-}
-
-.ch-button {
-  background-color: var(--button-bg);
-  color: var(--white-text);
-  outline: 1px solid var(--button-border-outer); /* outside */
-  border: 1px solid var(--button-border-inner); /* inside */
-
-  &:hover {
-    background-color: var(--button-hover);
-  }
-}
-
-.ch-button-secondary {
-  outline: 1px solid transparent; /* outside */
-  border: 1px solid transparent; /* inside */
-
-  &:hover {
-    outline: 1px solid var(--button-border-outer); /* outside */
-    border: 1px solid var(--button-border-inner); /* inside */
-  }
-}
-
-.ch-card {
-  border: 1px solid var(--card-border);
-  background-color: var(--card-bg);
-}
-
-.ch-input {
-  @apply block w-full px-3 py-2 rounded-lg;
-  background-color: var(--input-bg);
-  color: var(--white-text);
-  outline: 1px solid var(--input-border);
-  outline-offset: -1px;
-  transition: all 200ms ease-in-out;
-
-  &::placeholder {
-    color: var(--input-placeholder);
-  }
-
-  &:focus {
-    outline-width: 2px;
-    outline-offset: -2px;
-    outline-color: var(--input-focus);
-  }
-}
-
-label {
-  @apply block text-sm/6 font-medium text-white;
+  background-color: hsl(var(--b1)); /* DaisyUI base-100 color */
 }

@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { useAuthStore } from "@/stores/authStore";
-import { STRINGS } from "@/constants/strings";
+import React, { useState } from "react";
+import { useAuthStore } from "../stores/authStore";
+import { STRINGS } from "../constants/strings";
 
 interface LogoutButtonProps {
   redirectTo?: string;

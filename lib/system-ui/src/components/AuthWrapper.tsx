@@ -1,16 +1,13 @@
-"use client";
-
-import { useEffect } from "react";
-import { authService } from "@/services/auth";
-import { useRouter } from "next/navigation";
-import { useAuthStore } from "@/stores/authStore";
+import React, { useEffect } from "react";
+import { authService } from "../services/auth";
+import { useAuthStore } from "../stores/authStore";
 
 interface AuthWrapperProps {
   children: React.ReactNode;
+  history: any; // You can use any custom history object here
 }
 
-export function AuthWrapper({ children }: AuthWrapperProps) {
-  const router = useRouter();
+export function AuthWrapper({ children, history }: AuthWrapperProps) {
   const { loading, setUser, setLoading } = useAuthStore();
 
   useEffect(() => {
@@ -20,18 +17,18 @@ export function AuthWrapper({ children }: AuthWrapperProps) {
         setUser(user);
       } catch (error) {
         console.error(error);
-        router.push("/login");
+        history.push("/login");
       } finally {
         setLoading(false);
       }
     };
 
     checkAuth();
-  }, [router, setUser, setLoading]);
+  }, [history, setUser, setLoading]);
 
   if (loading) {
     return <div>Loading...</div>;
   }
 
-  return children;
+  return <>{children}</>;
 }
