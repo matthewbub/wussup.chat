@@ -4,11 +4,13 @@ import { useChatStore } from "@/stores/chatStore";
 import { formatDistanceToNow } from "date-fns";
 import { useSidebarStore } from "@/stores/sidebarStore";
 import MarkdownComponent from "./ui/Markdown";
+import { Menu, X } from "lucide-react";
 
 export function ChatHistory() {
   const [newMessage, setNewMessage] = useState("");
   const isOpen = useSidebarStore((state) => state.isOpen);
   const closeSidebar = useSidebarStore((state) => state.close);
+  const toggleSidebar = useSidebarStore((state) => state.toggle);
   const {
     sessions,
     currentSessionId,
@@ -37,6 +39,12 @@ export function ChatHistory() {
 
   return (
     <div className="flex h-[calc(100vh-100px)] relative">
+      <button
+        onClick={toggleSidebar}
+        className="lg:hidden p-2 hover:bg-base-200 rounded-md transition-colors absolute top-2 left-2 z-10"
+      >
+        <Menu className="w-5 h-5" />
+      </button>
       {/* Session Sidebar */}
       <div
         className={`${
@@ -44,9 +52,17 @@ export function ChatHistory() {
         } lg:translate-x-0 fixed lg:relative z-40 w-64 h-full bg-base-300 border-r border-base-300 
         flex flex-col transition-transform duration-300 ease-in-out left-0 top-0`}
       >
+        <div className="flex justify-end items-center mt-5 pr-2">
+          <button
+            onClick={toggleSidebar}
+            className="btn btn-ghost btn-sm text-base-content/60 hover:text-base-content"
+          >
+            Close <X className="w-5 h-5" />
+          </button>
+        </div>
         <button
           onClick={createNewSession}
-          className="btn btn-neutral m-4 mt-14 lg:mt-4"
+          className="btn btn-neutral m-4 lg:mt-4"
         >
           New Chat
         </button>
