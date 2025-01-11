@@ -1,4 +1,4 @@
-import { Registration, PublicHeader } from "@ninembs-studio/auth-ui";
+import { Registration, PublicHeader } from "@ninembs-studio/system-ui";
 import { useRouter } from "next/navigation";
 
 export default function RegisterPage() {

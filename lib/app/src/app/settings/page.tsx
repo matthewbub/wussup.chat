@@ -6,7 +6,7 @@ import {
   AccountSettings,
   BillingSettings,
   AppSettings,
-} from "@ninembs-studio/auth-ui";
+} from "@ninembs-studio/system-ui";
 import { useRouter } from "next/navigation";
 
 export default function Settings() {

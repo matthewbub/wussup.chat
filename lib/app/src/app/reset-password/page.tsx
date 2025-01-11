@@ -2,7 +2,7 @@
 
 import { useSearchParams, useRouter } from "next/navigation";
 import { Card } from "@/components/ui/Card";
-import { ResetPassword } from "@ninembs-studio/auth-ui";
+import { ResetPassword } from "@ninembs-studio/system-ui";
 
 export default function ResetPasswordPage() {
   const router = useRouter();

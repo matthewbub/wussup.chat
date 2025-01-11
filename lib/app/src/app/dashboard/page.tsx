@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { AuthWrapper, AuthHeader } from "@ninembs-studio/auth-ui";
+import { AuthWrapper, AuthHeader } from "@ninembs-studio/system-ui";
 import { ChatHistory } from "@/components/ChatHistory";
 
 export default function Dashboard() {

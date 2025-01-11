@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import { EmailVerification } from "@ninembs-studio/auth-ui";
+import { EmailVerification } from "@ninembs-studio/system-ui";
 import { useRouter } from "next/navigation";
 
 export default function VerifyEmailPage() {
