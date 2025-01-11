@@ -64,7 +64,7 @@ export default function EmailVerification({
   return (
     <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-sm">
-        <h2 className="mt-10 text-center text-2xl/9 font-bold tracking-tight text-white">
+        <h2 className="mt-10 text-center text-2xl font-bold text-base-content">
           {status === "success"
             ? STRINGS.VERIFY_SUCCESS_TITLE
             : STRINGS.VERIFY_TITLE}
@@ -74,19 +74,21 @@ export default function EmailVerification({
       <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
         <div className="space-y-6 text-center">
           {status === "loading" && (
-            <p className="text-sm/6 text-gray-400">{STRINGS.VERIFY_LOADING}</p>
+            <p className="text-sm text-base-content/60">
+              {STRINGS.VERIFY_LOADING}
+            </p>
           )}
 
           {status === "success" && (
             <div className="mt-4 text-center">
-              <p className="text-sm/6 text-green-400">
+              <p className="text-sm text-success">
                 {STRINGS.VERIFY_SUCCESS_MESSAGE}
               </p>
-              <p className="text-sm/6 text-gray-400 mt-2">
+              <p className="text-sm text-base-content/60 mt-2">
                 {STRINGS.VERIFY_REDIRECT_MESSAGE}{" "}
                 <a
                   href="/login"
-                  className="font-semibold text-indigo-400 hover:text-indigo-300"
+                  className="font-semibold text-primary hover:text-primary-focus"
                 >
                   {STRINGS.VERIFY_GO_TO_LOGIN}
                 </a>
@@ -95,17 +97,19 @@ export default function EmailVerification({
           )}
 
           {status === "error" && (
-            <p className="text-sm/6 text-red-400">{errorMessage}</p>
+            <p className="text-sm text-error">{errorMessage}</p>
           )}
 
           {status === "idle" && (
             <>
-              <p className="text-sm/6 text-gray-400">
+              <p className="text-sm text-base-content/60">
                 {STRINGS.VERIFY_MESSAGE}{" "}
-                <span className="font-medium text-white">{userEmail}</span>
+                <span className="font-medium text-base-content">
+                  {userEmail}
+                </span>
               </p>
 
-              <p className="text-sm/6 text-gray-400">
+              <p className="text-sm text-base-content/60">
                 {STRINGS.VERIFY_INSTRUCTIONS}
               </p>
             </>
@@ -113,12 +117,12 @@ export default function EmailVerification({
 
           {status !== "success" && (
             <div className="mt-8">
-              <p className="text-sm/6 text-gray-400">
+              <p className="text-sm text-base-content/60">
                 {STRINGS.VERIFY_RESEND}{" "}
                 <button
                   onClick={handleResendVerification}
                   disabled={status === "loading" || !userEmail}
-                  className="font-semibold text-indigo-400 hover:text-indigo-300 disabled:opacity-50"
+                  className="font-semibold text-primary hover:text-primary-focus disabled:opacity-50"
                 >
                   {STRINGS.VERIFY_RESEND_BUTTON}
                 </button>
@@ -128,11 +132,11 @@ export default function EmailVerification({
 
           {status !== "success" && (
             <div className="mt-4">
-              <p className="text-sm/6 text-gray-400">
+              <p className="text-sm text-base-content/60">
                 {STRINGS.VERIFY_WRONG_EMAIL}{" "}
                 <a
                   href="/login"
-                  className="font-semibold text-indigo-400 hover:text-indigo-300"
+                  className="font-semibold text-primary hover:text-primary-focus"
                 >
                   {STRINGS.VERIFY_SIGN_IN}
                 </a>

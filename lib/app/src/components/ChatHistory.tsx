@@ -36,16 +36,16 @@ export function ChatHistory() {
 
   return (
     <div className="flex h-[calc(100vh-100px)] relative">
-      {/* Session Sidebar - Now using sidebar store */}
+      {/* Session Sidebar */}
       <div
         className={`${
           isOpen ? "translate-x-0" : "-translate-x-[100%]"
-        } lg:translate-x-0 fixed lg:relative z-40 w-64 h-full bg-stone-900 border-r border-stone-800 
+        } lg:translate-x-0 fixed lg:relative z-40 w-64 h-full bg-base-300 border-r border-base-300 
         flex flex-col transition-transform duration-300 ease-in-out left-0 top-0`}
       >
         <button
           onClick={createNewSession}
-          className="m-4 mt-14 lg:mt-4 px-4 py-2 bg-stone-700 text-stone-200 rounded-md hover:bg-stone-600 transition-colors"
+          className="btn btn-neutral m-4 mt-14 lg:mt-4"
         >
           New Chat
         </button>
@@ -54,14 +54,16 @@ export function ChatHistory() {
           {sessions.map((session) => (
             <div
               key={session.id}
-              className={`p-4 cursor-pointer hover:bg-stone-800 flex justify-between items-center ${
-                session.id === currentSessionId ? "bg-stone-800" : ""
+              className={`p-4 cursor-pointer hover:bg-base-200 flex justify-between items-center ${
+                session.id === currentSessionId ? "bg-base-200" : ""
               }`}
               onClick={() => setCurrentSession(session.id)}
             >
               <div className="flex flex-col">
-                <span className="text-stone-200 truncate">{session.title}</span>
-                <span className="text-stone-400 text-sm">
+                <span className="text-base-content truncate">
+                  {session.title}
+                </span>
+                <span className="text-base-content/60 text-sm">
                   {formatDistanceToNow(new Date(session.createdAt), {
                     addSuffix: true,
                   })}
@@ -72,7 +74,7 @@ export function ChatHistory() {
                   e.stopPropagation();
                   deleteSession(session.id);
                 }}
-                className="text-stone-400 hover:text-stone-200"
+                className="btn btn-ghost btn-sm text-base-content/60 hover:text-base-content"
               >
                 ×
               </button>
@@ -81,7 +83,7 @@ export function ChatHistory() {
         </div>
       </div>
 
-      {/* Overlay for mobile - Now using sidebar store */}
+      {/* Overlay for mobile */}
       {isOpen && (
         <div
           className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-30"
@@ -89,7 +91,7 @@ export function ChatHistory() {
         />
       )}
 
-      {/* Chat Area - Made responsive */}
+      {/* Chat Area */}
       <Card className="flex-1 flex flex-col relative">
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {currentSession?.messages.map((msg) => (
@@ -104,15 +106,13 @@ export function ChatHistory() {
                 }
               >
                 <div
-                  className={`inline-block p-2 rounded-lg ${
-                    msg.isUser
-                      ? "bg-blue-500 text-white"
-                      : "bg-stone-700 text-stone-200"
-                  } max-w-[85%] sm:max-w-[60%] whitespace-pre-wrap break-words`}
+                  className={`chat-bubble min-h-fit ${
+                    msg.isUser ? "chat-bubble-primary" : "chat-bubble-neutral"
+                  } max-w-[85%] sm:max-w-[60%]`}
                 >
                   {msg.text}
                 </div>
-                <span className="text-xs text-stone-400">
+                <span className="text-xs text-base-content/60">
                   {formatDistanceToNow(new Date(msg.timestamp), {
                     addSuffix: true,
                   })}
@@ -122,8 +122,8 @@ export function ChatHistory() {
           ))}
         </div>
 
-        {/* Message Input - Made responsive */}
-        <div className="p-2 sm:p-4 border-t border-stone-800 bg-stone-900/50 backdrop-blur-sm">
+        {/* Message Input */}
+        <div className="p-2 sm:p-4 border-t border-base-300 bg-base-200/50 backdrop-blur-sm">
           <form onSubmit={handleAddMessage} className="flex gap-2 items-end">
             <textarea
               value={newMessage}
@@ -140,16 +140,10 @@ export function ChatHistory() {
               }}
               rows={1}
               placeholder="Type a message..."
-              className="flex-1 p-2 rounded-md bg-stone-800 border-stone-700 border 
-              text-stone-200 placeholder-stone-500 focus:outline-none focus:ring-2 
-              focus:ring-stone-600 resize-none overflow-hidden min-h-[40px] max-h-[200px]
-              text-sm sm:text-base"
+              className="textarea textarea-bordered flex-1 min-h-[48px] max-h-[200px] 
+              text-sm sm:text-base resize-none"
             />
-            <button
-              type="submit"
-              className="px-3 sm:px-4 py-2 bg-stone-700 text-stone-200 rounded-full hover:bg-stone-600 
-              transition-colors h-fit text-sm sm:text-base"
-            >
+            <button type="submit" className="btn btn-primary">
               Send
             </button>
           </form>

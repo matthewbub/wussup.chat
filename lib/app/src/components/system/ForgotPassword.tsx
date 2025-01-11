@@ -25,20 +25,22 @@ export function ForgotPassword() {
   if (success) {
     return (
       <Card className="p-6 max-w-md mx-auto">
-        <h2 className="text-xl font-semibold text-stone-200 mb-4">
+        <h2 className="text-xl font-semibold text-base-content mb-4">
           {STRINGS.PASSWORD_RESET_CHECK_EMAIL}
         </h2>
-        <p className="text-stone-400">{STRINGS.PASSWORD_RESET_EMAIL_SENT}</p>
+        <p className="text-base-content/60">
+          {STRINGS.PASSWORD_RESET_EMAIL_SENT}
+        </p>
       </Card>
     );
   }
 
   return (
     <Card className="p-6 max-w-md mx-auto">
-      <h2 className="text-xl font-semibold text-stone-200 mb-4">
+      <h2 className="text-xl font-semibold text-base-content mb-4">
         {STRINGS.PASSWORD_RESET_TITLE}
       </h2>
-      <p className="text-stone-400 mb-6">
+      <p className="text-base-content/60 mb-6">
         {STRINGS.PASSWORD_RESET_DESCRIPTION}
       </p>
 
@@ -46,11 +48,11 @@ export function ForgotPassword() {
         <div>
           <label
             htmlFor="email"
-            className="block text-sm font-medium text-stone-200"
+            className="block text-sm font-medium text-base-content"
           >
             {STRINGS.PASSWORD_RESET_EMAIL_LABEL}
           </label>
-          <Input
+          <input
             {...register("email", {
               required: STRINGS.PASSWORD_RESET_ERROR_EMAIL_REQUIRED,
               pattern: {
@@ -60,16 +62,23 @@ export function ForgotPassword() {
             })}
             type="email"
             id="email"
-            className={errors.email ? "outline-red-500" : ""}
+            className={
+              "input input-bordered w-full" +
+              (errors.email ? "input-error" : "")
+            }
           />
           {errors.email && (
-            <p className="mt-1 text-sm text-red-500">{errors.email.message}</p>
+            <p className="mt-1 text-sm text-error">{errors.email.message}</p>
           )}
         </div>
 
-        {error && <p className="text-sm text-red-500 text-center">{error}</p>}
+        {error && <p className="text-sm text-error text-center">{error}</p>}
 
-        <button type="submit" disabled={isLoading} className="ch-button w-full">
+        <button
+          type="submit"
+          disabled={isLoading}
+          className="btn btn-primary w-full"
+        >
           {isLoading
             ? STRINGS.PASSWORD_RESET_LOADING
             : STRINGS.PASSWORD_RESET_SUBMIT}

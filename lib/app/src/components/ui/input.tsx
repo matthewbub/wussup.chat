@@ -10,7 +10,11 @@ type InputProps = {
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
   ({ className, ...props }, ref) => {
     return (
-      <input {...props} ref={ref} className={`ch-input ${className || ""}`} />
+      <input
+        {...props}
+        ref={ref}
+        className={`input input-bordered ${className || ""}`}
+      />
     );
   }
 );
@@ -33,7 +37,7 @@ const PasswordInput = React.forwardRef<HTMLInputElement, PasswordInputProps>(
           {...props}
           ref={ref}
           type={showPassword ? "text" : "password"}
-          className={`${className} ch-input pr-10`}
+          className={`input input-bordered ${className || ""} pr-10`}
         />
         <button
           type="button"

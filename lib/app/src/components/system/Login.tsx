@@ -26,110 +26,104 @@ export default function Login() {
   };
 
   return (
-    <>
-      <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8">
-        <div className="sm:mx-auto sm:w-full sm:max-w-sm">
-          <h2 className="mt-10 text-center text-2xl/9 font-bold tracking-tight text-white">
-            {STRINGS.LOGIN_TITLE}
-          </h2>
-        </div>
-
-        <div className="px-6 py-12 my-10 sm:mx-auto sm:w-full sm:max-w-sm bg-stone-800/50 rounded-lg">
-          <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
-            <div>
-              <label
-                htmlFor="email"
-                className="block text-sm/6 font-medium text-white"
-              >
-                {STRINGS.LOGIN_EMAIL_LABEL}
-              </label>
-              <div className="mt-2">
-                <Input
-                  {...register("email", {
-                    required: STRINGS.LOGIN_ERROR_EMAIL_REQUIRED,
-                    pattern: {
-                      value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                      message: STRINGS.LOGIN_ERROR_EMAIL_INVALID,
-                    },
-                  })}
-                  id="email"
-                  type="email"
-                  autoComplete="email"
-                  className={`ch-input ${
-                    errors.email ? "outline-red-500" : ""
-                  }`}
-                />
-                {errors.email && (
-                  <p className="mt-1 text-sm text-red-500">
-                    {errors.email.message}
-                  </p>
-                )}
-              </div>
-            </div>
-
-            <div>
-              <div className="flex items-center justify-between">
-                <label
-                  htmlFor="password"
-                  className="block text-sm/6 font-medium text-white"
-                >
-                  {STRINGS.LOGIN_PASSWORD_LABEL}
-                </label>
-                <div className="text-sm">
-                  <a
-                    href={STRINGS.LOGIN_FORGOT_PASSWORD_URL}
-                    className="font-semibold text-indigo-400 hover:text-indigo-300"
-                  >
-                    {STRINGS.LOGIN_FORGOT_PASSWORD}
-                  </a>
-                </div>
-              </div>
-              <div className="mt-2">
-                <PasswordInput
-                  {...register("password", {
-                    required: STRINGS.LOGIN_ERROR_PASSWORD_REQUIRED,
-                  })}
-                  id="password"
-                  type="password"
-                  autoComplete="current-password"
-                  className={`ch-input ${
-                    errors.password ? "outline-red-500" : ""
-                  }`}
-                />
-                {errors.password && (
-                  <p className="mt-1 text-sm text-red-500">
-                    {errors.password.message}
-                  </p>
-                )}
-              </div>
-            </div>
-
-            {error && (
-              <p className="text-sm text-red-500 text-center">{error}</p>
-            )}
-
-            <div>
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="ch-button disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isLoading ? STRINGS.LOGIN_LOADING : STRINGS.LOGIN_SUBMIT}
-              </button>
-            </div>
-          </form>
-
-          <p className="mt-10 text-center text-sm/6 text-gray-400">
-            {STRINGS.LOGIN_NOT_MEMBER}{" "}
-            <a
-              href={STRINGS.LOGIN_SIGN_IN_URL}
-              className="font-semibold text-indigo-400 hover:text-indigo-300"
-            >
-              {STRINGS.LOGIN_FREE_TRIAL}
-            </a>
-          </p>
-        </div>
+    <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8">
+      <div className="sm:mx-auto sm:w-full sm:max-w-sm">
+        <h2 className="mt-10 text-center text-2xl font-bold text-base-content">
+          {STRINGS.LOGIN_TITLE}
+        </h2>
       </div>
-    </>
+
+      <div className="card bg-base-200 mt-10 sm:mx-auto sm:w-full sm:max-w-sm p-6">
+        <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
+          <div>
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium text-base-content"
+            >
+              {STRINGS.LOGIN_EMAIL_LABEL}
+            </label>
+            <div className="mt-2">
+              <input
+                {...register("email", {
+                  required: STRINGS.LOGIN_ERROR_EMAIL_REQUIRED,
+                  pattern: {
+                    value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
+                    message: STRINGS.LOGIN_ERROR_EMAIL_INVALID,
+                  },
+                })}
+                id="email"
+                type="email"
+                autoComplete="email"
+                className={`input input-bordered w-full ${
+                  errors.email ? "input-error" : ""
+                }`}
+              />
+              {errors.email && (
+                <p className="mt-1 text-sm text-error">
+                  {errors.email.message}
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div>
+            <div className="flex items-center justify-between">
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-base-content"
+              >
+                {STRINGS.LOGIN_PASSWORD_LABEL}
+              </label>
+              <div className="text-sm">
+                <a
+                  href={STRINGS.LOGIN_FORGOT_PASSWORD_URL}
+                  className="font-semibold text-primary hover:text-primary-focus"
+                >
+                  {STRINGS.LOGIN_FORGOT_PASSWORD}
+                </a>
+              </div>
+            </div>
+            <div className="mt-2">
+              <PasswordInput
+                {...register("password", {
+                  required: STRINGS.LOGIN_ERROR_PASSWORD_REQUIRED,
+                })}
+                id="password"
+                type="password"
+                autoComplete="current-password"
+                className={`w-full ${errors.password ? "input-error" : ""}`}
+              />
+              {errors.password && (
+                <p className="mt-1 text-sm text-error">
+                  {errors.password.message}
+                </p>
+              )}
+            </div>
+          </div>
+
+          {error && <p className="text-sm text-error text-center">{error}</p>}
+
+          <div>
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="btn btn-primary w-full disabled:opacity-50"
+            >
+              {isLoading ? STRINGS.LOGIN_LOADING : STRINGS.LOGIN_SUBMIT}
+            </button>
+          </div>
+        </form>
+
+        <p className="mt-10 text-center text-sm text-base-content/60">
+          {STRINGS.LOGIN_NOT_MEMBER}{" "}
+          <a
+            href={STRINGS.LOGIN_SIGN_IN_URL}
+            className="font-semibold text-primary hover:text-primary-focus"
+          >
+            {STRINGS.LOGIN_FREE_TRIAL}
+          </a>
+        </p>
+      </div>
+    </div>
   );
 }

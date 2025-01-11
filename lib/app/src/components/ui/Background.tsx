@@ -5,7 +5,7 @@ interface BackgroundProps {
 
 export function Background({ children, className = "" }: BackgroundProps) {
   return (
-    <div className={`relative bg-stone-900 h-full ${className}`}>
+    <div className={`relative bg-base-300 h-full ${className}`}>
       <div
         className="absolute inset-0 opacity-[0.05]"
         style={{
