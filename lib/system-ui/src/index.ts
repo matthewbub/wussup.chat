@@ -11,7 +11,7 @@ export { ResetPassword } from "./components/ResetPassword";
 export { AccountSettings } from "./components/settings/AccountSettings";
 export { BillingSettings } from "./components/settings/BillingSettings";
 export { AppSettings } from "./components/settings/AppSettings";
-
+export { ThemeToggle } from "./components/ThemeToggle";
 // UI Components
 export { Background } from "./components/ui/Background";
 export { Card } from "./components/ui/Card";
