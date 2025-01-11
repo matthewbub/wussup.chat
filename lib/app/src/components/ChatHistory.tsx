@@ -52,7 +52,7 @@ export function ChatHistory() {
         } lg:translate-x-0 fixed lg:relative z-40 w-64 h-full bg-base-300 border-r border-base-300 
         flex flex-col transition-transform duration-300 ease-in-out left-0 top-0`}
       >
-        <div className="flex justify-end items-center mt-5 pr-2">
+        <div className="lg:hidden flex justify-end items-center mt-5 pr-2">
           <button
             onClick={toggleSidebar}
             className="btn btn-ghost btn-sm text-base-content/60 hover:text-base-content"
