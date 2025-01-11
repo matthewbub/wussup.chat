@@ -5,5 +5,187 @@
 html,
 body {
   font-family: Arial, Helvetica, sans-serif;
-  background-color: hsl(var(--b1)); /* DaisyUI base-100 color */
+}
+
+:root {
+  --secondary-bg: #fffffff2;
+  --secondary-color: #000000e6;
+  --secondary-active-bg: #fffffff2;
+  --secondary-hover-bg: #f3f2f2;
+
+  /* Primary Button */
+  --btn-primary-bg: #1a202c; /* Dark Gray */
+  --btn-primary-text: #ffffff;
+  --btn-primary-hover-bg: #2d3748; /* Slightly Lighter Gray */
+
+  /* Secondary Button */
+  --btn-secondary-bg: #4a5568; /* Medium Gray */
+  --btn-secondary-text: #ffffff;
+  --btn-secondary-hover-bg: #2d3748; /* Match Primary Hover */
+
+  /* Outline Button */
+  --btn-outline-text: #1a202c; /* Dark Gray */
+  --btn-outline-border: #1a202c;
+  --btn-outline-hover-bg: #edf2f7; /* Light Gray Background on Hover */
+  --btn-outline-hover-text: #1a202c; /* Maintain Text Color */
+
+  /* Ghost Button */
+  --btn-ghost-text: #e2e8f0; /* Light Gray */
+  --btn-ghost-hover-bg: #3c383a; /* Darker Background on Hover */
+  --btn-ghost-hover-text: #e2e8f0; /* Maintain Text Color */
+  --btn-ghost-hover-border: #e2e8f0; /* Border color on hover */
+
+  /* Chat Bubbles */
+  --chat-bubble-primary-bg: #1a202c; /* Dark Gray */
+  --chat-bubble-primary-text: #ffffff;
+  --chat-bubble-neutral-bg: #f3f2f2; /* Light Gray */
+  --chat-bubble-neutral-text: #1a202c;
+}
+
+:root[data-theme="dark"] {
+  --doc-sidebar-bg-color: #242224;
+  --secondary-bg: #3c383a;
+  --secondary-color: #fffc;
+  --secondary-hover-bg: #ffffff0d;
+  --secondary-active-bg: #3c383a;
+
+  /* Primary Button */
+  --btn-primary-bg: #2d3748; /* Lighter Dark Gray */
+  --btn-primary-text: #ffffff;
+  --btn-primary-hover-bg: #4a5568; /* Even Lighter Gray */
+
+  /* Secondary Button */
+  --btn-secondary-bg: #718096; /* Medium-Light Gray */
+  --btn-secondary-text: #ffffff;
+  --btn-secondary-hover-bg: #4a5568; /* Match Primary Hover */
+
+  /* Outline Button */
+  --btn-outline-text: #e2e8f0; /* Light Gray */
+  --btn-outline-border: #e2e8f0;
+  --btn-outline-hover-bg: #4a5568; /* Dark Gray Background on Hover */
+  --btn-outline-hover-text: #ffffff; /* Change Text to White on Hover */
+
+  /* Ghost Button */
+  --btn-ghost-text: #e2e8f0; /* Light Gray */
+  --btn-ghost-hover-bg: #3c383a; /* Darker Background on Hover */
+  --btn-ghost-hover-text: #e2e8f0; /* Maintain Text Color */
+  --btn-ghost-hover-border: #e2e8f0; /* Border color on hover */
+
+  /* Chat Bubbles */
+  --chat-bubble-primary-bg: #4a5568; /* Lighter Gray */
+  --chat-bubble-primary-text: #ffffff;
+  --chat-bubble-neutral-bg: #3c383a; /* Darker Background */
+  --chat-bubble-neutral-text: #e2e8f0;
+}
+
+.menu__link--active {
+  background: var(--secondary-active-bg) !important;
+}
+
+.menu__link--active {
+  background: var(--secondary-bg);
+  color: var(--secondary-color);
+}
+
+.menu__link {
+  border-radius: 0.25rem;
+  color: var(--secondary-color);
+  font-size: 0.8rem;
+  font-weight: 400;
+  line-height: 1.25;
+  padding: 0.5rem;
+  transition: background 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+}
+
+.menu__link:hover {
+  background: var(--secondary-hover-bg);
+}
+
+/* Button Styles */
+
+/* Primary Button */
+.btn-primary {
+  background-color: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 0.25rem;
+  font-weight: 500;
+  transition: background-color 200ms ease-in-out;
+}
+
+.btn-primary:hover {
+  background-color: var(--btn-primary-hover-bg);
+}
+
+/* Secondary Button */
+.btn-secondary {
+  background-color: var(--btn-secondary-bg);
+  color: var(--btn-secondary-text);
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 0.25rem;
+  font-weight: 500;
+  transition: background-color 200ms ease-in-out;
+}
+
+.btn-secondary:hover {
+  background-color: var(--btn-secondary-hover-bg);
+}
+
+/* Outline Button */
+.btn-outline {
+  background-color: transparent;
+  color: var(--btn-outline-text);
+  border: 2px solid var(--btn-outline-border);
+  padding: 0.5rem 1rem;
+  border-radius: 0.25rem;
+  font-weight: 500;
+  transition: background-color 200ms ease-in-out, color 200ms ease-in-out;
+}
+
+.btn-outline:hover {
+  background-color: var(--btn-outline-hover-bg);
+  color: var(--btn-outline-hover-text);
+}
+
+/* Ghost Button */
+.btn-ghost {
+  background-color: transparent;
+  color: var(--btn-ghost-text);
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 0.25rem;
+  font-weight: 500;
+}
+
+.btn-ghost:hover {
+  background-color: var(--btn-ghost-hover-bg);
+  color: var(--btn-ghost-hover-text);
+}
+
+/* General Chat Bubble */
+.chat-bubble {
+  padding: 0.75rem 1.25rem;
+  border-radius: 1.5rem;
+  max-width: 85%;
+  word-break: break-word;
+  font-size: 0.9rem;
+  transition: background-color 200ms ease-in-out, color 200ms ease-in-out;
+}
+
+/* Outbound Chat Bubble (User) */
+.chat-bubble-primary {
+  background-color: var(--chat-bubble-primary-bg);
+  color: var(--chat-bubble-primary-text);
+  align-self: flex-end;
+  border-top-right-radius: 0;
+}
+
+/* Inbound Chat Bubble (Others) */
+.chat-bubble-neutral {
+  background-color: var(--chat-bubble-neutral-bg);
+  color: var(--chat-bubble-neutral-text);
+  align-self: flex-start;
+  border-top-left-radius: 0;
 }

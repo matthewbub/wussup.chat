@@ -55,42 +55,37 @@ export function ChatHistory() {
         {isOpen && (
           <button
             onClick={toggleSidebar}
-            className="btn btn-ghost btn-sm text-base-content/60 hover:text-base-content"
+            className="btn-outline mt-2 mx-4 text-sm flex items-center gap-2 w-fit"
           >
             Close <X className="w-5 h-5" />
           </button>
         )}
         <button
           onClick={createNewSession}
-          className="btn btn-neutral m-4 lg:mt-4"
+          className="btn-secondary m-4 lg:mt-4"
         >
           New Chat
         </button>
 
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto menu__list">
           {sessions.map((session) => (
             <div
               key={session.id}
-              className={`p-4 cursor-pointer hover:bg-base-200 flex justify-between items-center ${
-                session.id === currentSessionId ? "bg-base-200" : ""
+              className={`menu__link flex justify-between items-center ${
+                session.id === currentSessionId ? "menu__link--active" : ""
               }`}
               onClick={() => setCurrentSession(session.id)}
             >
               <div className="flex flex-col">
-                <span className="text-base-content truncate">
-                  {session.title}
-                </span>
-                <DateDisplay
-                  date={session.createdAt}
-                  className="text-base-content/60 text-sm"
-                />
+                <span className="truncate text-sm">{session.title}</span>
+                <DateDisplay date={session.createdAt} className="text-sm" />
               </div>
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   deleteSession(session.id);
                 }}
-                className="btn btn-ghost btn-sm text-base-content/60 hover:text-base-content"
+                className="btn-ghost btn-sm text-base-content/60 hover:text-base-content"
               >
                 ×
               </button>
@@ -114,7 +109,7 @@ export function ChatHistory() {
             <div
               key={msg.id}
               className={`text-sm text-on-dark
- ${msg.isUser ? "text-right" : "text-left"}`}
+${msg.isUser ? "text-right" : "text-left"}`}
             >
               <div
                 className={
@@ -159,7 +154,7 @@ export function ChatHistory() {
               className="textarea textarea-bordered flex-1 min-h-[48px] max-h-[200px] 
               text-sm sm:text-base resize-none"
             />
-            <button type="submit" className="btn btn-primary">
+            <button type="submit" className="btn-primary">
               Send
             </button>
           </form>
