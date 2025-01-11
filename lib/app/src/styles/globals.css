@@ -2,20 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --button-bg: #282828;
-  --button-hover: #342f3c;
-  --button-border-outer: #2a2422;
-  --button-border-inner: #0f0f0f;
-  --white-text: #fff;
-  --card-bg: #212023;
-  --card-border: #2a2422;
-  --input-bg: #1a1a1a;
-  --input-border: #2a2a2a;
-  --input-focus: #6366f1; /* indigo-500 */
-  --input-placeholder: #6b7280; /* gray-500 */
-}
-
 html,
 body {
   font-family: Arial, Helvetica, sans-serif;
