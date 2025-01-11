@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { STRINGS } from "@/constants/strings";
 import { useRegisterStore } from "@/stores/registerStore";
 import EmailVerification from "@/components/system/EmailVerification";
-import { Input, PasswordInput } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/input";
 
 type RegisterFormData = {
   email: string;

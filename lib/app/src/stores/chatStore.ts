@@ -99,7 +99,7 @@ export const useChatStore = create<ChatStore>()((set, get) => ({
   },
 
   addMessage: async (text: string) => {
-    const { currentSessionId, sessions } = get();
+    const { currentSessionId } = get();
     if (!currentSessionId) {
       await get().createNewSession();
     }

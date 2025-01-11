@@ -3,7 +3,6 @@ import { useForm } from "react-hook-form";
 import { STRINGS } from "@/constants/strings";
 import { usePasswordResetStore } from "@/stores/passwordResetStore";
 import { Card } from "@/components/ui/Card";
-import { Input } from "@/components/ui/input";
 
 type ForgotPasswordFormData = {
   email: string;

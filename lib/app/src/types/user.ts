@@ -3,6 +3,7 @@ type User = {
   email: string;
   email_verified: boolean;
   expires_at: string;
+  username?: string;
 };
 
 export type { User };

@@ -16,7 +16,7 @@ export const useUserSettingsStore = create<UserSettingsStore>((set) => ({
   success: false,
 
   // all-lowercase comment: update user details
-  updateUser: async (data) => {
+  updateUser: async (data: { email?: string; username?: string }) => {
     set({ isLoading: true, error: null, success: false });
     try {
       const response = await authService.updateUser(data);

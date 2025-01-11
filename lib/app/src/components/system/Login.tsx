@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form";
 import { STRINGS } from "@/constants/strings";
 import { useLoginStore } from "@/stores/loginStore";
 import { useRouter } from "next/navigation";
-import { Input, PasswordInput } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/input";
 
 type LoginFormData = {
   email: string;

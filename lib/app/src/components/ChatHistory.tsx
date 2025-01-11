@@ -3,6 +3,7 @@ import { Card } from "./ui/Card";
 import { useChatStore } from "@/stores/chatStore";
 import { formatDistanceToNow } from "date-fns";
 import { useSidebarStore } from "@/stores/sidebarStore";
+import MarkdownComponent from "./ui/Markdown";
 
 export function ChatHistory() {
   const [newMessage, setNewMessage] = useState("");
@@ -110,7 +111,7 @@ export function ChatHistory() {
                     msg.isUser ? "chat-bubble-primary" : "chat-bubble-neutral"
                   } max-w-[85%] sm:max-w-[60%]`}
                 >
-                  {msg.text}
+                  <MarkdownComponent>{msg.text}</MarkdownComponent>
                 </div>
                 <span className="text-xs text-base-content/60">
                   {formatDistanceToNow(new Date(msg.timestamp), {
