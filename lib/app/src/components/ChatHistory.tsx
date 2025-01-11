@@ -114,7 +114,7 @@ export function ChatHistory() {
           {currentSession?.messages.map((msg) => (
             <div
               key={msg.id}
-              className={`${msg.isUser ? "text-right" : "text-left"}`}
+              className={`text-sm ${msg.isUser ? "text-right" : "text-left"}`}
             >
               <div
                 className={
