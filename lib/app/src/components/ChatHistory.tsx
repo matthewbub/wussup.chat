@@ -38,126 +38,133 @@ export function ChatHistory() {
   };
 
   return (
-    <div className="flex min-h-[calc(100vh-100px)] relative">
+    <div className="flex h-[calc(100vh-100px)] relative">
+      {/* Toggle Button for Small Screens */}
       <button
         onClick={toggleSidebar}
-        className="lg:hidden p-2 hover:bg-base-200 rounded-md transition-colors absolute top-2 left-2 z-10"
+        className="lg:hidden p-2 hover:bg-base-200 rounded-md transition-colors absolute top-2 left-2 z-50"
       >
         <Menu className="w-5 h-5" />
       </button>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12">
-        {/* Session Sidebar */}
-        <div className={`flex flex-col lg:col-span-3`}>
-          {isOpen && (
-            <button
-              onClick={toggleSidebar}
-              className="btn-outline mt-2 mx-4 text-sm flex items-center gap-2 w-fit"
-            >
-              Close <X className="w-5 h-5" />
-            </button>
-          )}
+      {/* Sidebar */}
+      <div
+        className={`fixed inset-y-0 left-0 z-40 w-64 bg-base-300 border-r border-base-300 transform ${
+          isOpen ? "translate-x-0" : "-translate-x-full"
+        } transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 lg:col-span-3 flex flex-col`}
+      >
+        {/* Close Button for Small Screens */}
+        {isOpen && (
           <button
-            onClick={createNewSession}
-            className="btn-secondary m-4 lg:mt-4"
+            onClick={toggleSidebar}
+            className="btn-outline mt-2 mx-4 text-sm flex items-center gap-2 w-fit lg:hidden"
           >
-            New Chat
+            Close <X className="w-5 h-5" />
           </button>
+        )}
+        {/* New Chat Button */}
+        <button
+          onClick={createNewSession}
+          className="btn-secondary m-4 lg:mt-4"
+        >
+          New Chat
+        </button>
 
-          <div className="flex-1 overflow-y-auto menu__list">
-            {sessions.map((session) => (
-              <div
-                key={session.id}
-                className={`menu__link flex justify-between items-center ${
-                  session.id === currentSessionId ? "menu__link--active" : ""
-                }`}
-                onClick={() => setCurrentSession(session.id)}
-              >
-                <div className="flex flex-col">
-                  <span className="truncate text-sm">{session.title}</span>
-                  <DateDisplay date={session.createdAt} className="text-sm" />
-                </div>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    deleteSession(session.id);
-                  }}
-                  className="btn-ghost btn-sm text-base-content/60 hover:text-base-content"
-                >
-                  ×
-                </button>
+        {/* Session List */}
+        <div className="flex-1 overflow-y-auto menu__list">
+          {sessions.map((session) => (
+            <div
+              key={session.id}
+              className={`menu__link flex justify-between items-center ${
+                session.id === currentSessionId ? "menu__link--active" : ""
+              }`}
+              onClick={() => setCurrentSession(session.id)}
+            >
+              <div className="flex flex-col">
+                <span className="truncate text-sm">{session.title}</span>
+                <DateDisplay date={session.createdAt} className="text-sm" />
               </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Chat Area */}
-        <Card className="flex-1 flex flex-col lg:col-span-9">
-          <div className="flex-1 overflow-y-auto p-4 space-y-4">
-            {currentSession?.messages.map((msg) => (
-              <div
-                key={msg.id}
-                className={`text-sm text-on-dark
-${msg.isUser ? "text-right" : "text-left"}`}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  deleteSession(session.id);
+                }}
+                className="btn-ghost btn-sm text-base-content/60 hover:text-base-content"
               >
-                <div
-                  className={
-                    "flex flex-col gap-1 " +
-                    (msg.isUser ? "items-end" : "items-start")
-                  }
-                >
-                  <div
-                    className={`chat-bubble min-h-fit ${
-                      msg.isUser ? "chat-bubble-primary" : "chat-bubble-neutral"
-                    } max-w-[85%] sm:max-w-[60%]`}
-                  >
-                    <MarkdownComponent>{msg.text}</MarkdownComponent>
-                  </div>
-                  <DateDisplay
-                    date={msg.timestamp}
-                    className="text-xs text-base-content/60"
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Message Input */}
-          <div className="p-2 sm:p-4 border-t border-base-300 bg-base-200/50 backdrop-blur-sm">
-            <form onSubmit={handleAddMessage} className="flex gap-2 items-end">
-              <textarea
-                value={newMessage}
-                onChange={(e) => {
-                  setNewMessage(e.target.value);
-                  e.target.style.height = "inherit";
-                  e.target.style.height = `${e.target.scrollHeight}px`;
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault();
-                    handleAddMessage(e);
-                  }
-                }}
-                rows={1}
-                placeholder="Type a message..."
-                className="textarea textarea-bordered flex-1 min-h-[48px] max-h-[200px] 
-              text-sm sm:text-base resize-none"
-              />
-              <button type="submit" className="btn-primary">
-                Send
+                ×
               </button>
-            </form>
-          </div>
-        </Card>
+            </div>
+          ))}
+        </div>
       </div>
 
-      {/* Overlay for mobile */}
+      {/* Overlay for Small Screens */}
       {isOpen && (
         <div
           className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-30"
           onClick={closeSidebar}
         />
       )}
+
+      {/* Chat Area */}
+      <Card className="flex-1 flex flex-col lg:col-span-9">
+        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          {currentSession?.messages.map((msg) => (
+            <div
+              key={msg.id}
+              className={`text-sm text-on-dark ${
+                msg.isUser ? "text-right" : "text-left"
+              }`}
+            >
+              <div
+                className={
+                  "flex flex-col gap-1 " +
+                  (msg.isUser ? "items-end" : "items-start")
+                }
+              >
+                <div
+                  className={`chat-bubble min-h-fit ${
+                    msg.isUser ? "chat-bubble-primary" : "chat-bubble-neutral"
+                  } max-w-[85%] sm:max-w-[60%]`}
+                >
+                  <MarkdownComponent>{msg.text}</MarkdownComponent>
+                </div>
+                <DateDisplay
+                  date={msg.timestamp}
+                  className="text-xs text-base-content/60"
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Message Input */}
+        <div className="p-2 sm:p-4 border-t border-base-300 bg-base-200/50 backdrop-blur-sm">
+          <form onSubmit={handleAddMessage} className="flex gap-2 items-end">
+            <textarea
+              value={newMessage}
+              onChange={(e) => {
+                setNewMessage(e.target.value);
+                e.target.style.height = "inherit";
+                e.target.style.height = `${e.target.scrollHeight}px`;
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  handleAddMessage(e);
+                }
+              }}
+              rows={1}
+              placeholder="Type a message..."
+              className="textarea flex-1 min-h-[48px] max-h-[200px] 
+                text-sm sm:text-base resize-none"
+            />
+            <button type="submit" className="btn-primary">
+              Send
+            </button>
+          </form>
+        </div>
+      </Card>
     </div>
   );
 }
