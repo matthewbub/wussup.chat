@@ -44,7 +44,7 @@ enabled = true
 [[d1_databases]]
 binding = "DB"
 database_name = "chat_service"
-database_id = "27826805-92bf-48a3-bd74-a2794e8bf2de"
+database_id = "f0a2c915-fae8-4549-a832-ac4975afbd9c"
 
 # Bind a dispatch namespace. Use Workers for Platforms to deploy serverless functions programmatically on behalf of your customers.
 # Docs: https://developers.cloudflare.com/workers/wrangler/configuration/#dispatch-namespace-bindings-workers-for-platforms
