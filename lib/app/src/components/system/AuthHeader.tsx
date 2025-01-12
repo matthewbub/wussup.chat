@@ -42,15 +42,15 @@ export function AuthHeader({ className = "" }: AuthHeaderProps) {
           aria-label="Toggle theme"
         >
           {theme === "light" ? (
-            <Sun className="h-4 w-4" />
+            <Sun className="h-4 w-4 " />
           ) : (
-            <Moon className="h-4 w-4" />
+            <Moon className="h-4 w-4 " />
           )}
         </button>
 
         <div className="relative" ref={dropdownRef}>
           <button
-            className="text-sm text-base-content hover:text-primary"
+            className="text-sm btn-secondary hover:text-primary"
             onClick={() => setIsDropdownOpen((prev) => !prev)}
           >
             Me

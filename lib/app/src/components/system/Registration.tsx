@@ -12,7 +12,7 @@ type RegisterFormData = {
   confirmPassword: string;
 };
 
-export default function Registration() {
+export function Registration() {
   const {
     isLoading,
     error,

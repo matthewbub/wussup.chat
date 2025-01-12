@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef } from "react";
 import { useClickOutside } from "react-haiku";
 import { useAuthStore } from "../stores/authStore";
 import { LogoutButton } from "./LogoutButton";
@@ -58,7 +58,7 @@ export function AuthHeader({
         </button>
         <div className="relative" ref={dropdownRef}>
           <button
-            className="text-sm text-base-content hover:text-primary"
+            className="text-sm btn-secondary"
             onClick={() => setIsDropdownOpen((prev) => !prev)}
           >
             Me

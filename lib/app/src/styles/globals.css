@@ -28,10 +28,10 @@
   --btn-outline-hover-text: #1a202c; /* Maintain Text Color */
 
   /* Ghost Button */
-  --btn-ghost-text: #e2e8f0; /* Light Gray */
-  --btn-ghost-hover-bg: #3c383a; /* Darker Background on Hover */
-  --btn-ghost-hover-text: #e2e8f0; /* Maintain Text Color */
-  --btn-ghost-hover-border: #e2e8f0; /* Border color on hover */
+  --btn-ghost-text: #1a202c; /* Dark Gray */
+  --btn-ghost-hover-bg: #f3f2f2; /* Light Gray Background on Hover */
+  --btn-ghost-hover-text: #1a202c; /* Maintain Text Color */
+  --btn-ghost-hover-border: #1a202c; /* Border color on hover */
 
   /* Chat Bubbles */
   --chat-bubble-primary-bg: #1a202c; /* Dark Gray */
@@ -292,7 +292,7 @@ body {
 .input {
   flex-shrink: 1;
   appearance: none;
-  height: 3rem;
+  height: 2.75rem;
   padding-left: 1rem;
   padding-right: 1rem;
   font-size: 1rem;

@@ -150,7 +150,7 @@ export function AccountSettings() {
         ) : (
           <button
             onClick={handleDeleteAccount}
-            className="btn btn-outline btn-error"
+            className="btn btn-outline btn-error border-error"
           >
             Delete Account
           </button>
