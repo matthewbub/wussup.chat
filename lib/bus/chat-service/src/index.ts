@@ -1,16 +1,11 @@
 import { logger } from "hono/logger";
-import { bearerAuth } from "hono/bearer-auth";
 import { cors } from "hono/cors";
 import { D1Database } from "@cloudflare/workers-types";
-import publicService from "./modules/lib/public";
-import jwtService from "./modules/jwt";
-import { createResponse } from "./helpers/createResponse";
 import { OpenAPIHono } from "@hono/zod-openapi";
-import validationErrorHook from "./hooks/validationError.hook";
-import { commonErrorResponse } from "./helpers/commonErrorHandler";
-import { sessionRouteDefinition } from "./routeDefinitions/sessions";
 import { Context } from "hono";
+import { createResponse, commonErrorResponse } from "./helpers";
 import dbService from "./modules/database";
+
 export interface Env {
   AUTH_KEY: string;
   DB: D1Database;
@@ -21,15 +16,16 @@ const app = new OpenAPIHono<{ Bindings: Env }>({
   defaultHook: (result, c) => {
     if (!result.success) {
       return c.json(
-        createResponse(
-          false,
-          "Validation error",
-          "VALIDATION_ERROR",
-          {
+        createResponse({
+          success: false,
+          message: "Validation error",
+          code: "VALIDATION_ERROR",
+          data: {
             errors: result.error.errors,
           },
-          400
-        )
+          status: 400,
+        }),
+        400
       );
     }
   },
@@ -53,55 +49,70 @@ app.use(
     maxAge: 86400,
   })
 );
-// app.use(
-//   "/v3/auth/*",
-//   bearerAuth({
-//     verifyToken: async (token, c) => {
-//       try {
-//         return await jwtService.verifyRefreshToken(token, c);
-//       } catch {
-//         return false;
-//       }
-//     },
-//   })
-// );
-const defaultHandler = (c) => {
-  return c.json({
-    message: "Hello World",
-  });
-};
 
-const createUserHandler = async (c: Context) => {
-  // parse user id from request body
+// creates a new user
+async function createUserHandler(c: Context) {
   const { id } = await c.req.json();
-
-  // insert new user into database
   const result = await dbService.query(c, "INSERT INTO users (id) VALUES (?)", [
     id,
   ]);
 
   if (result.success) {
-    // respond with success message
-    return c.json({ message: "user created successfully" }, 201);
-  } else {
-    // respond with error message
-    return c.json({ error: result.error }, 500);
+    return c.json(
+      createResponse({
+        success: true,
+        message: "user created successfully",
+        code: "USER_CREATED",
+        data: { id },
+        status: 201,
+      }),
+      201
+    );
   }
-};
 
-const getUserHandler = async (c: Context) => {
+  return c.json(
+    createResponse({
+      success: false,
+      message: String(result.error),
+      code: "USER_CREATION_ERROR",
+      status: 500,
+    }),
+    500
+  );
+}
+
+// retrieves a user
+async function getUserHandler(c: Context) {
   const userId = c.req.param("userId");
   const result = await dbService.query(c, "SELECT * FROM users WHERE id = ?", [
     userId,
   ]);
   if (result.success) {
-    return c.json(result.data);
-  } else {
-    return c.json({ error: result.error }, 500);
+    const row = (result.data as any)?.results?.[0];
+    return c.json(
+      createResponse({
+        success: true,
+        message: "user retrieved successfully",
+        code: "USER_RETRIEVED",
+        data: row,
+        status: 200,
+      }),
+      200
+    );
   }
-};
+  return c.json(
+    createResponse({
+      success: false,
+      message: String(result.error),
+      code: "USER_RETRIEVAL_ERROR",
+      status: 500,
+    }),
+    500
+  );
+}
 
-const updateUserHandler = async (c: Context) => {
+// updates a user
+async function updateUserHandler(c: Context) {
   const userId = c.req.param("userId");
   const { prefer_dark_mode } = await c.req.json();
   const result = await dbService.query(
@@ -109,30 +120,61 @@ const updateUserHandler = async (c: Context) => {
     "UPDATE users SET prefer_dark_mode = ? WHERE id = ?",
     [prefer_dark_mode, userId]
   );
-  if (result.success) {
-    return c.json({ message: "user updated successfully" }, 200);
-  } else {
-    return c.json({ error: result.error }, 500);
-  }
-};
 
-const deleteUserHandler = async (c: Context) => {
+  if (result.success) {
+    return c.json(
+      createResponse({
+        success: true,
+        message: "user updated successfully",
+        code: "USER_UPDATED",
+        status: 200,
+      }),
+      200
+    );
+  }
+
+  return c.json(
+    createResponse({
+      success: false,
+      message: String(result.error),
+      code: "USER_UPDATE_ERROR",
+      status: 500,
+    }),
+    500
+  );
+}
+
+// deletes a user
+async function deleteUserHandler(c: Context) {
   const userId = c.req.param("userId");
   const result = await dbService.query(c, "DELETE FROM users WHERE id = ?", [
     userId,
   ]);
   if (result.success) {
-    return c.json({ message: "user deleted successfully" }, 200);
-  } else {
-    return c.json({ error: result.error }, 500);
+    return c.json(
+      createResponse({
+        success: true,
+        message: "user deleted successfully",
+        code: "USER_DELETED",
+        status: 200,
+      }),
+      200
+    );
   }
-};
+  return c.json(
+    createResponse({
+      success: false,
+      message: String(result.error),
+      code: "USER_DELETE_ERROR",
+      status: 500,
+    }),
+    500
+  );
+}
 
-const createThreadHandler = async (c: Context) => {
-  // parse thread data from request body
+// creates a new thread
+async function createThreadHandler(c: Context) {
   const { id, user_id, title } = await c.req.json();
-
-  // insert new thread into database
   const result = await dbService.query(
     c,
     "INSERT INTO threads (id, user_id, title) VALUES (?, ?, ?)",
@@ -140,29 +182,64 @@ const createThreadHandler = async (c: Context) => {
   );
 
   if (result.success) {
-    // respond with success message
-    return c.json({ message: "thread created successfully" }, 201);
-  } else {
-    // respond with error message
-    return c.json({ error: result.error }, 500);
+    return c.json(
+      createResponse({
+        success: true,
+        message: "thread created successfully",
+        code: "THREAD_CREATED",
+        data: { id },
+        status: 201,
+      }),
+      201
+    );
   }
-};
+  return c.json(
+    createResponse({
+      success: false,
+      message: String(result.error),
+      code: "THREAD_CREATION_ERROR",
+      status: 500,
+    }),
+    500
+  );
+}
 
-const getThreadHandler = async (c: Context) => {
+// retrieves a thread
+async function getThreadHandler(c: Context) {
   const threadId = c.req.param("threadId");
   const result = await dbService.query(
     c,
     "SELECT * FROM threads WHERE id = ?",
     [threadId]
   );
-  if (result.success) {
-    return c.json(result.data);
-  } else {
-    return c.json({ error: result.error }, 500);
-  }
-};
 
-const updateThreadHandler = async (c: Context) => {
+  if (result.success) {
+    const row = (result.data as any)?.results?.[0];
+
+    return c.json(
+      createResponse({
+        success: true,
+        message: "thread retrieved successfully",
+        code: "THREAD_RETRIEVED",
+        data: row,
+        status: 200,
+      }),
+      200
+    );
+  }
+  return c.json(
+    createResponse({
+      success: false,
+      message: String(result.error),
+      code: "THREAD_RETRIEVAL_ERROR",
+      status: 500,
+    }),
+    500
+  );
+}
+
+// updates a thread
+async function updateThreadHandler(c: Context) {
   const threadId = c.req.param("threadId");
   const { title } = await c.req.json();
   const result = await dbService.query(
@@ -171,29 +248,58 @@ const updateThreadHandler = async (c: Context) => {
     [title, threadId]
   );
   if (result.success) {
-    return c.json({ message: "thread updated successfully" }, 200);
-  } else {
-    return c.json({ error: result.error }, 500);
+    return c.json(
+      createResponse({
+        success: true,
+        message: "thread updated successfully",
+        code: "THREAD_UPDATED",
+        status: 200,
+      }),
+      200
+    );
   }
-};
+  return c.json(
+    createResponse({
+      success: false,
+      message: String(result.error),
+      code: "THREAD_UPDATE_ERROR",
+      status: 500,
+    }),
+    500
+  );
+}
 
-const deleteThreadHandler = async (c: Context) => {
+// deletes a thread
+async function deleteThreadHandler(c: Context) {
   const threadId = c.req.param("threadId");
   const result = await dbService.query(c, "DELETE FROM threads WHERE id = ?", [
     threadId,
   ]);
   if (result.success) {
-    return c.json({ message: "thread deleted successfully" }, 200);
-  } else {
-    return c.json({ error: result.error }, 500);
+    return c.json(
+      createResponse({
+        success: true,
+        message: "thread deleted successfully",
+        code: "THREAD_DELETED",
+        status: 200,
+      }),
+      200
+    );
   }
-};
+  return c.json(
+    createResponse({
+      success: false,
+      message: String(result.error),
+      code: "THREAD_DELETE_ERROR",
+      status: 500,
+    }),
+    500
+  );
+}
 
-const createMessageHandler = async (c: Context) => {
-  // parse message data from request body
+// creates a new message
+async function createMessageHandler(c: Context) {
   const { id, user_id, text, role, thread_id } = await c.req.json();
-
-  // insert new message into database
   const result = await dbService.query(
     c,
     "INSERT INTO message (id, user_id, text, role, thread_id) VALUES (?, ?, ?, ?, ?)",
@@ -201,15 +307,30 @@ const createMessageHandler = async (c: Context) => {
   );
 
   if (result.success) {
-    // respond with success message
-    return c.json({ message: "message created successfully" }, 201);
-  } else {
-    // respond with error message
-    return c.json({ error: result.error }, 500);
+    return c.json(
+      createResponse({
+        success: true,
+        message: "message created successfully",
+        code: "MESSAGE_CREATED",
+        data: { id },
+        status: 201,
+      }),
+      201
+    );
   }
-};
+  return c.json(
+    createResponse({
+      success: false,
+      message: String(result.error),
+      code: "MESSAGE_CREATION_ERROR",
+      status: 500,
+    }),
+    500
+  );
+}
 
-const getMessageHandler = async (c: Context) => {
+// retrieves a message
+async function getMessageHandler(c: Context) {
   const messageId = c.req.param("messageId");
   const result = await dbService.query(
     c,
@@ -217,13 +338,31 @@ const getMessageHandler = async (c: Context) => {
     [messageId]
   );
   if (result.success) {
-    return c.json(result.data);
-  } else {
-    return c.json({ error: result.error }, 500);
+    const row = (result.data as any)?.results?.[0];
+    return c.json(
+      createResponse({
+        success: true,
+        message: "message retrieved successfully",
+        code: "MESSAGE_RETRIEVED",
+        data: row,
+        status: 200,
+      }),
+      200
+    );
   }
-};
+  return c.json(
+    createResponse({
+      success: false,
+      message: String(result.error),
+      code: "MESSAGE_RETRIEVAL_ERROR",
+      status: 500,
+    }),
+    500
+  );
+}
 
-const updateMessageHandler = async (c: Context) => {
+// updates a message
+async function updateMessageHandler(c: Context) {
   const messageId = c.req.param("messageId");
   const { text, role } = await c.req.json();
   const result = await dbService.query(
@@ -232,23 +371,54 @@ const updateMessageHandler = async (c: Context) => {
     [text, role, messageId]
   );
   if (result.success) {
-    return c.json({ message: "message updated successfully" }, 200);
-  } else {
-    return c.json({ error: result.error }, 500);
+    return c.json(
+      createResponse({
+        success: true,
+        message: "message updated successfully",
+        code: "MESSAGE_UPDATED",
+        status: 200,
+      }),
+      200
+    );
   }
-};
+  return c.json(
+    createResponse({
+      success: false,
+      message: String(result.error),
+      code: "MESSAGE_UPDATE_ERROR",
+      status: 500,
+    }),
+    500
+  );
+}
 
-const deleteMessageHandler = async (c: Context) => {
+// deletes a message
+async function deleteMessageHandler(c: Context) {
   const messageId = c.req.param("messageId");
   const result = await dbService.query(c, "DELETE FROM message WHERE id = ?", [
     messageId,
   ]);
   if (result.success) {
-    return c.json({ message: "message deleted successfully" }, 200);
-  } else {
-    return c.json({ error: result.error }, 500);
+    return c.json(
+      createResponse({
+        success: true,
+        message: "message deleted successfully",
+        code: "MESSAGE_DELETED",
+        status: 200,
+      }),
+      200
+    );
   }
-};
+  return c.json(
+    createResponse({
+      success: false,
+      message: String(result.error),
+      code: "MESSAGE_DELETE_ERROR",
+      status: 500,
+    }),
+    500
+  );
+}
 
 app.post("/api/v1/users", createUserHandler);
 app.get("/api/v1/users/:userId", getUserHandler);
@@ -264,6 +434,7 @@ app.post("/api/v1/messages", createMessageHandler);
 app.get("/api/v1/messages/:messageId", getMessageHandler);
 app.put("/api/v1/messages/:messageId", updateMessageHandler);
 app.delete("/api/v1/messages/:messageId", deleteMessageHandler);
+
 // app.openapi(sessionRouteDefinition, publicService.routes.signUpRoute, validationErrorHook);
 
 app.doc("/api/v1/documentation", {

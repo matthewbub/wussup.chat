@@ -8,7 +8,6 @@ describe("Thread Endpoints", () => {
   let userId: string;
   let threadId: string;
 
-  // creates a user before running thread tests
   beforeAll(async () => {
     const fakeUser = createFakeUser();
     const response = await fetch(`${API_URL}/api/v1/users`, {
@@ -19,10 +18,11 @@ describe("Thread Endpoints", () => {
       body: JSON.stringify({ id: fakeUser.id }),
     });
     expect(response.status).toBe(201);
+    const data = await response.json();
+    expect(data.success).toBe(true);
     userId = fakeUser.id;
   });
 
-  // creates a new thread referencing the user
   it("should create a new thread", async () => {
     const newThread = {
       id: crypto.randomUUID(),
@@ -39,26 +39,28 @@ describe("Thread Endpoints", () => {
     });
 
     expect(response.status).toBe(201);
-    const data: { message: string } = await response.json();
+    const data = await response.json();
+    expect(data.success).toBe(true);
+    expect(data.code).toBe("THREAD_CREATED");
     expect(data.message).toBe("thread created successfully");
     threadId = newThread.id;
   });
 
-  // retrieves the created thread
   it("should retrieve the created thread", async () => {
     const response = await fetch(`${API_URL}/api/v1/threads/${threadId}`, {
       method: "GET",
     });
     expect(response.status).toBe(200);
+    const data: { success: boolean; code: string; message: string; data: any } =
+      await response.json();
 
-    // the endpoint implementation returns an array of rows with key "results"
-    // or a single object; adjust expectations based on your actual response shape
-    const data: { results?: { id: string }[] } | any = await response.json();
-    const firstThread = data.results?.[0] || data?.[0] || data;
-    expect(firstThread?.id).toBe(threadId);
+    console.log("data", data);
+    expect(data.success).toBe(true);
+    expect(data.code).toBe("THREAD_RETRIEVED");
+    const retrievedThread = Array.isArray(data.data) ? data.data[0] : data.data;
+    expect(retrievedThread.id).toBe(threadId);
   });
 
-  // updates the thread
   it("should update the thread's title", async () => {
     const updatedData = { title: "my updated thread title" };
     const response = await fetch(`${API_URL}/api/v1/threads/${threadId}`, {
@@ -70,33 +72,33 @@ describe("Thread Endpoints", () => {
     });
 
     expect(response.status).toBe(200);
-    const data: { message: string } = await response.json();
+    const data = await response.json();
+    expect(data.success).toBe(true);
+    expect(data.code).toBe("THREAD_UPDATED");
     expect(data.message).toBe("thread updated successfully");
   });
 
-  // deletes the thread
   it("should delete the thread", async () => {
     const response = await fetch(`${API_URL}/api/v1/threads/${threadId}`, {
       method: "DELETE",
     });
 
     expect(response.status).toBe(200);
-    const data: { message: string } = await response.json();
+    const data = await response.json();
+    expect(data.success).toBe(true);
+    expect(data.code).toBe("THREAD_DELETED");
     expect(data.message).toBe("thread deleted successfully");
   });
 
-  // attempts to retrieve the deleted thread
   it("should return 200 for a deleted thread (or handle appropriately)", async () => {
     const response = await fetch(`${API_URL}/api/v1/threads/${threadId}`, {
       method: "GET",
     });
-
-    // depending on how your code handles requests for deleted resources,
-    // you may expect 404 or 200 with an empty result set
     expect([200, 404]).toContain(response.status);
+    // if 200, you might expect an empty array or object
+    // or if you prefer 404, that is also plausible
   });
 
-  // cleans up the user (optional, if desired)
   afterAll(async () => {
     const response = await fetch(`${API_URL}/api/v1/users/${userId}`, {
       method: "DELETE",

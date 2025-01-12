@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, afterAll } from "vitest";
+import { describe, it, expect } from "vitest";
 import constants from "./constants";
 import { createFakeUser } from "./helpers";
 
@@ -14,11 +14,13 @@ describe("User Endpoints", () => {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(fakeUser),
+      body: JSON.stringify({ id: fakeUser.id }),
     });
 
     expect(response.status).toBe(201);
-    const data: { message: string } = await response.json();
+    const data = await response.json();
+    expect(data.success).toBe(true);
+    expect(data.code).toBe("USER_CREATED");
     expect(data.message).toBe("user created successfully");
     userId = fakeUser.id;
   });
@@ -29,8 +31,18 @@ describe("User Endpoints", () => {
     });
 
     expect(response.status).toBe(200);
-    const data: { results: { id: string }[] } = await response.json();
-    expect(data.results[0].id).toBe(userId);
+    const data: {
+      success: boolean;
+      code: string;
+      message: string;
+      data: any;
+    } = await response.json();
+
+    console.log("data", data);
+    expect(data.success).toBe(true);
+    expect(data.code).toBe("USER_RETRIEVED");
+    const retrievedUser = Array.isArray(data.data) ? data.data[0] : data.data;
+    expect(retrievedUser.id).toBe(userId);
   });
 
   it("should update the user's preferences", async () => {
@@ -44,7 +56,15 @@ describe("User Endpoints", () => {
     });
 
     expect(response.status).toBe(200);
-    const data: { message: string } = await response.json();
+    const data: {
+      success: boolean;
+      code: string;
+      message: string;
+      data: any;
+    } = await response.json();
+
+    expect(data.success).toBe(true);
+    expect(data.code).toBe("USER_UPDATED");
     expect(data.message).toBe("user updated successfully");
   });
 
@@ -54,7 +74,9 @@ describe("User Endpoints", () => {
     });
 
     expect(response.status).toBe(200);
-    const data: { message: string } = await response.json();
+    const data = await response.json();
+    expect(data.success).toBe(true);
+    expect(data.code).toBe("USER_DELETED");
     expect(data.message).toBe("user deleted successfully");
   });
 
@@ -64,7 +86,8 @@ describe("User Endpoints", () => {
     });
 
     expect(response.status).toBe(200);
-    const data: { error?: string } = await response.json();
-    expect(data?.error).toBeUndefined();
+    const data = await response.json();
+    expect(data.success).toBe(true);
+    expect(data.code).toBe("USER_RETRIEVED");
   });
 });

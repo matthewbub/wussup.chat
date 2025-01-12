@@ -9,7 +9,6 @@ describe("Message Endpoints", () => {
   let threadId: string;
   let messageId: string;
 
-  // creates a user and thread before running message tests
   beforeAll(async () => {
     // create user
     const fakeUser = createFakeUser();
@@ -21,6 +20,8 @@ describe("Message Endpoints", () => {
       body: JSON.stringify({ id: fakeUser.id }),
     });
     expect(userResponse.status).toBe(201);
+    const userData = await userResponse.json();
+    expect(userData.success).toBe(true);
     userId = fakeUser.id;
 
     // create thread (requires user)
@@ -37,10 +38,11 @@ describe("Message Endpoints", () => {
       body: JSON.stringify(newThread),
     });
     expect(threadResponse.status).toBe(201);
+    const threadData = await threadResponse.json();
+    expect(threadData.success).toBe(true);
     threadId = newThread.id;
   });
 
-  // creates a new message referencing the user and thread
   it("should create a new message", async () => {
     const newMessage = {
       id: crypto.randomUUID(),
@@ -59,25 +61,32 @@ describe("Message Endpoints", () => {
     });
 
     expect(response.status).toBe(201);
-    const data: { message: string } = await response.json();
+    const data = await response.json();
+    expect(data.success).toBe(true);
+    expect(data.code).toBe("MESSAGE_CREATED");
     expect(data.message).toBe("message created successfully");
     messageId = newMessage.id;
   });
 
-  // retrieves the created message
   it("should retrieve the created message", async () => {
     const response = await fetch(`${API_URL}/api/v1/messages/${messageId}`, {
       method: "GET",
     });
     expect(response.status).toBe(200);
 
-    // check shape of returned data based on your actual implementation
-    const data: { results?: { id: string }[] } | any = await response.json();
-    const firstMessage = data.results?.[0] || data?.[0] || data;
-    expect(firstMessage?.id).toBe(messageId);
+    const data: {
+      success: boolean;
+      code: string;
+      message: string;
+      data: any;
+    } = await response.json();
+
+    expect(data.success).toBe(true);
+    expect(data.code).toBe("MESSAGE_RETRIEVED");
+    const firstMessage = Array.isArray(data.data) ? data.data[0] : data.data;
+    expect(firstMessage.id).toBe(messageId);
   });
 
-  // updates the message
   it("should update the message text and role", async () => {
     const updatedData = { text: "updated message text", role: "system" };
     const response = await fetch(`${API_URL}/api/v1/messages/${messageId}`, {
@@ -89,31 +98,32 @@ describe("Message Endpoints", () => {
     });
 
     expect(response.status).toBe(200);
-    const data: { message: string } = await response.json();
+    const data = await response.json();
+    expect(data.success).toBe(true);
+    expect(data.code).toBe("MESSAGE_UPDATED");
     expect(data.message).toBe("message updated successfully");
   });
 
-  // deletes the message
   it("should delete the message", async () => {
     const response = await fetch(`${API_URL}/api/v1/messages/${messageId}`, {
       method: "DELETE",
     });
 
     expect(response.status).toBe(200);
-    const data: { message: string } = await response.json();
+    const data = await response.json();
+    expect(data.success).toBe(true);
+    expect(data.code).toBe("MESSAGE_DELETED");
     expect(data.message).toBe("message deleted successfully");
   });
 
-  // attempts to retrieve the deleted message
   it("should return 200 for a deleted message (or handle appropriately)", async () => {
     const response = await fetch(`${API_URL}/api/v1/messages/${messageId}`, {
       method: "GET",
     });
-    // adjust expectation based on your actual implementation
     expect([200, 404]).toContain(response.status);
+    // adapt the checks below if you expect 404 or an empty result
   });
 
-  // cleans up user and thread (optional, if desired)
   afterAll(async () => {
     // delete thread
     const threadResponse = await fetch(
