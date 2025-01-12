@@ -1,5 +1,5 @@
 import Cookies from "js-cookie";
-import { API_CONSTANTS } from "@/constants/api";
+import { API_CONSTANTS, CHAT_SERVICE_API_CONSTANTS } from "@/constants/api";
 
 // auth service to handle authentication state and API calls
 export const authService = {
@@ -24,7 +24,52 @@ export const authService = {
       }
 
       const data = await response.json();
-      return data.success;
+
+      if (data.success && data.data?.id) {
+        // attempt to create user in the chat app if they don't exist
+        try {
+          const userCheckResponse = await fetch(
+            CHAT_SERVICE_API_CONSTANTS.BASE_URL +
+              CHAT_SERVICE_API_CONSTANTS.ENDPOINTS.GET_USER_V1.replace(
+                ":userId",
+                data.data.id
+              ),
+            {
+              method: "GET",
+              headers: {
+                "Content-Type": "application/json",
+              },
+            }
+          );
+
+          if (userCheckResponse.status === 200) {
+            // user already exists, skip creation
+          } else {
+            // user doesn't exist, so create the user
+            await fetch(
+              CHAT_SERVICE_API_CONSTANTS.BASE_URL +
+                CHAT_SERVICE_API_CONSTANTS.ENDPOINTS.CREATE_USER_V1,
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  userId: data.data.id,
+                }),
+              }
+            );
+          }
+        } catch (chatServiceError) {
+          console.error(
+            "Failed to create or check user in chat service:",
+            chatServiceError
+          );
+        }
+        return true;
+      }
+
+      return false;
     } catch (error) {
       console.error(error);
       return false;

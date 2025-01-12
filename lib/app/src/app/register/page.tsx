@@ -1,12 +1,11 @@
-import { Registration, PublicHeader } from "@ninembs-studio/system-ui";
-import { useRouter } from "next/navigation";
+import { PublicHeader } from "@/components/system/PublicHeader";
+import { Registration } from "@/components/system/Registration";
 
 export default function RegisterPage() {
-  const router = useRouter();
   return (
     <div>
       <PublicHeader />
-      <Registration history={router} />
+      <Registration />
     </div>
   );
 }
