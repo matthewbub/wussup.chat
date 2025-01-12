@@ -1,13 +1,12 @@
 "use client";
-import { Login, PublicHeader } from "@ninembs-studio/system-ui";
-import { useRouter } from "next/navigation";
+import { PublicHeader } from "@/components/system/PublicHeader";
+import { Login } from "@/components/system/Login";
 
 export default function LoginPage() {
-  const router = useRouter();
   return (
     <div>
       <PublicHeader />
-      <Login history={router} />
+      <Login />
     </div>
   );
 }

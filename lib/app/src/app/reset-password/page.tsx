@@ -1,22 +1,11 @@
-"use client";
+import { Suspense } from "react";
+import ResetPasswordClient from "./ResetPasswordClient";
 
-import { useSearchParams, useRouter } from "next/navigation";
-import { Card } from "@/components/ui/Card";
-import { ResetPassword } from "@ninembs-studio/system-ui";
-
+// this is the server component that wraps our client component in a suspense boundary
 export default function ResetPasswordPage() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const token = searchParams.get("token");
-  const appId = searchParams.get("appId");
-
-  if (!token || !appId) {
-    return (
-      <Card className="p-6">
-        <p className="text-red-500">invalid reset password link</p>
-      </Card>
-    );
-  }
-
-  return <ResetPassword token={token} appId={appId} history={router} />;
+  return (
+    <Suspense fallback={<div className="text-white">loading...</div>}>
+      <ResetPasswordClient />
+    </Suspense>
+  );
 }
