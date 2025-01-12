@@ -141,24 +141,30 @@ export function ChatHistory() {
         {/* Message Input */}
         <div className="p-2 sm:p-4 border-t border-base-300 bg-base-200/50 backdrop-blur-sm">
           <form onSubmit={handleAddMessage} className="flex gap-2 items-end">
-            <textarea
-              value={newMessage}
-              onChange={(e) => {
-                setNewMessage(e.target.value);
-                e.target.style.height = "inherit";
-                e.target.style.height = `${e.target.scrollHeight}px`;
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  handleAddMessage(e);
-                }
-              }}
-              rows={1}
-              placeholder="Type a message..."
-              className="textarea flex-1 min-h-[48px] max-h-[200px] 
+            <div>
+              <textarea
+                value={newMessage}
+                onChange={(e) => {
+                  setNewMessage(e.target.value);
+                  e.target.style.height = "inherit";
+                  e.target.style.height = `${e.target.scrollHeight}px`;
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    handleAddMessage(e);
+                  }
+                }}
+                rows={1}
+                placeholder="Type a message..."
+                className="textarea flex-1 min-h-[48px] max-h-[200px] 
                 text-sm sm:text-base resize-none"
-            />
+              />
+              <select>
+                <option value="gpt-4o">GPT-4o</option>
+                <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+              </select>
+            </div>
             <button type="submit" className="btn-primary">
               Send
             </button>
