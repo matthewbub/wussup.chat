@@ -22,6 +22,13 @@ export type User = {
     | null;
 };
 
+export type CommonResponse = {
+  success: boolean;
+  code: string;
+  message: string;
+  data: any;
+};
+
 // creates a fake user with randomized but valid data matching the schema
 export function createFakeUser(overrides: Partial<User> = {}): User {
   return {

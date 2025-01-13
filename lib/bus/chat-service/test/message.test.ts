@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import constants from "./constants";
-import { createFakeUser } from "./helpers";
+import { CommonResponse } from "./helpers";
 
 const API_URL = constants.API_URL;
 
@@ -11,22 +11,22 @@ describe("Message Endpoints", () => {
 
   beforeAll(async () => {
     // create user
-    const fakeUser = createFakeUser();
     const userResponse = await fetch(`${API_URL}/api/v1/users`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ id: fakeUser.id }),
+      body: JSON.stringify({}),
     });
     expect(userResponse.status).toBe(201);
-    const userData = await userResponse.json();
+    const userData: CommonResponse = await userResponse.json();
     expect(userData.success).toBe(true);
-    userId = fakeUser.id;
+    expect(userData.code).toBe("USER_CREATED");
+    expect(userData.message).toBe("user created successfully");
+    userId = userData.data.id;
 
     // create thread (requires user)
     const newThread = {
-      id: crypto.randomUUID(),
       user_id: userId,
       title: "message thread",
     };
@@ -38,14 +38,15 @@ describe("Message Endpoints", () => {
       body: JSON.stringify(newThread),
     });
     expect(threadResponse.status).toBe(201);
-    const threadData = await threadResponse.json();
+    const threadData: CommonResponse = await threadResponse.json();
     expect(threadData.success).toBe(true);
-    threadId = newThread.id;
+    expect(threadData.code).toBe("THREAD_CREATED");
+    expect(threadData.message).toBe("thread created successfully");
+    threadId = threadData.data.id;
   });
 
   it("should create a new message", async () => {
     const newMessage = {
-      id: crypto.randomUUID(),
       user_id: userId,
       text: "hello world",
       role: "user",
@@ -61,11 +62,12 @@ describe("Message Endpoints", () => {
     });
 
     expect(response.status).toBe(201);
-    const data = await response.json();
+    const data: CommonResponse = await response.json();
     expect(data.success).toBe(true);
     expect(data.code).toBe("MESSAGE_CREATED");
     expect(data.message).toBe("message created successfully");
-    messageId = newMessage.id;
+
+    messageId = data.data.id;
   });
 
   it("should retrieve the created message", async () => {
@@ -74,12 +76,7 @@ describe("Message Endpoints", () => {
     });
     expect(response.status).toBe(200);
 
-    const data: {
-      success: boolean;
-      code: string;
-      message: string;
-      data: any;
-    } = await response.json();
+    const data: CommonResponse = await response.json();
 
     expect(data.success).toBe(true);
     expect(data.code).toBe("MESSAGE_RETRIEVED");
@@ -98,7 +95,7 @@ describe("Message Endpoints", () => {
     });
 
     expect(response.status).toBe(200);
-    const data = await response.json();
+    const data: CommonResponse = await response.json();
     expect(data.success).toBe(true);
     expect(data.code).toBe("MESSAGE_UPDATED");
     expect(data.message).toBe("message updated successfully");
@@ -110,7 +107,7 @@ describe("Message Endpoints", () => {
     });
 
     expect(response.status).toBe(200);
-    const data = await response.json();
+    const data: CommonResponse = await response.json();
     expect(data.success).toBe(true);
     expect(data.code).toBe("MESSAGE_DELETED");
     expect(data.message).toBe("message deleted successfully");
@@ -121,7 +118,6 @@ describe("Message Endpoints", () => {
       method: "GET",
     });
     expect([200, 404]).toContain(response.status);
-    // adapt the checks below if you expect 404 or an empty result
   });
 
   afterAll(async () => {

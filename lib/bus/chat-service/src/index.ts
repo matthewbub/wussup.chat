@@ -52,9 +52,12 @@ app.use(
 
 // creates a new user
 async function createUserHandler(c: Context) {
-  const { id } = await c.req.json();
+  // all code comments are in lowercase
+  // generate user id on the server
+  const newUserId = crypto.randomUUID();
+
   const result = await dbService.query(c, "INSERT INTO users (id) VALUES (?)", [
-    id,
+    newUserId,
   ]);
 
   if (result.success) {
@@ -63,7 +66,7 @@ async function createUserHandler(c: Context) {
         success: true,
         message: "user created successfully",
         code: "USER_CREATED",
-        data: { id },
+        data: { id: newUserId },
         status: 201,
       }),
       201
@@ -174,11 +177,15 @@ async function deleteUserHandler(c: Context) {
 
 // creates a new thread
 async function createThreadHandler(c: Context) {
-  const { id, user_id, title } = await c.req.json();
+  // parse out body data except id
+  const { user_id, title } = await c.req.json();
+  // generate the id on the server
+  const newThreadId = crypto.randomUUID();
+
   const result = await dbService.query(
     c,
     "INSERT INTO threads (id, user_id, title) VALUES (?, ?, ?)",
-    [id, user_id, title]
+    [newThreadId, user_id, title]
   );
 
   if (result.success) {
@@ -187,7 +194,7 @@ async function createThreadHandler(c: Context) {
         success: true,
         message: "thread created successfully",
         code: "THREAD_CREATED",
-        data: { id },
+        data: { id: newThreadId },
         status: 201,
       }),
       201
@@ -299,11 +306,15 @@ async function deleteThreadHandler(c: Context) {
 
 // creates a new message
 async function createMessageHandler(c: Context) {
-  const { id, user_id, text, role, thread_id } = await c.req.json();
+  // parse out body data except id
+  const { user_id, text, role, thread_id } = await c.req.json();
+  // generate the id on the server
+  const newMessageId = crypto.randomUUID();
+
   const result = await dbService.query(
     c,
     "INSERT INTO message (id, user_id, text, role, thread_id) VALUES (?, ?, ?, ?, ?)",
-    [id, user_id, text, role, thread_id]
+    [newMessageId, user_id, text, role, thread_id]
   );
 
   if (result.success) {
@@ -312,7 +323,7 @@ async function createMessageHandler(c: Context) {
         success: true,
         message: "message created successfully",
         code: "MESSAGE_CREATED",
-        data: { id },
+        data: { id: newMessageId },
         status: 201,
       }),
       201

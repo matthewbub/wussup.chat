@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import constants from "./constants";
-import { createFakeUser } from "./helpers";
+import { CommonResponse, createFakeUser } from "./helpers";
 
 const API_URL = constants.API_URL;
 
@@ -15,17 +15,18 @@ describe("Thread Endpoints", () => {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ id: fakeUser.id }),
+      body: JSON.stringify({}),
     });
     expect(response.status).toBe(201);
-    const data = await response.json();
+    const data: CommonResponse = await response.json();
     expect(data.success).toBe(true);
-    userId = fakeUser.id;
+    expect(data.code).toBe("USER_CREATED");
+    expect(data.message).toBe("user created successfully");
+    userId = data.data.id;
   });
 
   it("should create a new thread", async () => {
     const newThread = {
-      id: crypto.randomUUID(),
       user_id: userId,
       title: "my first thread",
     };
@@ -39,11 +40,11 @@ describe("Thread Endpoints", () => {
     });
 
     expect(response.status).toBe(201);
-    const data = await response.json();
+    const data: CommonResponse = await response.json();
     expect(data.success).toBe(true);
     expect(data.code).toBe("THREAD_CREATED");
     expect(data.message).toBe("thread created successfully");
-    threadId = newThread.id;
+    threadId = data.data.id;
   });
 
   it("should retrieve the created thread", async () => {
@@ -51,8 +52,7 @@ describe("Thread Endpoints", () => {
       method: "GET",
     });
     expect(response.status).toBe(200);
-    const data: { success: boolean; code: string; message: string; data: any } =
-      await response.json();
+    const data: CommonResponse = await response.json();
 
     console.log("data", data);
     expect(data.success).toBe(true);
@@ -72,7 +72,7 @@ describe("Thread Endpoints", () => {
     });
 
     expect(response.status).toBe(200);
-    const data = await response.json();
+    const data: CommonResponse = await response.json();
     expect(data.success).toBe(true);
     expect(data.code).toBe("THREAD_UPDATED");
     expect(data.message).toBe("thread updated successfully");
@@ -84,7 +84,7 @@ describe("Thread Endpoints", () => {
     });
 
     expect(response.status).toBe(200);
-    const data = await response.json();
+    const data: CommonResponse = await response.json();
     expect(data.success).toBe(true);
     expect(data.code).toBe("THREAD_DELETED");
     expect(data.message).toBe("thread deleted successfully");
