@@ -1,54 +1,19 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import constants from "./constants";
 import { CommonResponse } from "./helpers";
+import { faker } from "@faker-js/faker";
 
 const API_URL = constants.API_URL;
 
 describe("Message Endpoints", () => {
-  let userId: string;
-  let threadId: string;
+  const userId = constants.USER_ID;
+  const threadId = faker.string.uuid();
   let messageId: string;
-
-  beforeAll(async () => {
-    // create user
-    const userResponse = await fetch(`${API_URL}/api/v1/users`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({}),
-    });
-    expect(userResponse.status).toBe(201);
-    const userData: CommonResponse = await userResponse.json();
-    expect(userData.success).toBe(true);
-    expect(userData.code).toBe("USER_CREATED");
-    expect(userData.message).toBe("user created successfully");
-    userId = userData.data.id;
-
-    // create thread (requires user)
-    const newThread = {
-      user_id: userId,
-      title: "message thread",
-    };
-    const threadResponse = await fetch(`${API_URL}/api/v1/threads`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(newThread),
-    });
-    expect(threadResponse.status).toBe(201);
-    const threadData: CommonResponse = await threadResponse.json();
-    expect(threadData.success).toBe(true);
-    expect(threadData.code).toBe("THREAD_CREATED");
-    expect(threadData.message).toBe("thread created successfully");
-    threadId = threadData.data.id;
-  });
 
   it("should create a new message", async () => {
     const newMessage = {
       user_id: userId,
-      text: "hello world",
+      text: faker.lorem.sentence(),
       role: "user",
       thread_id: threadId,
     };

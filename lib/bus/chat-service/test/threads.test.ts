@@ -1,29 +1,13 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import constants from "./constants";
-import { CommonResponse, createFakeUser } from "./helpers";
+import { CommonResponse } from "./helpers";
+import { faker } from "@faker-js/faker";
 
 const API_URL = constants.API_URL;
 
 describe("Thread Endpoints", () => {
-  let userId: string;
-  let threadId: string;
-
-  beforeAll(async () => {
-    const fakeUser = createFakeUser();
-    const response = await fetch(`${API_URL}/api/v1/users`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({}),
-    });
-    expect(response.status).toBe(201);
-    const data: CommonResponse = await response.json();
-    expect(data.success).toBe(true);
-    expect(data.code).toBe("USER_CREATED");
-    expect(data.message).toBe("user created successfully");
-    userId = data.data.id;
-  });
+  const userId = constants.USER_ID;
+  const threadId = faker.string.uuid();
 
   it("should create a new thread", async () => {
     const newThread = {
@@ -44,7 +28,6 @@ describe("Thread Endpoints", () => {
     expect(data.success).toBe(true);
     expect(data.code).toBe("THREAD_CREATED");
     expect(data.message).toBe("thread created successfully");
-    threadId = data.data.id;
   });
 
   it("should retrieve the created thread", async () => {
@@ -54,7 +37,7 @@ describe("Thread Endpoints", () => {
     expect(response.status).toBe(200);
     const data: CommonResponse = await response.json();
 
-    console.log("data", data);
+    console.log("DEBUGGER", data);
     expect(data.success).toBe(true);
     expect(data.code).toBe("THREAD_RETRIEVED");
     const retrievedThread = Array.isArray(data.data) ? data.data[0] : data.data;

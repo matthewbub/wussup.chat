@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { SERVICE_URLS } from "../constants/api";
 
 interface Message {
   id: string;
@@ -14,209 +15,177 @@ interface ChatSession {
   createdAt: Date;
 }
 
-// Helper functions for localStorage
-const SESSIONS_KEY = "chat_sessions";
-const CURRENT_SESSION_KEY = "current_session_id";
-
-const getStoredSessions = (): ChatSession[] => {
-  if (typeof window === "undefined") return [];
-
-  const stored = localStorage.getItem(SESSIONS_KEY);
-  if (!stored) return [];
-
-  try {
-    return JSON.parse(stored, (key, value) => {
-      if (key === "timestamp" || key === "createdAt") {
-        return new Date(value);
-      }
-      return value;
-    });
-  } catch {
-    return [];
-  }
-};
-
-const getCurrentSessionId = (): string | null => {
-  if (typeof window === "undefined") return null;
-  return localStorage.getItem(CURRENT_SESSION_KEY);
-};
-
 interface ChatStore {
   sessions: ChatSession[];
   currentSessionId: string | null;
-  createNewSession: () => void;
+  createNewSession: (userId?: string) => Promise<void>;
   setCurrentSession: (sessionId: string) => void;
-  addMessage: (text: string) => Promise<void>;
-  deleteSession: (sessionId: string) => void;
+  addMessage: (text: string, userId?: string) => Promise<void>;
+  deleteSession: (sessionId: string, userId?: string) => Promise<void>;
 }
 
 export const useChatStore = create<ChatStore>()((set, get) => ({
   sessions: [],
   currentSessionId: null,
 
-  createNewSession: () => {
-    const newSession = {
-      id: crypto.randomUUID(),
-      title: "New Chat",
-      messages: [],
-      createdAt: new Date(),
-    };
+  /**
+   * Creates a new chat session by making an API call.
+   */
+  createNewSession: async (userId) => {
+    try {
+      const response = await fetch(SERVICE_URLS.CREATE_THREAD, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ user_id: userId, title: "New Chat" }),
+      });
+      const data = await response.json();
 
-    set((state) => {
-      const newSessions = [newSession, ...state.sessions];
-      if (typeof window !== "undefined") {
-        localStorage.setItem(SESSIONS_KEY, JSON.stringify(newSessions));
-        localStorage.setItem(CURRENT_SESSION_KEY, newSession.id);
-      }
-      return {
-        sessions: newSessions,
-        currentSessionId: newSession.id,
+      if (!response.ok) throw new Error(data.message);
+
+      const newSession: ChatSession = {
+        id: data.data.id,
+        title: "New Chat",
+        messages: [],
+        createdAt: new Date(),
       };
-    });
+
+      set((state) => ({
+        sessions: [newSession, ...state.sessions],
+        currentSessionId: newSession.id,
+      }));
+    } catch (error) {
+      console.error("Error creating a new session:", error);
+      throw error;
+    }
   },
 
+  /**
+   * Sets the current session.
+   */
   setCurrentSession: (sessionId) => {
-    if (typeof window !== "undefined") {
-      localStorage.setItem(CURRENT_SESSION_KEY, sessionId);
-    }
     set({ currentSessionId: sessionId });
   },
 
-  deleteSession: (sessionId) => {
-    set((state) => {
-      const newSessions = state.sessions.filter((s) => s.id !== sessionId);
-      if (typeof window !== "undefined") {
-        localStorage.setItem(SESSIONS_KEY, JSON.stringify(newSessions));
-      }
+  /**
+   * Deletes a session via API and updates the local state.
+   */
+  deleteSession: async (sessionId, userId) => {
+    try {
+      const deleteUrl = SERVICE_URLS.DELETE_THREAD.replace(
+        ":threadId",
+        sessionId
+      );
+      const response = await fetch(deleteUrl, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ user_id: userId }),
+      });
 
-      const newState = {
-        sessions: newSessions,
+      if (!response.ok) throw new Error("Error deleting session");
+
+      set((state) => ({
+        sessions: state.sessions.filter((s) => s.id !== sessionId),
         currentSessionId:
-          state.currentSessionId === sessionId
-            ? newSessions[0]?.id ?? null
-            : state.currentSessionId,
-      };
-
-      if (
-        state.currentSessionId === sessionId &&
-        typeof window !== "undefined"
-      ) {
-        localStorage.setItem(
-          CURRENT_SESSION_KEY,
-          newState.currentSessionId ?? ""
-        );
-      }
-
-      return newState;
-    });
+          state.currentSessionId === sessionId ? null : state.currentSessionId,
+      }));
+    } catch (error) {
+      console.error("Error deleting session:", error);
+      throw error;
+    }
   },
 
-  addMessage: async (text: string) => {
-    const { currentSessionId } = get();
+  /**
+   * Adds a message to the current session and fetches a bot response.
+   */
+  addMessage: async (text, userId) => {
+    let currentSessionId = get().currentSessionId;
+
     if (!currentSessionId) {
-      get().createNewSession();
+      await get().createNewSession(userId);
+      currentSessionId = get().currentSessionId;
     }
 
-    const userMessage = {
+    const newMessage: Message = {
       id: crypto.randomUUID(),
       text,
       isUser: true,
       timestamp: new Date(),
     };
 
-    // Update session messages
-    set((state) => {
-      const updatedSessions = state.sessions.map((session) =>
-        session.id === (currentSessionId ?? get().currentSessionId)
-          ? {
-              ...session,
-              messages: [...session.messages, userMessage],
-              title:
-                session.messages.length === 0
-                  ? text.slice(0, 30)
-                  : session.title,
-            }
-          : session
-      );
-
-      if (typeof window !== "undefined") {
-        localStorage.setItem(SESSIONS_KEY, JSON.stringify(updatedSessions));
-      }
-      return { sessions: updatedSessions };
-    });
-
-    // Send to API and handle bot response
-    const currentSession = get().sessions.find(
-      (s) => s.id === get().currentSessionId
-    );
-
-    const response = await fetch("/api/chat", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        message: text,
-        history: currentSession?.messages ?? [],
-      }),
-    });
-
-    const reader = response.body?.getReader();
-    const decoder = new TextDecoder("utf-8");
-    let done = false;
-    const botMessage = {
-      id: crypto.randomUUID(),
-      text: "",
-      isUser: false,
-      timestamp: new Date(),
-    };
-
-    // Add initial bot message
-    set((state) => {
-      const updatedSessions = state.sessions.map((session) =>
+    // update state with the new user message
+    set((state) => ({
+      sessions: state.sessions.map((session) =>
         session.id === get().currentSessionId
-          ? { ...session, messages: [...session.messages, botMessage] }
+          ? { ...session, messages: [...session.messages, newMessage] }
           : session
-      );
+      ),
+    }));
 
-      if (typeof window !== "undefined") {
-        localStorage.setItem(SESSIONS_KEY, JSON.stringify(updatedSessions));
-      }
-      return { sessions: updatedSessions };
-    });
+    try {
+      // send the message to your backend
+      await fetch(SERVICE_URLS.CREATE_MESSAGE, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          user_id: userId,
+          text: newMessage.text,
+          role: "user",
+          thread_id: currentSessionId,
+        }),
+      });
 
-    // Stream response
-    while (!done) {
-      if (!reader) break;
-      const { value, done: doneReading } = await reader.read();
-      done = doneReading;
-      const chunk = decoder.decode(value, { stream: true });
+      // retrieve the bot response
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: text,
+          history:
+            get()
+              .sessions.find((s) => s.id === currentSessionId)
+              ?.messages.map((msg) => msg.text) ?? [],
+        }),
+      });
+
+      const botResponse = await response.text();
+      console.log("Raw response:", botResponse);
+
+      const botMessage: Message = {
+        id: crypto.randomUUID(),
+        text: botResponse,
+        isUser: false,
+        timestamp: new Date(),
+      };
+
+      // Add debugging before state update
+      console.log("Current state before update:", get().sessions);
+      console.log("Bot message to add:", botMessage);
+      console.log("Target session ID:", currentSessionId);
 
       set((state) => {
-        const updatedSessions = state.sessions.map((session) =>
-          session.id === get().currentSessionId
-            ? {
-                ...session,
-                messages: session.messages.map((msg) =>
-                  msg.id === botMessage.id
-                    ? { ...msg, text: msg.text + chunk }
-                    : msg
-                ),
-              }
-            : session
+        const targetSession = state.sessions.find(
+          (s) => s.id === currentSessionId
         );
+        console.log("Found target session:", targetSession);
 
-        if (typeof window !== "undefined") {
-          localStorage.setItem(SESSIONS_KEY, JSON.stringify(updatedSessions));
-        }
+        const updatedSessions = state.sessions.map((session) => {
+          if (session.id === currentSessionId) {
+            const updatedSession = {
+              ...session,
+              messages: [...session.messages, botMessage],
+            };
+            console.log("Updated session messages:", updatedSession.messages);
+            return updatedSession;
+          }
+          return session;
+        });
+
+        console.log("Final updated sessions:", updatedSessions);
         return { sessions: updatedSessions };
       });
+    } catch (error) {
+      console.error("Error sending or receiving messages:", error);
+      throw error;
     }
   },
 }));
-
-// Initialize store on client-side only
-if (typeof window !== "undefined") {
-  useChatStore.setState({
-    sessions: getStoredSessions(),
-    currentSessionId: getCurrentSessionId(),
-  });
-}

@@ -1,7 +1,9 @@
 -- Migration number: 0001 	 2025-01-12T06:50:08.546Z
-CREATE TABLE IF NOT EXISTS users (
+CREATE TABLE IF NOT EXISTS user_settings (
   id TEXT PRIMARY KEY UNIQUE NOT NULL,
   prefer_dark_mode BOOLEAN DEFAULT FALSE,
+  user_id TEXT,
+  chat_rules TEXT,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
@@ -13,7 +15,6 @@ CREATE TABLE IF NOT EXISTS message (
   role TEXT,
   thread_id TEXT,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (user_id) REFERENCES users(id),
   FOREIGN KEY (thread_id) REFERENCES threads(id)
 );
 
@@ -21,6 +22,5 @@ CREATE TABLE IF NOT EXISTS threads (
   id TEXT PRIMARY KEY UNIQUE NOT NULL,
   user_id TEXT,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  title TEXT,
-  FOREIGN KEY (user_id) REFERENCES users(id)
+  title TEXT
 );

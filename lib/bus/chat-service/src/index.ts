@@ -31,7 +31,7 @@ const app = new OpenAPIHono<{ Bindings: Env }>({
   },
 });
 
-app.onError(commonErrorResponse);
+// app.onError(commonErrorResponse);
 
 // middleware
 app.use(logger());
@@ -49,131 +49,6 @@ app.use(
     maxAge: 86400,
   })
 );
-
-// creates a new user
-async function createUserHandler(c: Context) {
-  // all code comments are in lowercase
-  // generate user id on the server
-  const newUserId = crypto.randomUUID();
-
-  const result = await dbService.query(c, "INSERT INTO users (id) VALUES (?)", [
-    newUserId,
-  ]);
-
-  if (result.success) {
-    return c.json(
-      createResponse({
-        success: true,
-        message: "user created successfully",
-        code: "USER_CREATED",
-        data: { id: newUserId },
-        status: 201,
-      }),
-      201
-    );
-  }
-
-  return c.json(
-    createResponse({
-      success: false,
-      message: String(result.error),
-      code: "USER_CREATION_ERROR",
-      status: 500,
-    }),
-    500
-  );
-}
-
-// retrieves a user
-async function getUserHandler(c: Context) {
-  const userId = c.req.param("userId");
-  const result = await dbService.query(c, "SELECT * FROM users WHERE id = ?", [
-    userId,
-  ]);
-  if (result.success) {
-    const row = (result.data as any)?.results?.[0];
-    return c.json(
-      createResponse({
-        success: true,
-        message: "user retrieved successfully",
-        code: "USER_RETRIEVED",
-        data: row,
-        status: 200,
-      }),
-      200
-    );
-  }
-  return c.json(
-    createResponse({
-      success: false,
-      message: String(result.error),
-      code: "USER_RETRIEVAL_ERROR",
-      status: 500,
-    }),
-    500
-  );
-}
-
-// updates a user
-async function updateUserHandler(c: Context) {
-  const userId = c.req.param("userId");
-  const { prefer_dark_mode } = await c.req.json();
-  const result = await dbService.query(
-    c,
-    "UPDATE users SET prefer_dark_mode = ? WHERE id = ?",
-    [prefer_dark_mode, userId]
-  );
-
-  if (result.success) {
-    return c.json(
-      createResponse({
-        success: true,
-        message: "user updated successfully",
-        code: "USER_UPDATED",
-        status: 200,
-      }),
-      200
-    );
-  }
-
-  return c.json(
-    createResponse({
-      success: false,
-      message: String(result.error),
-      code: "USER_UPDATE_ERROR",
-      status: 500,
-    }),
-    500
-  );
-}
-
-// deletes a user
-async function deleteUserHandler(c: Context) {
-  const userId = c.req.param("userId");
-  const result = await dbService.query(c, "DELETE FROM users WHERE id = ?", [
-    userId,
-  ]);
-  if (result.success) {
-    return c.json(
-      createResponse({
-        success: true,
-        message: "user deleted successfully",
-        code: "USER_DELETED",
-        status: 200,
-      }),
-      200
-    );
-  }
-  return c.json(
-    createResponse({
-      success: false,
-      message: String(result.error),
-      code: "USER_DELETE_ERROR",
-      status: 500,
-    }),
-    500
-  );
-}
 
 // creates a new thread
 async function createThreadHandler(c: Context) {
@@ -222,7 +97,7 @@ async function getThreadHandler(c: Context) {
 
   if (result.success) {
     const row = (result.data as any)?.results?.[0];
-
+    console.log("DEBUGGER", result);
     return c.json(
       createResponse({
         success: true,
@@ -265,6 +140,7 @@ async function updateThreadHandler(c: Context) {
       200
     );
   }
+
   return c.json(
     createResponse({
       success: false,
@@ -310,6 +186,9 @@ async function createMessageHandler(c: Context) {
   const { user_id, text, role, thread_id } = await c.req.json();
   // generate the id on the server
   const newMessageId = crypto.randomUUID();
+  const select = await dbService.query(c, "SELECT id FROM threads");
+
+  console.log("DEBUGGER", select);
 
   const result = await dbService.query(
     c,
@@ -317,6 +196,7 @@ async function createMessageHandler(c: Context) {
     [newMessageId, user_id, text, role, thread_id]
   );
 
+  console.log("DEBUGGER", result);
   if (result.success) {
     return c.json(
       createResponse({
@@ -430,11 +310,6 @@ async function deleteMessageHandler(c: Context) {
     500
   );
 }
-
-app.post("/api/v1/users", createUserHandler);
-app.get("/api/v1/users/:userId", getUserHandler);
-app.put("/api/v1/users/:userId", updateUserHandler);
-app.delete("/api/v1/users/:userId", deleteUserHandler);
 
 app.post("/api/v1/threads", createThreadHandler);
 app.get("/api/v1/threads/:threadId", getThreadHandler);

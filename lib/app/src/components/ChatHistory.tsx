@@ -3,8 +3,9 @@ import { Card } from "@/components/ui/Card";
 import { useChatStore } from "@/stores/chatStore";
 import { useSidebarStore } from "@/stores/sidebarStore";
 import MarkdownComponent from "@/components/ui/Markdown";
-import { Menu, X } from "lucide-react";
+import { Menu, Wand2, X } from "lucide-react";
 import { DateDisplay } from "@/components/ui/DateDisplay";
+import { useAuthStore } from "@/stores/authStore";
 
 export function ChatHistory() {
   const [newMessage, setNewMessage] = useState("");
@@ -19,38 +20,49 @@ export function ChatHistory() {
     deleteSession,
     addMessage,
   } = useChatStore();
+  const { user } = useAuthStore();
 
-  // Create initial session if none exists
-  useEffect(() => {
-    if (sessions.length === 0) {
-      createNewSession();
-    }
-  }, [sessions.length, createNewSession]);
+  // We dont want to create the session.
+  // Instead we want just load the chat history to the side, and then user can select the chat.
+  //
+
+  // useEffect(() => {
+  //   if (sessions.length === 0) {
+  //     createNewSession(user?.id);
+  //   }
+  // }, [sessions.length, createNewSession]);
 
   const currentSession = sessions.find((s) => s.id === currentSessionId);
 
+  console.log("Current Session", currentSession);
   const handleAddMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (newMessage.trim()) {
-      await addMessage(newMessage);
+      // clear the message before sending it
       setNewMessage("");
+
+      await addMessage(newMessage, user?.id);
     }
   };
 
   return (
     <div className="flex h-[calc(100vh-100px)] relative">
       {/* Toggle Button for Small Screens */}
-      <button
-        onClick={toggleSidebar}
-        className="lg:hidden p-2 hover:bg-base-200 rounded-md transition-colors absolute top-2 left-2 z-50"
-      >
-        <Menu className="w-5 h-5" />
-      </button>
+      {!isOpen && (
+        <button
+          onClick={toggleSidebar}
+          className="lg:hidden p-2 hover:bg-base-200 rounded-md transition-colors absolute top-2 left-2 z-50"
+        >
+          <Menu className="w-5 h-5" />
+        </button>
+      )}
 
       {/* Sidebar */}
       <div
-        className={`fixed inset-y-0 left-0 z-40 w-64 bg-base-300 border-r border-base-300 transform ${
-          isOpen ? "translate-x-0" : "-translate-x-full"
+        className={`fixed inset-y-0 left-0 z-40 w-64 transform ${
+          isOpen
+            ? "translate-x-0 bg-base-300 border-r border-base-300"
+            : "-translate-x-full"
         } transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 lg:col-span-3 flex flex-col`}
       >
         {/* Close Button for Small Screens */}
@@ -64,7 +76,7 @@ export function ChatHistory() {
         )}
         {/* New Chat Button */}
         <button
-          onClick={createNewSession}
+          onClick={() => createNewSession(user?.id)}
           className="btn-secondary m-4 lg:mt-4"
         >
           New Chat
@@ -82,12 +94,12 @@ export function ChatHistory() {
             >
               <div className="flex flex-col">
                 <span className="truncate text-sm">{session.title}</span>
-                <DateDisplay date={session.createdAt} className="text-sm" />
+                {/* <DateDisplay date={session.createdAt} className="text-sm" /> */}
               </div>
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  deleteSession(session.id);
+                  deleteSession(session.id, user?.id);
                 }}
                 className="btn-ghost btn-sm text-base-content/60 hover:text-base-content"
               >
@@ -141,7 +153,25 @@ export function ChatHistory() {
         {/* Message Input */}
         <div className="p-2 sm:p-4 border-t border-base-300 bg-base-200/50 backdrop-blur-sm">
           <form onSubmit={handleAddMessage} className="flex gap-2 items-end">
-            <div>
+            <div className="flex flex-col gap-2 w-full">
+              <div className="flex items-center gap-2">
+                <label
+                  htmlFor="model"
+                  className="text-sm flex items-center gap-2"
+                >
+                  <Wand2 className="w-4 h-4" />
+                  <span>Model</span>
+                </label>
+                <select
+                  id="model"
+                  className="select select-sm select-bordered w-fit"
+                >
+                  <option value="gpt-4o">GPT-4o</option>
+                  <option value="gpt-3.5-turbo" disabled>
+                    GPT-3.5 Turbo
+                  </option>
+                </select>
+              </div>
               <textarea
                 value={newMessage}
                 onChange={(e) => {
@@ -157,13 +187,9 @@ export function ChatHistory() {
                 }}
                 rows={1}
                 placeholder="Type a message..."
-                className="textarea flex-1 min-h-[48px] max-h-[200px] 
+                className="textarea flex-1 min-h-[48px] max-h-[200px]
                 text-sm sm:text-base resize-none"
               />
-              <select>
-                <option value="gpt-4o">GPT-4o</option>
-                <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
-              </select>
             </div>
             <button type="submit" className="btn-primary">
               Send
