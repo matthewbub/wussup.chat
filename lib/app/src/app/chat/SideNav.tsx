@@ -39,7 +39,7 @@ export const SideNav: React.FC = () => {
         {sessions.map((session) => (
           <li
             key={session.id}
-            className={`flex items-center justify-between pr-1 rounded ${
+            className={`flex items-center justify-between pr-1 rounded group ${
               currentSessionId === session.id
                 ? "bg-slate-700"
                 : "hover:bg-slate-700"
@@ -54,7 +54,7 @@ export const SideNav: React.FC = () => {
 
             <button
               onClick={() => deleteSession(session.id)}
-              className="w-fit text-left p-2 rounded text-white hover:bg-red-600 transition-colors"
+              className="w-fit text-left p-2 rounded text-white hover:bg-red-600 transition-colors opacity-0 group-hover:opacity-100"
             >
               <XIcon className="w-4 h-4" />
             </button>
