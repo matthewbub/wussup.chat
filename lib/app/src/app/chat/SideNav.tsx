@@ -2,15 +2,16 @@
 
 import React, { useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { useChatStore } from "@/stores/chatStore";
+import { useChatStore } from "./chatStore";
 import { useAuthStore } from "@/stores/authStore";
 
-interface SideNavProps {
+export interface SideNavProps {
   created_at: string;
   id: string;
   name: string;
   updated_at: string;
   user_id: string;
+  messages: string[];
 }
 
 export const SideNav: React.FC<{ sessions: SideNavProps[] }> = ({
@@ -46,7 +47,6 @@ export const SideNav: React.FC<{ sessions: SideNavProps[] }> = ({
 
   return (
     <nav className="w-64 text-white p-4 h-[calc(100vh-100px)] overflow-y-auto">
-      <h2 className="text-xl font-bold mb-4">Chat History</h2>
       <button
         onClick={() => {
           if (user?.id) {

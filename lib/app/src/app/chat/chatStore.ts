@@ -1,20 +1,7 @@
 import { create } from "zustand";
 import { supabase } from "@/services/supabase";
-
-interface Message {
-  id: string;
-  content: string;
-  isUser: boolean;
-}
-
-interface ChatSession {
-  id: string;
-  name: string;
-  messages: Message[];
-  created_at: string;
-  updated_at: string;
-  user_id: string;
-}
+import { ChatSession } from "./chatTypes";
+import { useAuthStore } from "@/stores/authStore";
 
 interface ChatStore {
   sessions: ChatSession[];
@@ -52,22 +39,41 @@ export const useChatStore = create<ChatStore>((set) => ({
     }
   },
   setCurrentSession: (id) => set({ currentSessionId: id }),
-  addMessage: (content, isUser) =>
-    set((state) => {
-      if (!state.currentSessionId) return state;
-      return {
-        sessions: state.sessions.map((session) =>
-          session.id === state.currentSessionId
-            ? {
-                ...session,
-                messages: [
-                  ...session.messages,
-                  { id: Date.now().toString(), content, isUser },
-                ],
-              }
-            : session
-        ),
-      };
-    }),
+  addMessage: async (content, isUser) => {
+    if (!useChatStore.getState().currentSessionId) return;
+
+    const { data, error } = await supabase
+      .from("ChatBot_Messages")
+      .insert({
+        chat_session_id: useChatStore.getState().currentSessionId,
+        content,
+        user_id: useAuthStore.getState().user?.id,
+        is_user: isUser,
+      })
+      .select()
+      .single();
+
+    console.log(data);
+    if (error) {
+      console.error(error);
+      return;
+    }
+  },
+  // set((state) => {
+  //   if (!state.currentSessionId) return state;
+  //   return {
+  //     sessions: state.sessions.map((session) =>
+  //       session.id === state.currentSessionId
+  //         ? {
+  //             ...session,
+  //             messages: [
+  //               ...session.messages,
+  //               { id: Date.now().toString(), content, isUser },
+  //             ],
+  //           }
+  //         : session
+  //     ),
+  //   };
+  // }),
   setSessions: (sessions) => set({ sessions }),
 }));

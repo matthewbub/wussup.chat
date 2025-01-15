@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { useChatStore } from "@/stores/chatStore";
+import { useChatStore } from "./chatStore";
 import { useAuthStore } from "@/stores/authStore";
 
 export const Chat: React.FC = () => {

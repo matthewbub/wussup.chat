@@ -71,7 +71,7 @@ export const useLoginStore = create<LoginStore>((set) => ({
       }
 
       authService.setTokens(result.data.access_token, result.data.expires_in);
-      router.push("/dashboard");
+      router.push("/chat");
     } catch (err) {
       set({
         error: err instanceof Error ? err.message : STRINGS.ERROR_GENERIC,
