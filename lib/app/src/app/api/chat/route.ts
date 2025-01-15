@@ -1,9 +1,64 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/services/supabase";
 const CONTEXT_LENGTH = 10; // Number of previous messages to retain for context
+const TITLE_SYSTEM_PROMPT =
+  "Summarize the following message as a brief, engaging title in 4-6 words:";
 
 export async function POST(request: Request) {
-  const { message, history } = await request.json();
+  const { message, history, userId, sessionId } = await request.json();
+
+  console.log("history", history);
+  console.log("history_length", history.length);
+  let title = "";
+  // Check if this is the first message
+  if (history.length === 2) {
+    // Generate title first
+    const createTitleResponseData = await fetch(
+      "https://api.openai.com/v1/chat/completions",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model: "gpt-3.5-turbo",
+          messages: [
+            { role: "system", content: TITLE_SYSTEM_PROMPT },
+            { role: "user", content: message },
+          ],
+          temperature: 0.7,
+          stream: false,
+        }),
+      }
+    );
+
+    if (!createTitleResponseData.ok) {
+      throw new Error("Failed to generate title");
+    }
+
+    const createTitleResponseDataParsed = await createTitleResponseData.json();
+    // this returns a string inside a string, plz fix
+    const unsafeTitle =
+      createTitleResponseDataParsed.choices[0].message.content.trim();
+
+    // remove the string inside the string
+    const titleString = unsafeTitle.replace(/^"(.+)"$/, "$1");
+
+    const { data, error } = await supabase
+      .from("ChatBot_Sessions")
+      .update({ name: titleString })
+      .eq("id", sessionId)
+      .eq("user_id", userId)
+      .select();
+
+    if (error) {
+      throw new Error("Failed to update session title");
+    }
+
+    title = titleString;
+    console.log("title", titleString, data);
+  }
 
   // Retain only the last CONTEXT_LENGTH messages for context
   const contextMessages = history
@@ -24,7 +79,7 @@ export async function POST(request: Request) {
         Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
       },
       body: JSON.stringify({
-        model: "gpt-3.5-turbo",
+        model: "gpt-4-turbo-2024-04-09",
         messages: contextMessages,
         stream: true,
       }),
@@ -42,8 +97,17 @@ export async function POST(request: Request) {
 
     const stream = new ReadableStream({
       async start(controller) {
-        let done = false;
+        // Send title update as first chunk if this was a title generation
+        if (history.length === 2 && title) {
+          const titleUpdate = JSON.stringify({
+            type: "title_update",
+            title: title,
+            sessionId,
+          });
+          controller.enqueue(`data: ${titleUpdate}\n\n`);
+        }
 
+        let done = false;
         while (!done) {
           // eslint-disable-next-line @typescript-eslint/no-non-null-asserted-optional-chain
           const { value, done: doneReading } = await reader?.read()!;
@@ -53,12 +117,20 @@ export async function POST(request: Request) {
           // Process each line of the chunk
           const lines = chunk.split("\n").filter((line) => line.trim() !== "");
           for (const line of lines) {
+            if (line.includes("[DONE]")) {
+              continue;
+            }
+
             if (line.startsWith("data: ")) {
               const json = line.substring(6);
               try {
+                // Skip empty data lines
+                if (!json.trim()) continue;
+
                 const parsed = JSON.parse(json);
-                const content = parsed.choices[0]?.delta?.content || "";
-                controller.enqueue(content);
+                if (parsed.choices?.[0]?.delta?.content) {
+                  controller.enqueue(`data: ${JSON.stringify(parsed)}\n\n`);
+                }
               } catch (error) {
                 console.error("Error parsing JSON:", error);
               }

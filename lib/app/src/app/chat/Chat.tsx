@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { useChatStore } from "./chatStore";
+import MarkdownComponent from "@/components/ui/Markdown";
 
 export const Chat: React.FC = () => {
   const { sessions, currentSessionId, addMessage } = useChatStore();
@@ -52,11 +53,11 @@ export const Chat: React.FC = () => {
             <div
               className={`max-w-xs md:max-w-md lg:max-w-lg xl:max-w-xl rounded-lg p-3 ${
                 message.is_user
-                  ? "bg-blue-500 text-white"
-                  : "bg-slate-200 text-slate-800"
+                  ? "bg-blue-700 text-white"
+                  : "bg-slate-700 text-slate-200"
               }`}
             >
-              {message.content}
+              <MarkdownComponent>{message.content}</MarkdownComponent>
             </div>
           </div>
         ))}

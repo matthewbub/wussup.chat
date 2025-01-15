@@ -10,6 +10,7 @@ interface ChatStore {
   setCurrentSession: (id: string) => void;
   addMessage: (content: string) => void;
   setSessions: (sessions: ChatSession[]) => void;
+  updateSessionTitle: (sessionId: string, title: string) => void;
 }
 
 export const useChatStore = create<ChatStore>((set, get) => ({
@@ -105,7 +106,12 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     const botResponse = await fetch("/api/chat", {
       headers: { "Content-Type": "application/json" },
       method: "POST",
-      body: JSON.stringify({ message: content, history }),
+      body: JSON.stringify({
+        message: content,
+        history,
+        userId: useAuthStore.getState().user?.id,
+        sessionId: currentSessionId,
+      }),
     });
 
     if (!botResponse.body) throw new Error("No response body");
@@ -121,23 +127,48 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         if (done) break;
 
         const chunk = decoder.decode(value);
-        accumulatedResponse += chunk;
+        const lines = chunk.split("\n");
 
-        // Update bot message in state with accumulated response
-        set((state) => ({
-          sessions: state.sessions.map((session) =>
-            session.id === currentSessionId
-              ? {
-                  ...session,
-                  messages: session.messages.map((msg) =>
-                    msg.id === botMessage.id
-                      ? { ...msg, content: accumulatedResponse }
-                      : msg
+        for (const line of lines) {
+          if (line.startsWith("data: ")) {
+            try {
+              // Skip empty lines
+              if (line.trim() === "data: ") continue;
+
+              // Try parsing as JSON first
+              const jsonData = line.slice(5);
+              const parsed = JSON.parse(jsonData);
+
+              if (parsed.type === "title_update") {
+                // Handle title update
+                get().updateSessionTitle(parsed.sessionId, parsed.title);
+              } else if (parsed.choices?.[0]?.delta?.content) {
+                // Handle OpenAI streaming content
+                const content = parsed.choices[0].delta.content;
+                accumulatedResponse += content;
+
+                // Update bot message in state
+                set((state) => ({
+                  sessions: state.sessions.map((session) =>
+                    session.id === currentSessionId
+                      ? {
+                          ...session,
+                          messages: session.messages.map((msg) =>
+                            msg.id === botMessage.id
+                              ? { ...msg, content: accumulatedResponse }
+                              : msg
+                          ),
+                        }
+                      : session
                   ),
-                }
-              : session
-          ),
-        }));
+                }));
+              }
+            } catch (error) {
+              // If it's not valid JSON, skip this chunk
+              console.error("Error parsing chunk:", error);
+            }
+          }
+        }
       }
 
       // Update final bot message in database
@@ -150,4 +181,10 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     }
   },
   setSessions: (sessions) => set({ sessions }),
+  updateSessionTitle: (sessionId: string, title: string) =>
+    set((state) => ({
+      sessions: state.sessions.map((session) =>
+        session.id === sessionId ? { ...session, name: title } : session
+      ),
+    })),
 }));
