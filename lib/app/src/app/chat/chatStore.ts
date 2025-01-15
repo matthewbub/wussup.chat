@@ -11,6 +11,7 @@ interface ChatStore {
   addMessage: (content: string) => void;
   setSessions: (sessions: ChatSession[]) => void;
   updateSessionTitle: (sessionId: string, title: string) => void;
+  deleteSession: (sessionId: string) => void;
 }
 
 export const useChatStore = create<ChatStore>((set, get) => ({
@@ -187,4 +188,30 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         session.id === sessionId ? { ...session, name: title } : session
       ),
     })),
+  deleteSession: async (sessionId: string) => {
+    const { error: messageError } = await supabase
+      .from("ChatBot_Messages")
+      .delete()
+      .eq("chat_session_id", sessionId);
+
+    if (messageError) {
+      console.error(messageError);
+      return;
+    }
+
+    const { error } = await supabase
+      .from("ChatBot_Sessions")
+      .delete()
+      .eq("id", sessionId);
+
+    if (error) {
+      console.error(error);
+      return;
+    }
+
+    set((state) => ({
+      sessions: state.sessions.filter((session) => session.id !== sessionId),
+      currentSessionId: null,
+    }));
+  },
 }));

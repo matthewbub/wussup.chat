@@ -4,10 +4,16 @@ import React from "react";
 import { useRouter } from "next/navigation";
 import { useChatStore } from "./chatStore";
 import { useAuthStore } from "@/stores/authStore";
+import { XIcon } from "lucide-react";
 
 export const SideNav: React.FC = () => {
-  const { sessions, currentSessionId, addSession, setCurrentSession } =
-    useChatStore();
+  const {
+    sessions,
+    currentSessionId,
+    addSession,
+    setCurrentSession,
+    deleteSession,
+  } = useChatStore();
   const { user } = useAuthStore();
   const router = useRouter();
 
@@ -31,16 +37,26 @@ export const SideNav: React.FC = () => {
       </button>
       <ul className="space-y-2">
         {sessions.map((session) => (
-          <li key={session.id}>
+          <li
+            key={session.id}
+            className={`flex items-center justify-between pr-1 rounded ${
+              currentSessionId === session.id
+                ? "bg-slate-700"
+                : "hover:bg-slate-700"
+            }`}
+          >
             <button
               onClick={() => handleSessionClick(session.id)}
-              className={`w-full text-left p-2 rounded ${
-                currentSessionId === session.id
-                  ? "bg-slate-700"
-                  : "hover:bg-slate-700"
-              }`}
+              className={`w-full text-left p-2`}
             >
               {session.name}
+            </button>
+
+            <button
+              onClick={() => deleteSession(session.id)}
+              className="w-fit text-left p-2 rounded text-white hover:bg-red-600 transition-colors"
+            >
+              <XIcon className="w-4 h-4" />
             </button>
           </li>
         ))}
