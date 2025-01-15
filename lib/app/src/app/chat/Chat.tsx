@@ -2,14 +2,12 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { useChatStore } from "./chatStore";
-import { useAuthStore } from "@/stores/authStore";
 
 export const Chat: React.FC = () => {
   const { sessions, currentSessionId, addMessage } = useChatStore();
   const [newMessage, setNewMessage] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  // const { user } = useAuthStore();
   const currentSession = sessions.find(
     (session) => session.id === currentSessionId
   );
@@ -18,13 +16,8 @@ export const Chat: React.FC = () => {
   const handleAddMessage = (e: React.FormEvent) => {
     e.preventDefault();
     if (newMessage.trim() && currentSessionId) {
-      addMessage(newMessage, true);
+      addMessage(newMessage);
       setNewMessage("");
-      // Here you would typically call your API to get the bot's response
-      // For now, we'll just simulate a response after a short delay
-      setTimeout(() => {
-        addMessage("I'm a bot response!", false);
-      }, 1000);
     }
   };
 
@@ -53,14 +46,14 @@ export const Chat: React.FC = () => {
           <div
             key={message.id}
             className={`flex ${
-              message.isUser ? "justify-end" : "justify-start"
+              message.is_user ? "justify-end" : "justify-start"
             }`}
           >
             <div
               className={`max-w-xs md:max-w-md lg:max-w-lg xl:max-w-xl rounded-lg p-3 ${
-                message.isUser
+                message.is_user
                   ? "bg-blue-500 text-white"
-                  : "bg-white text-gray-800"
+                  : "bg-gray-200 text-gray-800"
               }`}
             >
               {message.content}

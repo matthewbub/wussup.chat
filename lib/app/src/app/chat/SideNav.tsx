@@ -4,17 +4,9 @@ import React, { useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useChatStore } from "./chatStore";
 import { useAuthStore } from "@/stores/authStore";
+import { ChatSession } from "./chatTypes";
 
-export interface SideNavProps {
-  created_at: string;
-  id: string;
-  name: string;
-  updated_at: string;
-  user_id: string;
-  messages: string[];
-}
-
-export const SideNav: React.FC<{ sessions: SideNavProps[] }> = ({
+export const SideNav: React.FC<{ sessions: ChatSession[] }> = ({
   sessions: sessionData,
 }) => {
   const {

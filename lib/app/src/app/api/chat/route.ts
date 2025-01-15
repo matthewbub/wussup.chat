@@ -8,9 +8,9 @@ export async function POST(request: Request) {
   // Retain only the last CONTEXT_LENGTH messages for context
   const contextMessages = history
     .slice(-CONTEXT_LENGTH)
-    .map((msg: { isUser: boolean; text: string }) => ({
-      role: msg.isUser ? "user" : "assistant",
-      content: msg.text,
+    .map((msg: { is_user: boolean; content: string }) => ({
+      role: msg.is_user ? "user" : "assistant",
+      content: msg.content,
     }));
 
   // Add the new message to the context
