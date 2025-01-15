@@ -1,35 +1,15 @@
 "use client";
 
-import React, { useEffect } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import React from "react";
+import { useRouter } from "next/navigation";
 import { useChatStore } from "./chatStore";
 import { useAuthStore } from "@/stores/authStore";
-import { ChatSession } from "./chatTypes";
 
-export const SideNav: React.FC<{ sessions: ChatSession[] }> = ({
-  sessions: sessionData,
-}) => {
-  const {
-    sessions,
-    currentSessionId,
-    addSession,
-    setCurrentSession,
-    setSessions,
-  } = useChatStore();
+export const SideNav: React.FC = () => {
+  const { sessions, currentSessionId, addSession, setCurrentSession } =
+    useChatStore();
   const { user } = useAuthStore();
-  const searchParams = useSearchParams();
   const router = useRouter();
-
-  useEffect(() => {
-    if (sessionData) {
-      setSessions(sessionData);
-      // Set initial session from URL if present
-      const sessionId = searchParams.get("session");
-      if (sessionId) {
-        setCurrentSession(sessionId);
-      }
-    }
-  }, []);
 
   const handleSessionClick = (sessionId: string) => {
     setCurrentSession(sessionId);
@@ -56,8 +36,8 @@ export const SideNav: React.FC<{ sessions: ChatSession[] }> = ({
               onClick={() => handleSessionClick(session.id)}
               className={`w-full text-left p-2 rounded ${
                 currentSessionId === session.id
-                  ? "bg-gray-700"
-                  : "hover:bg-gray-700"
+                  ? "bg-slate-700"
+                  : "hover:bg-slate-700"
               }`}
             >
               {session.name}

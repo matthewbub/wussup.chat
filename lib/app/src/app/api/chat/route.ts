@@ -93,15 +93,25 @@ export async function GET(request: Request) {
       supabase.from("ChatBot_Messages").select("*").eq("user_id", userId),
     ]);
 
+    if (sessionsResult.error || messagesResult.error) {
+      // todo: response with something better
+      throw new Error("Failed to fetch data");
+    }
+
+    // todo improve the algo
+    const sessionsWithMessages = [];
+    for (const session of sessionsResult.data) {
+      const messages = messagesResult.data.filter(
+        (message) => message.chat_session_id === session.id
+      );
+      sessionsWithMessages.push({ ...session, messages });
+    }
+
     return NextResponse.json({
-      sessions: sessionsResult.data,
-      messages: messagesResult.data,
-      errors: {
-        sessions: sessionsResult.error,
-        messages: messagesResult.error,
-      },
+      sessions: sessionsWithMessages,
     });
   } catch (error) {
+    console.error(error);
     return NextResponse.json(
       { error: "Failed to fetch data" },
       { status: 500 }
