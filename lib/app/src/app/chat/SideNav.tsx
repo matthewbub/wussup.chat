@@ -1,0 +1,78 @@
+"use client";
+
+import React, { useEffect } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import { useChatStore } from "@/stores/chatStore";
+import { useAuthStore } from "@/stores/authStore";
+
+interface SideNavProps {
+  created_at: string;
+  id: string;
+  name: string;
+  updated_at: string;
+  user_id: string;
+}
+
+export const SideNav: React.FC<{ sessions: SideNavProps[] }> = ({
+  sessions: sessionData,
+}) => {
+  const {
+    sessions,
+    currentSessionId,
+    addSession,
+    setCurrentSession,
+    setSessions,
+  } = useChatStore();
+  const { user } = useAuthStore();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (sessionData) {
+      setSessions(sessionData);
+      // Set initial session from URL if present
+      const sessionId = searchParams.get("session");
+      if (sessionId) {
+        setCurrentSession(sessionId);
+      }
+    }
+  }, []);
+
+  const handleSessionClick = (sessionId: string) => {
+    setCurrentSession(sessionId);
+    // Update URL when changing sessions
+    router.push(`?session=${sessionId}`);
+  };
+
+  return (
+    <nav className="w-64 text-white p-4 h-[calc(100vh-100px)] overflow-y-auto">
+      <h2 className="text-xl font-bold mb-4">Chat History</h2>
+      <button
+        onClick={() => {
+          if (user?.id) {
+            addSession(user.id);
+          }
+        }}
+        className="w-full bg-blue-500 text-white p-2 rounded mb-4 hover:bg-blue-600 transition-colors"
+      >
+        New Chat
+      </button>
+      <ul className="space-y-2">
+        {sessions.map((session) => (
+          <li key={session.id}>
+            <button
+              onClick={() => handleSessionClick(session.id)}
+              className={`w-full text-left p-2 rounded ${
+                currentSessionId === session.id
+                  ? "bg-gray-700"
+                  : "hover:bg-gray-700"
+              }`}
+            >
+              {session.name}
+            </button>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  );
+};
