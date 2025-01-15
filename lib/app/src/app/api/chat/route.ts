@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-
+import { supabase } from "@/services/supabase";
 const CONTEXT_LENGTH = 10; // Number of previous messages to retain for context
 
 export async function POST(request: Request) {
@@ -75,5 +75,36 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     return NextResponse.json({ response: error }, { status: 500 });
+  }
+}
+
+// get chat sessions and messages for a user
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const userId = searchParams.get("userId");
+
+  if (!userId) {
+    return NextResponse.json({ error: "User ID is required" }, { status: 400 });
+  }
+
+  try {
+    const [sessionsResult, messagesResult] = await Promise.all([
+      supabase.from("ChatBot_Sessions").select("*").eq("user_id", userId),
+      supabase.from("ChatBot_Messages").select("*").eq("user_id", userId),
+    ]);
+
+    return NextResponse.json({
+      sessions: sessionsResult.data,
+      messages: messagesResult.data,
+      errors: {
+        sessions: sessionsResult.error,
+        messages: messagesResult.error,
+      },
+    });
+  } catch (error) {
+    return NextResponse.json(
+      { error: "Failed to fetch data" },
+      { status: 500 }
+    );
   }
 }
