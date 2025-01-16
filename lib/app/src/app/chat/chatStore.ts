@@ -8,7 +8,7 @@ interface ChatStore {
   currentSessionId: string | null;
   addSession: (userId: string) => void;
   setCurrentSession: (id: string) => void;
-  addMessage: (content: string) => void;
+  addMessage: (content: string, model: string) => void;
   setSessions: (sessions: ChatSession[]) => void;
   updateSessionTitle: (sessionId: string, title: string) => void;
   deleteSession: (sessionId: string) => void;
@@ -41,7 +41,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     }
   },
   setCurrentSession: (id) => set({ currentSessionId: id }),
-  addMessage: async (content) => {
+  addMessage: async (content, model) => {
     const currentSessionId = get().currentSessionId;
     if (!currentSessionId) return;
 
@@ -53,6 +53,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         content,
         user_id: useAuthStore.getState().user?.id,
         is_user: true,
+        model: null,
       })
       .select()
       .single();
@@ -79,6 +80,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         content: "",
         user_id: useAuthStore.getState().user?.id,
         is_user: false,
+        model,
       })
       .select()
       .single();
@@ -112,6 +114,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         history,
         userId: useAuthStore.getState().user?.id,
         sessionId: currentSessionId,
+        model,
       }),
     });
 

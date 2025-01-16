@@ -7,6 +7,7 @@ import MarkdownComponent from "@/components/ui/Markdown";
 export const Chat: React.FC = () => {
   const { sessions, currentSessionId, addMessage } = useChatStore();
   const [newMessage, setNewMessage] = useState("");
+  const [model, setModel] = useState("gpt-4-turbo-2024-04-09");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const currentSession = sessions.find(
@@ -17,7 +18,7 @@ export const Chat: React.FC = () => {
   const handleAddMessage = (e: React.FormEvent) => {
     e.preventDefault();
     if (newMessage.trim() && currentSessionId) {
-      addMessage(newMessage);
+      addMessage(newMessage, model);
       setNewMessage("");
     }
   };
@@ -35,7 +36,9 @@ export const Chat: React.FC = () => {
   if (!currentSessionId) {
     return (
       <div className="flex items-center justify-center h-full">
-        Select or create a chat to start messaging
+        <p className="text-neutral-content">
+          Select or create a chat to start messaging
+        </p>
       </div>
     );
   }
@@ -82,14 +85,17 @@ export const Chat: React.FC = () => {
         <div className="flex items-end space-x-2">
           <div className="flex flex-col w-full gap-2">
             <div className="flex items-center gap-2">
-              <label htmlFor="model" className="text-sm">
+              <label
+                htmlFor="model"
+                className="text-sm text-neutral-content text-bold"
+              >
                 Model
               </label>
               <select
                 id="model"
-                className="select select-bordered select-sm"
-                // value={model}
-                // onChange={(e) => setModel(e.target.value)}
+                className="select select-bordered select-sm text-neutral-content"
+                value={model}
+                onChange={(e) => setModel(e.target.value)}
               >
                 <option value="gpt-4o">gpt-4o</option>
                 <option value="gpt-4o-mini">gpt-4o-mini</option>
@@ -106,7 +112,7 @@ export const Chat: React.FC = () => {
                   handleAddMessage(e);
                 }
               }}
-              rows={1}
+              rows={3}
               placeholder="Type a message..."
               className="flex-1 min-h-[48px] max-h-[200px] p-2 border rounded-md 
                        text-sm sm:text-base resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 border-slate-800"

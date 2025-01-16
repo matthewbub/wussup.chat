@@ -5,7 +5,7 @@ const TITLE_SYSTEM_PROMPT =
   "Summarize the following message as a brief, engaging title in 4-6 words:";
 
 export async function POST(request: Request) {
-  const { message, history, userId, sessionId } = await request.json();
+  const { message, history, userId, sessionId, model } = await request.json();
 
   console.log("history", history);
   console.log("history_length", history.length);
@@ -79,7 +79,7 @@ export async function POST(request: Request) {
         Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
       },
       body: JSON.stringify({
-        model: "gpt-4-turbo-2024-04-09",
+        model: model || "gpt-4-turbo-2024-04-09",
         messages: contextMessages,
         stream: true,
       }),
