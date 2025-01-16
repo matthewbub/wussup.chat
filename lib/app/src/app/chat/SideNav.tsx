@@ -39,15 +39,15 @@ export const SideNav: React.FC = () => {
         {sessions.map((session) => (
           <li
             key={session.id}
-            className={`flex items-center justify-between pr-1 rounded group text-black dark:text-white  ${
+            className={`flex items-center justify-between pr-1 rounded group  ${
               currentSessionId === session.id
-                ? "bg-slate-700"
+                ? "bg-slate-800"
                 : "hover:bg-slate-700"
             }`}
           >
             <button
               onClick={() => handleSessionClick(session.id)}
-              className={`w-full text-left p-2 truncate`}
+              className={`w-full text-left p-2 truncate text-neutral-content`}
               title={session.name}
             >
               {session.name}
