@@ -3,6 +3,8 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useChatStore } from "./chatStore";
 import MarkdownComponent from "@/components/ui/Markdown";
+import { ModelSelect } from "./ModelSelect";
+import { useSubscription } from "@/stores/useSubscription";
 
 export const Chat: React.FC = () => {
   const { sessions, currentSessionId, addMessage, sessionTitle } =
@@ -15,6 +17,7 @@ export const Chat: React.FC = () => {
     (session) => session.id === currentSessionId
   );
   const messages = currentSession?.messages || [];
+  const { subscription } = useSubscription();
 
   const handleAddMessage = (e: React.FormEvent) => {
     e.preventDefault();
@@ -90,26 +93,11 @@ export const Chat: React.FC = () => {
       >
         <div className="flex items-end space-x-2">
           <div className="flex flex-col w-full gap-2">
-            <div className="flex items-center gap-2">
-              <label
-                htmlFor="model"
-                className="text-sm text-neutral-content text-bold"
-              >
-                Model
-              </label>
-              <select
-                id="model"
-                className="select select-bordered select-sm text-neutral-content"
-                value={model}
-                onChange={(e) => setModel(e.target.value)}
-              >
-                <option value="chatgpt-4o-latest">ChatGPT 4o Latest</option>
-                <option value="gpt-4o">GPT 4o</option>
-                <option value="gpt-4o-mini">GPT 4o Mini</option>
-                <option value="o1">O1</option>
-                <option value="o1-mini">O1 Mini</option>
-              </select>
-            </div>
+            <ModelSelect
+              model={model}
+              onModelChange={setModel}
+              isSubscribed={subscription.isSubscribed}
+            />
             <textarea
               ref={textareaRef}
               value={newMessage}
