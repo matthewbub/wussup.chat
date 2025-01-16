@@ -13,12 +13,14 @@ export const SideNav: React.FC = () => {
     addSession,
     setCurrentSession,
     deleteSession,
+    setSessionTitle,
   } = useChatStore();
   const { user } = useAuthStore();
   const router = useRouter();
 
   const handleSessionClick = (sessionId: string) => {
     setCurrentSession(sessionId);
+    setSessionTitle(sessionId);
     // Update URL when changing sessions
     router.push(`?session=${sessionId}`);
   };

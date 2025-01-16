@@ -12,6 +12,8 @@ interface ChatStore {
   setSessions: (sessions: ChatSession[]) => void;
   updateSessionTitle: (sessionId: string, title: string) => void;
   deleteSession: (sessionId: string) => void;
+  setSessionTitle: (sessionId: string) => void;
+  sessionTitle: string;
 }
 
 export const useChatStore = create<ChatStore>((set, get) => ({
@@ -217,4 +219,9 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       currentSessionId: null,
     }));
   },
+  setSessionTitle: (sessionId: string) => {
+    const session = get().sessions.find((session) => session.id === sessionId);
+    set({ sessionTitle: session?.name || "Untitled Chat" });
+  },
+  sessionTitle: "",
 }));

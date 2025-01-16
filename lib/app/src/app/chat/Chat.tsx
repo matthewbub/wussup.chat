@@ -5,7 +5,8 @@ import { useChatStore } from "./chatStore";
 import MarkdownComponent from "@/components/ui/Markdown";
 
 export const Chat: React.FC = () => {
-  const { sessions, currentSessionId, addMessage } = useChatStore();
+  const { sessions, currentSessionId, addMessage, sessionTitle } =
+    useChatStore();
   const [newMessage, setNewMessage] = useState("");
   const [model, setModel] = useState("gpt-4-turbo-2024-04-09");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -44,7 +45,12 @@ export const Chat: React.FC = () => {
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-100px)]">
+    <div className="flex flex-col h-[calc(100vh-100px)] bg-slate-900/50">
+      {sessionTitle && (
+        <div className="flex items-center justify-between p-4">
+          <h1 className="text-2xl font-bold text-slate-100">{sessionTitle}</h1>
+        </div>
+      )}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {messages.map((message) => (
           <div
@@ -65,7 +71,7 @@ export const Chat: React.FC = () => {
               </div>
               <div
                 className={
-                  "text-xs text-slate-500" +
+                  "text-xs text-slate-500 " +
                   (message.is_user ? "text-right" : "text-left")
                 }
               >
