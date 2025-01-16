@@ -103,9 +103,11 @@ export const Chat: React.FC = () => {
                 value={model}
                 onChange={(e) => setModel(e.target.value)}
               >
-                <option value="gpt-4o">gpt-4o</option>
-                <option value="gpt-4o-mini">gpt-4o-mini</option>
-                <option value="gpt-4o-turbo">gpt-4o-turbo</option>
+                <option value="chatgpt-4o-latest">ChatGPT 4o Latest</option>
+                <option value="gpt-4o">GPT 4o</option>
+                <option value="gpt-4o-mini">GPT 4o Mini</option>
+                <option value="o1">O1</option>
+                <option value="o1-mini">O1 Mini</option>
               </select>
             </div>
             <textarea
@@ -121,7 +123,7 @@ export const Chat: React.FC = () => {
               rows={3}
               placeholder="Type a message..."
               className="flex-1 min-h-[48px] max-h-[200px] p-2 border rounded-md 
-                       text-sm sm:text-base resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 border-slate-800"
+                       text-sm sm:text-base resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 border-slate-800 text-slate-200"
             />
           </div>
           <button
