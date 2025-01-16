@@ -24,7 +24,7 @@ export const SideNav: React.FC = () => {
   };
 
   return (
-    <nav className="w-64 text-white p-4 h-[calc(100vh-100px)] overflow-y-auto">
+    <nav className="w-64 p-4 h-[calc(100vh-100px)] overflow-y-auto">
       <button
         onClick={() => {
           if (user?.id) {
@@ -39,7 +39,7 @@ export const SideNav: React.FC = () => {
         {sessions.map((session) => (
           <li
             key={session.id}
-            className={`flex items-center justify-between pr-1 rounded group ${
+            className={`flex items-center justify-between pr-1 rounded group text-black dark:text-white  ${
               currentSessionId === session.id
                 ? "bg-slate-700"
                 : "hover:bg-slate-700"

@@ -79,22 +79,39 @@ export const Chat: React.FC = () => {
         onSubmit={handleAddMessage}
         className="p-4 border-t border-slate-800"
       >
-        <div className="flex items-center space-x-2">
-          <textarea
-            ref={textareaRef}
-            value={newMessage}
-            onChange={handleTextareaChange}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                handleAddMessage(e);
-              }
-            }}
-            rows={1}
-            placeholder="Type a message..."
-            className="flex-1 min-h-[48px] max-h-[200px] p-2 border rounded-md 
+        <div className="flex items-end space-x-2">
+          <div className="flex flex-col w-full gap-2">
+            <div className="flex items-center gap-2">
+              <label htmlFor="model" className="text-sm">
+                Model
+              </label>
+              <select
+                id="model"
+                className="select select-bordered select-sm"
+                // value={model}
+                // onChange={(e) => setModel(e.target.value)}
+              >
+                <option value="gpt-4o">gpt-4o</option>
+                <option value="gpt-4o-mini">gpt-4o-mini</option>
+                <option value="gpt-4o-turbo">gpt-4o-turbo</option>
+              </select>
+            </div>
+            <textarea
+              ref={textareaRef}
+              value={newMessage}
+              onChange={handleTextareaChange}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  handleAddMessage(e);
+                }
+              }}
+              rows={1}
+              placeholder="Type a message..."
+              className="flex-1 min-h-[48px] max-h-[200px] p-2 border rounded-md 
                        text-sm sm:text-base resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 border-slate-800"
-          />
+            />
+          </div>
           <button
             type="submit"
             className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors"
