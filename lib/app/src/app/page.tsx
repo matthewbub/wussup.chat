@@ -18,8 +18,8 @@ export default function Home() {
             <p className="py-6 text-white">Another glorified database</p>
             <div className="flex gap-4 justify-center">
               {user ? (
-                <Link href="/dashboard" className="btn btn-primary">
-                  Go to Dashboard
+                <Link href="/chat" className="btn btn-primary">
+                  Go to chats
                 </Link>
               ) : (
                 <>
