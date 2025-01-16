@@ -2,6 +2,7 @@ export interface Message {
   id: string;
   content: string;
   is_user: boolean;
+  created_at: string;
 }
 
 export interface ChatSession {

@@ -50,14 +50,26 @@ export const Chat: React.FC = () => {
               message.is_user ? "justify-end" : "justify-start"
             }`}
           >
-            <div
-              className={`max-w-xs md:max-w-md lg:max-w-lg xl:max-w-xl rounded-lg p-3 ${
-                message.is_user
-                  ? "bg-blue-700 text-white"
-                  : "bg-slate-700 text-slate-200"
-              }`}
-            >
-              <MarkdownComponent>{message.content}</MarkdownComponent>
+            <div className="flex flex-col">
+              <div
+                className={`max-w-xs md:max-w-md lg:max-w-lg xl:max-w-xl rounded-lg p-3 ${
+                  message.is_user
+                    ? "bg-blue-700 text-white"
+                    : "bg-slate-700 text-slate-200"
+                }`}
+              >
+                <MarkdownComponent>{message.content}</MarkdownComponent>
+              </div>
+              <div
+                className={
+                  "text-xs text-slate-500" +
+                  (message.is_user ? "text-right" : "text-left")
+                }
+              >
+                <p className="text-xs text-slate-500 pt-2 pl-1">
+                  {new Date(message.created_at).toLocaleString()}
+                </p>
+              </div>
             </div>
           </div>
         ))}
