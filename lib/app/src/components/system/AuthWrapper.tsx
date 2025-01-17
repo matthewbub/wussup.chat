@@ -16,6 +16,10 @@ export function AuthWrapper({ children }: AuthWrapperProps) {
   const checkAuth = async () => {
     try {
       const user = await authService.getCurrentUser();
+
+      // Check if user exists in database
+      await authService.ensureUserExists(user);
+
       setUser(user);
     } catch (error) {
       console.error(error);
