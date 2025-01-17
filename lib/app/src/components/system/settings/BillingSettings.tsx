@@ -16,21 +16,12 @@ export function BillingSettings() {
   const [isLoading, setIsLoading] = useState(false);
   // This would come from your backend/Stripe
   const [subscription, setSubscription] = useState<SubscriptionDetails>({
-    status: "active",
+    status: "inactive",
   });
 
   const handleSubscribe = async () => {
-    setIsLoading(true);
-    try {
-      // Initialize Stripe checkout session
-      // const response = await fetch('/api/create-checkout-session', ...);
-      // const { url } = await response.json();
-      // window.location.href = url;
-    } catch (error) {
-      console.error("Failed to start subscription:", error);
-    } finally {
-      setIsLoading(false);
-    }
+    // Direct to Stripe billing page
+    window.location.href = "https://buy.stripe.com/test_4gwg2Q5Gae5V9UI000";
   };
 
   const handleManageSubscription = async () => {
