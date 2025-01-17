@@ -9,37 +9,46 @@ export default function Home() {
 
   return (
     <Background>
-      <div className="min-h-[calc(100vh-100px)]">
-        <div className="">
-          <div className="mx-auto max-w-md">
-            <h1 className="text-3xl md:text-5xl font-bold text-white">
+      <div className="flex flex-col min-h-screen">
+        <main className="flex-grow flex items-center justify-center">
+          <div className="text-center px-4">
+            <h1 className="text-3xl md:text-5xl font-bold text-white mb-4">
               Welcome to ZCauldron 🔮
             </h1>
-            <p className="py-6 text-white text-lg">
+            <p className="text-white text-lg mb-8">
               Another glorified database, a digital notebook if you will
             </p>
             <div className="flex gap-4 justify-center">
               {user ? (
-                <Link href="/chat" className="btn btn-primary">
+                <Link
+                  href="/chat"
+                  className="min-w-[120px] px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-medium transition-colors"
+                >
                   Go to chats
                 </Link>
               ) : (
                 <>
-                  <Link href="/register" className="btn btn-primary">
+                  <Link
+                    href="/register"
+                    className="min-w-[120px] px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-medium transition-colors"
+                  >
                     Sign up now
                   </Link>
-                  <Link href="/login" className="btn btn-ghost text-white">
+                  <Link
+                    href="/login"
+                    className="min-w-[120px] px-4 py-2 rounded-lg border border-white text-white hover:bg-white/10 transition-colors"
+                  >
                     Login
                   </Link>
                 </>
               )}
             </div>
           </div>
-        </div>
+        </main>
+        <footer className="p-6 text-center text-white">
+          <p className="text-sm">&copy; 2025 ZCauldron. All rights reserved.</p>
+        </footer>
       </div>
-      <footer className="footer footer-center p-4 text-white">
-        <p className="text-sm">&copy; 2025 ZCauldron. All rights reserved.</p>
-      </footer>
     </Background>
   );
 }
