@@ -7,7 +7,11 @@ export function ThemeToggle() {
 
   // Sync theme with HTML data-theme attribute
   useEffect(() => {
-    document.documentElement.setAttribute("data-theme", theme);
+    if (theme === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
   }, [theme]);
 
   return (

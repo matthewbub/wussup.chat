@@ -3,12 +3,22 @@ import { supabase } from "@/services/supabase";
 const CONTEXT_LENGTH = 10; // Number of previous messages to retain for context
 const TITLE_SYSTEM_PROMPT =
   "Summarize the following message as a brief, engaging title in 4-6 words:";
+const OPENAI_BASE_URL = "https://api.openai.com/v1/chat/completions";
+const XAI_BASE_URL = "https://api.x.ai/v1/chat/completions";
+
+function getApiConfig(model: string) {
+  const isXAI = model?.toLowerCase().includes("grok");
+  return {
+    baseUrl: isXAI ? XAI_BASE_URL : OPENAI_BASE_URL,
+    apiKey: isXAI ? process.env.GROK_API_KEY : process.env.OPENAI_API_KEY,
+    authPrefix: "Bearer",
+    defaultModel: isXAI ? "grok-2-latest" : "gpt-4-turbo-2024-04-09",
+  };
+}
 
 export async function POST(request: Request) {
   const { message, history, userId, sessionId, model } = await request.json();
 
-  console.log("history", history);
-  console.log("history_length", history.length);
   let title = "";
   // Check if this is the first message
   if (history.length === 2) {
@@ -72,26 +82,38 @@ export async function POST(request: Request) {
   contextMessages.push({ role: "user", content: message });
 
   try {
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    const apiConfig = getApiConfig(model);
+    console.log("apiConfig", apiConfig);
+    const response = await fetch(apiConfig.baseUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+        Authorization: `${apiConfig.authPrefix} ${apiConfig.apiKey}`,
       },
       body: JSON.stringify({
-        model: model || "gpt-4-turbo-2024-04-09",
-        messages: contextMessages,
+        model: apiConfig.defaultModel,
+        messages: [
+          {
+            role: "system",
+            content:
+              "You are Grok, a chatbot inspired by the Hitchhikers Guide to the Galaxy.",
+          },
+          ...contextMessages,
+        ],
         stream: true,
+        temperature: 0.7,
       }),
     });
-
+    console.log("response", response);
     if (!response.ok) {
       const errorData = await response.json();
+      console.log("errorData", errorData);
       throw new Error(
         errorData.error?.message || "Failed to fetch from OpenAI"
       );
     }
 
+    console.log("response", response);
     const reader = response.body?.getReader();
     const decoder = new TextDecoder("utf-8");
 

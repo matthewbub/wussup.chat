@@ -103,7 +103,7 @@ export const STRINGS = {
   PASSWORD_RESET_ERROR_EMAIL_INVALID: "Please enter a valid email address",
   PASSWORD_RESET_ERROR_GENERIC:
     "Unable to process your request. Please try again.",
-
+  PASSWORD_RESET_RETURN_TO_LOGIN: "Return to Login",
   PASSWORD_RESET_NEW_PASSWORD_TITLE: "Create New Password",
   PASSWORD_RESET_NEW_PASSWORD_LABEL: "New Password",
   PASSWORD_RESET_CONFIRM_PASSWORD_LABEL: "Confirm New Password",

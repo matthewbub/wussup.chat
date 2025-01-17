@@ -9,13 +9,15 @@ export default function Home() {
 
   return (
     <Background>
-      <div className="hero min-h-[calc(100vh-100px)]">
-        <div className="hero-content text-center">
-          <div className="max-w-md">
+      <div className="min-h-[calc(100vh-100px)]">
+        <div className="">
+          <div className="mx-auto max-w-md">
             <h1 className="text-3xl md:text-5xl font-bold text-white">
               Welcome to ZCauldron 🔮
             </h1>
-            <p className="py-6 text-white">Another glorified database</p>
+            <p className="py-6 text-white text-lg">
+              Another glorified database, a digital notebook if you will
+            </p>
             <div className="flex gap-4 justify-center">
               {user ? (
                 <Link href="/chat" className="btn btn-primary">

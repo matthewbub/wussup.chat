@@ -19,7 +19,7 @@ interface ModelSelectProps {
 interface Model {
   id: string;
   name: string;
-  provider: "openai" | "anthropic"; // Add more providers as needed
+  provider: "openai" | "anthropic" | "xai";
 }
 
 const AVAILABLE_MODELS: Model[] = [
@@ -28,6 +28,9 @@ const AVAILABLE_MODELS: Model[] = [
   { id: "gpt-4o-mini", name: "GPT 4o Mini", provider: "openai" },
   { id: "o1", name: "O1", provider: "openai" },
   { id: "o1-mini", name: "O1 Mini", provider: "openai" },
+
+  { id: "grok-beta", name: "Grok Beta", provider: "xai" },
+  { id: "grok-2-latest", name: "Grok 2 Latest", provider: "xai" },
 ];
 
 export const ModelSelect: React.FC<ModelSelectProps> = ({
@@ -46,11 +49,14 @@ export const ModelSelect: React.FC<ModelSelectProps> = ({
 
   return (
     <div className="flex items-center gap-2">
-      <label htmlFor="model" className="text-sm text-neutral-content text-bold">
+      <label
+        htmlFor="model"
+        className="text-sm text-slate-800 dark:text-slate-200 text-bold"
+      >
         Model
       </label>
       <Select value={model} onValueChange={onModelChange}>
-        <SelectTrigger className="select select-bordered select-sm text-neutral-content w-fit">
+        <SelectTrigger className=" w-fit">
           <SelectValue placeholder="Select Model" />
         </SelectTrigger>
         <SelectContent className="bg-slate-800">
@@ -67,9 +73,9 @@ export const ModelSelect: React.FC<ModelSelectProps> = ({
                   <SelectItem
                     key={model.id}
                     value={model.id}
-                    className="text-slate-200"
+                    className="text-slate-200 "
                   >
-                    <span className="text-slate-200">{model.name}</span>
+                    <span className="text-slate-200 ">{model.name}</span>
                   </SelectItem>
                 ))}
               </SelectGroup>

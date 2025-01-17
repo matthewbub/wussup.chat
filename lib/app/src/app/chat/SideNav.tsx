@@ -49,7 +49,7 @@ export const SideNav: React.FC = () => {
           >
             <button
               onClick={() => handleSessionClick(session.id)}
-              className={`w-full text-left p-2 truncate text-neutral-content`}
+              className={`w-full text-left p-2 truncate text-slate-100`}
               title={session.name}
             >
               {session.name}

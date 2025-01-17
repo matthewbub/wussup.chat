@@ -40,7 +40,7 @@ export const Chat: React.FC = () => {
   if (!currentSessionId) {
     return (
       <div className="flex items-center justify-center h-full">
-        <p className="text-neutral-content">
+        <p className="text-slate-800 dark:text-slate-200">
           Select or create a chat to start messaging
         </p>
       </div>

@@ -9,7 +9,8 @@ interface ThemeStore {
 
 const updateDocumentTheme = (theme: "light" | "dark") => {
   if (typeof window !== "undefined") {
-    document.documentElement.setAttribute("data-theme", theme);
+    document.documentElement.classList.remove("light", "dark");
+    document.documentElement.classList.add(theme);
   }
 };
 
