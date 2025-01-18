@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/stores/authStore";
 import { subscriptionService } from "@/services/subscription";
 import { useSubscriptionStore } from "@/stores/useSubscription";
+import LoadingPulse from "../ui/Loading";
 
 interface AuthWrapperProps {
   children: React.ReactNode;
@@ -66,7 +67,13 @@ export function AuthWrapper({ children }: AuthWrapperProps) {
   }, []);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="h-screen flex flex-col">
+        <div className="flex-grow flex items-center justify-center">
+          <LoadingPulse size="medium" />
+        </div>
+      </div>
+    );
   }
 
   return children;

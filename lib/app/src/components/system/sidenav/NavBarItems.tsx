@@ -12,17 +12,16 @@ import {
   Trash2,
 } from "lucide-react";
 
-import { NavChatHistory } from "./NavChatHistory";
-import { NavMain } from "@/components/nav-main";
-import { NavSecondary } from "@/components/nav-secondary";
+import { NavMain } from "@/components/system/sidenav/NavMain";
+import { NavSecondary } from "@/components/system/sidenav/NavSecondary";
 import {
   Sidebar,
   SidebarContent,
   SidebarHeader,
   SidebarRail,
 } from "@/components/ui/sidebar";
-
-// This is sample data.
+import { ChatHistory } from "@/app/chat/ChatHistory";
+import { Folders } from "@/app/documents/Folders";
 const data = {
   navMain: [
     {
@@ -72,9 +71,17 @@ const data = {
   ],
 };
 
-export function NavChatSidebarLeft({
+export function NavBarItems({
+  activePage = "home",
   ...props
-}: React.ComponentProps<typeof Sidebar>) {
+}: React.ComponentProps<typeof Sidebar> & { activePage?: string }) {
+  const nav = data.navMain.map((item) => ({
+    title: item.title,
+    url: item.url,
+    isActive: item.title.toLowerCase() === activePage.toLowerCase(),
+    icon: item.icon,
+  }));
+
   return (
     <Sidebar className="border-r-0" {...props}>
       <SidebarHeader>
@@ -82,11 +89,11 @@ export function NavChatSidebarLeft({
         <h1 className="px-2 text-lg font-bold tracking-wider leading-8">
           ZCauldron
         </h1>
-        <NavMain items={data.navMain} />
+        <NavMain items={nav} />
       </SidebarHeader>
       <SidebarContent>
-        <NavChatHistory />
-        {/* <NavWorkspaces workspaces={data.workspaces} /> */}
+        {activePage === "chat" && <ChatHistory />}
+        {activePage === "documents" && <Folders />}
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarRail />

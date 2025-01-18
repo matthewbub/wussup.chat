@@ -2,10 +2,10 @@
 
 import { useEffect } from "react";
 import { authService } from "@/services/auth";
-import { useChatStore } from "./chatStore";
+import { useChatStore } from "@/stores/chatStore";
 import { useSearchParams } from "next/navigation";
 
-export function ChatDashboard({ children }: { children: React.ReactNode }) {
+export function InvokeAppHistory({ children }: { children: React.ReactNode }) {
   const { setSessions, setCurrentSession } = useChatStore();
   const searchParams = useSearchParams();
   useEffect(() => {

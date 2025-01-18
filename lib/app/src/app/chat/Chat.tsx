@@ -1,10 +1,11 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { useChatStore } from "./chatStore";
+import { useChatStore } from "@/stores/chatStore";
 import MarkdownComponent from "@/components/ui/Markdown";
 import { ModelSelect } from "./ModelSelect";
 import { useSubscriptionStore } from "@/stores/useSubscription";
+import { Message } from "./chatTypes";
 
 export const Chat: React.FC = () => {
   const { sessions, currentSessionId, addMessage, sessionTitle } =
@@ -55,7 +56,7 @@ export const Chat: React.FC = () => {
         </div>
       )}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.map((message) => (
+        {messages.map((message: Message) => (
           <div
             key={message.id}
             className={`flex ${

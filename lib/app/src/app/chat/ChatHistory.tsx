@@ -24,9 +24,9 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { useChatStore } from "@/app/chat/chatStore";
+import { useChatStore } from "@/stores/chatStore";
 
-export function NavChatHistory() {
+export function ChatHistory() {
   const { isMobile } = useSidebar();
   const { sessions } = useChatStore();
 
