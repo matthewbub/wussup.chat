@@ -12,18 +12,24 @@ export async function POST(req: Request) {
   const body = await req.text();
   const reqHeaders = await headers();
   const signature = reqHeaders.get("stripe-signature")!;
-
-  console.log("signature", signature);
   let event: Stripe.Event;
 
   try {
     event = stripe.webhooks.constructEvent(body, signature, endpointSecret);
-  } catch (err: any) {
-    console.error("Webhook Error:", err);
-    return NextResponse.json(
-      { error: `Webhook Error: ${err.message}` },
-      { status: 400 }
-    );
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      console.error("Webhook Error:", err);
+      return NextResponse.json(
+        { error: `Webhook Error: ${err.message}` },
+        { status: 400 }
+      );
+    } else {
+      console.error("Unknown error occurred", err);
+      return NextResponse.json(
+        { error: "Unknown error occurred" },
+        { status: 400 }
+      );
+    }
   }
 
   // Handle the event
@@ -31,8 +37,6 @@ export async function POST(req: Request) {
     case "checkout.session.completed":
     case "checkout.session.async_payment_succeeded":
       const session = event.data.object as Stripe.Checkout.Session;
-      // Handle successful payment
-      console.log("session being fulfilled", session);
       await fulfillSubscription(session);
       break;
     default:
@@ -43,8 +47,6 @@ export async function POST(req: Request) {
 }
 
 async function fulfillSubscription(session: Stripe.Checkout.Session) {
-  console.log(`Fulfilling Checkout Session ${session.id}`);
-
   try {
     // 1. Check if we've already processed this session
     const { data: existingSession, error: existingSessionError } =
@@ -56,7 +58,8 @@ async function fulfillSubscription(session: Stripe.Checkout.Session) {
 
     if (
       existingSessionError &&
-      !existingSessionError.message.includes("No rows found")
+      (!existingSessionError.message.includes("No rows found") ||
+        !existingSessionError.message.includes("The result contains 0 rows"))
     ) {
       console.error(
         "Error checking for existing session:",
@@ -65,8 +68,10 @@ async function fulfillSubscription(session: Stripe.Checkout.Session) {
     }
 
     if (existingSession) {
-      console.log(`Session ${session.id} already fulfilled`);
-      return;
+      return NextResponse.json(
+        { message: `Session ${session.id} already fulfilled` },
+        { status: 200 }
+      );
     }
 
     // 2. Retrieve the full session details
@@ -77,15 +82,14 @@ async function fulfillSubscription(session: Stripe.Checkout.Session) {
       }
     );
 
-    console.log("checkoutSession", checkoutSession);
     // 3. Verify payment status
     if (checkoutSession.payment_status === "unpaid") {
-      console.log(`Session ${session.id} is unpaid`);
-      return;
+      return NextResponse.json(
+        { message: `Session ${session.id} is unpaid` },
+        { status: 200 }
+      );
     }
 
-    console.log("checkoutSession", checkoutSession);
-    console.log("session", session);
     // 4. Get customer and subscription details
     const customerId = checkoutSession.customer as string;
     const subscriptionId =
@@ -102,8 +106,13 @@ async function fulfillSubscription(session: Stripe.Checkout.Session) {
       .single();
 
     const userId = existingUser?.id || crypto.randomUUID();
-    console.log("existingUser", existingUser);
-    console.log("userError", userError);
+    if (userError) {
+      console.error("Error getting user:", userError);
+      return NextResponse.json(
+        { message: `Error getting user: ${userError.message}` },
+        { status: 500 }
+      );
+    }
 
     const { error } = await supabase
       .from("ChatBot_Users")
