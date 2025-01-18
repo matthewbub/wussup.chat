@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { useChatStore } from "./chatStore";
 import MarkdownComponent from "@/components/ui/Markdown";
 import { ModelSelect } from "./ModelSelect";
-import { useSubscription } from "@/stores/useSubscription";
+import { useSubscriptionStore } from "@/stores/useSubscription";
 
 export const Chat: React.FC = () => {
   const { sessions, currentSessionId, addMessage, sessionTitle } =
@@ -17,8 +17,8 @@ export const Chat: React.FC = () => {
     (session) => session.id === currentSessionId
   );
   const messages = currentSession?.messages || [];
-  const { subscription } = useSubscription();
-
+  const { subscription } = useSubscriptionStore();
+  console.log("subscription", subscription);
   const handleAddMessage = (e: React.FormEvent) => {
     e.preventDefault();
     if (newMessage.trim() && currentSessionId) {
@@ -29,7 +29,7 @@ export const Chat: React.FC = () => {
 
   const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setNewMessage(e.target.value);
-    e.target.style.height = "inherit";
+    e.target.style.height = "auto";
     e.target.style.height = `${e.target.scrollHeight}px`;
   };
 
@@ -92,7 +92,7 @@ export const Chat: React.FC = () => {
         className="p-4 border-t border-slate-800"
       >
         <div className="flex items-end space-x-2">
-          <div className="flex flex-col w-full gap-2">
+          <div className="flex flex-col w-full gap-2 h-full">
             <ModelSelect
               model={model}
               onModelChange={setModel}
@@ -108,7 +108,7 @@ export const Chat: React.FC = () => {
                   handleAddMessage(e);
                 }
               }}
-              rows={12}
+              rows={1}
               placeholder="Type a message..."
               className="flex-1 min-h-[48px] max-h-[200px] p-2 border rounded-md 
                        text-sm sm:text-base resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 border-slate-800 text-slate-200"

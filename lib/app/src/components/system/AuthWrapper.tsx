@@ -4,6 +4,8 @@ import { useEffect } from "react";
 import { authService } from "@/services/auth";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/stores/authStore";
+import { subscriptionService } from "@/services/subscription";
+import { useSubscriptionStore } from "@/stores/useSubscription";
 
 interface AuthWrapperProps {
   children: React.ReactNode;
@@ -12,13 +14,22 @@ interface AuthWrapperProps {
 export function AuthWrapper({ children }: AuthWrapperProps) {
   const router = useRouter();
   const { loading, setUser, setLoading } = useAuthStore();
+  const { setSubscription, setLoading: setSubLoading } = useSubscriptionStore();
 
   const checkAuth = async () => {
     try {
       const user = await authService.getCurrentUser();
-
-      // Check if user exists in database
       await authService.ensureUserExists(user);
+
+      // Check subscription status
+      const { active, expiresAt } =
+        await subscriptionService.hasActiveSubscription(user.id);
+
+      setSubscription({
+        isSubscribed: active,
+        active,
+        expiresAt,
+      });
 
       setUser(user);
     } catch (error) {
@@ -26,6 +37,7 @@ export function AuthWrapper({ children }: AuthWrapperProps) {
       router.push("/login");
     } finally {
       setLoading(false);
+      setSubLoading(false);
     }
   };
 
