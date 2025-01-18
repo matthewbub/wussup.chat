@@ -26,24 +26,9 @@ import {
 } from "@/components/ui/sidebar";
 import { useChatStore } from "@/app/chat/chatStore";
 
-export function NavFavorites({
-  favorites,
-}: {
-  favorites: {
-    name: string;
-    url: string;
-    emoji: string;
-  }[];
-}) {
+export function NavChatHistory() {
   const { isMobile } = useSidebar();
-  const {
-    sessions,
-    currentSessionId,
-    addSession,
-    setCurrentSession,
-    deleteSession,
-    setSessionTitle,
-  } = useChatStore();
+  const { sessions } = useChatStore();
 
   console.log(sessions);
   return (

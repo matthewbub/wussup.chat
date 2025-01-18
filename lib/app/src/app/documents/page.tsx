@@ -14,7 +14,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { Chat } from "./Chat";
+import { Folders } from "./Folders";
 
 export default function Page() {
   return (
@@ -22,6 +22,7 @@ export default function Page() {
       <SidebarProvider>
         <ChatDashboard>
           <NavChatSidebarLeft />
+
           <SidebarInset>
             <header className="sticky top-0 flex h-14 shrink-0 items-center gap-2 bg-background">
               <div className="flex flex-1 items-center gap-2 px-3">
@@ -39,7 +40,7 @@ export default function Page() {
               </div>
             </header>
             <div className="flex flex-1 flex-col gap-4 p-4">
-              <Chat />
+              {/* <Chat /> */}
             </div>
           </SidebarInset>
           {/* <SidebarRight /> */}

@@ -2,24 +2,19 @@
 
 import * as React from "react";
 import {
-  AudioWaveform,
-  Blocks,
-  Calendar,
-  Command,
+  FileText,
   Home,
-  Inbox,
+  MessageCircle,
   MessageCircleQuestion,
-  Search,
+  Image,
   Settings2,
   Sparkles,
   Trash2,
 } from "lucide-react";
 
-import { NavFavorites } from "@/components/nav-favorites";
+import { NavChatHistory } from "./NavChatHistory";
 import { NavMain } from "@/components/nav-main";
 import { NavSecondary } from "@/components/nav-secondary";
-import { NavWorkspaces } from "@/components/nav-workspaces";
-import { TeamSwitcher } from "@/components/team-switcher";
 import {
   Sidebar,
   SidebarContent,
@@ -29,82 +24,55 @@ import {
 
 // This is sample data.
 const data = {
-  teams: [
-    {
-      name: "Acme Inc",
-      logo: Command,
-      plan: "Enterprise",
-    },
-    {
-      name: "Acme Corp.",
-      logo: AudioWaveform,
-      plan: "Startup",
-    },
-    {
-      name: "Evil Corp.",
-      logo: Command,
-      plan: "Free",
-    },
-  ],
   navMain: [
     {
-      title: "Search",
-      url: "#",
-      icon: Search,
-    },
-    {
       title: "Ask AI",
-      url: "#",
+      url: "/ask",
       icon: Sparkles,
     },
     {
       title: "Home",
-      url: "#",
+      url: "/home",
       icon: Home,
       isActive: true,
     },
     {
       title: "Documents",
-      url: "#",
-      icon: Inbox,
+      url: "/documents",
+      icon: FileText,
       badge: "10",
     },
     {
       title: "Chat",
-      url: "#",
-      icon: MessageCircleQuestion,
+      url: "/chat",
+      icon: MessageCircle,
     },
     {
       title: "Media",
-      url: "#",
-      icon: Settings2,
+      url: "/media",
+      icon: Image,
     },
   ],
   navSecondary: [
     {
-      title: "Calendar",
-      url: "#",
-      icon: Calendar,
-    },
-    {
       title: "Settings",
-      url: "#",
+      url: "/settings",
       icon: Settings2,
     },
     {
       title: "Trash",
-      url: "#",
+      url: "/trash",
       icon: Trash2,
     },
     {
       title: "Help",
-      url: "#",
+      url: "/support",
       icon: MessageCircleQuestion,
     },
   ],
 };
 
-export function SidebarLeft({
+export function NavChatSidebarLeft({
   ...props
 }: React.ComponentProps<typeof Sidebar>) {
   return (
@@ -117,7 +85,7 @@ export function SidebarLeft({
         <NavMain items={data.navMain} />
       </SidebarHeader>
       <SidebarContent>
-        <NavFavorites favorites={data.favorites} />
+        <NavChatHistory />
         {/* <NavWorkspaces workspaces={data.workspaces} /> */}
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
