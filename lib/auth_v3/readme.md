@@ -78,9 +78,8 @@ Here's a map of all the routes in this service. Click an endpoint ot quickly jum
 |                  | PUT    | /v3/admin/users/:id/status     | modify user status (suspend/activate)    |
 |                  | DELETE | /v3/admin/users/:id            | delete user account                      |
 
-## Internal Admin System Setup
+## Adding a new app
 
-/v3/admin/init-admin
-
-- create user with
-- create app
+- Run the ./scripts/create-app-local.sh script
+- Run the ./scripts/create-app-remote.sh script
+- Configure the origin to your production domain; when you deploy to prod
