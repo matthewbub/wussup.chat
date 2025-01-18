@@ -15,7 +15,7 @@ type LoginFormData = {
   password: string;
 };
 
-export function LoginForm({
+export function LoginFormV2({
   className,
   ...props
 }: React.ComponentProps<"div">) {
