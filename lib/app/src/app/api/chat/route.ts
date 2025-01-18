@@ -12,7 +12,6 @@ function getApiConfig(model: string) {
     baseUrl: isXAI ? XAI_BASE_URL : OPENAI_BASE_URL,
     apiKey: isXAI ? process.env.GROK_API_KEY : process.env.OPENAI_API_KEY,
     authPrefix: "Bearer",
-    defaultModel: isXAI ? "grok-2-latest" : "gpt-4-turbo-2024-04-09",
   };
 }
 
@@ -70,9 +69,12 @@ export async function POST(request: Request) {
     console.log("title", titleString, data);
   }
 
-  // Retain only the last CONTEXT_LENGTH messages for context
+  // Filter out empty messages and deduplicate
   const contextMessages = history
     .slice(-CONTEXT_LENGTH)
+    .filter(
+      (msg: { is_user: boolean; content: string }) => msg.content.trim() !== ""
+    )
     .map((msg: { is_user: boolean; content: string }) => ({
       role: msg.is_user ? "user" : "assistant",
       content: msg.content,
@@ -84,27 +86,19 @@ export async function POST(request: Request) {
   try {
     const apiConfig = getApiConfig(model);
     console.log("apiConfig", apiConfig);
+    const headers = {
+      "Content-Type": "application/json",
+      Authorization: `${apiConfig.authPrefix} ${apiConfig.apiKey}`,
+    };
     const response = await fetch(apiConfig.baseUrl, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `${apiConfig.authPrefix} ${apiConfig.apiKey}`,
-      },
+      headers: headers,
       body: JSON.stringify({
-        model: apiConfig.defaultModel,
-        messages: [
-          {
-            role: "system",
-            content:
-              "You are Grok, a chatbot inspired by the Hitchhikers Guide to the Galaxy.",
-          },
-          ...contextMessages,
-        ],
+        model: model,
+        messages: contextMessages,
         stream: true,
-        temperature: 0.7,
       }),
     });
-    console.log("response", response);
     if (!response.ok) {
       const errorData = await response.json();
       console.log("errorData", errorData);
