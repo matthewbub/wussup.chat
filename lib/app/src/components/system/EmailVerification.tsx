@@ -81,14 +81,14 @@ export default function EmailVerification({
 
           {status === "success" && (
             <div className="mt-4 text-center">
-              <p className="text-sm text-success">
+              <p className="text-sm text-green-600">
                 {STRINGS.VERIFY_SUCCESS_MESSAGE}
               </p>
-              <p className="text-sm text-slate-800 dark:text-slate-200/60 mt-2">
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
                 {STRINGS.VERIFY_REDIRECT_MESSAGE}{" "}
                 <a
                   href="/login"
-                  className="font-semibold text-primary hover:text-primary-focus"
+                  className="font-semibold text-blue-600 hover:text-blue-700"
                 >
                   {STRINGS.VERIFY_GO_TO_LOGIN}
                 </a>
@@ -97,7 +97,7 @@ export default function EmailVerification({
           )}
 
           {status === "error" && (
-            <p className="text-sm text-error">{errorMessage}</p>
+            <p className="text-sm text-red-600">{errorMessage}</p>
           )}
 
           {status === "idle" && (
@@ -117,12 +117,12 @@ export default function EmailVerification({
 
           {status !== "success" && (
             <div className="mt-8">
-              <p className="text-sm text-slate-800 dark:text-slate-200/60">
+              <p className="text-sm text-gray-600 dark:text-gray-400">
                 {STRINGS.VERIFY_RESEND}{" "}
                 <button
                   onClick={handleResendVerification}
                   disabled={status === "loading" || !userEmail}
-                  className="font-semibold text-primary hover:text-primary-focus disabled:opacity-50"
+                  className="font-semibold text-blue-600 hover:text-blue-700 disabled:opacity-50"
                 >
                   {STRINGS.VERIFY_RESEND_BUTTON}
                 </button>
@@ -132,11 +132,11 @@ export default function EmailVerification({
 
           {status !== "success" && (
             <div className="mt-4">
-              <p className="text-sm text-slate-800 dark:text-slate-200/60">
+              <p className="text-sm text-gray-600 dark:text-gray-400">
                 {STRINGS.VERIFY_WRONG_EMAIL}{" "}
                 <a
                   href="/login"
-                  className="font-semibold text-primary hover:text-primary-focus"
+                  className="font-semibold text-blue-600 hover:text-blue-700"
                 >
                   {STRINGS.VERIFY_SIGN_IN}
                 </a>
