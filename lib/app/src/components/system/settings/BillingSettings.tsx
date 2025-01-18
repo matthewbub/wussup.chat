@@ -1,23 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { useAuthStore } from "@/stores/authStore";
-
-type SubscriptionStatus = "active" | "inactive" | "past_due" | "canceled";
-
-interface SubscriptionDetails {
-  status: SubscriptionStatus;
-  currentPeriodEnd?: string;
-  cancelAtPeriodEnd?: boolean;
-}
+import { useSubscriptionStore } from "@/stores/useSubscription";
 
 export function BillingSettings() {
-  const user = useAuthStore((state) => state.user);
   const [isLoading, setIsLoading] = useState(false);
-  // This would come from your backend/Stripe
-  const [subscription, setSubscription] = useState<SubscriptionDetails>({
-    status: "inactive",
-  });
+  const { subscription } = useSubscriptionStore();
 
   const handleSubscribe = async () => {
     // Direct to Stripe billing page
@@ -28,11 +16,11 @@ export function BillingSettings() {
     setIsLoading(true);
     try {
       // Create Stripe customer portal session
-      // const response = await fetch('/api/create-portal-session', ...);
-      // const { url } = await response.json();
-      // window.location.href = url;
+      const response = await fetch("/api/create-portal-session");
+      const { url } = await response.json();
+      window.location.href = url;
     } catch (error) {
-      console.error("Failed to open customer portal:", error);
+      console.error("[BillingSettings] Failed to open customer portal:", error);
     } finally {
       setIsLoading(false);
     }
@@ -50,20 +38,15 @@ export function BillingSettings() {
           <h3 className="text-lg font-medium dark:text-gray-200 mb-2">
             Current Plan
           </h3>
-          {subscription.status === "active" ? (
+          {subscription.active ? (
             <div className="space-y-2">
               <p className="text-sm text-gray-600 dark:text-gray-300">
                 You are currently subscribed to the Pro plan.
               </p>
-              {subscription.currentPeriodEnd && (
+              {subscription.expiresAt && (
                 <p className="text-sm text-gray-600 dark:text-gray-300">
                   Next billing date:{" "}
-                  {new Date(subscription.currentPeriodEnd).toLocaleDateString()}
-                </p>
-              )}
-              {subscription.cancelAtPeriodEnd && (
-                <p className="text-sm text-yellow-600 dark:text-yellow-400">
-                  Your subscription will end at the current billing period.
+                  {subscription.expiresAt.toLocaleDateString()}
                 </p>
               )}
               <button
