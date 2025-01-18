@@ -1,5 +1,6 @@
 import Cookies from "js-cookie";
 import { API_CONSTANTS } from "@/constants/api";
+import { supabase } from "./supabase";
 
 // auth service to handle authentication state and API calls
 export const authService = {
@@ -154,5 +155,36 @@ export const authService = {
 
     this.clearTokens();
     return data;
+  },
+
+  // ensure user exists in database, create with defaults if not
+  async ensureUserExists(user) {
+    const { data, error: fetchError } = await supabase
+      .from("ChatBot_Users")
+      .select()
+      .eq("id", user.id)
+      .single();
+
+    if (fetchError || !data) {
+      // User doesn't exist, create with default values
+      const { error: insertError } = await supabase
+        .from("ChatBot_Users")
+        .insert({
+          id: user.id,
+          email: user.email,
+          stripeCustomerId: null,
+          stripeSubscriptionId: null,
+          subscriptionStatus: "inactive",
+          checkoutSessionId: null,
+          subscriptionPeriodEnd: null,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        });
+
+      if (insertError) {
+        console.error("Error creating user:", insertError);
+        throw insertError;
+      }
+    }
   },
 };

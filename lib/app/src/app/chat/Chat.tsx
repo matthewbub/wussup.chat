@@ -108,7 +108,7 @@ export const Chat: React.FC = () => {
                   handleAddMessage(e);
                 }
               }}
-              rows={3}
+              rows={12}
               placeholder="Type a message..."
               className="flex-1 min-h-[48px] max-h-[200px] p-2 border rounded-md 
                        text-sm sm:text-base resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 border-slate-800 text-slate-200"

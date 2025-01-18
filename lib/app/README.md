@@ -2,7 +2,22 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
-First, run the development server:
+First, update your .env.local file with the following
+
+```bash
+OPENAI_API_KEY=
+ANTHROPIC_API_KEY=
+GROK_API_KEY=
+
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+
+STRIPE_PUBLISHABLE_KEY=
+STRIPE_SECRET_KEY=
+STRIPE_WEBHOOK_SECRET=
+```
+
+Then, run the development server:
 
 ```bash
 npm run dev
