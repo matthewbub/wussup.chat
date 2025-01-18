@@ -14,6 +14,8 @@ interface ChatStore {
   deleteSession: (sessionId: string) => void;
   setSessionTitle: (sessionId: string) => void;
   sessionTitle: string;
+  fetchSessions: (userId: string) => Promise<void>;
+  loading: boolean;
 }
 
 export const useChatStore = create<ChatStore>((set, get) => ({
@@ -224,4 +226,11 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     set({ sessionTitle: session?.name || "Untitled Chat" });
   },
   sessionTitle: "",
+  loading: false,
+  fetchSessions: async (userId: string) => {
+    set({ loading: true });
+    const response = await fetch(`/api/chat?userId=${userId}`);
+    const data = await response.json();
+    set({ sessions: data.sessions, loading: false });
+  },
 }));

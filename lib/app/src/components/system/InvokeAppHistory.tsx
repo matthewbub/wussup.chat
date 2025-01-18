@@ -6,24 +6,24 @@ import { useChatStore } from "@/stores/chatStore";
 import { useSearchParams } from "next/navigation";
 
 export function InvokeAppHistory({ children }: { children: React.ReactNode }) {
-  const { setSessions, setCurrentSession } = useChatStore();
+  const { fetchSessions, setCurrentSession } = useChatStore();
   const searchParams = useSearchParams();
+
   useEffect(() => {
-    async function fetchData() {
+    async function initializeChat() {
       const user = await authService.getCurrentUser();
-      const response = await fetch(`/api/chat?userId=${user?.id}`);
-      const data = await response.json();
+      if (user) {
+        await fetchSessions(user.id);
 
-      setSessions(data.sessions);
-
-      // Set initial session from URL if present
-      const sessionId = searchParams.get("session");
-      if (sessionId) {
-        setCurrentSession(sessionId);
+        // Set initial session from URL if present
+        const sessionId = searchParams.get("session");
+        if (sessionId) {
+          setCurrentSession(sessionId);
+        }
       }
     }
 
-    fetchData();
+    initializeChat();
   }, []);
 
   return children;
