@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/services/supabase";
-const CONTEXT_LENGTH = 10; // Number of previous messages to retain for context
+const CONTEXT_LENGTH = 100; // Number of previous messages to retain for context
 const TITLE_SYSTEM_PROMPT =
   "Summarize the following message as a brief, engaging title in 4-6 words:";
 const OPENAI_BASE_URL = "https://api.openai.com/v1/chat/completions";
