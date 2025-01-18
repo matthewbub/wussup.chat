@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { supabase } from "@/services/supabase";
-import { ChatSession } from "./chatTypes";
+import { ChatSession } from "@/app/chat/chatTypes";
 import { useAuthStore } from "@/stores/authStore";
 
 interface ChatStore {
