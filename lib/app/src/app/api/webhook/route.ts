@@ -105,11 +105,11 @@ async function fulfillSubscription(session: Stripe.Checkout.Session) {
       .eq("email", session.customer_email || session.customer_details?.email)
       .single();
 
-    const userId = existingUser?.id || crypto.randomUUID();
-    if (userError) {
+    const userId = existingUser?.id;
+    if (userError || !userId) {
       console.error("Error getting user:", userError);
       return NextResponse.json(
-        { message: `Error getting user: ${userError.message}` },
+        { message: `Error getting user: ${userError?.message}` },
         { status: 500 }
       );
     }
