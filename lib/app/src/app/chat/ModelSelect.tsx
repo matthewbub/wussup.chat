@@ -23,7 +23,11 @@ interface Model {
 }
 
 const AVAILABLE_MODELS: Model[] = [
-  { id: "chatgpt-4o-latest", name: "ChatGPT 4o Latest", provider: "openai" },
+  {
+    id: "chatgpt-4o-latest",
+    name: "ChatGPT 4o Latest",
+    provider: "openai",
+  },
   { id: "gpt-4o", name: "GPT 4o", provider: "openai" },
   { id: "gpt-4o-mini", name: "GPT 4o Mini", provider: "openai" },
   { id: "o1", name: "O1", provider: "openai" },
@@ -55,27 +59,26 @@ export const ModelSelect: React.FC<ModelSelectProps> = ({
       >
         Model
       </label>
-      <Select value={model} onValueChange={onModelChange}>
-        <SelectTrigger className=" w-fit">
-          <SelectValue placeholder="Select Model" />
+      <Select
+        value={model || "chatgpt-4o-latest"}
+        onValueChange={onModelChange}
+      >
+        <SelectTrigger className="w-fit">
+          <SelectValue defaultValue="chatgpt-4o-latest">
+            {AVAILABLE_MODELS.find(
+              (m) => m.id === (model || "chatgpt-4o-latest")
+            )?.name || "ChatGPT 4o Latest"}
+          </SelectValue>
         </SelectTrigger>
-        <SelectContent className="bg-slate-800">
+        <SelectContent>
           {isSubscribed ? (
             // Subscribed users see models grouped by provider
             Object.entries(groupedModels).map(([provider, models]) => (
               <SelectGroup key={provider}>
-                <SelectLabel>
-                  <span className="text-slate-400 text-xs mt-2 capitalize">
-                    {provider}
-                  </span>
-                </SelectLabel>
+                <SelectLabel>{provider}</SelectLabel>
                 {models.map((model) => (
-                  <SelectItem
-                    key={model.id}
-                    value={model.id}
-                    className="text-slate-200 "
-                  >
-                    <span className="text-slate-200 ">{model.name}</span>
+                  <SelectItem key={model.id} value={model.id}>
+                    {model.name}
                   </SelectItem>
                 ))}
               </SelectGroup>
@@ -83,15 +86,11 @@ export const ModelSelect: React.FC<ModelSelectProps> = ({
           ) : (
             // Non-subscribed users see free/premium separation
             <SelectGroup>
-              <SelectLabel>
-                <span className="text-slate-400 text-xs mt-2">Free Models</span>
-              </SelectLabel>
-              <SelectItem value="chatgpt-4o-latest" className="text-slate-200">
+              <SelectLabel>Free Models</SelectLabel>
+              <SelectItem value="chatgpt-4o-latest">
                 ChatGPT 4o Latest
               </SelectItem>
-              <SelectLabel className="text-slate-400 text-xs mt-2">
-                Premium Models
-              </SelectLabel>
+              <SelectLabel>Premium Models</SelectLabel>
               {AVAILABLE_MODELS.filter((m) => m.id !== "chatgpt-4o-latest").map(
                 (model) => (
                   <SelectItem

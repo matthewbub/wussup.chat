@@ -6,6 +6,9 @@ import MarkdownComponent from "@/components/ui/Markdown";
 import { ModelSelect } from "./ModelSelect";
 import { useSubscriptionStore } from "@/stores/useSubscription";
 import { Message } from "./chatTypes";
+import { Textarea } from "@/components/ui/textarea";
+import { Separator } from "@/components/ui/separator";
+import { Button } from "@/components/ui/button";
 
 export const Chat: React.FC = () => {
   const { sessions, currentSessionId, addMessage, sessionTitle } =
@@ -49,7 +52,7 @@ export const Chat: React.FC = () => {
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-100px)] bg-slate-900/50">
+    <div className="flex flex-col h-[calc(100vh-100px)]">
       {sessionTitle && (
         <div className="flex items-center justify-between p-4">
           <h1 className="text-2xl font-bold text-slate-100">{sessionTitle}</h1>
@@ -88,10 +91,8 @@ export const Chat: React.FC = () => {
         ))}
         <div ref={messagesEndRef} />
       </div>
-      <form
-        onSubmit={handleAddMessage}
-        className="p-4 border-t border-slate-800"
-      >
+      <Separator />
+      <form onSubmit={handleAddMessage} className="p-4">
         <div className="flex items-end space-x-2">
           <div className="flex flex-col w-full gap-2 h-full">
             <ModelSelect
@@ -99,7 +100,7 @@ export const Chat: React.FC = () => {
               onModelChange={setModel}
               isSubscribed={subscription.isSubscribed}
             />
-            <textarea
+            <Textarea
               ref={textareaRef}
               value={newMessage}
               onChange={handleTextareaChange}
@@ -111,16 +112,10 @@ export const Chat: React.FC = () => {
               }}
               rows={1}
               placeholder="Type a message..."
-              className="flex-1 min-h-[48px] max-h-[200px] p-2 border rounded-md 
-                       text-sm sm:text-base resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 border-slate-800 text-slate-200"
+              className="flex-1 min-h-[48px] max-h-[200px] text-sm"
             />
           </div>
-          <button
-            type="submit"
-            className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors"
-          >
-            Send
-          </button>
+          <Button type="submit">Send</Button>
         </div>
       </form>
     </div>
