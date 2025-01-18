@@ -18,7 +18,7 @@ export const Chat: React.FC = () => {
   );
   const messages = currentSession?.messages || [];
   const { subscription } = useSubscriptionStore();
-  console.log("subscription", subscription);
+
   const handleAddMessage = (e: React.FormEvent) => {
     e.preventDefault();
     if (newMessage.trim() && currentSessionId) {

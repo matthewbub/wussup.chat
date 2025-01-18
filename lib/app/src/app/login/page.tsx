@@ -1,12 +1,14 @@
 "use client";
 import { PublicHeader } from "@/components/system/PublicHeader";
-import { Login } from "@/components/system/Login";
+import { LoginForm } from "@/components/login-form";
 
 export default function LoginPage() {
   return (
     <div>
       <PublicHeader />
-      <Login />
+      <div className="flex flex-col items-center justify-center h-screen w-full max-w-sm md:max-w-3xl mx-auto">
+        <LoginForm />
+      </div>
     </div>
   );
 }
