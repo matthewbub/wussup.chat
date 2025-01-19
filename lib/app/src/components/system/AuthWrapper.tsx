@@ -20,6 +20,8 @@ export function AuthWrapper({ children }: AuthWrapperProps) {
   const checkAuth = async () => {
     try {
       const user = await authService.getCurrentUser();
+
+      // this will check for the user in the database and create it if it doesn't exist
       await authService.ensureUserExists(user);
 
       // Check subscription status
@@ -32,6 +34,7 @@ export function AuthWrapper({ children }: AuthWrapperProps) {
         expiresAt,
       });
 
+      // set user in state for the app
       setUser(user);
     } catch (error) {
       console.error(error);
@@ -53,7 +56,7 @@ export function AuthWrapper({ children }: AuthWrapperProps) {
     return () => clearInterval(intervalId);
   }, [router, setUser, setLoading]);
 
-  // Add listener for visibility changes to check auth when tab becomes visible
+  // Event listener for visibility changes to check auth when tab becomes visible
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.visibilityState === "visible") {

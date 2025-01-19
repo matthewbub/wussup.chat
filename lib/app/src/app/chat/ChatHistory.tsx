@@ -2,7 +2,7 @@
 
 import {
   ArrowUpRight,
-  Link,
+  Link as LinkIcon,
   MoreHorizontal,
   StarOff,
   Trash2,
@@ -28,7 +28,7 @@ import {
 import { useChatStore } from "@/stores/chatStore";
 import LoadingPulse from "@/components/ui/Loading";
 import { useAuthStore } from "@/stores/authStore";
-
+import Link from "next/link";
 export function ChatHistory() {
   const { isMobile } = useSidebar();
   const { sessions, loading, addSession } = useChatStore();
@@ -68,10 +68,13 @@ export function ChatHistory() {
             sessions.map((session) => (
               <SidebarMenuItem key={session.id}>
                 <SidebarMenuButton asChild>
-                  <a href={`/chat?session=${session.id}`} title={session.name}>
+                  <Link
+                    href={`/chat?session=${session.id}`}
+                    title={session.name}
+                  >
                     {/* <span>{item.emoji}</span> */}
                     <span>{session.name}</span>
-                  </a>
+                  </Link>
                 </SidebarMenuButton>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -91,7 +94,7 @@ export function ChatHistory() {
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem>
-                      <Link className="text-muted-foreground" />
+                      <LinkIcon className="text-muted-foreground" />
                       <span>Copy Link</span>
                     </DropdownMenuItem>
                     <DropdownMenuItem>
