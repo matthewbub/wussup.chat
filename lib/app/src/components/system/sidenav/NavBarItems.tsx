@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/sidebar";
 import { ChatHistory } from "@/app/chat/ChatHistory";
 import { Folders } from "@/app/documents/Folders";
+import { useModalStore } from "@/stores/modalStore";
 const data = {
   navMain: [
     {
@@ -81,6 +82,7 @@ export function NavBarItems({
     isActive: item.title.toLowerCase() === activePage.toLowerCase(),
     icon: item.icon,
   }));
+  const { openModal } = useModalStore();
 
   return (
     <Sidebar className="border-r-0" {...props}>
@@ -93,7 +95,9 @@ export function NavBarItems({
       </SidebarHeader>
       <SidebarContent>
         {activePage === "chat" && <ChatHistory />}
-        {activePage === "documents" && <Folders />}
+        {activePage === "documents" && (
+          <Folders onCreateFile={() => openModal("file")} />
+        )}
         <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarRail />

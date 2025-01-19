@@ -1,5 +1,4 @@
-import { ChevronRight, MoreHorizontal, Plus } from "lucide-react";
-
+import { ChevronRight, MoreHorizontal, Plus, FilePlus } from "lucide-react";
 import {
   Collapsible,
   CollapsibleContent,
@@ -17,23 +16,50 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/Tooltip";
+import { Button } from "@/components/ui/button";
 import { dummyFolders } from "./dummy-data";
+
+interface Folder {
+  name: string;
+  emoji: string;
+  pages: { name: string; emoji: string }[];
+}
+
+interface FoldersProps {
+  folders?: Folder[];
+  onCreateFile: () => void;
+}
 
 export function Folders({
   folders = dummyFolders,
-}: {
-  folders?: {
-    name: string;
-    emoji: React.ReactNode;
-    pages: {
-      name: string;
-      emoji: React.ReactNode;
-    }[];
-  }[];
-}) {
+  onCreateFile,
+}: FoldersProps) {
   return (
     <SidebarGroup>
-      <SidebarGroupLabel>Documents</SidebarGroupLabel>
+      <SidebarGroupLabel className="flex justify-between items-center">
+        <div className="w-full">Documents</div>
+        <div className="flex space-x-2">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="icon" onClick={onCreateFile}>
+                  <FilePlus className="h-4 w-4" />
+                  <span className="sr-only">Create New File</span>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Create New Document</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
+      </SidebarGroupLabel>
       <SidebarGroupContent>
         <SidebarMenu>
           {folders.map((folder) => (

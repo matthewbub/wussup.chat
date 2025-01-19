@@ -30,6 +30,12 @@ import LoadingPulse from "@/components/ui/Loading";
 import { useAuthStore } from "@/stores/authStore";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/Tooltip";
 
 export function ChatHistory() {
   const { isMobile } = useSidebar();
@@ -46,19 +52,23 @@ export function ChatHistory() {
 
   return (
     <div>
-      <SidebarGroup>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton onClick={handleNewChat}>
-              <PlusCircle className="h-4 w-4" />
-              <span>New Chat</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarGroup>
-
       <SidebarGroup className="group-data-[collapsible=icon]:hidden">
-        <SidebarGroupLabel>Chat History</SidebarGroupLabel>
+        <SidebarGroupLabel className="flex justify-between items-center">
+          <div className="w-full">Chat History</div>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <SidebarMenuButton onClick={handleNewChat} className="w-fit">
+                  <PlusCircle className="h-4 w-4" />
+                  <span className="sr-only">New Chat</span>
+                </SidebarMenuButton>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>New Chat</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </SidebarGroupLabel>
         <SidebarMenu>
           {loading ? (
             <div className="flex flex-col justify-center items-center gap-2 my-20">
