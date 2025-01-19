@@ -5,7 +5,7 @@ import { useChatStore } from "@/stores/chatStore";
 import MarkdownComponent from "@/components/ui/Markdown";
 import { ModelSelect } from "./ModelSelect";
 import { useSubscriptionStore } from "@/stores/useSubscription";
-import { Message } from "./chatTypes";
+import { Message } from "@/types/chat";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";

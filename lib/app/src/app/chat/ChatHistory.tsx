@@ -29,17 +29,27 @@ import { useChatStore } from "@/stores/chatStore";
 import LoadingPulse from "@/components/ui/Loading";
 import { useAuthStore } from "@/stores/authStore";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+
 export function ChatHistory() {
   const { isMobile } = useSidebar();
   const { sessions, loading, addSession } = useChatStore();
   const { user } = useAuthStore();
+  const router = useRouter();
+
+  const handleNewChat = () => {
+    if (user?.id) {
+      addSession(user.id);
+      router.push("/chat");
+    }
+  };
 
   return (
     <div>
       <SidebarGroup>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton onClick={() => user?.id && addSession(user.id)}>
+            <SidebarMenuButton onClick={handleNewChat}>
               <PlusCircle className="h-4 w-4" />
               <span>New Chat</span>
             </SidebarMenuButton>
