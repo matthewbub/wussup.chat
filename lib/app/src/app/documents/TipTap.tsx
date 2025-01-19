@@ -21,7 +21,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
+import { Button, ButtonDiv } from "@/components/ui/button";
 import {
   BoldIcon,
   CodeIcon,
@@ -79,6 +79,7 @@ const TipTap = ({
   defaultValue,
   params,
   editable = true,
+  callback,
 }: {
   defaultValue?: string;
   params?: {
@@ -86,6 +87,7 @@ const TipTap = ({
   };
   editable?: boolean;
   className?: string;
+  callback?: (content: string) => void;
 }) => {
   const { control, setValue } = useForm();
   const [classNameFromState, setClassNameFromState] = useState(proseClassNames);
@@ -138,13 +140,10 @@ const TipTap = ({
   const debouncedUpdate = useCallback(
     debounce(async (content: string) => {
       try {
-        await fetch("/api/v0/document", {
-          method: "PUT",
-          body: JSON.stringify({
-            slug: params?.slug,
-            content,
-          }),
-        });
+        if (callback) {
+          callback(content);
+        }
+        console.log("content", content);
       } catch (e) {
         console.error(e);
         setClassNameFromState(
@@ -409,7 +408,8 @@ const TipTap = ({
           </Button>
           <DropdownMenu>
             <DropdownMenuTrigger>
-              <Button
+              <ButtonDiv
+                role="div"
                 size={"icon"}
                 variant={"ghost"}
                 className={
@@ -420,7 +420,7 @@ const TipTap = ({
               >
                 <List className="h-5 w-5" />
                 <span className="sr-only">Bullet List</span>
-              </Button>
+              </ButtonDiv>
             </DropdownMenuTrigger>
             <DropdownMenuContent>
               <DropdownMenuItem

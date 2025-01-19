@@ -3,6 +3,10 @@ import { DashboardLayout } from "@/components/system/DashboardLayout";
 import TipTap from "./TipTap";
 
 export default function Page() {
+  const handleCallback = (content: string) => {
+    console.log(content);
+  };
+
   return (
     <DashboardLayout
       breadcrumbItems={[
@@ -13,7 +17,7 @@ export default function Page() {
       ]}
       activePage="documents"
     >
-      <TipTap className="h-[calc(100vh-56px)]" />
+      <TipTap className="h-[calc(100vh-56px)]" callback={handleCallback} />
     </DashboardLayout>
   );
 }
