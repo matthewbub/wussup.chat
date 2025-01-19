@@ -17,6 +17,7 @@ export function ResetPassword() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const token = searchParams.get("token");
+  const appId = searchParams.get("appId");
   const { isLoading, error, success, resetPassword } = usePasswordResetStore();
 
   const {
@@ -36,7 +37,12 @@ export function ResetPassword() {
 
   const onSubmit = async (data: ResetPasswordFormData) => {
     if (!token) return;
-    await resetPassword(token, data.password);
+    await resetPassword({
+      token,
+      password: data.password,
+      confirmPassword: data.confirmPassword,
+      appId: appId || "",
+    });
   };
 
   if (success) {

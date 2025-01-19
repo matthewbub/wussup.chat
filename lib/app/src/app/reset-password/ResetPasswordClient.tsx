@@ -1,7 +1,7 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { Card } from "@/components/ui/Card";
+import { Card } from "@/components/ui/cards";
 import { ResetPassword } from "@/components/system/ResetPassword";
 
 // this is the client component that actually uses useSearchParams
@@ -21,5 +21,5 @@ export default function ResetPasswordClient() {
     );
   }
 
-  return <ResetPassword token={token} appId={appId} />;
+  return <ResetPassword />;
 }

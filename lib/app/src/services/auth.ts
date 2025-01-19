@@ -1,6 +1,7 @@
 import Cookies from "js-cookie";
 import { API_CONSTANTS } from "@/constants/api";
 import { supabase } from "./supabase";
+import { User } from "@/types/user";
 
 // auth service to handle authentication state and API calls
 export const authService = {
@@ -158,7 +159,7 @@ export const authService = {
   },
 
   // ensure user exists in database, create with defaults if not
-  async ensureUserExists(user) {
+  async ensureUserExists(user: User) {
     const { data, error: fetchError } = await supabase
       .from("ChatBot_Users")
       .select()
