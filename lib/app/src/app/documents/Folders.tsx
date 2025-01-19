@@ -42,23 +42,22 @@ export function Folders({
 }: FoldersProps) {
   return (
     <SidebarGroup>
-      <SidebarGroupLabel className="flex justify-between items-center">
+      <SidebarGroupLabel className="flex justify-between items-center sticky top-0 bg-sidebar z-10">
         <div className="w-full">Documents</div>
-        <div className="flex space-x-2">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button variant="ghost" size="icon" onClick={onCreateFile}>
-                  <FilePlus className="h-4 w-4" />
-                  <span className="sr-only">Create New File</span>
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Create New Document</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        </div>
+
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="ghost" size="icon" onClick={onCreateFile}>
+                <FilePlus className="h-4 w-4" />
+                <span className="sr-only">Create New File</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Create New Document</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </SidebarGroupLabel>
       <SidebarGroupContent>
         <SidebarMenu>
@@ -99,12 +98,13 @@ export function Folders({
               </SidebarMenuItem>
             </Collapsible>
           ))}
-          <SidebarMenuItem>
-            <SidebarMenuButton className="text-sidebar-foreground/70">
-              <MoreHorizontal />
-              <span>More</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
+          {/* TODO implement this later */}
+          {/*<SidebarMenuItem>*/}
+          {/*  <SidebarMenuButton className="text-sidebar-foreground/70">*/}
+          {/*    <MoreHorizontal />*/}
+          {/*    <span>More</span>*/}
+          {/*  </SidebarMenuButton>*/}
+          {/*</SidebarMenuItem>*/}
         </SidebarMenu>
       </SidebarGroupContent>
     </SidebarGroup>

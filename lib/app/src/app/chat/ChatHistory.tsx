@@ -53,7 +53,7 @@ export function ChatHistory() {
   return (
     <div>
       <SidebarGroup className="group-data-[collapsible=icon]:hidden">
-        <SidebarGroupLabel className="flex justify-between items-center">
+        <SidebarGroupLabel className="flex justify-between items-center sticky top-0 bg-sidebar z-10">
           <div className="w-full">Chat History</div>
           <TooltipProvider>
             <Tooltip>
@@ -131,12 +131,13 @@ export function ChatHistory() {
               </SidebarMenuItem>
             ))
           )}
-          <SidebarMenuItem>
-            <SidebarMenuButton className="text-sidebar-foreground/70">
-              <MoreHorizontal />
-              <span>More</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
+          {/* TODO Implement this later */}
+          {/*<SidebarMenuItem>*/}
+          {/*  <SidebarMenuButton className="text-sidebar-foreground/70">*/}
+          {/*    <MoreHorizontal />*/}
+          {/*    <span>More</span>*/}
+          {/*  </SidebarMenuButton>*/}
+          {/*</SidebarMenuItem>*/}
         </SidebarMenu>
       </SidebarGroup>
     </div>
