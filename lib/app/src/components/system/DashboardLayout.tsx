@@ -14,9 +14,11 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { NavBarItems } from "@/components/system/sidenav/NavBarItems";
+import Link from "next/link";
 
 interface BreadcrumbItem {
   label: string;
+  href: string;
 }
 
 interface DashboardLayoutProps {
@@ -45,7 +47,7 @@ export function DashboardLayout({
                     {breadcrumbItems.map((item, index) => (
                       <BreadcrumbItem key={index}>
                         <BreadcrumbPage className="line-clamp-1">
-                          {item.label}
+                          <Link href={item.href}>{item.label}</Link>
                         </BreadcrumbPage>
                       </BreadcrumbItem>
                     ))}

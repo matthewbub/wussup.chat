@@ -6,7 +6,7 @@ export default function Page() {
     <DashboardLayout
       activePage="chat"
       breadcrumbItems={[
-        { label: "Chat" },
+        { label: "Chat", href: "/chat" },
         // TODO: Add chat title here
         // { label: "Project Management & Task Tracking" },
       ]}

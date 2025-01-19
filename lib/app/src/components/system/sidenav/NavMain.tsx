@@ -6,7 +6,9 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarHeader,
 } from "@/components/ui/sidebar";
+import { NavUser } from "@/components/nav-user";
 
 export function NavMain({
   items,
@@ -20,6 +22,9 @@ export function NavMain({
 }) {
   return (
     <SidebarMenu>
+      <SidebarHeader className="h-16 border-b border-sidebar-border">
+        <NavUser />
+      </SidebarHeader>
       {items.map((item) => (
         <SidebarMenuItem key={item.title}>
           <SidebarMenuButton asChild isActive={item.isActive}>
