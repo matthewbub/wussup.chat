@@ -8,24 +8,25 @@ import { AccountSettings } from "@/components/system/settings/AccountSettings";
 import { BillingSettings } from "@/components/system/settings/BillingSettings";
 import { AppSettings } from "@/components/system/settings/AppSettings";
 import { useSearchParams } from "next/navigation";
+import { DashboardLayout } from "@/components/system/DashboardLayout";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 export default function Settings() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
   const [activeTab, setActiveTab] = useState("account");
+  const tabPattern = /[A-Z]/g;
+
   const handleTabChange = (tab: string) => {
-    setActiveTab(tab.toLowerCase().replace(/\s+/g, ""));
-    // clear the search params
+    setActiveTab(tab.toLowerCase());
     router.replace("/settings");
   };
 
-  const tabPattern = /[A-Z]/g;
   useEffect(() => {
     const tab = searchParams.get("tab");
-
     if (tab) {
-      setActiveTab(tab.toLowerCase().replace(tabPattern, ""));
+      setActiveTab(tab.toLowerCase());
     }
   }, [searchParams]);
 
@@ -45,43 +46,35 @@ export default function Settings() {
   ];
 
   return (
-    <AuthWrapper>
-      <div className="container mx-auto p-4">
-        <AuthHeader />
-
-        <div className="max-w-4xl mx-auto mt-8">
-          <div className="border-b border-gray-200">
-            <nav
-              className="flex space-x-1 p-1 bg-gray-100 dark:bg-gray-800 rounded-lg"
-              aria-label="Tabs"
+    <DashboardLayout
+      activePage="settings"
+      breadcrumbItems={[{ label: "Settings", href: "/settings" }]}
+    >
+      <div>
+        <Tabs value={activeTab} onValueChange={handleTabChange}>
+          <TabsList className="grid w-full grid-cols-3">
+            {tabs.map((tab) => (
+              <TabsTrigger
+                key={tab.value}
+                value={tab.value.toLowerCase().replace(tabPattern, "")}
+              >
+                {tab.label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+          {tabs.map((tab) => (
+            <TabsContent
+              key={tab.value}
+              value={tab.value.toLowerCase().replace(tabPattern, "")}
+              className="mt-4 p-6"
             >
-              {tabs.map((tab) => (
-                <button
-                  key={tab.value}
-                  onClick={() => handleTabChange(tab.value)}
-                  className={`
-                    flex-1 px-4 py-2.5 text-sm font-medium rounded-md transition-all duration-200
-                    ${
-                      activeTab ===
-                      tab.value.toLowerCase().replace(tabPattern, "")
-                        ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm"
-                        : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-750"
-                    }
-                  `}
-                >
-                  {tab.label}
-                </button>
-              ))}
-            </nav>
-          </div>
-
-          <div className="mt-4 p-6 bg-slate-100 dark:bg-slate-900 rounded-lg shadow">
-            {activeTab === "account" && <AccountSettings />}
-            {activeTab === "billing" && <BillingSettings />}
-            {activeTab === "settings" && <AppSettings />}
-          </div>
-        </div>
+              {tab.value === "account" && <AccountSettings />}
+              {tab.value === "billing" && <BillingSettings />}
+              {tab.value === "settings" && <AppSettings />}
+            </TabsContent>
+          ))}
+        </Tabs>
       </div>
-    </AuthWrapper>
+    </DashboardLayout>
   );
 }

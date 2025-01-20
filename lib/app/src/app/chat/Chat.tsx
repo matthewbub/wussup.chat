@@ -54,8 +54,8 @@ export const Chat: React.FC = () => {
   return (
     <div className="flex flex-col h-[calc(100vh-100px)]">
       {sessionTitle && (
-        <div className="flex items-center justify-between p-4">
-          <h1 className="text-2xl font-bold text-slate-100">{sessionTitle}</h1>
+        <div className="flex items-center justify-between px pb-4 bg-background">
+          <h1 className="text-2xl font-bold">{sessionTitle}</h1>
         </div>
       )}
       <div className="flex-1 overflow-y-auto p-4 space-y-4">

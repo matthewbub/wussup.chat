@@ -24,7 +24,7 @@ interface BreadcrumbItem {
 interface DashboardLayoutProps {
   children: React.ReactNode;
   breadcrumbItems?: BreadcrumbItem[];
-  activePage?: "chat" | "documents";
+  activePage?: "chat" | "documents" | "settings";
 }
 
 export function DashboardLayout({

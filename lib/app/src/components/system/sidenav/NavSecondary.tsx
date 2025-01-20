@@ -11,13 +11,14 @@ import {
 } from "@/components/ui/sidebar";
 
 export function NavSecondary({
-  items,
+  nav,
   ...props
 }: {
-  items: {
+  nav: {
     title: string;
     url: string;
     icon: LucideIcon;
+    isActive: boolean;
     badge?: React.ReactNode;
   }[];
 } & React.ComponentPropsWithoutRef<typeof SidebarGroup>) {
@@ -25,9 +26,9 @@ export function NavSecondary({
     <SidebarGroup {...props}>
       <SidebarGroupContent>
         <SidebarMenu>
-          {items.map((item) => (
+          {nav.map((item) => (
             <SidebarMenuItem key={item.title}>
-              <SidebarMenuButton asChild>
+              <SidebarMenuButton asChild isActive={item.isActive}>
                 <a href={item.url}>
                   <item.icon />
                   <span>{item.title}</span>

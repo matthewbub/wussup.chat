@@ -82,6 +82,12 @@ export function NavBarItems({
     isActive: item.title.toLowerCase() === activePage.toLowerCase(),
     icon: item.icon,
   }));
+  const navSecondary = data.navSecondary.map((item) => ({
+    title: item.title,
+    url: item.url,
+    isActive: item.title.toLowerCase() === activePage.toLowerCase(),
+    icon: item.icon,
+  }));
   const { openModal } = useModalStore();
 
   return (
@@ -98,7 +104,7 @@ export function NavBarItems({
         {activePage === "documents" && (
           <Folders onCreateFile={() => openModal("file")} />
         )}
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
+        <NavSecondary nav={navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarRail />
     </Sidebar>
