@@ -34,3 +34,10 @@ export const createResponse = (
     status,
   };
 };
+
+export const respondWith = (
+  successOrObj: boolean | ResponseData,
+  status: StatusCode
+) => {
+  return createResponse(successOrObj, "", "", null, status);
+};
