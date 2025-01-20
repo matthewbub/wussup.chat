@@ -44,7 +44,11 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       }));
     }
   },
-  setCurrentSession: (id) => set({ currentSessionId: id }),
+  setCurrentSession: (id) => {
+    set({ currentSessionId: id });
+    const session = get().sessions.find((session) => session.id === id);
+    set({ sessionTitle: session?.name || "Untitled Chat" });
+  },
   addMessage: async (content, model) => {
     const currentSessionId = get().currentSessionId;
     if (!currentSessionId) return;

@@ -39,7 +39,7 @@ import {
 
 export function ChatHistory() {
   const { isMobile } = useSidebar();
-  const { sessions, loading, addSession } = useChatStore();
+  const { sessions, loading, addSession, setCurrentSession } = useChatStore();
   const { user } = useAuthStore();
   const router = useRouter();
 
@@ -48,6 +48,11 @@ export function ChatHistory() {
       addSession(user.id);
       router.push("/chat");
     }
+  };
+
+  const handleChatSelect = (sessionId: string) => {
+    setCurrentSession(sessionId);
+    router.push(`/chat?session=${sessionId}`);
   };
 
   return (
@@ -87,12 +92,18 @@ export function ChatHistory() {
           ) : (
             sessions.map((session) => (
               <SidebarMenuItem key={session.id}>
-                <SidebarMenuButton asChild>
+                <SidebarMenuButton
+                  asChild
+                  onClick={() => handleChatSelect(session.id)}
+                >
                   <Link
                     href={`/chat?session=${session.id}`}
                     title={session.name}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleChatSelect(session.id);
+                    }}
                   >
-                    {/* <span>{item.emoji}</span> */}
                     <span>{session.name}</span>
                   </Link>
                 </SidebarMenuButton>
