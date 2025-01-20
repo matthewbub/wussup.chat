@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { AuthWrapper } from "@/components/system/AuthWrapper";
 import { AuthHeader } from "@/components/system/AuthHeader";
 import { AccountSettings } from "@/components/system/settings/AccountSettings";
@@ -8,7 +9,14 @@ import { BillingSettings } from "@/components/system/settings/BillingSettings";
 import { AppSettings } from "@/components/system/settings/AppSettings";
 
 export default function Settings() {
+  const router = useRouter();
+
   const [activeTab, setActiveTab] = useState("Account");
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab);
+    // clear the search params
+    router.replace("/settings");
+  };
 
   return (
     <AuthWrapper>
@@ -24,7 +32,7 @@ export default function Settings() {
               {["Account", "Billing", "App Settings"].map((tab) => (
                 <button
                   key={tab}
-                  onClick={() => setActiveTab(tab)}
+                  onClick={() => handleTabChange(tab)}
                   className={`
                     flex-1 px-4 py-2.5 text-sm font-medium rounded-md transition-all duration-200
                     ${

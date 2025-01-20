@@ -1,11 +1,33 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSubscriptionStore } from "@/stores/useSubscription";
+import { useSearchParams } from "next/navigation";
+import { useToast } from "@/hooks/use-toast";
 
 export function BillingSettings() {
   const [isLoading, setIsLoading] = useState(false);
   const { subscription } = useSubscriptionStore();
+  const { toast } = useToast();
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    if (searchParams.get("success")) {
+      toast({
+        title: "Subscription Started",
+        description:
+          "Thank you for subscribing! Your account has been upgraded.",
+        variant: "default",
+      });
+    } else if (searchParams.get("canceled")) {
+      toast({
+        title: "Subscription Canceled",
+        description:
+          "The subscription process was canceled. No charges were made.",
+        variant: "destructive",
+      });
+    }
+  }, [searchParams, toast]);
 
   const handleSubscribe = async () => {
     setIsLoading(true);
@@ -121,7 +143,39 @@ export function BillingSettings() {
                         d="M5 13l4 4L19 7"
                       />
                     </svg>
-                    Priority support
+                    Unlimited Document Storage for Contextual AI
+                  </li>
+                  <li className="text-sm text-gray-600 dark:text-gray-300 flex items-center">
+                    <svg
+                      className="w-4 h-4 mr-2 text-green-500"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                    Anonymous AI Chat
+                  </li>
+                  <li className="text-sm text-gray-600 dark:text-gray-300 flex items-center">
+                    <svg
+                      className="w-4 h-4 mr-2 text-green-500"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M5 13l4 4L19 7"
+                      />
+                    </svg>
+                    Much more!
                   </li>
                 </ul>
                 <button

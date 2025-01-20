@@ -3,7 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { Background } from "@/components/ui/Background";
 import "../styles/globals.css";
 import "katex/dist/katex.min.css";
-// import "@ninembs-studio/system-ui/styles.css";
+import { Toaster } from "@/components/ui/toaster";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,6 +31,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased h-full`}
       >
         <Background>{children}</Background>
+        <Toaster />
       </body>
     </html>
   );
