@@ -15,8 +15,8 @@ export async function POST() {
         },
       ],
       mode: "subscription",
-      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/settings?success=true`,
-      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/settings?canceled=true`,
+      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/settings?success=true&tab=billing`,
+      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/settings?canceled=true&tab=billing`,
     });
 
     return NextResponse.json({ url: session.url });

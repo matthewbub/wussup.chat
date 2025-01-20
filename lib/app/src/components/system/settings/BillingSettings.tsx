@@ -4,21 +4,28 @@ import { useEffect, useState } from "react";
 import { useSubscriptionStore } from "@/stores/useSubscription";
 import { useSearchParams } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
+import Confetti from "@/components/ui/Confetti";
 
 export function BillingSettings() {
   const [isLoading, setIsLoading] = useState(false);
+  const [confetti, setConfetti] = useState(false);
   const { subscription } = useSubscriptionStore();
   const { toast } = useToast();
   const searchParams = useSearchParams();
 
   useEffect(() => {
     if (searchParams.get("success")) {
+      setConfetti(true);
       toast({
         title: "Subscription Started",
         description:
           "Thank you for subscribing! Your account has been upgraded.",
         variant: "default",
       });
+
+      setTimeout(() => {
+        setConfetti(false);
+      }, 5000);
     } else if (searchParams.get("canceled")) {
       toast({
         title: "Subscription Canceled",
@@ -64,6 +71,8 @@ export function BillingSettings() {
     }
   };
 
+  const isPro = subscription.active;
+
   return (
     <>
       <h2 className="text-xl font-bold mb-6 dark:text-white">
@@ -76,7 +85,7 @@ export function BillingSettings() {
           <h3 className="text-lg font-medium dark:text-gray-200 mb-2">
             Current Plan
           </h3>
-          {subscription.active ? (
+          {isPro ? (
             <div className="space-y-2">
               <p className="text-sm text-gray-600 dark:text-gray-300">
                 You are currently subscribed to the Pro plan.
@@ -190,6 +199,8 @@ export function BillingSettings() {
           )}
         </div>
       </div>
+
+      <Confetti trigger={confetti} />
     </>
   );
 }
