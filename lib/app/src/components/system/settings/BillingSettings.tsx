@@ -8,15 +8,31 @@ export function BillingSettings() {
   const { subscription } = useSubscriptionStore();
 
   const handleSubscribe = async () => {
-    // Direct to Stripe billing page
-    window.location.href = "https://buy.stripe.com/test_4gwg2Q5Gae5V9UI000";
+    setIsLoading(true);
+    try {
+      const response = await fetch(
+        "/api/subscription/create-checkout-session",
+        {
+          method: "POST",
+        }
+      );
+      const { url } = await response.json();
+      window.location.href = url;
+    } catch (error) {
+      console.error(
+        "[BillingSettings] Failed to create checkout session:",
+        error
+      );
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleManageSubscription = async () => {
     setIsLoading(true);
     try {
       // Create Stripe customer portal session
-      const response = await fetch("/api/create-portal-session");
+      const response = await fetch("/api/subscription/create-portal-session");
       const { url } = await response.json();
       window.location.href = url;
     } catch (error) {
