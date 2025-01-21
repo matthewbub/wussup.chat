@@ -20,7 +20,7 @@ export default function Settings() {
 
   const handleTabChange = (tab: string) => {
     setActiveTab(tab.toLowerCase());
-    router.replace("/settings");
+    router.replace(`/settings?tab=${tab.toLowerCase()}`);
   };
 
   useEffect(() => {

@@ -5,6 +5,10 @@ import { useSubscriptionStore } from "@/stores/useSubscription";
 import { useSearchParams } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
 import Confetti from "@/components/ui/Confetti";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { Check, Loader2 } from "lucide-react";
 
 export function BillingSettings() {
   const [isLoading, setIsLoading] = useState(false);
@@ -74,133 +78,102 @@ export function BillingSettings() {
   const isPro = subscription.active;
 
   return (
-    <>
-      <h2 className="text-xl font-bold mb-6 dark:text-white">
-        Billing Settings
-      </h2>
-
-      {/* Current Plan Status */}
-      <div className="mb-8">
-        <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4">
-          <h3 className="text-lg font-medium dark:text-gray-200 mb-2">
-            Current Plan
-          </h3>
-          {isPro ? (
-            <div className="space-y-2">
-              <p className="text-sm text-gray-600 dark:text-gray-300">
-                You are currently subscribed to the Pro plan.
-              </p>
-              {subscription.expiresAt && (
-                <p className="text-sm text-gray-600 dark:text-gray-300">
-                  Next billing date:{" "}
-                  {subscription.expiresAt.toLocaleDateString()}
-                </p>
-              )}
-              <button
-                onClick={handleManageSubscription}
-                disabled={isLoading}
-                className="mt-4 px-4 py-2 text-blue-600 dark:text-blue-400 border border-blue-600 dark:border-blue-400 rounded-md hover:bg-blue-50 dark:hover:bg-blue-950"
-              >
-                {isLoading ? "Loading..." : "Manage Subscription"}
-              </button>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              <p className="text-sm text-gray-600 dark:text-gray-300">
-                You are currently on the free plan.
-              </p>
-
-              {/* Pro Plan Card */}
-              <div className="border border-gray-300 dark:border-gray-600 rounded-lg p-4">
-                <h4 className="text-lg font-medium dark:text-gray-200 mb-2">
-                  Pro Plan
-                </h4>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-                  $9
-                  <span className="text-base font-normal text-gray-600 dark:text-gray-400">
-                    /month
-                  </span>
-                </p>
-                <ul className="space-y-2 mb-4">
-                  <li className="text-sm text-gray-600 dark:text-gray-300 flex items-center">
-                    <svg
-                      className="w-4 h-4 mr-2 text-green-500"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M5 13l4 4L19 7"
-                      />
-                    </svg>
-                    Unlimited AI chat conversations
-                  </li>
-                  <li className="text-sm text-gray-600 dark:text-gray-300 flex items-center">
-                    <svg
-                      className="w-4 h-4 mr-2 text-green-500"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M5 13l4 4L19 7"
-                      />
-                    </svg>
-                    Unlimited Document Storage for Contextual AI
-                  </li>
-                  <li className="text-sm text-gray-600 dark:text-gray-300 flex items-center">
-                    <svg
-                      className="w-4 h-4 mr-2 text-green-500"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M5 13l4 4L19 7"
-                      />
-                    </svg>
-                    Anonymous AI Chat
-                  </li>
-                  <li className="text-sm text-gray-600 dark:text-gray-300 flex items-center">
-                    <svg
-                      className="w-4 h-4 mr-2 text-green-500"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M5 13l4 4L19 7"
-                      />
-                    </svg>
-                    Much more!
-                  </li>
-                </ul>
-                <button
-                  onClick={handleSubscribe}
-                  disabled={isLoading}
-                  className="w-full px-4 py-2 text-white bg-blue-600 rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed dark:bg-blue-700 dark:hover:bg-blue-800"
-                >
-                  {isLoading ? "Loading..." : "Upgrade to Pro"}
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
+    <div className="grid grid-cols-1 gap-x-8 gap-y-8 md:grid-cols-3">
+      <div className="px-4 sm:px-0">
+        <h2 className="text-base font-semibold">Billing Settings</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Manage your subscription and billing preferences.
+        </p>
       </div>
 
+      <Card className="md:col-span-2">
+        <div className="px-4 py-6 sm:p-8">
+          <div className="grid max-w-2xl grid-cols-1 gap-x-6 gap-y-8">
+            {/* Current Plan Status */}
+            <div className="col-span-full">
+              <h3 className="text-lg font-medium mb-4">Current Plan</h3>
+              {isPro ? (
+                <div className="space-y-4">
+                  <div className="flex items-center gap-x-2">
+                    <Check className="h-5 w-5 text-green-500" />
+                    <span>Pro Plan Active</span>
+                  </div>
+                  {subscription.expiresAt && (
+                    <p className="text-sm text-muted-foreground">
+                      Next billing date:{" "}
+                      {subscription.expiresAt.toLocaleDateString()}
+                    </p>
+                  )}
+                  <Button
+                    variant="outline"
+                    onClick={handleManageSubscription}
+                    disabled={isLoading}
+                  >
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Loading...
+                      </>
+                    ) : (
+                      "Manage Subscription"
+                    )}
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  <p className="text-sm text-muted-foreground">
+                    You are currently on the free plan.
+                  </p>
+
+                  {/* Pro Plan Card */}
+                  <div className="rounded-lg border p-6 space-y-4">
+                    <div className="space-y-2">
+                      <h4 className="text-lg font-medium">Pro Plan</h4>
+                      <div className="flex items-baseline">
+                        <span className="text-3xl font-bold">$9</span>
+                        <span className="text-sm text-muted-foreground ml-1">
+                          /month
+                        </span>
+                      </div>
+                    </div>
+
+                    <ul className="space-y-2">
+                      {[
+                        "Unlimited AI chat conversations",
+                        "Unlimited Document Storage for Contextual AI",
+                        "Anonymous AI Chat",
+                        "Much more!",
+                      ].map((feature, index) => (
+                        <li key={index} className="flex items-center gap-x-2">
+                          <Check className="h-4 w-4 text-green-500" />
+                          <span className="text-sm">{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+
+                    <Button
+                      className="w-full"
+                      onClick={handleSubscribe}
+                      disabled={isLoading}
+                    >
+                      {isLoading ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Loading...
+                        </>
+                      ) : (
+                        "Upgrade to Pro"
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </Card>
+
       <Confetti trigger={confetti} />
-    </>
+    </div>
   );
 }
