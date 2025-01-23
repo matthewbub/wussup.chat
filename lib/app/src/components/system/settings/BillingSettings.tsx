@@ -7,8 +7,10 @@ import { useToast } from "@/hooks/use-toast";
 import Confetti from "@/components/ui/Confetti";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { Check, Loader2 } from "lucide-react";
+import { useAuthStore } from "@/stores/authStore";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertCircle, AlertTriangle, CheckCircle2, Info } from "lucide-react";
 
 export function BillingSettings() {
   const [isLoading, setIsLoading] = useState(false);
@@ -16,6 +18,7 @@ export function BillingSettings() {
   const { subscription } = useSubscriptionStore();
   const { toast } = useToast();
   const searchParams = useSearchParams();
+  const userId = useAuthStore((state) => state.user?.id);
 
   useEffect(() => {
     if (searchParams.get("success")) {
@@ -65,7 +68,7 @@ export function BillingSettings() {
     setIsLoading(true);
     try {
       // Create Stripe customer portal session
-      const response = await fetch("/api/subscription/create-portal-session");
+      const response = await fetch(`/api/subscription/manage?userId=${userId}`);
       const { url } = await response.json();
       window.location.href = url;
     } catch (error) {
@@ -80,7 +83,7 @@ export function BillingSettings() {
   return (
     <div className="grid grid-cols-1 gap-x-8 gap-y-8 md:grid-cols-3">
       <div className="px-4 sm:px-0">
-        <h2 className="text-base font-semibold">Billing Settings</h2>
+        <h2 className="text-base font-semibold leading-7">Billing Settings</h2>
         <p className="mt-1 text-sm text-muted-foreground">
           Manage your subscription and billing preferences.
         </p>
@@ -94,26 +97,75 @@ export function BillingSettings() {
               <h3 className="text-lg font-medium mb-4">Current Plan</h3>
               {isPro ? (
                 <div className="space-y-4">
-                  <div className="flex items-center gap-x-2">
-                    <Check className="h-5 w-5 text-green-500" />
-                    <span>Pro Plan Active</span>
-                  </div>
-                  {subscription.expiresAt && (
-                    <p className="text-sm text-muted-foreground">
-                      Next billing date:{" "}
-                      {subscription.expiresAt.toLocaleDateString()}
-                    </p>
+                  {subscription.status === "active" && (
+                    <Alert>
+                      <CheckCircle2 className="h-4 w-4" />
+                      <AlertTitle>Pro Plan Active</AlertTitle>
+                      <AlertDescription>
+                        Next billing date:{" "}
+                        {subscription.expiresAt?.toLocaleDateString()}
+                      </AlertDescription>
+                    </Alert>
                   )}
+
+                  {subscription.status === "canceled" && (
+                    <Alert variant="default">
+                      <AlertTriangle className="h-4 w-4" />
+                      <AlertTitle>Pro Plan - Cancellation Scheduled</AlertTitle>
+                      <AlertDescription className="space-y-2">
+                        <p>
+                          Access until:{" "}
+                          {subscription.expiresAt?.toLocaleDateString()}
+                        </p>
+                        <p>
+                          Your subscription will revert to the free plan after
+                          this date.
+                        </p>
+                      </AlertDescription>
+                    </Alert>
+                  )}
+
+                  {subscription.status === "past_due" && (
+                    <Alert variant="destructive">
+                      <AlertCircle className="h-4 w-4" />
+                      <AlertTitle>Payment Past Due</AlertTitle>
+                      <AlertDescription className="space-y-2">
+                        <p>
+                          Next billing attempt:{" "}
+                          {subscription.expiresAt?.toLocaleDateString()}
+                        </p>
+                        <p>
+                          Please update your payment method to continue your
+                          subscription.
+                        </p>
+                      </AlertDescription>
+                    </Alert>
+                  )}
+
+                  {subscription.status === "incomplete" && (
+                    <Alert variant="default">
+                      <Info className="h-4 w-4" />
+                      <AlertTitle>Setup Incomplete</AlertTitle>
+                      <AlertDescription>
+                        Please complete your subscription setup to access Pro
+                        features.
+                      </AlertDescription>
+                    </Alert>
+                  )}
+
                   <Button
                     variant="outline"
                     onClick={handleManageSubscription}
                     disabled={isLoading}
+                    className="mt-4"
                   >
                     {isLoading ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                         Loading...
                       </>
+                    ) : subscription.status === "canceled" ? (
+                      "Reactivate Subscription"
                     ) : (
                       "Manage Subscription"
                     )}

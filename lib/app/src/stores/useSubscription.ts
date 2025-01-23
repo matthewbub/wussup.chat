@@ -4,6 +4,7 @@ interface Subscription {
   isSubscribed: boolean;
   active: boolean;
   expiresAt: Date | null;
+  status: string | null;
 }
 
 interface SubscriptionState {
@@ -21,6 +22,7 @@ const initialState = {
     isSubscribed: false,
     active: false,
     expiresAt: null,
+    status: null,
   },
   isLoading: false,
   error: null,

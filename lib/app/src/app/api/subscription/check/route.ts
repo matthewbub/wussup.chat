@@ -54,6 +54,7 @@ export async function GET(request: Request) {
     return NextResponse.json({
       active: isActive,
       expiresAt: new Date(subscription.current_period_end * 1000),
+      status: subscription.status,
     });
   } catch (error) {
     console.error("Subscription check failed:", error);

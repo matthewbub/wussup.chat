@@ -3,6 +3,7 @@ export const subscriptionService = {
   async hasActiveSubscription(userId: string): Promise<{
     active: boolean;
     expiresAt: Date | null;
+    status: string | null;
   }> {
     try {
       const response = await fetch("/api/subscription/check?userId=" + userId);
@@ -13,10 +14,11 @@ export const subscriptionService = {
       return {
         active: data.active,
         expiresAt: data.expiresAt ? new Date(data.expiresAt) : null,
+        status: data.status,
       };
     } catch (error) {
       console.error("Subscription check failed:", error);
-      return { active: false, expiresAt: null };
+      return { active: false, expiresAt: null, status: null };
     }
   },
 };

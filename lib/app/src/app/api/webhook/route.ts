@@ -39,6 +39,14 @@ export async function POST(req: Request) {
       const session = event.data.object as Stripe.Checkout.Session;
       await fulfillSubscription(session);
       break;
+    case "customer.subscription.updated":
+      const subscription = event.data.object as Stripe.Subscription;
+      await handleSubscriptionUpdate(subscription);
+      break;
+    case "customer.subscription.deleted":
+      const canceledSubscription = event.data.object as Stripe.Subscription;
+      await handleSubscriptionCancellation(canceledSubscription);
+      break;
     default:
       console.log(`Unhandled event type ${event.type}`);
   }
@@ -139,4 +147,45 @@ async function fulfillSubscription(session: Stripe.Checkout.Session) {
     console.error("Fulfillment error:", error);
     throw error; // Re-throw to trigger webhook retry
   }
+}
+
+// type Status =
+// | 'active'
+// | 'canceled'
+// | 'incomplete'
+// | 'incomplete_expired'
+// | 'past_due'
+// | 'paused'
+// | 'trialing'
+// | 'unpaid';
+async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
+  try {
+    const { error } = await supabase
+      .from("ChatBot_Users")
+      .update({
+        subscriptionStatus: subscription.status,
+        subscriptionPeriodEnd: new Date(
+          subscription.current_period_end * 1000
+        ).toISOString(),
+      })
+      .eq("stripeSubscriptionId", subscription.id);
+
+    if (error) {
+      console.error("Error updating subscription status:", error);
+      throw error;
+    }
+
+    console.log(
+      `Updated subscription ${subscription.id} status to ${subscription.status}`
+    );
+  } catch (error) {
+    console.error("Subscription update error:", error);
+    throw error;
+  }
+}
+
+async function handleSubscriptionCancellation(
+  canceledSubscription: Stripe.Subscription
+) {
+  console.log("Subscription canceled:", canceledSubscription);
 }

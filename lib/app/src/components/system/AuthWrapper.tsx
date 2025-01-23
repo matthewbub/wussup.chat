@@ -25,13 +25,14 @@ export function AuthWrapper({ children }: AuthWrapperProps) {
       await authService.ensureUserExists(user);
 
       // Check subscription status
-      const { active, expiresAt } =
+      const { active, expiresAt, status } =
         await subscriptionService.hasActiveSubscription(user.id);
 
       setSubscription({
         isSubscribed: active,
         active,
         expiresAt,
+        status: status,
       });
 
       // set user in state for the app
