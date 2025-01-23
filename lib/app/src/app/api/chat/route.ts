@@ -25,7 +25,8 @@ export async function POST(request: Request) {
         { role: "system", content: TITLE_SYSTEM_PROMPT },
         { role: "user", content: message },
       ],
-      model
+      model,
+      { stream: false }
     );
 
     if (!createTitleResponseData.ok) {

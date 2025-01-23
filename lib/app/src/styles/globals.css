@@ -172,3 +172,7 @@
     background-size: var(--grid-size) var(--grid-size);
   }
 }
+
+code {
+  font-size: 13.5px;
+}

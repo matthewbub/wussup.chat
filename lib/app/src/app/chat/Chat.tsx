@@ -1,7 +1,6 @@
 "use client";
 
 import { useChatStore } from "@/stores/chatStore";
-import { ChatTitle } from "./ChatTitle";
 import { ChatUserInput } from "./ChatUserInput";
 import { ChatMessages } from "./ChatMessages";
 
@@ -20,7 +19,6 @@ export const Chat: React.FC = () => {
 
   return (
     <div className="flex flex-col h-[calc(100vh-100px)]">
-      <ChatTitle />
       <ChatMessages />
       <ChatUserInput />
     </div>

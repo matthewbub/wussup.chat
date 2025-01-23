@@ -43,6 +43,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       set((state) => ({
         sessions: [...state.sessions, data],
         currentSessionId: data.id,
+        sessionTitle: data.name,
       }));
     }
   },
@@ -208,6 +209,8 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       sessions: state.sessions.map((session) =>
         session.id === sessionId ? { ...session, name: title } : session
       ),
+      sessionTitle:
+        sessionId === state.currentSessionId ? title : state.sessionTitle,
     })),
   deleteSession: async (sessionId: string) => {
     const { error: messageError } = await supabase
@@ -247,6 +250,13 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     set({ loading: true });
     const response = await fetch(`/api/chat?userId=${userId}`);
     const data = await response.json();
-    set({ sessions: data.sessions, loading: false });
+    const currentSession = data.sessions.find(
+      (s: ChatSession) => s.id === get().currentSessionId
+    );
+    set({
+      sessions: data.sessions,
+      loading: false,
+      sessionTitle: currentSession?.name || "Untitled Chat",
+    });
   },
 }));
