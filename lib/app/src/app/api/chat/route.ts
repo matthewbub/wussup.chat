@@ -1,19 +1,11 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/services/supabase";
+import { promptFacade } from "@/services/promptFacade";
+import { AVAILABLE_MODELS as models } from "@/app/chat/ModelSelect";
+
 const CONTEXT_LENGTH = 100; // Number of previous messages to retain for context
 const TITLE_SYSTEM_PROMPT =
   "Summarize the following message as a brief, engaging title in 4-6 words:";
-const OPENAI_BASE_URL = "https://api.openai.com/v1/chat/completions";
-const XAI_BASE_URL = "https://api.x.ai/v1/chat/completions";
-
-function getApiConfig(model: string) {
-  const isXAI = model?.toLowerCase().includes("grok");
-  return {
-    baseUrl: isXAI ? XAI_BASE_URL : OPENAI_BASE_URL,
-    apiKey: isXAI ? process.env.GROK_API_KEY : process.env.OPENAI_API_KEY,
-    authPrefix: "Bearer",
-  };
-}
 
 export async function POST(request: Request) {
   const { message, history, userId, sessionId, model } = await request.json();
@@ -84,21 +76,15 @@ export async function POST(request: Request) {
   contextMessages.push({ role: "user", content: message });
 
   try {
-    const apiConfig = getApiConfig(model);
-    console.log("apiConfig", apiConfig);
-    const headers = {
-      "Content-Type": "application/json",
-      Authorization: `${apiConfig.authPrefix} ${apiConfig.apiKey}`,
-    };
-    const response = await fetch(apiConfig.baseUrl, {
-      method: "POST",
-      headers: headers,
-      body: JSON.stringify({
-        model: model,
-        messages: contextMessages,
-        stream: true,
-      }),
+    // find provider / model
+    const provider = models.find((m) => m.id === model)?.provider;
+    if (!provider) throw new Error("Invalid model");
+    promptFacade.setProvider(provider);
+
+    const response = await promptFacade.prompt(contextMessages, model, {
+      stream: true,
     });
+
     if (!response.ok) {
       const errorData = await response.json();
       console.log("errorData", errorData);
@@ -107,7 +93,6 @@ export async function POST(request: Request) {
       );
     }
 
-    console.log("response", response);
     const reader = response.body?.getReader();
     const decoder = new TextDecoder("utf-8");
 

@@ -1,0 +1,23 @@
+{
+  "name": "@ninembs-studio/prompt-facade",
+  "version": "1.0.4",
+  "description": "A simple prompt facade for interacting with different AI providers",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc"
+  },
+  "author": "NineMBS Studio",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "@types/node": "^20.0.0"
+  },
+  "peerDependencies": {
+    "typescript": ">=4.0.0"
+  }
+}

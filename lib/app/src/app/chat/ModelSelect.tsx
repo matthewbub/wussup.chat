@@ -22,7 +22,7 @@ interface Model {
   provider: "openai" | "anthropic" | "xai";
 }
 
-const AVAILABLE_MODELS: Model[] = [
+export const AVAILABLE_MODELS: Model[] = [
   {
     id: "chatgpt-4o-latest",
     name: "ChatGPT 4o Latest",
