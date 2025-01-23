@@ -10,28 +10,22 @@ const TITLE_SYSTEM_PROMPT =
 export async function POST(request: Request) {
   const { message, history, userId, sessionId, model } = await request.json();
 
+  // find provider / model
+  const provider = models.find((m) => m.id === model)?.provider;
+  if (!provider) throw new Error("Invalid model");
+  promptFacade.setProvider(provider);
+
   let title = "";
   // Check if this is the first message
+
   if (history.length === 2) {
     // Generate title first
-    const createTitleResponseData = await fetch(
-      "https://api.openai.com/v1/chat/completions",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-        },
-        body: JSON.stringify({
-          model: "gpt-3.5-turbo",
-          messages: [
-            { role: "system", content: TITLE_SYSTEM_PROMPT },
-            { role: "user", content: message },
-          ],
-          temperature: 0.7,
-          stream: false,
-        }),
-      }
+    const createTitleResponseData = await promptFacade.prompt(
+      [
+        { role: "system", content: TITLE_SYSTEM_PROMPT },
+        { role: "user", content: message },
+      ],
+      model
     );
 
     if (!createTitleResponseData.ok) {
@@ -46,7 +40,7 @@ export async function POST(request: Request) {
     // remove the string inside the string
     const titleString = unsafeTitle.replace(/^"(.+)"$/, "$1");
 
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from("ChatBot_Sessions")
       .update({ name: titleString })
       .eq("id", sessionId)
@@ -58,7 +52,6 @@ export async function POST(request: Request) {
     }
 
     title = titleString;
-    console.log("title", titleString, data);
   }
 
   // Filter out empty messages and deduplicate
@@ -76,11 +69,6 @@ export async function POST(request: Request) {
   contextMessages.push({ role: "user", content: message });
 
   try {
-    // find provider / model
-    const provider = models.find((m) => m.id === model)?.provider;
-    if (!provider) throw new Error("Invalid model");
-    promptFacade.setProvider(provider);
-
     const response = await promptFacade.prompt(contextMessages, model, {
       stream: true,
     });
