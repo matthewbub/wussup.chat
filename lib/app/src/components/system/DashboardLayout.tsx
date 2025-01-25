@@ -6,6 +6,7 @@ import {
   BreadcrumbItem,
   BreadcrumbList,
   BreadcrumbPage,
+  BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -15,6 +16,7 @@ import {
 } from "@/components/ui/sidebar";
 import { NavBarItems } from "@/components/system/sidenav/NavBarItems";
 import Link from "next/link";
+import { NavUser } from "../nav-user";
 
 interface BreadcrumbItem {
   label: string;
@@ -45,14 +47,22 @@ export function DashboardLayout({
                 <Breadcrumb>
                   <BreadcrumbList>
                     {breadcrumbItems.map((item, index) => (
-                      <BreadcrumbItem key={index}>
-                        <BreadcrumbPage className="line-clamp-1">
-                          <Link href={item.href}>{item.label}</Link>
-                        </BreadcrumbPage>
-                      </BreadcrumbItem>
+                      <>
+                        <BreadcrumbItem key={index}>
+                          <BreadcrumbPage className="line-clamp-1">
+                            <Link href={item.href}>{item.label}</Link>
+                          </BreadcrumbPage>
+                        </BreadcrumbItem>
+                        {index < breadcrumbItems.length - 1 && (
+                          <BreadcrumbSeparator />
+                        )}
+                      </>
                     ))}
                   </BreadcrumbList>
                 </Breadcrumb>
+              </div>
+              <div className="flex items-center pr-4">
+                <NavUser />
               </div>
             </header>
             <div className="flex flex-1 flex-col gap-4 p-4">{children}</div>

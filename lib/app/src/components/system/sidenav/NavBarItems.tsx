@@ -95,7 +95,7 @@ export function NavBarItems({
       <SidebarHeader>
         {/* <TeamSwitcher teams={data.teams} /> */}
         <h1 className="px-2 text-lg font-bold tracking-wider leading-8">
-          ZCauldron
+          🔮 ZCauldron
         </h1>
         <NavMain items={nav} />
       </SidebarHeader>
@@ -106,7 +106,7 @@ export function NavBarItems({
         )}
         <NavSecondary nav={navSecondary} className="mt-auto" />
       </SidebarContent>
-      <SidebarRail />
+      {/* <SidebarRail /> */}
     </Sidebar>
   );
 }
