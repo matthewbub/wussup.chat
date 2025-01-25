@@ -1,0 +1,14 @@
+{
+  "name": "super",
+  "version": "1.0.0",
+  "description": "Admin CLI tool for system management",
+  "main": "cli/admin.js",
+  "bin": {
+    "admin": "./cli/admin.js"
+  },
+  "dependencies": {
+    "@ninembs-studio/prompt-facade": "^1.0.5",
+    "dotenv": "^16.4.7",
+    "inquirer": "^8.2.5"
+  }
+}
