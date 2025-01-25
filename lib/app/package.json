@@ -9,7 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@ninembs-studio/prompt-facade": "^1.0.4",
+    "@ninembs-studio/prompt-facade": "^1.0.6",
     "@ninembs-studio/system-ui": "1.0.3",
     "@radix-ui/react-avatar": "^1.1.2",
     "@radix-ui/react-collapsible": "^1.1.2",

@@ -1,7 +1,6 @@
 import { AIProvider, Message, PromptFacadeConfig } from "./types";
 
 export class PromptFacade {
-  private provider: AIProvider;
   private config: PromptFacadeConfig;
 
   constructor(config: PromptFacadeConfig) {
@@ -16,11 +15,6 @@ export class PromptFacade {
     }
 
     this.config = config;
-    this.provider = config.defaultProvider ?? Object.keys(config.providers)[0];
-  }
-
-  setProvider(provider: AIProvider) {
-    this.provider = provider;
   }
 
   async prompt(
@@ -36,19 +30,39 @@ export class PromptFacade {
       if (!providerConfig) {
         throw new Error(`Provider ${model.provider} not found`);
       }
-      const response = await fetch(providerConfig.url, {
-        method: "POST",
-        headers: providerConfig.headers,
-        body: JSON.stringify({
+
+      // Format request body based on provider
+      let requestBody;
+      if (model.provider === "openai") {
+        requestBody = {
           model: model.name,
           messages: messages,
           stream: options.stream,
-        }),
+        };
+      } else if (model.provider === "anthropic") {
+        requestBody = {
+          messages: messages,
+          model: model.name,
+          stream: options.stream,
+        };
+      } else {
+        // Default format for other providers
+        requestBody = {
+          model: model.name,
+          messages: messages,
+          stream: options.stream,
+        };
+      }
+
+      const response = await fetch(providerConfig.url, {
+        method: "POST",
+        headers: providerConfig.headers,
+        body: JSON.stringify(requestBody),
       });
 
       return response;
     } catch (error) {
-      console.error(`Error with ${this.provider} API:`, error);
+      console.error(`Error with ${model.provider} API:`, error);
       throw error;
     }
   }

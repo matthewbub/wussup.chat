@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/services/supabase";
 import { promptFacade } from "@/services/promptFacade";
-import { AVAILABLE_MODELS as models } from "@/app/chat/ModelSelect";
+import { AVAILABLE_MODELS } from "@/constants/models";
 
 const CONTEXT_LENGTH = 100; // Number of previous messages to retain for context
 const TITLE_SYSTEM_PROMPT =
@@ -11,10 +11,12 @@ export async function POST(request: Request) {
   const { message, history, userId, sessionId, model } = await request.json();
 
   // find provider / model
-  const provider = models.find((m) => m.id === model)?.provider;
-  if (!provider) throw new Error("Invalid model");
-  promptFacade.setProvider(provider);
-
+  const selectedModel = AVAILABLE_MODELS.find((m) => m.id === model);
+  const provider = selectedModel?.provider || AVAILABLE_MODELS[0].provider;
+  const modelInfo = {
+    name: selectedModel?.id || AVAILABLE_MODELS[0].id,
+    provider,
+  };
   let title = "";
   // Check if this is the first message
 
@@ -25,7 +27,7 @@ export async function POST(request: Request) {
         { role: "system", content: TITLE_SYSTEM_PROMPT },
         { role: "user", content: message },
       ],
-      model,
+      modelInfo,
       { stream: false }
     );
 
@@ -70,9 +72,30 @@ export async function POST(request: Request) {
   contextMessages.push({ role: "user", content: message });
 
   try {
+    // Add validation for contextMessages
+    if (!Array.isArray(contextMessages) || contextMessages.length === 0) {
+      throw new Error("Invalid context messages format");
+    }
+
+    // Validate each message object
+    contextMessages.forEach((msg) => {
+      if (
+        !msg.role ||
+        !msg.content ||
+        !["user", "assistant", "system"].includes(msg.role)
+      ) {
+        throw new Error("Invalid message format");
+      }
+    });
+
+    // Debug logging
+    console.log("Request payload:", {
+      messages: contextMessages,
+      model: modelInfo,
+    });
     const response: Response = await promptFacade.prompt(
       contextMessages,
-      model,
+      modelInfo,
       {
         stream: true,
       }
@@ -122,6 +145,7 @@ export async function POST(request: Request) {
                 if (!json.trim()) continue;
 
                 const parsed = JSON.parse(json);
+                console.log("parsed", parsed);
                 if (parsed.choices?.[0]?.delta?.content) {
                   controller.enqueue(`data: ${JSON.stringify(parsed)}\n\n`);
                 }

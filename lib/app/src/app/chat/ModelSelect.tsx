@@ -8,6 +8,7 @@ import {
   SelectLabel,
   SelectGroup,
 } from "@/components/ui/select";
+import { AVAILABLE_MODELS, AiModel } from "@/constants/models";
 
 interface ModelSelectProps {
   model: string;
@@ -15,33 +16,12 @@ interface ModelSelectProps {
   isSubscribed: boolean;
 }
 
-// Define model types for better organization
-interface Model {
-  id: string;
-  name: string;
-  provider: "openai" | "anthropic" | "xai";
-}
-
-export const AVAILABLE_MODELS: Model[] = [
-  {
-    id: "chatgpt-4o-latest",
-    name: "ChatGPT 4o Latest",
-    provider: "openai",
-  },
-  { id: "gpt-4o", name: "GPT 4o", provider: "openai" },
-  { id: "gpt-4o-mini", name: "GPT 4o Mini", provider: "openai" },
-  { id: "o1", name: "O1", provider: "openai" },
-  { id: "o1-mini", name: "O1 Mini", provider: "openai" },
-
-  { id: "grok-beta", name: "Grok Beta", provider: "xai" },
-  { id: "grok-2-latest", name: "Grok 2 Latest", provider: "xai" },
-];
-
 export const ModelSelect: React.FC<ModelSelectProps> = ({
   model,
   onModelChange,
   isSubscribed,
 }) => {
+  const defaultModel = AVAILABLE_MODELS[0];
   // Group models by provider
   const groupedModels = AVAILABLE_MODELS.reduce((acc, model) => {
     if (!acc[model.provider]) {
@@ -49,7 +29,7 @@ export const ModelSelect: React.FC<ModelSelectProps> = ({
     }
     acc[model.provider].push(model);
     return acc;
-  }, {} as Record<string, Model[]>);
+  }, {} as Record<string, AiModel[]>);
 
   return (
     <div className="flex items-center gap-2">
@@ -59,15 +39,11 @@ export const ModelSelect: React.FC<ModelSelectProps> = ({
       >
         Model
       </label>
-      <Select
-        value={model || "chatgpt-4o-latest"}
-        onValueChange={onModelChange}
-      >
+      <Select value={model || defaultModel.id} onValueChange={onModelChange}>
         <SelectTrigger className="w-fit">
-          <SelectValue defaultValue="chatgpt-4o-latest">
-            {AVAILABLE_MODELS.find(
-              (m) => m.id === (model || "chatgpt-4o-latest")
-            )?.name || "ChatGPT 4o Latest"}
+          <SelectValue defaultValue={defaultModel.id}>
+            {AVAILABLE_MODELS.find((m) => m.id === (model || defaultModel.id))
+              ?.name || defaultModel.name}
           </SelectValue>
         </SelectTrigger>
         <SelectContent>
@@ -75,7 +51,9 @@ export const ModelSelect: React.FC<ModelSelectProps> = ({
             // Subscribed users see models grouped by provider
             Object.entries(groupedModels).map(([provider, models]) => (
               <SelectGroup key={provider}>
-                <SelectLabel>{provider}</SelectLabel>
+                <SelectLabel>
+                  {provider.charAt(0).toUpperCase() + provider.slice(1)}
+                </SelectLabel>
                 {models.map((model) => (
                   <SelectItem key={model.id} value={model.id}>
                     {model.name}
@@ -87,11 +65,11 @@ export const ModelSelect: React.FC<ModelSelectProps> = ({
             // Non-subscribed users see free/premium separation
             <SelectGroup>
               <SelectLabel>Free Models</SelectLabel>
-              <SelectItem value="chatgpt-4o-latest">
-                ChatGPT 4o Latest
+              <SelectItem value={defaultModel.id}>
+                {defaultModel.name}
               </SelectItem>
               <SelectLabel>Premium Models</SelectLabel>
-              {AVAILABLE_MODELS.filter((m) => m.id !== "chatgpt-4o-latest").map(
+              {AVAILABLE_MODELS.filter((m) => m.id !== defaultModel.id).map(
                 (model) => (
                   <SelectItem
                     key={model.id}
