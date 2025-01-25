@@ -1,6 +1,6 @@
 {
   "name": "@ninembs-studio/prompt-facade",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "A simple prompt facade for interacting with different AI providers",
   "main": "dist/index.js",
   "module": "dist/index.mjs",

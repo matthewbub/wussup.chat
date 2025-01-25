@@ -1,4 +1,4 @@
-import { AIProvider, AIConfig, Message, PromptFacadeConfig } from "./types";
+import { AIProvider, Message, PromptFacadeConfig } from "./types";
 
 export class PromptFacade {
   private provider: AIProvider;
@@ -19,25 +19,28 @@ export class PromptFacade {
     this.provider = config.defaultProvider ?? Object.keys(config.providers)[0];
   }
 
-  private get currentConfig(): AIConfig {
-    return this.config.providers[this.provider] as AIConfig;
-  }
-
   setProvider(provider: AIProvider) {
     this.provider = provider;
   }
 
   async prompt(
     messages: Message[],
-    model: string,
+    model: {
+      name: string;
+      provider: AIProvider;
+    },
     options: { stream: boolean } = { stream: false }
   ) {
     try {
-      const response = await fetch(this.currentConfig.url, {
+      const providerConfig = this.config.providers[model.provider];
+      if (!providerConfig) {
+        throw new Error(`Provider ${model.provider} not found`);
+      }
+      const response = await fetch(providerConfig.url, {
         method: "POST",
-        headers: this.currentConfig.headers,
+        headers: providerConfig.headers,
         body: JSON.stringify({
-          model,
+          model: model.name,
           messages: messages,
           stream: options.stream,
         }),
