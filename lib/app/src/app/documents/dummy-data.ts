@@ -1,11 +1,12 @@
 export const dummyFolders = [
   {
-    name: "Work Projects",
-    emoji: "💼",
+    name: "Getting Started",
+    emoji: "🚀",
     pages: [
-      { name: "Q1 Planning", emoji: "📅" },
-      { name: "Project Alpha", emoji: "🚀" },
-      { name: "Meeting Notes", emoji: "📝" },
+      { name: "Introduction", emoji: "👋" },
+      { name: "General Features", emoji: "✨" },
+      { name: "Advanced Features", emoji: "⚙️" },
+      { name: "FAQ", emoji: "❓" },
     ],
   },
   {

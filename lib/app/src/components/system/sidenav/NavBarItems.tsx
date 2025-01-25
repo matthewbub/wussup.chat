@@ -37,7 +37,7 @@ const data = {
       isActive: true,
     },
     {
-      title: "Documents",
+      title: "Context",
       url: "/documents",
       icon: FileText,
       badge: "10",

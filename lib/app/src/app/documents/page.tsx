@@ -12,7 +12,7 @@ export default function Page() {
     <DashboardLayout
       breadcrumbItems={[
         {
-          label: "Documents",
+          label: "Context",
           href: "/documents",
         },
       ]}

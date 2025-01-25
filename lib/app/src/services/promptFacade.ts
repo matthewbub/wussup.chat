@@ -16,6 +16,21 @@ export const promptFacade = new PromptFacade({
         "Content-Type": "application/json",
       },
     },
+    deepseek: {
+      url: "https://api.deepseek.com/chat/completions",
+      headers: {
+        Authorization: `Bearer ${process.env.DEEPSEEK_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+    },
+    anthropic: {
+      url: "https://api.anthropic.com/v1/messages",
+      headers: {
+        Authorization: `Bearer ${process.env.ANTHROPIC_API_KEY}`,
+        "Content-Type": "application/json",
+        "anthropic-version": "2023-06-01",
+      },
+    },
   },
   defaultProvider: "openai",
 });

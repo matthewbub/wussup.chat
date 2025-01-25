@@ -70,9 +70,13 @@ export async function POST(request: Request) {
   contextMessages.push({ role: "user", content: message });
 
   try {
-    const response = await promptFacade.prompt(contextMessages, model, {
-      stream: true,
-    });
+    const response: Response = await promptFacade.prompt(
+      contextMessages,
+      model,
+      {
+        stream: true,
+      }
+    );
 
     if (!response.ok) {
       const errorData = await response.json();
