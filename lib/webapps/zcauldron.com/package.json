@@ -9,6 +9,8 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@headlessui/react": "^2.2.0",
+    "@heroicons/react": "^2.2.0",
     "@ninembs-studio/prompt-facade": "^1.0.6",
     "@ninembs-studio/system-ui": "1.0.3",
     "@radix-ui/react-avatar": "^1.1.2",
@@ -46,6 +48,7 @@
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "dexie": "^4.0.10",
+    "framer-motion": "^12.0.5",
     "highlight.js": "^11.11.1",
     "js-cookie": "^3.0.5",
     "lowlight": "^3.3.0",
@@ -60,6 +63,7 @@
     "react-markdown": "^9.0.3",
     "react-select": "^5.9.0",
     "react-syntax-highlighter": "^15.6.1",
+    "react-use-measure": "^2.1.1",
     "rehype-katex": "^7.0.1",
     "remark-gfm": "^4.0.0",
     "remark-math": "^6.0.0",

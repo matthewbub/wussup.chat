@@ -11,7 +11,7 @@ export default function Page() {
       activePage="chat"
       breadcrumbItems={[
         { label: "Chat", href: "/chat" },
-        { label: sessionTitle, href: `/chat/${currentSessionId}` },
+        { label: sessionTitle, href: `/chat?session=${currentSessionId}` },
       ]}
     >
       <Chat />
