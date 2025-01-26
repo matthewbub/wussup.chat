@@ -55,7 +55,14 @@ app.use(logger());
 app.use(
 	'*',
 	cors({
-		origin: ['http://localhost:3000', 'https://zcauldron.vercel.app', 'https://zcauldron.com', 'https://www.zcauldron.com'],
+		origin: [
+			'http://localhost:3000',
+			'https://zcauldron.vercel.app',
+			'https://zcauldron.com',
+			'https://www.zcauldron.com',
+			'https://ninembs.studio',
+			'https://www.ninembs.studio',
+		],
 		allowMethods: ['GET', 'POST', 'OPTIONS', 'PUT', 'DELETE'],
 		allowHeaders: ['Content-Type', 'Authorization', 'X-App-Id'],
 		maxAge: 86400,
