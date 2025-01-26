@@ -16,8 +16,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ZCauldron",
-  description: "A glorified database of knowledge",
+  title: "Ninembs Studio",
+  description: "Small tech studio building AI tools into the future",
 };
 
 export default function RootLayout({
