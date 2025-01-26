@@ -56,7 +56,7 @@ function SitemapLink(props: React.ComponentPropsWithoutRef<typeof Link>) {
 function Sitemap() {
   return (
     <>
-      <div>
+      {/* <div>
         <SitemapHeading>Product</SitemapHeading>
         <SitemapLinks>
           <SitemapLink href="/pricing">Pricing</SitemapLink>
@@ -78,12 +78,13 @@ function Sitemap() {
           <SitemapLink href="#">Help center</SitemapLink>
           <SitemapLink href="#">Community</SitemapLink>
         </SitemapLinks>
-      </div>
+      </div> */}
       <div>
         <SitemapHeading>Company</SitemapHeading>
         <SitemapLinks>
-          <SitemapLink href="#">Terms of service</SitemapLink>
-          <SitemapLink href="#">Privacy policy</SitemapLink>
+          <SitemapLink href="/legal/terms">Terms of service</SitemapLink>
+          <SitemapLink href="/legal/privacy">Privacy policy</SitemapLink>
+          <SitemapLink href="/legal/disclaimer">Disclaimer</SitemapLink>
         </SitemapLinks>
       </div>
     </>

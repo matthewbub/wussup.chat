@@ -37,8 +37,8 @@ export function NavBarItems({
   return (
     <Sidebar className="border-r-0" {...props}>
       <SidebarHeader>
-        <h1 className="px-2 text-lg font-bold tracking-wider leading-8">
-          🔮 ZCauldron
+        <h1 className="px-2 font-bold tracking-wider leading-8">
+          The (ninembs) Studio
         </h1>
       </SidebarHeader>
       <SidebarContent>
