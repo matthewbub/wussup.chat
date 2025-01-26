@@ -2,9 +2,7 @@ import { Button } from "@/components/Marketing/button";
 import { Container } from "@/components/Marketing/container";
 import { Footer } from "@/components/Marketing/footer";
 import { Gradient } from "@/components/Marketing/gradient";
-import { Link } from "@/components/Marketing/link";
 import { Navbar } from "@/components/Marketing/navbar";
-import { ChevronRight } from "lucide-react";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
