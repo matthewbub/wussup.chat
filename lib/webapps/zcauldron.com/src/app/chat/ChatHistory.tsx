@@ -4,9 +4,9 @@ import {
   ArrowUpRight,
   Link as LinkIcon,
   MoreHorizontal,
-  StarOff,
   Trash2,
   PlusCircle,
+  Pencil,
 } from "lucide-react";
 
 import {
@@ -120,8 +120,8 @@ export function ChatHistory() {
                     align={isMobile ? "end" : "start"}
                   >
                     <DropdownMenuItem>
-                      <StarOff className="text-muted-foreground" />
-                      <span>Remove from Chat History</span>
+                      <Pencil className="text-muted-foreground" />
+                      <span>Rename Chat</span>
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem>

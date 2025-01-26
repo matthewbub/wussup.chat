@@ -9,6 +9,7 @@ import { useForm } from "react-hook-form";
 import { STRINGS } from "@/constants/strings";
 import { useLoginStore } from "@/stores/loginStore";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 type LoginFormData = {
   email: string;
@@ -140,11 +141,13 @@ export function LoginFormV2({
             </div>
           </form>
           <div className="relative hidden bg-muted md:block">
-            {/* <img
-              src="/placeholder.svg"
+            <Image
+              src="/rolling-hills.png"
               alt="Image"
               className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
-            /> */}
+              width={500}
+              height={500}
+            />
           </div>
         </CardContent>
       </Card>

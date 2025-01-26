@@ -26,7 +26,7 @@ export const promptFacade = new PromptFacade({
     anthropic: {
       url: "https://api.anthropic.com/v1/messages",
       headers: {
-        "x-api-key": process.env.ANTHROPIC_API_KEY,
+        "x-api-key": process.env.ANTHROPIC_API_KEY as string,
         "anthropic-version": "2023-06-01",
       },
     },

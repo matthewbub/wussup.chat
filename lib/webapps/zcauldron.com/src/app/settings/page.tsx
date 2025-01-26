@@ -1,9 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { AuthWrapper } from "@/components/system/AuthWrapper";
-import { AuthHeader } from "@/components/system/AuthHeader";
 import { AccountSettings } from "@/components/system/settings/AccountSettings";
 import { BillingSettings } from "@/components/system/settings/BillingSettings";
 import { AppSettings } from "@/components/system/settings/AppSettings";
@@ -12,9 +10,21 @@ import { DashboardLayout } from "@/components/system/DashboardLayout";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 export default function Settings() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
+  return (
+    <DashboardLayout
+      activePage="settings"
+      breadcrumbItems={[{ label: "Settings", href: "/settings" }]}
+    >
+      <Suspense fallback={<div>Loading...</div>}>
+        <SettingsContent />
+      </Suspense>
+    </DashboardLayout>
+  );
+}
 
+function SettingsContent() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState("account");
   const tabPattern = /[A-Z]/g;
 
@@ -46,35 +56,30 @@ export default function Settings() {
   ];
 
   return (
-    <DashboardLayout
-      activePage="settings"
-      breadcrumbItems={[{ label: "Settings", href: "/settings" }]}
-    >
-      <div>
-        <Tabs value={activeTab} onValueChange={handleTabChange}>
-          <TabsList className="grid w-full grid-cols-3">
-            {tabs.map((tab) => (
-              <TabsTrigger
-                key={tab.value}
-                value={tab.value.toLowerCase().replace(tabPattern, "")}
-              >
-                {tab.label}
-              </TabsTrigger>
-            ))}
-          </TabsList>
+    <div>
+      <Tabs value={activeTab} onValueChange={handleTabChange}>
+        <TabsList className="grid w-full grid-cols-3">
           {tabs.map((tab) => (
-            <TabsContent
+            <TabsTrigger
               key={tab.value}
               value={tab.value.toLowerCase().replace(tabPattern, "")}
-              className="mt-4 p-6"
             >
-              {tab.value === "account" && <AccountSettings />}
-              {tab.value === "billing" && <BillingSettings />}
-              {tab.value === "settings" && <AppSettings />}
-            </TabsContent>
+              {tab.label}
+            </TabsTrigger>
           ))}
-        </Tabs>
-      </div>
-    </DashboardLayout>
+        </TabsList>
+        {tabs.map((tab) => (
+          <TabsContent
+            key={tab.value}
+            value={tab.value.toLowerCase().replace(tabPattern, "")}
+            className="mt-4 p-6"
+          >
+            {tab.value === "account" && <AccountSettings />}
+            {tab.value === "billing" && <BillingSettings />}
+            {tab.value === "settings" && <AppSettings />}
+          </TabsContent>
+        ))}
+      </Tabs>
+    </div>
   );
 }

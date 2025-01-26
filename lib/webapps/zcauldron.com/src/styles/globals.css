@@ -54,7 +54,7 @@
 
     --radius: 0.5rem;
 
-    --sidebar-background: 0 0% 98%;
+    --sidebar-background: 0 0% 90%;
 
     --sidebar-foreground: 240 5.3% 26.1%;
 
@@ -139,14 +139,6 @@
     --sidebar-ring: 217.2 91.2% 59.8%;
 
     --grid-dot-color: 231 229 228;
-  }
-}
-@layer base {
-  * {
-    @apply border-border;
-  }
-  body {
-    @apply dark:bg-slate-900 bg-slate-100;
   }
 }
 @layer base {

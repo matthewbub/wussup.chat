@@ -13,7 +13,7 @@ import OrderedList from "@tiptap/extension-ordered-list";
 import Strike from "@tiptap/extension-strike";
 import Underline from "@tiptap/extension-underline";
 import Code from "@tiptap/extension-code";
-import { EditorContent, useEditor } from "@tiptap/react";
+import { Editor, EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import {
   DropdownMenu,
@@ -159,7 +159,7 @@ const TipTap = ({
       return;
     }
 
-    editor.on("update", ({ editor }: any) => {
+    editor.on("update", ({ editor }: { editor: Editor }) => {
       if (!params?.slug) return;
 
       const content = editor.getHTML();

@@ -2,13 +2,11 @@
 
 import {
   BadgeCheck,
-  Bell,
-  ChevronsUpDown,
   CreditCard,
   LogOut,
+  Settings,
   Sparkles,
 } from "lucide-react";
-
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -27,12 +25,25 @@ import {
 } from "@/components/ui/sidebar";
 import { useAuthStore } from "@/stores/authStore";
 import { useSubscriptionStore } from "@/stores/useSubscription";
+import Link from "next/link";
 
 export function NavUser() {
   const { isMobile } = useSidebar();
   const { user } = useAuthStore();
   const { subscription } = useSubscriptionStore();
   const avatarFallback = user?.username?.slice(0, 2).toUpperCase();
+  const handleManageSubscription = async () => {
+    try {
+      // Create Stripe customer portal session
+      const response = await fetch(
+        `/api/subscription/manage?userId=${user?.id}`
+      );
+      const { url } = await response.json();
+      window.location.href = url;
+    } catch (error) {
+      console.error("[BillingSettings] Failed to open customer portal:", error);
+    }
+  };
 
   return (
     <SidebarMenu>
@@ -75,26 +86,33 @@ export function NavUser() {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <Sparkles />
-
-                {subscription?.isSubscribed ? "Pro" : "Upgrade to Pro"}
-              </DropdownMenuItem>
+              <Link href="/settings?tab=billing">
+                <DropdownMenuItem>
+                  <Sparkles />
+                  {subscription?.isSubscribed ? "Pro" : "Upgrade to Pro"}
+                </DropdownMenuItem>
+              </Link>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <BadgeCheck />
-                Account
-              </DropdownMenuItem>
-              <DropdownMenuItem>
+              <Link href="/settings?tab=account">
+                <DropdownMenuItem>
+                  <BadgeCheck />
+                  Account
+                </DropdownMenuItem>
+              </Link>
+
+              <DropdownMenuItem onClick={handleManageSubscription}>
                 <CreditCard />
                 Billing
               </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Bell />
-                Notifications
-              </DropdownMenuItem>
+
+              <Link href="/settings?tab=settings">
+                <DropdownMenuItem>
+                  <Settings />
+                  Settings
+                </DropdownMenuItem>
+              </Link>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuItem>

@@ -1,4 +1,4 @@
-import { ChevronRight, MoreHorizontal, Plus, FilePlus } from "lucide-react";
+import { ChevronRight, Plus, FilePlus } from "lucide-react";
 import {
   Collapsible,
   CollapsibleContent,

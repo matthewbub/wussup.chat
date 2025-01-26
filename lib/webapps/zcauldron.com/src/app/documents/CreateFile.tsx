@@ -1,4 +1,4 @@
-import { useState, useMemo, CSSProperties } from "react";
+import { useState, useMemo } from "react";
 import {
   Dialog,
   DialogContent,
@@ -13,13 +13,6 @@ import CreatableSelect from "react-select/creatable";
 import { StylesConfig } from "react-select";
 
 import { dummyFolders } from "./dummy-data";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
 type FolderOption = { label: string; value: string };
 

@@ -10,6 +10,7 @@ export function cn(...inputs: ClassValue[]) {
 /**
  * debounce
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function debounce<F extends (...args: any[]) => void>(
   func: F,
   wait: number
