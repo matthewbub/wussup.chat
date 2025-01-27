@@ -1,8 +1,6 @@
-import MarkdownComponent from "@/components/ui/Markdown";
+import BlogPost from "@/components/Marketing/blog-post";
 
 const terms = `
-
-# TERMS AND CONDITIONS
 
 By visiting and using https://ninembs.studio  (hereinafter the “Website”), you accept and agree to be bound by these Terms and Conditions including our Disclaimer and Privacy Policy posted on the website and incorporated herein by reference. 
 
@@ -70,7 +68,7 @@ You acknowledge and agree that you have no right to share, modify, sell, edit, c
 
 We reserve the right in our sole discretion to refuse, remove, restrict your access, revoke, and terminate your use of our website including any or all Content published by you or us at any time for any reason, without notice. 
 
-## NO WARRANTIES 
+## NO WARRANTIES
 
 ALL CONTENT, INFORMATION, PRODUCTS AND/OR SERVICES ON THE WEBSITE ARE “AS IS” AND “AS AVAILABLE” BASIS WITHOUT ANY REPRESENTATIONS OR WARRANTIES OF ANY KIND INCLUDING THE WARRANTIES OF MERCHANTABILITY OR FITNESS FOR ANY PURPOSE, EXPRESS OR IMPLIED TO THE FULL EXTENT PERMISSIBLE BY LAW. COMPANY MAKES NO REPRESENTATIONS OR WARRANTIES AS TO THE CONTENT, INFORMATION, MATERIALS, PRODUCTS, AND/OR SERVICES PROVIDED ON THIS WEBSITE. COMPANY MAKES NO WARRANTIES THAT THE WEBSITE WILL PERFORM OR OPERATE TO MEET YOUR REQUIREMENTS OR THAT THE INFORMATION PRESENTED HERE WILL BE COMPLETE, CURRENT, OR ERROR-FREE. COMPANY DISCLAIMS ALL WARRANTIES, IMPLIED AND EXPRESS FOR ANY PURPOSE TO THE FULL EXTENT PERMITTED BY LAW.
 
@@ -120,5 +118,13 @@ For any questions, please contact us at support@ninembs.studio.
 `;
 
 export default function Terms() {
-  return <MarkdownComponent className="prose">{terms}</MarkdownComponent>;
+  return (
+    <BlogPost
+      post={{
+        title: "Terms and Conditions",
+        body: terms,
+        publishedAt: new Date("2025-01-26").toISOString(),
+      }}
+    />
+  );
 }

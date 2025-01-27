@@ -1,8 +1,7 @@
+import BlogPost from "@/components/Marketing/blog-post";
 import MarkdownComponent from "@/components/ui/Markdown";
 
 const privacy = `
-
-# PRIVACY POLICY
 NineMbs Studio LLC. (“company”, “I”, “we” or “us”) is dedicated to respecting the privacy of your personal information. This Privacy Policy describes what information is collected from you on https://ninembs.studio (hereinafter the “Website”) and how it is used. This Privacy Policy applies to this website and any products or services that we offer that link to this policy. The term “you” refers to anyone who uses, visits, or views the website.
 
 **By visiting and using the website, you accept and agree to be bound by this privacy policy. Your continued use of the website after posting of any changes to our Privacy Policy constitutes your acceptance of those changes and updates. You must not access or use the website if you do not wish to be bound by this Privacy Policy.**
@@ -252,5 +251,13 @@ For any questions or comments regarding the privacy policy, please contact us at
 `;
 
 export default function Privacy() {
-  return <MarkdownComponent className="prose">{privacy}</MarkdownComponent>;
+  return (
+    <BlogPost
+      post={{
+        title: "Privacy Policy",
+        body: privacy,
+        publishedAt: new Date("2025-01-26").toISOString(),
+      }}
+    />
+  );
 }

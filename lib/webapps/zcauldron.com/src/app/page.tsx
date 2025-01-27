@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 function Hero() {
   return (
     <div className="relative">
-      <Gradient className="absolute inset-2 bottom-0 rounded-[45px] ring-1 ring-black/5 ring-inset" />
+      <Gradient className="absolute inset-5 bottom-0 rounded-[45px] ring-1 ring-black/5 ring-inset" />
       <Container className="relative">
         <Navbar
         // banner={

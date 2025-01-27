@@ -47,6 +47,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
+    "dayjs": "^1.11.13",
     "dexie": "^4.0.10",
     "framer-motion": "^12.0.5",
     "highlight.js": "^11.11.1",

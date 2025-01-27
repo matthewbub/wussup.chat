@@ -10,6 +10,7 @@ import { STRINGS } from "@/constants/strings";
 import { useLoginStore } from "@/stores/loginStore";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import Link from "next/link";
 
 type LoginFormData = {
   email: string;
@@ -42,7 +43,7 @@ export function LoginFormV2({
               <div className="flex flex-col items-center text-center">
                 <h1 className="text-2xl font-bold">{STRINGS.LOGIN_TITLE}</h1>
                 <p className="text-balance text-muted-foreground">
-                  Login to your account
+                  To access all your cool stuff
                 </p>
               </div>
               <div className="grid gap-2">
@@ -152,8 +153,9 @@ export function LoginFormV2({
         </CardContent>
       </Card>
       <div className="text-balance text-center text-xs text-muted-foreground [&_a]:underline [&_a]:underline-offset-4 hover:[&_a]:text-primary">
-        By clicking continue, you agree to our <a href="#">Terms of Service</a>{" "}
-        and <a href="#">Privacy Policy</a>.
+        By clicking continue, you agree to our{" "}
+        <Link href="/legal/terms">Terms of Service</Link> and{" "}
+        <Link href="/legal/privacy">Privacy Policy</Link>.
       </div>
     </div>
   );

@@ -1,8 +1,6 @@
-import MarkdownComponent from "@/components/ui/Markdown";
+import BlogPost from "@/components/Marketing/blog-post";
 
 const disclaimer = `
-# DISCLAIMER
-
 ## GENERAL INFORMATION
 
 NineMbs Studio LLC.  (“company”, “I”, “we” or “us”) provides general educational information on various topics on this website as a public service, which should not be construed as professional, financial, real-estate, tax or software advice. These are my personal opinions only. 
@@ -47,7 +45,7 @@ You are encouraged to perform your own due diligence and research and are solely
 This website reviews software products, tools, APIs, and their integrations, including but not limited to posting product images, logos, screenshots, and documentation excerpts from software manufacturers and service providers. In doing so, no copyright is claimed for this kind of content on the website, and to the extent that such material may appear to be infringed, we assert that such alleged infringement is permissible under the fair use principles of the U.S. copyright laws. If you believe any material has been used in an unauthorized manner, please contact us at support@ninembs.studio.
 
 ## NO WARRANTIES 
- 
+
 ALL CONTENT, INFORMATION, PRODUCTS AND/OR SERVICES ON THE WEBSITE ARE “AS IS” AND “AS AVAILABLE” BASIS WITHOUT ANY REPRESENTATIONS OR WARRANTIES OF ANY KIND INCLUDING THE WARRANTIES OF MERCHANTABILITY OR FITNESS FOR ANY PURPOSE, EXPRESS OR IMPLIED TO THE FULL EXTENT PERMISSIBLE BY LAW. COMPANY MAKES NO REPRESENTATIONS OR WARRANTIES AS TO THE CONTENT, INFORMATION, MATERIALS, PRODUCTS, AND/OR SERVICES PROVIDED ON THIS WEBSITE. COMPANY MAKES NO WARRANTIES THAT THE WEBSITE WILL PERFORM OR OPERATE TO MEET YOUR REQUIREMENTS OR THAT THE INFORMATION PRESENTED HERE WILL BE COMPLETE, CURRENT, OR ERROR-FREE. COMPANY DISCLAIMS ALL WARRANTIES, IMPLIED AND EXPRESS FOR ANY PURPOSE TO THE FULL EXTENT PERMITTED BY LAW.
 
 ## LIMITATION OF LIABILITY
@@ -67,5 +65,13 @@ You agree to indemnify and hold the Company and/or its officers, employees, succ
 `;
 
 export default function Disclaimer() {
-  return <MarkdownComponent className="prose">{disclaimer}</MarkdownComponent>;
+  return (
+    <BlogPost
+      post={{
+        title: "Disclaimer",
+        body: disclaimer,
+        publishedAt: new Date("2025-01-26").toISOString(),
+      }}
+    />
+  );
 }
