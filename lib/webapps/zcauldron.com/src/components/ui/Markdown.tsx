@@ -5,9 +5,16 @@ import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { oneDark } from "react-syntax-highlighter/dist/cjs/styles/prism";
 import { Copy } from "lucide-react";
 
-export default function MarkdownComponent({ children }: { children: string }) {
+export default function MarkdownComponent({
+  children,
+  className,
+}: {
+  children: string;
+  className?: string;
+}) {
   return (
     <ReactMarkdown
+      className={className}
       remarkPlugins={[remarkGfm]}
       components={{
         pre({ children }) {
