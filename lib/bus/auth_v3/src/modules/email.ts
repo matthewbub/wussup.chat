@@ -3,6 +3,9 @@ import { env } from 'hono/adapter';
 import { Resend } from 'resend';
 import dbService from './database';
 import validationServices from './validations';
+import ReactDOMServer from 'react-dom/server';
+import React from 'react';
+import { VerifyAccountEmail } from './verify-account';
 
 const VERIFICATION_EXPIRES_IN = 24 * 60 * 60; // 24 hours
 
@@ -75,14 +78,14 @@ const emailService = {
 			const baseUrl = env(c).APP_URL || 'http://localhost:3000';
 			const verificationUrl = `${baseUrl}/verify-email?token=${verificationToken}${appId ? `&appId=${appId}` : ''}`;
 
-			// send verification email
+			// send verification email using the new template
 			const emailResult = await emailService.sendEmail(
 				{
 					to: to,
 					subject: 'Verify your email',
-					body: `Please verify your email by clicking this link: ${verificationUrl}\n\nThis link will expire in 24 hours.`,
+					body: ReactDOMServer.renderToStaticMarkup(React.createElement(VerifyAccountEmail, { verificationUrl })),
 				},
-				c
+				c,
 			);
 
 			return {
