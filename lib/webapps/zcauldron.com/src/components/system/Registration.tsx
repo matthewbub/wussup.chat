@@ -5,7 +5,12 @@ import { STRINGS } from "@/constants/strings";
 import { useRegisterStore } from "@/stores/registerStore";
 import EmailVerification from "@/components/system/EmailVerification";
 import { Input, PasswordInput } from "@/components/ui/input";
-import { clsx } from "clsx";
+import { Card, CardContent } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import Image from "next/image";
+import { cn } from "@/lib/utils";
 
 type RegisterFormData = {
   email: string;
@@ -41,24 +46,20 @@ export function Registration() {
   }
 
   return (
-    <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-sm">
-        <h2 className="mt-10 text-center text-2xl font-bold text-gray-900 dark:text-white">
-          {STRINGS.REGISTER_TITLE}
-        </h2>
-      </div>
+    <div className="flex flex-col gap-6">
+      <Card className="overflow-hidden">
+        <CardContent className="grid p-0 md:grid-cols-2">
+          <form className="p-6 md:p-8" onSubmit={handleSubmit(onSubmit)}>
+            <div className="flex flex-col gap-6">
+              <div className="flex flex-col items-center text-center">
+                <h1 className="text-2xl font-bold">{STRINGS.REGISTER_TITLE}</h1>
+                <p className="text-balance text-muted-foreground">
+                  Create an account to get started
+                </p>
+              </div>
 
-      <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
-        <div className="bg-gray-50 dark:bg-gray-800 p-6 rounded-lg shadow-sm">
-          <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
-            <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-gray-700 dark:text-gray-200"
-              >
-                {STRINGS.REGISTER_EMAIL_LABEL}
-              </label>
-              <div className="mt-2">
+              <div className="grid gap-2">
+                <Label htmlFor="email">Email</Label>
                 <Input
                   {...register("email", {
                     required: STRINGS.REGISTER_ERROR_EMAIL_REQUIRED,
@@ -69,30 +70,25 @@ export function Registration() {
                   })}
                   id="email"
                   type="email"
-                  autoComplete="email"
-                  className={clsx(
-                    errors.email && "border-red-500 dark:border-red-500"
+                  placeholder="m@example.com"
+                  className={cn(
+                    errors.email && "border-destructive",
+                    validationErrors.some((e) => e.path.includes("email")) &&
+                      "border-destructive"
                   )}
                 />
-                {validationErrors.some((e) => e.path.includes("email")) && (
-                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">
-                    {
+                {(errors.email ||
+                  validationErrors.some((e) => e.path.includes("email"))) && (
+                  <p className="text-sm text-destructive">
+                    {errors.email?.message ||
                       validationErrors.find((e) => e.path.includes("email"))
-                        ?.message
-                    }
+                        ?.message}
                   </p>
                 )}
               </div>
-            </div>
 
-            <div>
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-gray-700 dark:text-gray-200"
-              >
-                {STRINGS.REGISTER_PASSWORD_LABEL}
-              </label>
-              <div className="mt-2">
+              <div className="grid gap-2">
+                <Label htmlFor="password">Password</Label>
                 <PasswordInput
                   {...register("password", {
                     required: STRINGS.REGISTER_ERROR_PASSWORD_REQUIRED,
@@ -106,36 +102,28 @@ export function Registration() {
                     },
                   })}
                   id="password"
-                  autoComplete="new-password"
-                  className={clsx(
+                  className={cn(
                     (errors.password ||
                       validationErrors.some((e) =>
                         e.path.includes("password")
                       )) &&
-                      "border-red-500 dark:border-red-500"
+                      "border-destructive"
                   )}
                 />
                 {(errors.password ||
                   validationErrors.some((e) =>
                     e.path.includes("password")
                   )) && (
-                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                  <p className="text-sm text-destructive">
                     {errors.password?.message ||
                       validationErrors.find((e) => e.path.includes("password"))
                         ?.message}
                   </p>
                 )}
               </div>
-            </div>
 
-            <div>
-              <label
-                htmlFor="confirmPassword"
-                className="block text-sm font-medium text-gray-700 dark:text-gray-200"
-              >
-                {STRINGS.REGISTER_CONFIRM_PASSWORD_LABEL}
-              </label>
-              <div className="mt-2">
+              <div className="grid gap-2">
+                <Label htmlFor="confirmPassword">Confirm Password</Label>
                 <PasswordInput
                   {...register("confirmPassword", {
                     required: STRINGS.REGISTER_ERROR_CONFIRM_PASSWORD_REQUIRED,
@@ -144,52 +132,49 @@ export function Registration() {
                       STRINGS.REGISTER_ERROR_PASSWORDS_DONT_MATCH,
                   })}
                   id="confirmPassword"
-                  autoComplete="new-password"
-                  className={clsx(
-                    errors.confirmPassword &&
-                      "border-red-500 dark:border-red-500"
-                  )}
+                  className={cn(errors.confirmPassword && "border-destructive")}
                 />
                 {errors.confirmPassword && (
-                  <p className="mt-1 text-sm text-red-600 dark:text-red-400">
+                  <p className="text-sm text-destructive">
                     {errors.confirmPassword.message}
                   </p>
                 )}
               </div>
-            </div>
 
-            {error && (
-              <p className="text-sm text-red-600 dark:text-red-400 text-center">
-                {error}
-              </p>
-            )}
+              {error && (
+                <p className="text-sm text-destructive text-center">{error}</p>
+              )}
 
-            <div>
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="w-full px-4 py-2 text-sm font-semibold text-white bg-blue-600 rounded-md 
-                hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800
-                focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
-                disabled:opacity-50 disabled:cursor-not-allowed
-                transition-colors duration-200"
-              >
+              <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? STRINGS.REGISTER_LOADING : STRINGS.REGISTER_SUBMIT}
-              </button>
+              </Button>
+
+              <div className="text-center text-sm">
+                {STRINGS.REGISTER_ALREADY_MEMBER}{" "}
+                <Link
+                  href={STRINGS.REGISTER_SIGN_IN_URL}
+                  className="underline underline-offset-4"
+                >
+                  {STRINGS.REGISTER_SIGN_IN}
+                </Link>
+              </div>
             </div>
           </form>
-
-          <p className="mt-10 text-center text-sm text-gray-600 dark:text-gray-400">
-            {STRINGS.REGISTER_ALREADY_MEMBER}{" "}
-            <a
-              href={STRINGS.REGISTER_SIGN_IN_URL}
-              className="font-semibold text-blue-600 hover:text-blue-700 
-              dark:text-blue-400 dark:hover:text-blue-300"
-            >
-              {STRINGS.REGISTER_SIGN_IN}
-            </a>
-          </p>
-        </div>
+          <div className="relative hidden bg-muted md:block">
+            <Image
+              src="/rolling-hills-2.png"
+              alt="Image"
+              className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
+              width={500}
+              height={500}
+            />
+          </div>
+        </CardContent>
+      </Card>
+      <div className="text-balance text-center text-xs text-muted-foreground [&_a]:underline [&_a]:underline-offset-4 hover:[&_a]:text-primary">
+        By clicking continue, you agree to our{" "}
+        <Link href="/legal/terms">Terms of Service</Link> and{" "}
+        <Link href="/legal/privacy">Privacy Policy</Link>.
       </div>
     </div>
   );
