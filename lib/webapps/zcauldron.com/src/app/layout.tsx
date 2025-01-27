@@ -4,6 +4,7 @@ import { Background } from "@/components/ui/Background";
 import "../styles/globals.css";
 import "katex/dist/katex.min.css";
 import { Toaster } from "@/components/ui/toaster";
+import { PostHogProvider } from "./providers";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,8 +31,10 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased h-full`}
       >
-        <Background>{children}</Background>
-        <Toaster />
+        <PostHogProvider>
+          <Background>{children}</Background>
+          <Toaster />
+        </PostHogProvider>
       </body>
     </html>
   );
