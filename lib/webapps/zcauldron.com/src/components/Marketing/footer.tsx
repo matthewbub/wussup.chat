@@ -134,7 +134,7 @@ export function Footer() {
   return (
     <footer className="mt-20">
       <Gradient className="relative">
-        <div className="absolute inset-5 rounded-[45px] bg-white/80" />
+        <div className="absolute inset-2 rounded-[45px] bg-white/80" />
         <Container>
           <CallToAction />
           <PlusGrid className="pb-16">
