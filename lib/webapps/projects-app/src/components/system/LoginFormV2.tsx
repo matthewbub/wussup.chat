@@ -35,11 +35,11 @@ export function LoginFormV2({
   };
 
   return (
-    <div className={cn("flex flex-col gap-6", className)} {...props}>
+    <div className={cn("flex flex-col gap-6 w-full", className)} {...props}>
       <Card className="overflow-hidden">
         <CardContent className="grid p-0 md:grid-cols-2">
           <form className="p-6 md:p-8" onSubmit={handleSubmit(onSubmit)}>
-            <div className="flex flex-col gap-6">
+            <div className="flex flex-col gap-6 w-full">
               <div className="flex flex-col items-center text-center">
                 <h1 className="text-2xl font-bold">{STRINGS.LOGIN_TITLE}</h1>
                 <p className="text-balance text-muted-foreground">
