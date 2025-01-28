@@ -83,3 +83,33 @@ Here's a map of all the routes in this service. Click an endpoint ot quickly jum
 - Run the ./scripts/create-app-local.sh script
 - Run the ./scripts/create-app-remote.sh script
 - Configure the origin to your production domain; when you deploy to prod
+
+## Refactor to:
+
+```
+lib/bus/auth_v3/src/
+├── index.ts                # Main API setup
+├── routes/                 # Route definitions
+│   ├── index.ts
+│   ├── auth.ts
+│   └── public.ts
+├── definitions/           # OpenAPI definitions
+│   ├── index.ts
+│   ├── RouteDefinitionFactory.ts
+│   └── schemas/
+│       ├── index.ts
+│       └── SchemaBuilder.ts
+├── controllers/           # Request handlers
+│   ├── index.ts
+│   ├── auth.ts
+│   └── public.ts
+├── services/             # Business logic
+│   ├── index.ts
+│   └── auth.ts
+└── middleware/           # Custom middleware
+│   ├── index.ts
+│   ├── auth.ts
+│   └── appId.ts
+└── types                 # Type definitions
+    └── index.ts
+```
