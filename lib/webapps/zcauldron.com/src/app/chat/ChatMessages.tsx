@@ -6,9 +6,27 @@ import MarkdownComponent from "@/components/ui/Markdown";
 import { Message } from "@/types/chat";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Copy, MoreHorizontal, GitFork, Volume2, Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useAuthStore } from "@/stores/authStore";
 
 export const ChatMessages: React.FC = () => {
-  const { sessions, currentSessionId, isLoading, isStreaming } = useChatStore();
+  const {
+    sessions,
+    currentSessionId,
+    isLoading,
+    isStreaming,
+    generateSpeech,
+    forkChat,
+  } = useChatStore();
+  const { user } = useAuthStore();
+  const router = useRouter();
   const { toast } = useToast();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const currentSession = sessions.find(
@@ -21,6 +39,7 @@ export const ChatMessages: React.FC = () => {
     useState(false);
   const [isAtBottom, setIsAtBottom] = useState(true);
   const chatContainerRef = useRef<HTMLDivElement>(null);
+  const [isPlaying, setIsPlaying] = useState<string | null>(null);
 
   const handleScroll = () => {
     const container = chatContainerRef.current;
@@ -81,6 +100,61 @@ export const ChatMessages: React.FC = () => {
     }
   }, [currentSessionId]);
 
+  const handleForkChat = async (messageId: string) => {
+    if (!user?.id) return;
+
+    // Find all messages up to and including the selected message
+    const messageIndex = messages.findIndex((m) => m.id === messageId);
+    const messagesUpToFork = messages.slice(0, messageIndex + 1);
+
+    // Create new session with forked messages
+    const newSessionId = await forkChat(user.id, messagesUpToFork);
+    if (newSessionId) {
+      router.push(`/chat?session=${newSessionId}`);
+    } else {
+      toast({
+        title: "Error",
+        description: "Failed to fork chat. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleReadAloud = async (messageId: string, content: string) => {
+    try {
+      setIsPlaying(messageId);
+      const base64Audio = await generateSpeech(content);
+      const audio = new Audio(`data:audio/mp3;base64,${base64Audio}`);
+
+      audio.onended = () => {
+        setIsPlaying(null);
+      };
+
+      await audio.play();
+    } catch (error) {
+      console.error("Error playing audio:", error);
+      setIsPlaying(null);
+    }
+  };
+
+  const handleCopyMessage = async (content: string) => {
+    try {
+      await navigator.clipboard.writeText(content);
+      toast({
+        title: "Copied",
+        description: "Message copied to clipboard",
+        duration: 2000,
+      });
+    } catch (error) {
+      console.error("Failed to copy message:", error);
+      toast({
+        title: "Error",
+        description: "Failed to copy message",
+        variant: "destructive",
+      });
+    }
+  };
+
   if (!currentSessionId) {
     return (
       <div className="flex items-center justify-center h-full">
@@ -105,23 +179,65 @@ export const ChatMessages: React.FC = () => {
               message.is_user ? "justify-end" : "justify-start"
             }`}
           >
-            <div className="flex flex-col">
+            <div className="flex flex-col relative group">
+              <div className="absolute top-2 right-2">
+                <DropdownMenu>
+                  <DropdownMenuTrigger className="opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 text-slate-400"
+                    >
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem
+                      onClick={() => handleForkChat(message.id)}
+                    >
+                      <GitFork className="mr-2 h-4 w-4" />
+                      <span>Fork Chat from Here</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => handleCopyMessage(message.content)}
+                    >
+                      <Copy className="mr-2 h-4 w-4" />
+                      <span>Copy Message</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() =>
+                        handleReadAloud(message.id, message.content)
+                      }
+                      disabled={isPlaying === message.id}
+                    >
+                      {isPlaying === message.id ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      ) : (
+                        <Volume2 className="mr-2 h-4 w-4" />
+                      )}
+                      <span>
+                        {isPlaying === message.id ? "Playing..." : "Read Aloud"}
+                      </span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
               <div
-                className={`max-w-xs md:max-w-md lg:max-w-lg xl:max-w-xl rounded-lg p-3 ${
+                className={`max-w-xs md:max-w-md lg:max-w-lg xl:max-w-xl rounded-lg px-3 py-5 ${
                   message.is_user
-                    ? "bg-blue-700 text-white"
-                    : "bg-slate-700 text-slate-200"
+                    ? "bg-blue-500 dark:bg-blue-700 text-white dark:text-white"
+                    : "bg-gray-200 dark:bg-gray-700 text-black dark:text-gray-200"
                 }`}
               >
                 <MarkdownComponent>{message.content}</MarkdownComponent>
               </div>
               <div
                 className={
-                  "text-xs text-slate-500 " +
+                  "text-xs text-gray-600 dark:text-gray-400 " +
                   (message.is_user ? "text-right" : "text-left")
                 }
               >
-                <p className="text-xs text-slate-500 pt-2 pl-1">
+                <p className="text-xs text-gray-600 dark:text-gray-400 pt-2 pl-1">
                   {new Date(message.created_at).toLocaleString()}
                 </p>
               </div>

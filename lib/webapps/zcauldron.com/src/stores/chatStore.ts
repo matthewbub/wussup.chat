@@ -1,12 +1,12 @@
 import { create } from "zustand";
 import { supabase } from "@/services/supabase";
-import { ChatSession } from "@/types/chat";
+import { ChatSession, Message } from "@/types/chat";
 import { useAuthStore } from "@/stores/authStore";
 
 interface ChatStore {
   sessions: ChatSession[];
   currentSessionId: string | null;
-  addSession: (userId: string) => void;
+  addSession: (userId: string) => Promise<string | null>;
   setCurrentSession: (id: string) => void;
   addMessage: (content: string, model: string) => void;
   setSessions: (sessions: ChatSession[]) => void;
@@ -18,12 +18,14 @@ interface ChatStore {
   loading: boolean;
   isLoading: boolean;
   isStreaming: boolean;
+  forkChat: (userId: string, messages: Message[]) => Promise<string | null>;
+  generateSpeech: (text: string) => Promise<string>;
 }
 
 export const useChatStore = create<ChatStore>((set, get) => ({
   sessions: [],
   currentSessionId: null,
-  addSession: async (userId: string) => {
+  addSession: async (userId: string): Promise<string | null> => {
     const newSession = {
       user_id: userId,
       name: `Chat ${useChatStore.getState().sessions.length + 1}`,
@@ -36,7 +38,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 
     if (error) {
       console.error(error);
-      return;
+      return null;
     }
 
     if (data) {
@@ -45,6 +47,69 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         currentSessionId: data.id,
         sessionTitle: data.name,
       }));
+    }
+    return data.id;
+  },
+  forkChat: async (
+    userId: string,
+    messages: Message[]
+  ): Promise<string | null> => {
+    try {
+      // First create a new session
+      const { data: sessionData, error: sessionError } = await supabase
+        .from("ChatBot_Sessions")
+        .insert([
+          {
+            user_id: userId,
+            name: `Fork of: ${messages[0]?.content?.slice(0, 30)}...`, // Use first message as title
+          },
+        ])
+        .select()
+        .single();
+
+      if (sessionError || !sessionData) {
+        console.error("Error creating forked session:", sessionError);
+        return null;
+      }
+
+      // Then create new messages linked to the new session
+      const newMessages = messages.map((msg) => ({
+        chat_session_id: sessionData.id,
+        content: msg.content,
+        is_user: msg.is_user,
+        user_id: userId,
+        model: msg.model,
+      }));
+
+      const { error: messagesError } = await supabase
+        .from("ChatBot_Messages")
+        .insert(newMessages);
+
+      if (messagesError) {
+        console.error("Error copying messages:", messagesError);
+        // Clean up the session if message copying failed
+        await supabase
+          .from("ChatBot_Sessions")
+          .delete()
+          .eq("id", sessionData.id);
+        return null;
+      }
+
+      // Update local state
+      set((state) => ({
+        sessions: [
+          ...state.sessions,
+          {
+            ...sessionData,
+            messages: messages,
+          },
+        ],
+      }));
+
+      return sessionData.id;
+    } catch (error) {
+      console.error("Error forking chat:", error);
+      return null;
     }
   },
   setCurrentSession: (id) => {
@@ -258,5 +323,26 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       loading: false,
       sessionTitle: currentSession?.name || "Untitled Chat",
     });
+  },
+  generateSpeech: async (text: string) => {
+    try {
+      const response = await fetch("/api/audio", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ text }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to generate speech");
+      }
+
+      const data = await response.json();
+      return data.audio;
+    } catch (error) {
+      console.error("Error generating speech:", error);
+      throw error;
+    }
   },
 }));

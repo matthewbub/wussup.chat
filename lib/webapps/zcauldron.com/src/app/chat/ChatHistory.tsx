@@ -5,10 +5,8 @@ import {
   Link as LinkIcon,
   MoreHorizontal,
   Trash2,
-  PlusCircle,
   Pencil,
 } from "lucide-react";
-
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,28 +25,13 @@ import {
 } from "@/components/ui/sidebar";
 import { useChatStore } from "@/stores/chatStore";
 import LoadingPulse from "@/components/ui/Loading";
-import { useAuthStore } from "@/stores/authStore";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/Tooltip";
 
 export function ChatHistory() {
   const { isMobile } = useSidebar();
-  const { sessions, loading, addSession, setCurrentSession } = useChatStore();
-  const { user } = useAuthStore();
+  const { sessions, loading, setCurrentSession } = useChatStore();
   const router = useRouter();
-
-  const handleNewChat = () => {
-    if (user?.id) {
-      addSession(user.id);
-      router.push("/chat");
-    }
-  };
 
   const handleChatSelect = (sessionId: string) => {
     setCurrentSession(sessionId);
@@ -60,19 +43,6 @@ export function ChatHistory() {
       <SidebarGroup className="group-data-[collapsible=icon]:hidden">
         <SidebarGroupLabel className="flex justify-between items-center sticky top-0 bg-sidebar z-10">
           <div className="w-full">Chat History</div>
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <SidebarMenuButton onClick={handleNewChat} className="w-fit">
-                  <PlusCircle className="h-4 w-4" />
-                  <span className="sr-only">New Chat</span>
-                </SidebarMenuButton>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>New Chat</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
         </SidebarGroupLabel>
         <SidebarMenu>
           {loading ? (

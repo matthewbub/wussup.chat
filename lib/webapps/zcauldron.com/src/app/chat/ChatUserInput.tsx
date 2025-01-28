@@ -7,9 +7,13 @@ import { useSubscriptionStore } from "@/stores/useSubscription";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
+import { useAuthStore } from "@/stores/authStore";
+import { useRouter } from "next/navigation";
 
 export const ChatUserInput: React.FC = () => {
-  const { currentSessionId, addMessage } = useChatStore();
+  const { currentSessionId, addMessage, addSession } = useChatStore();
+  const { user } = useAuthStore();
+  const router = useRouter();
 
   const [newMessage, setNewMessage] = useState("");
   const [model, setModel] = useState("gpt-4-turbo-2024-04-09");
@@ -31,6 +35,15 @@ export const ChatUserInput: React.FC = () => {
     e.target.style.height = `${e.target.scrollHeight}px`;
   };
 
+  const handleNewChat = async () => {
+    if (user?.id) {
+      const sessionId = await addSession(user.id);
+      if (sessionId) {
+        router.push(`/chat?session=${sessionId}`);
+      }
+    }
+  };
+
   if (!currentSessionId) {
     return (
       <div className="flex items-center justify-center h-full">
@@ -47,11 +60,16 @@ export const ChatUserInput: React.FC = () => {
       <form onSubmit={handleAddMessage} className="bg-background">
         <div className="flex items-end space-x-2 p-4">
           <div className="flex flex-col w-full gap-2 h-full">
-            <ModelSelect
-              model={model}
-              onModelChange={setModel}
-              isSubscribed={subscription.isSubscribed}
-            />
+            <div className="flex items-center space-x-2">
+              <ModelSelect
+                model={model}
+                onModelChange={setModel}
+                isSubscribed={subscription.isSubscribed}
+              />
+              <Button onClick={handleNewChat} type="button">
+                New Chat
+              </Button>
+            </div>
             <Textarea
               ref={textareaRef}
               value={newMessage}
