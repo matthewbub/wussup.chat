@@ -1,42 +1,16 @@
 "use client";
 
 import {
-  ArrowUpRight,
-  Link as LinkIcon,
-  MoreHorizontal,
-  Trash2,
-  Pencil,
-} from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
   SidebarGroup,
   SidebarGroupLabel,
   SidebarMenu,
-  SidebarMenuAction,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  useSidebar,
 } from "@/components/ui/sidebar";
 import { useChatStore } from "@/stores/chatStore";
 import LoadingPulse from "@/components/ui/Loading";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { ChatHistoryItem } from "./ChatHistoryItem";
 
 export function ChatHistory() {
-  const { isMobile } = useSidebar();
-  const { sessions, loading, setCurrentSession } = useChatStore();
-  const router = useRouter();
-
-  const handleChatSelect = (sessionId: string) => {
-    setCurrentSession(sessionId);
-    router.push(`/chat?session=${sessionId}`);
-  };
+  const { sessions, loading } = useChatStore();
 
   return (
     <div>
@@ -61,64 +35,9 @@ export function ChatHistory() {
             </div>
           ) : (
             sessions.map((session) => (
-              <SidebarMenuItem key={session.id}>
-                <SidebarMenuButton
-                  asChild
-                  onClick={() => handleChatSelect(session.id)}
-                >
-                  <Link
-                    href={`/chat?session=${session.id}`}
-                    title={session.name}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handleChatSelect(session.id);
-                    }}
-                  >
-                    <span>{session.name}</span>
-                  </Link>
-                </SidebarMenuButton>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <SidebarMenuAction showOnHover>
-                      <MoreHorizontal />
-                      <span className="sr-only">More</span>
-                    </SidebarMenuAction>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent
-                    className="w-56 rounded-lg"
-                    side={isMobile ? "bottom" : "right"}
-                    align={isMobile ? "end" : "start"}
-                  >
-                    <DropdownMenuItem>
-                      <Pencil className="text-muted-foreground" />
-                      <span>Rename Chat</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem>
-                      <LinkIcon className="text-muted-foreground" />
-                      <span>Copy Link</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <ArrowUpRight className="text-muted-foreground" />
-                      <span>Open in New Tab</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem>
-                      <Trash2 className="text-muted-foreground" />
-                      <span>Delete</span>
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </SidebarMenuItem>
+              <ChatHistoryItem key={session.id} session={session} />
             ))
           )}
-          {/* TODO Implement this later */}
-          {/*<SidebarMenuItem>*/}
-          {/*  <SidebarMenuButton className="text-sidebar-foreground/70">*/}
-          {/*    <MoreHorizontal />*/}
-          {/*    <span>More</span>*/}
-          {/*  </SidebarMenuButton>*/}
-          {/*</SidebarMenuItem>*/}
         </SidebarMenu>
       </SidebarGroup>
     </div>
