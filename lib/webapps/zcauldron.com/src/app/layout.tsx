@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Ninembs Studio",
+  title: "NineMbs Studio",
   description: "Small tech studio building AI tools into the future",
 };
 
