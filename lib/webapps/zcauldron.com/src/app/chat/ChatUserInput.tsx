@@ -47,15 +47,6 @@ export const ChatUserInput: React.FC = () => {
     e.target.style.height = `${e.target.scrollHeight}px`;
   };
 
-  const handleNewChat = async () => {
-    if (user?.id) {
-      const sessionId = await addSession(user.id);
-      if (sessionId) {
-        router.push(`/chat?session=${sessionId}`);
-      }
-    }
-  };
-
   return (
     <>
       <Separator />
@@ -68,11 +59,6 @@ export const ChatUserInput: React.FC = () => {
                 onModelChange={setModel}
                 isSubscribed={subscription.isSubscribed}
               />
-              {currentSessionId && (
-                <Button onClick={handleNewChat} type="button">
-                  New Chat
-                </Button>
-              )}
             </div>
             <Textarea
               ref={textareaRef}

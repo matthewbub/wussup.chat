@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { MessageCircle } from "lucide-react";
+import { MessageCircle, Plus } from "lucide-react";
 import { NavMain } from "@/components/system/sidenav/NavMain";
 import {
   Sidebar,
@@ -11,6 +11,10 @@ import {
 import { ChatHistory } from "@/app/chat/ChatHistory";
 import { Folders } from "@/app/documents/Folders";
 import { useModalStore } from "@/stores/modalStore";
+import { useChatStore } from "@/stores/chatStore";
+import { useAuthStore } from "@/stores/authStore";
+import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 
 const data = {
   navMain: [
@@ -33,6 +37,18 @@ export function NavBarItems({
     icon: item.icon,
   }));
   const { openModal } = useModalStore();
+  const { addSession } = useChatStore();
+  const { user } = useAuthStore();
+  const router = useRouter();
+
+  const handleCreateChat = async () => {
+    if (user?.id) {
+      const sessionId = await addSession(user.id);
+      if (sessionId) {
+        router.push(`/chat?session=${sessionId}`);
+      }
+    }
+  };
 
   return (
     <Sidebar className="border-r-0" {...props}>
@@ -42,6 +58,16 @@ export function NavBarItems({
         </h1>
       </SidebarHeader>
       <SidebarContent>
+        <div className="p-2">
+          <Button
+            variant="outline"
+            className="w-full justify-center"
+            onClick={handleCreateChat}
+          >
+            <Plus className="mr-2 h-4 w-4" />
+            Create Chat
+          </Button>
+        </div>
         {activePage !== "chat" && (
           <div className="flex flex-col p-2">
             <NavMain items={nav} />
