@@ -21,9 +21,21 @@ export const ChatUserInput: React.FC = () => {
 
   const { subscription } = useSubscriptionStore();
 
-  const handleAddMessage = (e: React.FormEvent) => {
+  const handleAddMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (newMessage.trim() && currentSessionId) {
+    if (!newMessage.trim()) return;
+
+    if (!currentSessionId && user?.id) {
+      // Create new session if none exists
+      const sessionId = await addSession(user.id);
+      if (sessionId) {
+        router.push(`/chat?session=${sessionId}`);
+        // Add message after session is created
+        addMessage(newMessage, model);
+        setNewMessage("");
+      }
+    } else if (currentSessionId) {
+      // Normal flow when session exists
       addMessage(newMessage, model);
       setNewMessage("");
     }
@@ -44,16 +56,6 @@ export const ChatUserInput: React.FC = () => {
     }
   };
 
-  if (!currentSessionId) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <p className="text-slate-800 dark:text-slate-200">
-          Select or create a chat to start messaging
-        </p>
-      </div>
-    );
-  }
-
   return (
     <>
       <Separator />
@@ -66,9 +68,11 @@ export const ChatUserInput: React.FC = () => {
                 onModelChange={setModel}
                 isSubscribed={subscription.isSubscribed}
               />
-              <Button onClick={handleNewChat} type="button">
-                New Chat
-              </Button>
+              {currentSessionId && (
+                <Button onClick={handleNewChat} type="button">
+                  New Chat
+                </Button>
+              )}
             </div>
             <Textarea
               ref={textareaRef}
