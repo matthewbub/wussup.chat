@@ -15,6 +15,8 @@ import {
 import { Copy, MoreHorizontal, GitFork, Volume2, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/stores/authStore";
+import LoadingPulse from "@/components/ui/Loading";
+import clsx from "clsx";
 
 export const ChatMessages: React.FC = () => {
   const {
@@ -228,13 +230,26 @@ export const ChatMessages: React.FC = () => {
                 </DropdownMenu>
               </div>
               <div
-                className={`max-w-xs md:max-w-md lg:max-w-lg xl:max-w-xl rounded-lg px-3 py-5 ${
+                className={`max-w-xs md:max-w-md lg:max-w-lg xl:max-w-xl rounded-lg p-2 pr-10 ${
                   message.is_user
                     ? "bg-blue-500 dark:bg-blue-700 text-white dark:text-white"
                     : "bg-gray-200 dark:bg-gray-700 text-black dark:text-gray-200"
                 }`}
               >
-                <MarkdownComponent>{message.content}</MarkdownComponent>
+                {!message.is_user &&
+                isStreaming &&
+                message === messages[messages.length - 1] ? (
+                  <div
+                    className={clsx({ "flex items-center": !message.content })}
+                  >
+                    {!message.content && (
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    )}
+                    <MarkdownComponent>{message.content}</MarkdownComponent>
+                  </div>
+                ) : (
+                  <MarkdownComponent>{message.content}</MarkdownComponent>
+                )}
               </div>
               <div
                 className={
