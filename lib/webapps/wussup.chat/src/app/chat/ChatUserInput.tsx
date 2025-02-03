@@ -11,12 +11,17 @@ import { useAuthStore } from "@/stores/authStore";
 import { useRouter } from "next/navigation";
 
 export const ChatUserInput: React.FC = () => {
-  const { currentSessionId, addMessage, addSession, isLoadingMessageResponse } =
-    useChatStore();
+  const {
+    currentSessionId,
+    addMessage,
+    addSession,
+    isLoadingMessageResponse,
+    newMessage,
+    setNewMessage,
+  } = useChatStore();
   const { user } = useAuthStore();
   const router = useRouter();
 
-  const [newMessage, setNewMessage] = useState("");
   const [model, setModel] = useState("gpt-4-turbo-2024-04-09");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 

@@ -20,6 +20,8 @@ interface ChatStore {
   isStreaming: boolean;
   forkChat: (userId: string, messages: Message[]) => Promise<string | null>;
   generateSpeech: (text: string) => Promise<string>;
+  newMessage: string;
+  setNewMessage: (message: string) => void;
 }
 
 export const useChatStore = create<ChatStore>((set, get) => ({
@@ -345,4 +347,6 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       throw error;
     }
   },
+  newMessage: "",
+  setNewMessage: (message: string) => set({ newMessage: message }),
 }));
