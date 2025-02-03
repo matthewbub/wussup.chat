@@ -151,7 +151,11 @@ export function ChatHistoryItem({ session }: ChatHistoryItemProps) {
 
   return (
     <SidebarMenuItem>
-      <SidebarMenuButton asChild onClick={() => handleChatSelect(session.id)}>
+      <SidebarMenuButton
+        asChild
+        onClick={() => handleChatSelect(session.id)}
+        className="px-4"
+      >
         <Link
           href={`/chat?session=${session.id}`}
           title={session.name}
