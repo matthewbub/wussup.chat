@@ -20,7 +20,7 @@ export const ChatMessages: React.FC = () => {
   const {
     sessions,
     currentSessionId,
-    isLoading,
+    isLoadingMessageResponse,
     isStreaming,
     generateSpeech,
     forkChat,
@@ -68,17 +68,22 @@ export const ChatMessages: React.FC = () => {
   useEffect(() => {
     if (
       !isStreaming &&
-      !isLoading &&
+      !isLoadingMessageResponse &&
       messages.length > 0 &&
       !userScrolledDuringStream
     ) {
       scrollToBottom("smooth");
     }
-  }, [messages, isStreaming, isLoading, userScrolledDuringStream]);
+  }, [
+    messages,
+    isStreaming,
+    isLoadingMessageResponse,
+    userScrolledDuringStream,
+  ]);
 
   // Show toast when streaming completes if user scrolled away
   useEffect(() => {
-    if (!isStreaming && !isLoading && userScrolledDuringStream) {
+    if (!isStreaming && !isLoadingMessageResponse && userScrolledDuringStream) {
       toast({
         title: "Response Complete",
         description:
@@ -86,7 +91,7 @@ export const ChatMessages: React.FC = () => {
         duration: 4000,
       });
     }
-  }, [isStreaming, isLoading, userScrolledDuringStream, toast]);
+  }, [isStreaming, isLoadingMessageResponse, userScrolledDuringStream, toast]);
 
   // Scroll handling utilities
   const scrollToBottom = (behavior: ScrollBehavior = "auto") => {
