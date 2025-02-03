@@ -5,7 +5,7 @@ import { AVAILABLE_MODELS } from "@/constants/models";
 
 const CONTEXT_LENGTH = 100; // Number of previous messages to retain for context
 const TITLE_SYSTEM_PROMPT =
-  "Summarize the following message as a brief, engaging title in 4-6 words:";
+  "Provide a concise 4-6 word title for the following conversation. Text only, no markdown or formatting:";
 
 export async function POST(request: Request) {
   const { message, history, userId, sessionId, model } = await request.json();
