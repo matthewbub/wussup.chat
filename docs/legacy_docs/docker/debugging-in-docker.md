@@ -24,13 +24,13 @@ To run the app on docker:
       -p 8080:8080 zcauldron
    ```
 
-Next, we need to launch the lib/image micro service
+Next, we need to launch the lib/bus/pdf_service micro service
 
-### Build the `lib/image` Python Service
+### Build the `lib/bus/pdf_service` Python Service
 
 1. **Build the Image**
    ```sh
-   docker build -t pdf-service -f lib/image/Dockerfile lib/image/
+   docker build -t pdf-service -f lib/bus/pdf_service/Dockerfile lib/bus/pdf_service/
    ```
 2. **Run the Container**
    ```sh
@@ -109,12 +109,12 @@ And that's all there is too it! If you look at the contents of the Dockerfile, i
 
 If you've set your environment to "staging", you should be able to visit your application in your browser at `localhost:8080` but you will experience limited functionality until you've launched the second Container. We'll cover that Container in the next section.
 
-## Running the lib/image Container
+## Running the lib/bus/pdf_service Container
 
 Why is this it's own Docker container you ask? As [mentioned above](#consider-this), you may be a React dev looking at this project and don't want to fuck with the Python portion (fair). Thats a Docker solution. By following these steps you can launch the Python server locally without actually touching Python on your local machine.
 
 ```bash
-docker build -t pdf-service -f lib/image/Dockerfile lib/image/
+docker build -t pdf-service -f lib/bus/pdf_service/Dockerfile lib/bus/pdf_service/
 ```
 
 This command is essentially the same things
