@@ -2,7 +2,7 @@
 
 import React, { useState, useRef } from "react";
 import { useChatStore } from "@/stores/chatStore";
-import { ModelSelect } from "./ModelSelect";
+import { LanguageModalSelector } from "./LanguageModalSelector";
 import { useSubscriptionStore } from "@/stores/useSubscription";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
@@ -46,43 +46,51 @@ export const ChatUserInput: React.FC = () => {
 
   const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setNewMessage(e.target.value);
-    e.target.style.height = "auto";
-    e.target.style.height = `${e.target.scrollHeight}px`;
+
+    // First set a small height to properly calculate scrollHeight
+    e.target.style.height = "0px";
+    const scrollHeight = e.target.scrollHeight;
+
+    // Set the new height
+    e.target.style.height = `${scrollHeight}px`;
   };
 
   return (
-    <>
+    <div className="mt-auto">
       <Separator />
       <form onSubmit={handleAddMessage} className="bg-background">
         <div className="flex items-end space-x-2 p-4">
-          <div className="flex flex-col w-full gap-2 h-full">
+          <div className="flex flex-col w-full gap-2">
             <div className="flex items-center space-x-2">
-              <ModelSelect
+              <LanguageModalSelector
                 model={model}
                 onModelChange={setModel}
                 isSubscribed={subscription.isSubscribed}
               />
             </div>
-            <Textarea
-              ref={textareaRef}
-              value={newMessage}
-              onChange={handleTextareaChange}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  handleAddMessage(e);
-                }
-              }}
-              rows={1}
-              placeholder="Type a message..."
-              className="flex-1 min-h-[48px] max-h-[200px] text-sm"
-            />
+            <div className="relative">
+              <Textarea
+                ref={textareaRef}
+                value={newMessage}
+                onChange={handleTextareaChange}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    handleAddMessage(e);
+                  }
+                }}
+                rows={1}
+                placeholder="Type a message..."
+                className="flex-1 min-h-[48px] max-h-[200px] text-sm resize-none overflow-y-hidden"
+                style={{ height: "auto" }}
+              />
+            </div>
           </div>
           <Button type="submit" disabled={isLoadingMessageResponse}>
             Send
           </Button>
         </div>
       </form>
-    </>
+    </div>
   );
 };

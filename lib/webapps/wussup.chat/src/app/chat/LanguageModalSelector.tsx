@@ -16,7 +16,7 @@ interface ModelSelectProps {
   isSubscribed: boolean;
 }
 
-export const ModelSelect: React.FC<ModelSelectProps> = ({
+export const LanguageModalSelector: React.FC<ModelSelectProps> = ({
   model,
   onModelChange,
   isSubscribed,
