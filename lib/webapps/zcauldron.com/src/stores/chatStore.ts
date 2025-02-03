@@ -16,7 +16,7 @@ interface ChatStore {
   sessionTitle: string;
   fetchSessions: (userId: string) => Promise<void>;
   loading: boolean;
-  isLoading: boolean;
+  isLoadingMessageResponse: boolean;
   isStreaming: boolean;
   forkChat: (userId: string, messages: Message[]) => Promise<string | null>;
   generateSpeech: (text: string) => Promise<string>;
@@ -121,7 +121,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     const currentSessionId = get().currentSessionId;
     if (!currentSessionId) return;
 
-    set({ isLoading: true });
+    set({ isLoadingMessageResponse: true });
     try {
       // Add user message to database
       const { data: userMessage, error: userError } = await supabase
@@ -265,7 +265,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         set({ isStreaming: false });
       }
     } finally {
-      set({ isLoading: false });
+      set({ isLoadingMessageResponse: false });
     }
   },
   setSessions: (sessions) => set({ sessions }),
@@ -309,7 +309,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   },
   sessionTitle: "",
   loading: false,
-  isLoading: false,
+  isLoadingMessageResponse: false,
   isStreaming: false,
   fetchSessions: async (userId: string) => {
     set({ loading: true });

@@ -11,7 +11,8 @@ import { useAuthStore } from "@/stores/authStore";
 import { useRouter } from "next/navigation";
 
 export const ChatUserInput: React.FC = () => {
-  const { currentSessionId, addMessage, addSession } = useChatStore();
+  const { currentSessionId, addMessage, addSession, isLoadingMessageResponse } =
+    useChatStore();
   const { user } = useAuthStore();
   const router = useRouter();
 
@@ -23,7 +24,9 @@ export const ChatUserInput: React.FC = () => {
 
   const handleAddMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newMessage.trim()) return;
+
+    // if no message or if loading in the current chat response, just return..
+    if (!newMessage.trim() || isLoadingMessageResponse) return;
 
     if (!currentSessionId && user?.id) {
       // Create new session if none exists
@@ -75,7 +78,9 @@ export const ChatUserInput: React.FC = () => {
               className="flex-1 min-h-[48px] max-h-[200px] text-sm"
             />
           </div>
-          <Button type="submit">Send</Button>
+          <Button type="submit" disabled={isLoadingMessageResponse}>
+            Send
+          </Button>
         </div>
       </form>
     </>
