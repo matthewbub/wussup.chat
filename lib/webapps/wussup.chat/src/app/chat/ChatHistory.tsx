@@ -120,9 +120,15 @@ export function ChatHistory() {
             <div className="px-2 py-2 text-xs font-medium text-muted-foreground">
               {period}
             </div>
-            {groupedSessions[period].map((session) => (
-              <ChatHistoryItem key={session.id} session={session} />
-            ))}
+            {groupedSessions[period]
+              .sort(
+                (a, b) =>
+                  new Date(b.created_at).getTime() -
+                  new Date(a.created_at).getTime()
+              )
+              .map((session) => (
+                <ChatHistoryItem key={session.id} session={session} />
+              ))}
           </div>
         ))}
       </SidebarMenu>
