@@ -163,13 +163,38 @@ export function ChatHistoryItem({ session }: ChatHistoryItemProps) {
           <span>{session.name}</span>
         </Link>
       </SidebarMenuButton>
-      <ChatItemDropdown />
+      <ChatItemDropdown session={session} />
     </SidebarMenuItem>
   );
 }
 
-export function ChatItemDropdown() {
+export function ChatItemDropdown({ session }: { session: ChatSession }) {
   const { isMobile } = useSidebar();
+  const { deleteSession, updateSessionTitle } = useChatStore();
+  const router = useRouter();
+
+  const handleRenameChat = async () => {
+    const newName = window.prompt("Enter new name for chat:", session.name);
+    if (newName && newName !== session.name) {
+      await updateSessionTitle(session.id, newName);
+    }
+  };
+
+  const handleCopyLink = () => {
+    const url = `${window.location.origin}/chat?session=${session.id}`;
+    navigator.clipboard.writeText(url);
+  };
+
+  const handleOpenInNewTab = () => {
+    window.open(`/chat?session=${session.id}`, "_blank");
+  };
+
+  const handleDeleteChat = async () => {
+    if (window.confirm("Are you sure you want to delete this chat?")) {
+      await deleteSession(session.id);
+      router.push("/chat");
+    }
+  };
 
   return (
     <DropdownMenu>
@@ -184,21 +209,21 @@ export function ChatItemDropdown() {
         side={isMobile ? "bottom" : "right"}
         align={isMobile ? "end" : "start"}
       >
-        <DropdownMenuItem>
+        <DropdownMenuItem onClick={handleRenameChat}>
           <Pencil className="text-muted-foreground" />
           <span>Rename Chat</span>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem>
+        <DropdownMenuItem onClick={handleCopyLink}>
           <LinkIcon className="text-muted-foreground" />
           <span>Copy Link</span>
         </DropdownMenuItem>
-        <DropdownMenuItem>
+        <DropdownMenuItem onClick={handleOpenInNewTab}>
           <ArrowUpRight className="text-muted-foreground" />
           <span>Open in New Tab</span>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem>
+        <DropdownMenuItem onClick={handleDeleteChat}>
           <Trash2 className="text-muted-foreground" />
           <span>Delete</span>
         </DropdownMenuItem>
