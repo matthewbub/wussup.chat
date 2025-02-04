@@ -12,7 +12,7 @@ import {
   SidebarContent,
   SidebarHeader,
 } from "@/components/ui/sidebar";
-import { ChatHistory } from "@/app/chat/ChatHistory";
+import { ChatHistory } from "@/components/chat/ChatHistory";
 import { useChatStore } from "@/stores/chatStore";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";

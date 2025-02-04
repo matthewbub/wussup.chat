@@ -27,7 +27,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { SidebarMenuAction, useSidebar } from "@/components/ui/sidebar";
-import { createClient } from "@/lib/supabase-client";
 import { useEffect } from "react";
 
 export function ChatHistory() {
@@ -151,7 +150,7 @@ export function ChatHistoryItem({ session }: ChatHistoryItemProps) {
 
   const handleChatSelect = (sessionId: string) => {
     setCurrentSession(sessionId);
-    router.push(`/chat?session=${sessionId}`);
+    router.push(`/?session=${sessionId}`);
   };
 
   return (
@@ -162,7 +161,7 @@ export function ChatHistoryItem({ session }: ChatHistoryItemProps) {
         className="px-4"
       >
         <Link
-          href={`/chat?session=${session.id}`}
+          href={`/?session=${session.id}`}
           title={session.name}
           onClick={(e) => {
             e.preventDefault();
@@ -190,18 +189,18 @@ export function ChatItemDropdown({ session }: { session: ChatSession }) {
   };
 
   const handleCopyLink = () => {
-    const url = `${window.location.origin}/chat?session=${session.id}`;
+    const url = `${window.location.origin}/?session=${session.id}`;
     navigator.clipboard.writeText(url);
   };
 
   const handleOpenInNewTab = () => {
-    window.open(`/chat?session=${session.id}`, "_blank");
+    window.open(`/?session=${session.id}`, "_blank");
   };
 
   const handleDeleteChat = async () => {
     if (window.confirm("Are you sure you want to delete this chat?")) {
       await deleteSession(session.id);
-      router.push("/chat");
+      router.push("/");
     }
   };
 

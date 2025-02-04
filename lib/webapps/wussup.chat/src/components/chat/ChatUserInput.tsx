@@ -40,7 +40,7 @@ export const ChatUserInput: React.FC = () => {
       // Create new session if none exists
       const sessionId = await addSession();
       if (sessionId) {
-        router.push(`/chat?session=${sessionId}`);
+        router.push(`/?session=${sessionId}`);
         // Add message after session is created
         addMessage(newMessage, model);
         setNewMessage("");

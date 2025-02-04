@@ -112,7 +112,7 @@ export const ChatMessages: React.FC = () => {
     // Create new session with forked messages
     const newSessionId = await forkChat(messagesUpToFork);
     if (newSessionId) {
-      router.push(`/chat?session=${newSessionId}`);
+      router.push(`/?session=${newSessionId}`);
     } else {
       toast({
         title: "Error",
