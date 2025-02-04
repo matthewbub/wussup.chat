@@ -1,6 +1,11 @@
 export const chatModels = {
   openai: [
     {
+      id: "o3-mini-2025-01-31",
+      name: "O3 Mini",
+      free: true,
+    },
+    {
       id: "gpt-4o-mini",
       name: "GPT 4o Mini",
       free: true,
@@ -8,7 +13,7 @@ export const chatModels = {
     {
       id: "chatgpt-4o-latest",
       name: "ChatGPT 4o Latest",
-      free: false,
+      free: true,
     },
     {
       id: "gpt-4o",

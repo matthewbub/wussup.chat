@@ -16,12 +16,6 @@ import { ChatHistory } from "@/app/chat/ChatHistory";
 import { useChatStore } from "@/stores/chatStore";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
-import { Tinos } from "next/font/google";
-const tinos = Tinos({
-  variable: "--font-newsreader",
-  subsets: ["latin"],
-  weight: ["400", "700"],
-});
 
 const data = {
   navMain: [
@@ -56,10 +50,7 @@ export function AppSidebar({
   return (
     <Sidebar className="border-r-0" {...props}>
       <SidebarHeader>
-        <h1
-          className="text-2xl px-2 font-bold tracking-wider leading-8"
-          style={{ fontFamily: tinos.style.fontFamily }}
-        >
+        <h1 className="text-2xl px-2 pt-4 font-bold tracking-wider leading-8 font-newsreader">
           Wussup
         </h1>
       </SidebarHeader>

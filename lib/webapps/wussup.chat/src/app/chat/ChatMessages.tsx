@@ -227,8 +227,8 @@ export const ChatMessages: React.FC = () => {
               <div
                 className={`max-w-xs md:max-w-md lg:max-w-lg xl:max-w-xl rounded-lg p-2 pr-10 ${
                   message.is_user
-                    ? "bg-blue-500 dark:bg-blue-700 text-white dark:text-white"
-                    : "bg-gray-200 dark:bg-gray-700 text-black dark:text-gray-200"
+                    ? "bg-blue-500 dark:bg-blue-800 text-white dark:text-white"
+                    : "bg-gray-200 dark:bg-gray-800 text-black dark:text-gray-200"
                 }`}
               >
                 {!message.is_user &&

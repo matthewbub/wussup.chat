@@ -182,7 +182,7 @@ const Sidebar = React.forwardRef<
         <div
           id="zc-sidebar-static"
           className={cn(
-            "flex h-full w-[--sidebar-width] flex-col bg-sidebar text-sidebar-foreground",
+            "flex h-full w-[--sidebar-width] flex-col bg-gray-100 dark:bg-gray-900 text-sidebar-foreground",
             className
           )}
           ref={ref}
