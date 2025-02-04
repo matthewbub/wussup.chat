@@ -8,9 +8,9 @@ import Confetti from "@/components/ui/Confetti";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Check, Loader2 } from "lucide-react";
-import { useAuthStore } from "@/stores/authStore";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle, AlertTriangle, CheckCircle2, Info } from "lucide-react";
+import { useChatStore } from "@/stores/chatStore";
 
 export function BillingSettings() {
   const [isLoading, setIsLoading] = useState(false);
@@ -18,7 +18,7 @@ export function BillingSettings() {
   const { subscription } = useSubscriptionStore();
   const { toast } = useToast();
   const searchParams = useSearchParams();
-  const userId = useAuthStore((state) => state.user?.id);
+  const { userId } = useChatStore();
 
   useEffect(() => {
     if (searchParams.get("success")) {

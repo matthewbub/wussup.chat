@@ -1,20 +1,27 @@
 "use client";
-
 import * as React from "react";
+import { type LucideIcon } from "lucide-react";
+import {
+  SidebarMenu,
+  SidebarMenuButton,
+  SidebarMenuItem,
+} from "@/components/ui/sidebar";
 import { MessageCircle, Plus } from "lucide-react";
-import { NavMain } from "@/components/system/sidenav/NavMain";
 import {
   Sidebar,
   SidebarContent,
   SidebarHeader,
 } from "@/components/ui/sidebar";
 import { ChatHistory } from "@/app/chat/ChatHistory";
-import { Folders } from "@/app/documents/Folders";
-import { useModalStore } from "@/stores/modalStore";
 import { useChatStore } from "@/stores/chatStore";
-import { useAuthStore } from "@/stores/authStore";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
+import { Tinos } from "next/font/google";
+const tinos = Tinos({
+  variable: "--font-newsreader",
+  subsets: ["latin"],
+  weight: ["400", "700"],
+});
 
 const data = {
   navMain: [
@@ -26,7 +33,7 @@ const data = {
   ],
 };
 
-export function NavBarItems({
+export function AppSidebar({
   activePage = "home",
   ...props
 }: React.ComponentProps<typeof Sidebar> & { activePage?: string }) {
@@ -36,25 +43,24 @@ export function NavBarItems({
     isActive: item.title.toLowerCase() === activePage.toLowerCase(),
     icon: item.icon,
   }));
-  const { openModal } = useModalStore();
   const { addSession } = useChatStore();
-  const { user } = useAuthStore();
   const router = useRouter();
 
   const handleCreateChat = async () => {
-    if (user?.id) {
-      const sessionId = await addSession(user.id);
-      if (sessionId) {
-        router.push(`/chat?session=${sessionId}`);
-      }
+    const sessionId = await addSession();
+    if (sessionId) {
+      router.push(`/chat?session=${sessionId}`);
     }
   };
 
   return (
     <Sidebar className="border-r-0" {...props}>
       <SidebarHeader>
-        <h1 className="text-sm px-2 font-bold tracking-wider leading-8">
-          (ninembs)
+        <h1
+          className="text-2xl px-2 font-bold tracking-wider leading-8"
+          style={{ fontFamily: tinos.style.fontFamily }}
+        >
+          Wussup
         </h1>
       </SidebarHeader>
       <SidebarContent>
@@ -70,14 +76,40 @@ export function NavBarItems({
         </div>
         {activePage !== "chat" && (
           <div className="flex flex-col p-2">
-            <NavMain items={nav} />
+            <NavItems items={nav} />
           </div>
         )}
         {activePage === "chat" && <ChatHistory />}
-        {activePage === "documents" && (
+        {/* {activePage === "documents" && (
           <Folders onCreateFile={() => openModal("file")} />
-        )}
+        )} */}
       </SidebarContent>
     </Sidebar>
+  );
+}
+
+export function NavItems({
+  items,
+}: {
+  items: {
+    title: string;
+    url: string;
+    icon: LucideIcon;
+    isActive?: boolean;
+  }[];
+}) {
+  return (
+    <SidebarMenu>
+      {items.map((item) => (
+        <SidebarMenuItem key={item.title}>
+          <SidebarMenuButton asChild isActive={item.isActive}>
+            <a href={item.url}>
+              <item.icon />
+              <span>{item.title}</span>
+            </a>
+          </SidebarMenuButton>
+        </SidebarMenuItem>
+      ))}
+    </SidebarMenu>
   );
 }

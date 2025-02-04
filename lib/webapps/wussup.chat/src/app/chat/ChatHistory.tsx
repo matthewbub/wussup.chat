@@ -27,9 +27,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { SidebarMenuAction, useSidebar } from "@/components/ui/sidebar";
+import { createClient } from "@/lib/supabase-client";
+import { useEffect } from "react";
 
 export function ChatHistory() {
-  const { sessions, loading } = useChatStore();
+  const { sessions, loading, fetchSessions } = useChatStore();
+  useEffect(() => {
+    fetchSessions();
+  }, []);
 
   if (loading) {
     return (
@@ -54,11 +59,11 @@ export function ChatHistory() {
           <div className="w-full">Chat History</div>
         </SidebarGroupLabel>
         <SidebarMenu>
-          <div className="flex flex-col items-center justify-center py-8 px-4 text-center">
+          <div className="flex flex-col items-center justify-center py-8 px-4 text-center border-dashed border-gray-200">
             <div className="text-muted-foreground text-sm">
               No chat history yet
             </div>
-            <div className="text-xs text-muted-foreground/70 mt-1">
+            <div className="font-newsreader text-sm text-muted-foreground/70 mt-1">
               Start a new chat to begin
             </div>
           </div>

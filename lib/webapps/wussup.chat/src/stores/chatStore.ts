@@ -1,12 +1,12 @@
 import { create } from "zustand";
 import { supabase } from "@/services/supabase";
 import { ChatSession, Message } from "@/types/chat";
-import { useAuthStore } from "@/stores/authStore";
+import { createClient } from "@/lib/supabase-client";
 
 interface ChatStore {
   sessions: ChatSession[];
   currentSessionId: string | null;
-  addSession: (userId: string) => Promise<string | null>;
+  addSession: () => Promise<string | null>;
   setCurrentSession: (id: string) => void;
   addMessage: (content: string, model: string) => void;
   setSessions: (sessions: ChatSession[]) => void;
@@ -14,23 +14,25 @@ interface ChatStore {
   deleteSession: (sessionId: string) => void;
   setSessionTitle: (sessionId: string) => void;
   sessionTitle: string;
-  fetchSessions: (userId: string) => Promise<void>;
+  fetchSessions: () => Promise<void>;
   loading: boolean;
   isLoadingMessageResponse: boolean;
   isStreaming: boolean;
-  forkChat: (userId: string, messages: Message[]) => Promise<string | null>;
+  forkChat: (messages: Message[]) => Promise<string | null>;
   generateSpeech: (text: string) => Promise<string>;
   newMessage: string;
   setNewMessage: (message: string) => void;
+  userId: string | null;
+  setUserId: (userId: string) => void;
 }
 
 export const useChatStore = create<ChatStore>((set, get) => ({
   sessions: [],
   currentSessionId: null,
-  addSession: async (userId: string): Promise<string | null> => {
+  addSession: async (): Promise<string | null> => {
     const newSession = {
-      user_id: userId,
-      name: `Chat ${useChatStore.getState().sessions.length + 1}`,
+      user_id: get().userId,
+      name: `Chat ${get().sessions.length + 1}`,
     };
     const { data, error } = await supabase
       .from("ChatBot_Sessions")
@@ -52,17 +54,14 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     }
     return data.id;
   },
-  forkChat: async (
-    userId: string,
-    messages: Message[]
-  ): Promise<string | null> => {
+  forkChat: async (messages: Message[]): Promise<string | null> => {
     try {
       // First create a new session
       const { data: sessionData, error: sessionError } = await supabase
         .from("ChatBot_Sessions")
         .insert([
           {
-            user_id: userId,
+            user_id: get().userId,
             name: `Fork of: ${messages[0]?.content?.slice(0, 30)}...`, // Use first message as title
           },
         ])
@@ -79,7 +78,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         chat_session_id: sessionData.id,
         content: msg.content,
         is_user: msg.is_user,
-        user_id: userId,
+        user_id: get().userId,
         model: msg.model,
       }));
 
@@ -121,17 +120,29 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   },
   addMessage: async (content, model) => {
     const currentSessionId = get().currentSessionId;
-    if (!currentSessionId) return;
+    if (!currentSessionId) {
+      console.log("No current session id");
+      return;
+    }
+
+    const supabase = createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) {
+      console.log("No user found");
+      return;
+    }
 
     set({ isLoadingMessageResponse: true });
     try {
-      // Add user message to database
+      // Update user message creation
       const { data: userMessage, error: userError } = await supabase
         .from("ChatBot_Messages")
         .insert({
           chat_session_id: currentSessionId,
           content,
-          user_id: useAuthStore.getState().user?.id,
+          user_id: user.id, // Updated to use Supabase user ID
           is_user: true,
           model: null,
         })
@@ -152,13 +163,13 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         ),
       }));
 
-      // Create bot message first
+      // Update bot message creation
       const { data: botMessage, error: botError } = await supabase
         .from("ChatBot_Messages")
         .insert({
           chat_session_id: currentSessionId,
           content: "",
-          user_id: useAuthStore.getState().user?.id,
+          user_id: user.id, // Updated to use Supabase user ID
           is_user: false,
           model,
         })
@@ -187,14 +198,14 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 
       set({ isStreaming: true });
 
-      // Get bot response
+      // Update API request
       const botResponse = await fetch("/api/chat", {
         headers: { "Content-Type": "application/json" },
         method: "POST",
         body: JSON.stringify({
           message: content,
           history,
-          userId: useAuthStore.getState().user?.id,
+          userId: user.id, // Updated to use Supabase user ID
           sessionId: currentSessionId,
           model,
         }),
@@ -313,9 +324,9 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   loading: false,
   isLoadingMessageResponse: false,
   isStreaming: false,
-  fetchSessions: async (userId: string) => {
+  fetchSessions: async () => {
     set({ loading: true });
-    const response = await fetch(`/api/chat?userId=${userId}`);
+    const response = await fetch(`/api/chat`);
     const data = await response.json();
     const currentSession = data.sessions.find(
       (s: ChatSession) => s.id === get().currentSessionId
@@ -349,4 +360,6 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   },
   newMessage: "",
   setNewMessage: (message: string) => set({ newMessage: message }),
+  userId: null,
+  setUserId: (userId: string) => set({ userId }),
 }));

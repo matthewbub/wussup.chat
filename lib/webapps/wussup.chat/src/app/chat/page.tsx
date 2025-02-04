@@ -4,6 +4,8 @@ import { useChatStore } from "@/stores/chatStore";
 import { DashboardLayout } from "@/components/system/DashboardLayout";
 import { ChatUserInput } from "./ChatUserInput";
 import { ChatMessages } from "./ChatMessages";
+import { useEffect } from "react";
+import { createClient } from "@/lib/supabase-client";
 
 const Chat: React.FC = () => {
   const { currentSessionId, setNewMessage } = useChatStore();
@@ -27,7 +29,7 @@ const Chat: React.FC = () => {
               ].map((prompt) => (
                 <button
                   key={prompt}
-                  className="px-4 py-2 text-center rounded-full border border-gray-200 dark:border-gray-700 
+                  className="font-newsreader px-4 py-2 text-center rounded-full border border-gray-200 dark:border-gray-700 
                            hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors
                            text-gray-700 dark:text-gray-300"
                   onClick={() => {
@@ -46,17 +48,43 @@ const Chat: React.FC = () => {
   );
 };
 
+function Lifecycle({ children }: { children: React.ReactNode }) {
+  const { setUserId, fetchSessions } = useChatStore();
+  useEffect(() => {
+    async function setUserInStore() {
+      const supabase = await createClient();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) {
+        console.log("[Lifecycle] No user found");
+        return;
+      }
+      setUserId(user.id);
+    }
+    setUserInStore();
+  }, []);
+
+  useEffect(() => {
+    fetchSessions();
+  }, []);
+
+  return children;
+}
+
 export default function Page() {
   const { sessionTitle, currentSessionId } = useChatStore();
   return (
-    <DashboardLayout
-      activePage="chat"
-      breadcrumbItems={[
-        { label: "Chat", href: "/chat" },
-        { label: sessionTitle, href: `/chat?session=${currentSessionId}` },
-      ]}
-    >
-      <Chat />
-    </DashboardLayout>
+    <Lifecycle>
+      <DashboardLayout
+        activePage="chat"
+        breadcrumbItems={[
+          { label: "Chat", href: "/chat" },
+          { label: sessionTitle, href: `/chat?session=${currentSessionId}` },
+        ]}
+      >
+        <Chat />
+      </DashboardLayout>
+    </Lifecycle>
   );
 }

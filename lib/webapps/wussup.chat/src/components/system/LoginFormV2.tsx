@@ -6,11 +6,12 @@ import { Card, CardContent } from "@/components/ui/cards";
 import { Input, PasswordInput } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useForm } from "react-hook-form";
-import { STRINGS } from "@/constants/strings";
-import { useLoginStore } from "@/stores/loginStore";
+
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
+import { createClient } from "@/lib/supabase-client";
+import { useState } from "react";
 
 type LoginFormData = {
   email: string;
@@ -21,8 +22,10 @@ export function LoginFormV2({
   className,
   ...props
 }: React.ComponentProps<"div">) {
-  const { isLoading, error, submitLogin } = useLoginStore();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const supabase = createClient();
 
   const {
     register,
@@ -31,7 +34,22 @@ export function LoginFormV2({
   } = useForm<LoginFormData>();
 
   const onSubmit = async (data: LoginFormData) => {
-    await submitLogin(data, router);
+    setIsLoading(true);
+    setError(null);
+
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email: data.email,
+      password: data.password,
+    });
+
+    if (signInError) {
+      setError(signInError.message);
+      setIsLoading(false);
+      return;
+    }
+
+    router.push("/chat"); // Or wherever you want to redirect after login
+    router.refresh(); // Refresh the page to update auth state
   };
 
   return (
@@ -41,7 +59,7 @@ export function LoginFormV2({
           <form className="p-6 md:p-8" onSubmit={handleSubmit(onSubmit)}>
             <div className="flex flex-col gap-6">
               <div className="flex flex-col items-center text-center">
-                <h1 className="text-2xl font-bold">{STRINGS.LOGIN_TITLE}</h1>
+                <h1 className="text-2xl font-bold">Login</h1>
                 <p className="text-balance text-muted-foreground">
                   To access all your cool stuff
                 </p>
@@ -50,10 +68,10 @@ export function LoginFormV2({
                 <Label htmlFor="email">Email</Label>
                 <Input
                   {...register("email", {
-                    required: STRINGS.LOGIN_ERROR_EMAIL_REQUIRED,
+                    required: "Email is required",
                     pattern: {
                       value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                      message: STRINGS.LOGIN_ERROR_EMAIL_INVALID,
+                      message: "Invalid email",
                     },
                   })}
                   id="email"
@@ -71,15 +89,15 @@ export function LoginFormV2({
                 <div className="flex items-center">
                   <Label htmlFor="password">Password</Label>
                   <a
-                    href={STRINGS.LOGIN_FORGOT_PASSWORD_URL}
+                    href="/forgot-password"
                     className="ml-auto text-sm underline-offset-2 hover:underline"
                   >
-                    {STRINGS.LOGIN_FORGOT_PASSWORD}
+                    Forgot password?
                   </a>
                 </div>
                 <PasswordInput
                   {...register("password", {
-                    required: STRINGS.LOGIN_ERROR_PASSWORD_REQUIRED,
+                    required: "Password is required",
                   })}
                   id="password"
                   className={cn(errors.password && "border-destructive")}
@@ -94,7 +112,7 @@ export function LoginFormV2({
                 <p className="text-sm text-destructive text-center">{error}</p>
               )}
               <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? STRINGS.LOGIN_LOADING : STRINGS.LOGIN_SUBMIT}
+                {isLoading ? "Loading..." : "Sign in"}
               </Button>
               {/* <div className="relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border">
                 <span className="relative z-10 bg-background px-2 text-muted-foreground">
@@ -131,12 +149,9 @@ export function LoginFormV2({
                 </Button>
               </div> */}
               <div className="text-center text-sm">
-                {STRINGS.LOGIN_NOT_MEMBER}{" "}
-                <a
-                  href={STRINGS.LOGIN_SIGN_IN_URL}
-                  className="underline underline-offset-4"
-                >
-                  {STRINGS.LOGIN_FREE_TRIAL}
+                Not a member?{" "}
+                <a href="/signup" className="underline underline-offset-4">
+                  Sign up
                 </a>
               </div>
             </div>

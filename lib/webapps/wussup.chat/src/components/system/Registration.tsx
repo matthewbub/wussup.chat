@@ -1,8 +1,7 @@
 "use client";
 
 import { useForm } from "react-hook-form";
-import { STRINGS } from "@/constants/strings";
-import { useRegisterStore } from "@/stores/registerStore";
+import { useState } from "react";
 import EmailVerification from "@/components/system/EmailVerification";
 import { Input, PasswordInput } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -11,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
+import { registerUser } from "@/app/actions/auth";
 
 type RegisterFormData = {
   email: string;
@@ -19,14 +19,10 @@ type RegisterFormData = {
 };
 
 export function Registration() {
-  const {
-    isLoading,
-    error,
-    validationErrors,
-    isEmailSent,
-    userEmail,
-    submitRegistration,
-  } = useRegisterStore();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [isEmailSent, setIsEmailSent] = useState(false);
+  const [userEmail, setUserEmail] = useState<string>("");
 
   const {
     register,
@@ -38,7 +34,24 @@ export function Registration() {
   const password = watch("password");
 
   const onSubmit = async (data: RegisterFormData) => {
-    await submitRegistration(data);
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      const result = await registerUser(data);
+
+      if (!result.success) {
+        setError(result.error);
+        return;
+      }
+
+      setIsEmailSent(true);
+      setUserEmail(data.email);
+    } catch (err) {
+      setError("An error occurred during registration");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   if (isEmailSent) {
@@ -52,7 +65,7 @@ export function Registration() {
           <form className="p-6 md:p-8" onSubmit={handleSubmit(onSubmit)}>
             <div className="flex flex-col gap-6">
               <div className="flex flex-col items-center text-center">
-                <h1 className="text-2xl font-bold">{STRINGS.REGISTER_TITLE}</h1>
+                <h1 className="text-2xl font-bold">Create an account</h1>
                 <p className="text-balance text-muted-foreground">
                   Create an account to get started
                 </p>
@@ -62,27 +75,20 @@ export function Registration() {
                 <Label htmlFor="email">Email</Label>
                 <Input
                   {...register("email", {
-                    required: STRINGS.REGISTER_ERROR_EMAIL_REQUIRED,
+                    required: "Email is required",
                     pattern: {
                       value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                      message: STRINGS.REGISTER_ERROR_EMAIL_INVALID,
+                      message: "Invalid email address",
                     },
                   })}
                   id="email"
                   type="email"
                   placeholder="m@example.com"
-                  className={cn(
-                    errors.email && "border-destructive",
-                    validationErrors.some((e) => e.path.includes("email")) &&
-                      "border-destructive"
-                  )}
+                  className={cn(errors.email && "border-destructive")}
                 />
-                {(errors.email ||
-                  validationErrors.some((e) => e.path.includes("email"))) && (
+                {errors.email && (
                   <p className="text-sm text-destructive">
-                    {errors.email?.message ||
-                      validationErrors.find((e) => e.path.includes("email"))
-                        ?.message}
+                    {errors.email.message}
                   </p>
                 )}
               </div>
@@ -91,33 +97,22 @@ export function Registration() {
                 <Label htmlFor="password">Password</Label>
                 <PasswordInput
                   {...register("password", {
-                    required: STRINGS.REGISTER_ERROR_PASSWORD_REQUIRED,
+                    required: "Password is required",
                     minLength: {
                       value: 8,
-                      message: STRINGS.REGISTER_ERROR_PASSWORD_LENGTH,
+                      message: "Password must be at least 8 characters",
                     },
                     maxLength: {
                       value: 20,
-                      message: STRINGS.REGISTER_ERROR_PASSWORD_TOO_LONG,
+                      message: "Password must be less than 20 characters",
                     },
                   })}
                   id="password"
-                  className={cn(
-                    (errors.password ||
-                      validationErrors.some((e) =>
-                        e.path.includes("password")
-                      )) &&
-                      "border-destructive"
-                  )}
+                  className={cn(errors.password && "border-destructive")}
                 />
-                {(errors.password ||
-                  validationErrors.some((e) =>
-                    e.path.includes("password")
-                  )) && (
+                {errors.password && (
                   <p className="text-sm text-destructive">
-                    {errors.password?.message ||
-                      validationErrors.find((e) => e.path.includes("password"))
-                        ?.message}
+                    {errors.password.message}
                   </p>
                 )}
               </div>
@@ -126,10 +121,9 @@ export function Registration() {
                 <Label htmlFor="confirmPassword">Confirm Password</Label>
                 <PasswordInput
                   {...register("confirmPassword", {
-                    required: STRINGS.REGISTER_ERROR_CONFIRM_PASSWORD_REQUIRED,
+                    required: "Please confirm your password",
                     validate: (value) =>
-                      value === password ||
-                      STRINGS.REGISTER_ERROR_PASSWORDS_DONT_MATCH,
+                      value === password || "Passwords don't match",
                   })}
                   id="confirmPassword"
                   className={cn(errors.confirmPassword && "border-destructive")}
@@ -146,16 +140,13 @@ export function Registration() {
               )}
 
               <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? STRINGS.REGISTER_LOADING : STRINGS.REGISTER_SUBMIT}
+                {isLoading ? "Creating account..." : "Create account"}
               </Button>
 
               <div className="text-center text-sm">
-                {STRINGS.REGISTER_ALREADY_MEMBER}{" "}
-                <Link
-                  href={STRINGS.REGISTER_SIGN_IN_URL}
-                  className="underline underline-offset-4"
-                >
-                  {STRINGS.REGISTER_SIGN_IN}
+                Already have an account?{" "}
+                <Link href="/login" className="underline underline-offset-4">
+                  Sign in
                 </Link>
               </div>
             </div>

@@ -6,4 +6,8 @@ type User = {
   username?: string;
 };
 
-export type { User };
+type SupabaseUser = {
+  id: string;
+  email: string;
+};
+export type { User, SupabaseUser };

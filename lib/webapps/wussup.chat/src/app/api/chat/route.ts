@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/services/supabase";
 import { promptFacade } from "@/services/promptFacade";
 import { AVAILABLE_MODELS } from "@/constants/models";
+import { createClient } from "@/lib/supabase-server";
 
 const CONTEXT_LENGTH = 100; // Number of previous messages to retain for context
 const TITLE_SYSTEM_PROMPT =
@@ -169,9 +170,13 @@ export async function POST(request: Request) {
 }
 
 // get chat sessions and messages for a user
-export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const userId = searchParams.get("userId");
+export async function GET() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  const userId = user?.id;
+  console.log("userId", userId);
 
   if (!userId) {
     return NextResponse.json({ error: "User ID is required" }, { status: 400 });

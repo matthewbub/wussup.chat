@@ -14,8 +14,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Copy, MoreHorizontal, GitFork, Volume2, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useAuthStore } from "@/stores/authStore";
-import LoadingPulse from "@/components/ui/Loading";
 import clsx from "clsx";
 
 export const ChatMessages: React.FC = () => {
@@ -27,7 +25,6 @@ export const ChatMessages: React.FC = () => {
     generateSpeech,
     forkChat,
   } = useChatStore();
-  const { user } = useAuthStore();
   const router = useRouter();
   const { toast } = useToast();
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -108,14 +105,12 @@ export const ChatMessages: React.FC = () => {
   }, [currentSessionId]);
 
   const handleForkChat = async (messageId: string) => {
-    if (!user?.id) return;
-
     // Find all messages up to and including the selected message
     const messageIndex = messages.findIndex((m) => m.id === messageId);
     const messagesUpToFork = messages.slice(0, messageIndex + 1);
 
     // Create new session with forked messages
-    const newSessionId = await forkChat(user.id, messagesUpToFork);
+    const newSessionId = await forkChat(messagesUpToFork);
     if (newSessionId) {
       router.push(`/chat?session=${newSessionId}`);
     } else {

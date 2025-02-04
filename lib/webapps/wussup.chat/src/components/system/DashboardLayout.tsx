@@ -1,6 +1,3 @@
-import { AuthWrapper } from "@/components/system/AuthWrapper";
-import { InvokeAppHistory } from "./InvokeAppHistory";
-
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -14,9 +11,10 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { NavBarItems } from "@/components/system/sidenav/NavBarItems";
+import { AppSidebar } from "@/components/system/AppSidebar";
 import Link from "next/link";
 import { NavUser } from "../nav-user";
+import { Fragment } from "react";
 
 interface BreadcrumbItem {
   label: string;
@@ -35,40 +33,36 @@ export function DashboardLayout({
   breadcrumbItems = [],
 }: DashboardLayoutProps) {
   return (
-    <AuthWrapper>
-      <SidebarProvider>
-        <InvokeAppHistory>
-          <NavBarItems activePage={activePage} />
-          <SidebarInset>
-            <header className="sticky top-0 flex h-14 shrink-0 items-center gap-2 bg-background">
-              <div className="flex flex-1 items-center gap-2 px-3">
-                <SidebarTrigger />
-                <Separator orientation="vertical" className="mr-2 h-4" />
-                <Breadcrumb>
-                  <BreadcrumbList>
-                    {breadcrumbItems.map((item, index) => (
-                      <>
-                        <BreadcrumbItem key={index}>
-                          <BreadcrumbPage className="line-clamp-1">
-                            <Link href={item.href}>{item.label}</Link>
-                          </BreadcrumbPage>
-                        </BreadcrumbItem>
-                        {index < breadcrumbItems.length - 1 && (
-                          <BreadcrumbSeparator />
-                        )}
-                      </>
-                    ))}
-                  </BreadcrumbList>
-                </Breadcrumb>
-              </div>
-              <div className="flex items-center pr-4">
-                <NavUser />
-              </div>
-            </header>
-            <div className="flex flex-1 flex-col gap-4 p-4">{children}</div>
-          </SidebarInset>
-        </InvokeAppHistory>
-      </SidebarProvider>
-    </AuthWrapper>
+    <SidebarProvider>
+      <AppSidebar activePage={activePage} />
+      <SidebarInset>
+        <header className="sticky top-0 flex h-14 shrink-0 items-center gap-2 bg-background">
+          <div className="flex flex-1 items-center gap-2 px-3">
+            <SidebarTrigger />
+            <Separator orientation="vertical" className="mr-2 h-4" />
+            <Breadcrumb>
+              <BreadcrumbList>
+                {breadcrumbItems.map((item, index) => (
+                  <Fragment key={index}>
+                    <BreadcrumbItem>
+                      <BreadcrumbPage className="line-clamp-1">
+                        <Link href={item.href}>{item.label}</Link>
+                      </BreadcrumbPage>
+                    </BreadcrumbItem>
+                    {index < breadcrumbItems.length - 1 && (
+                      <BreadcrumbSeparator />
+                    )}
+                  </Fragment>
+                ))}
+              </BreadcrumbList>
+            </Breadcrumb>
+          </div>
+          <div className="flex items-center pr-4">
+            <NavUser />
+          </div>
+        </header>
+        <div className="flex flex-1 flex-col gap-4 p-4">{children}</div>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }

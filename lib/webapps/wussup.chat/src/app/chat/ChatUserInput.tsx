@@ -7,7 +7,7 @@ import { useSubscriptionStore } from "@/stores/useSubscription";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
-import { useAuthStore } from "@/stores/authStore";
+
 import { useRouter } from "next/navigation";
 
 export const ChatUserInput: React.FC = () => {
@@ -19,7 +19,7 @@ export const ChatUserInput: React.FC = () => {
     newMessage,
     setNewMessage,
   } = useChatStore();
-  const { user } = useAuthStore();
+
   const router = useRouter();
 
   const [model, setModel] = useState("gpt-4-turbo-2024-04-09");
@@ -29,13 +29,16 @@ export const ChatUserInput: React.FC = () => {
 
   const handleAddMessage = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("newMessage", newMessage);
 
     // if no message or if loading in the current chat response, just return..
     if (!newMessage.trim() || isLoadingMessageResponse) return;
 
-    if (!currentSessionId && user?.id) {
+    console.log("currentSessionId", currentSessionId);
+
+    if (!currentSessionId) {
       // Create new session if none exists
-      const sessionId = await addSession(user.id);
+      const sessionId = await addSession();
       if (sessionId) {
         router.push(`/chat?session=${sessionId}`);
         // Add message after session is created
