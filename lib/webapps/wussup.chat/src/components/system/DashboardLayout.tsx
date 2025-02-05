@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/system/AppSidebar";
 import Link from "next/link";
-import { NavUser } from "../nav-user";
+import { NavUser } from "@/components/NavUser";
 import { Fragment } from "react";
 
 interface BreadcrumbItem {

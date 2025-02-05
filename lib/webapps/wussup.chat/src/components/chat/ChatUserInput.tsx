@@ -29,7 +29,6 @@ export const ChatUserInput: React.FC = () => {
 
   const handleAddMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("newMessage", newMessage);
 
     // if no message or if loading in the current chat response, just return..
     if (!newMessage.trim() || isLoadingMessageResponse) return;

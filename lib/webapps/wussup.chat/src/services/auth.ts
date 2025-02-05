@@ -163,7 +163,7 @@ export const authService = {
     const { data, error: fetchError } = await supabase
       .from("ChatBot_Users")
       .select()
-      .eq("id", user.id)
+      .eq("user_id", user.id)
       .single();
 
     if (fetchError || !data) {
@@ -171,7 +171,7 @@ export const authService = {
       const { error: insertError } = await supabase
         .from("ChatBot_Users")
         .insert({
-          id: user.id,
+          user_id: user.id,
           email: user.email,
           stripeCustomerId: null,
           stripeSubscriptionId: null,

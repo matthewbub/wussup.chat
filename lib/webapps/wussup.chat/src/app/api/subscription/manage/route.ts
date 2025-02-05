@@ -14,8 +14,10 @@ export async function GET(req: Request) {
     const { data: user, error: userError } = await supabase
       .from("ChatBot_Users")
       .select("stripeCustomerId")
-      .eq("id", userId)
+      .eq("user_id", userId)
       .single();
+
+    console.log("[manage] user", user);
 
     if (userError || !user?.stripeCustomerId) {
       console.error("Error fetching customer ID:", userError);

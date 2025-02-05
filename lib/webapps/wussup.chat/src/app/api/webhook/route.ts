@@ -125,7 +125,7 @@ async function fulfillSubscription(session: Stripe.Checkout.Session) {
     const { error } = await supabase
       .from("ChatBot_Users")
       .upsert({
-        id: userId,
+        user_id: userId,
         email: session.customer_email || session.customer_details?.email,
         stripeCustomerId: customerId,
         stripeSubscriptionId: subscriptionId,
