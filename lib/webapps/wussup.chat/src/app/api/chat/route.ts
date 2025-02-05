@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { supabase } from "@/services/supabase";
+
 import { promptFacade } from "@/services/promptFacade";
 import { AVAILABLE_MODELS } from "@/constants/models";
 import { createClient } from "@/lib/supabase-server";
@@ -10,6 +10,18 @@ const TITLE_SYSTEM_PROMPT =
 
 export async function POST(request: Request) {
   const { message, history, userId, sessionId, model } = await request.json();
+  const supabase = await createClient();
+
+  // Increment message count at the start
+  const { error: updateError } = await supabase.rpc("increment_message_count", {
+    incoming_uid: userId,
+    increment_by: 2,
+  });
+
+  if (updateError) {
+    console.error("Failed to update message count:", updateError);
+    // Continue processing even if count update fails
+  }
 
   // find provider / model
   const selectedModel = AVAILABLE_MODELS.find((m) => m.id === model);
@@ -89,11 +101,6 @@ export async function POST(request: Request) {
       }
     });
 
-    // Debug logging
-    console.log("Request payload:", {
-      messages: contextMessages,
-      model: modelInfo,
-    });
     const response: Response = await promptFacade.prompt(
       contextMessages,
       modelInfo,
@@ -146,7 +153,7 @@ export async function POST(request: Request) {
                 if (!json.trim()) continue;
 
                 const parsed = JSON.parse(json);
-                console.log("parsed", parsed);
+
                 if (parsed.choices?.[0]?.delta?.content) {
                   controller.enqueue(`data: ${JSON.stringify(parsed)}\n\n`);
                 }
