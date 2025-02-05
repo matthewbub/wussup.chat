@@ -21,7 +21,7 @@ const data = {
   navMain: [
     {
       title: "Chat",
-      url: "/chat",
+      url: "/",
       icon: MessageCircle,
     },
   ],
