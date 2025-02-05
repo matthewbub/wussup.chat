@@ -8,7 +8,9 @@ import {
   SelectLabel,
   SelectGroup,
 } from "@/components/ui/select";
-import { AVAILABLE_MODELS, AiModel } from "@/constants/models";
+import { AVAILABLE_MODELS, AiModel, providers } from "@/constants/models";
+
+const IS_LOCAL_MODE = process.env.NEXT_PUBLIC_LOCAL_MODE === "true";
 
 interface ModelSelectProps {
   model: string;
@@ -31,62 +33,57 @@ export const LanguageModalSelector: React.FC<ModelSelectProps> = ({
     return acc;
   }, {} as Record<string, AiModel[]>);
 
+  const hasFullAccess = IS_LOCAL_MODE || isSubscribed;
+
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-2 bg-[hsl(240,10%,3.9%)] text-white rounded-lg">
       <label
         htmlFor="model"
-        className="text-sm text-slate-800 dark:text-slate-200 text-bold"
+        className="sr-only text-sm text-slate-300 font-bold flex items-center gap-2"
       >
         Model
       </label>
       <Select value={model || defaultModel.id} onValueChange={onModelChange}>
-        <SelectTrigger className="w-fit">
+        <SelectTrigger className="w-fit bg-transparent border-none text-white">
           <SelectValue defaultValue={defaultModel.id}>
             {AVAILABLE_MODELS.find((m) => m.id === (model || defaultModel.id))
               ?.name || defaultModel.name}
           </SelectValue>
         </SelectTrigger>
-        <SelectContent>
-          {isSubscribed ? (
-            // Subscribed users see models grouped by provider
-            Object.entries(groupedModels).map(([provider, models]) => (
-              <SelectGroup key={provider}>
-                <SelectLabel>
-                  {provider.charAt(0).toUpperCase() + provider.slice(1)}
-                </SelectLabel>
-                {models.map((model) => (
-                  <SelectItem key={model.id} value={model.id}>
-                    {model.name}
-                  </SelectItem>
-                ))}
-              </SelectGroup>
-            ))
-          ) : (
-            // Non-subscribed users see free/premium separation
-            <SelectGroup>
-              <SelectLabel>Free Models</SelectLabel>
-              <SelectItem value={defaultModel.id}>
-                {defaultModel.name}
-              </SelectItem>
-              <SelectLabel>Premium Models</SelectLabel>
-              {AVAILABLE_MODELS.filter((m) => m.id !== defaultModel.id).map(
-                (model) => (
-                  <SelectItem
-                    key={model.id}
-                    value={model.id}
-                    disabled={!isSubscribed}
-                  >
-                    <div className="flex items-center gap-2">
+        <SelectContent className="bg-[hsl(240,10%,5%)] border-[hsl(240,10%,15%)] text-white">
+          {providers.map((provider) => (
+            <SelectGroup key={provider}>
+              <SelectLabel className="text-gray-400 font-semibold text-sm">
+                {provider.charAt(0).toUpperCase() + provider.slice(1)}
+              </SelectLabel>
+              {groupedModels[provider].map((model) => (
+                <SelectItem
+                  key={model.id}
+                  value={model.id}
+                  disabled={!hasFullAccess && !model.free}
+                  className="text-slate-200 hover:bg-[hsl(240,10%,10%)] hover:text-white"
+                >
+                  <div className="flex items-center gap-2">
+                    {!hasFullAccess && !model.free && (
                       <Lock className="h-3 w-3 text-orange-500" />
-                      <span className="text-slate-200 disabled:opacity-50">
-                        {model.name}
+                    )}
+                    <span
+                      className={
+                        !hasFullAccess && !model.free ? "opacity-50" : ""
+                      }
+                    >
+                      {model.name}
+                    </span>
+                    {model.free && !IS_LOCAL_MODE ? (
+                      <span className="text-xs text-green-400 ml-1">
+                        (Free)
                       </span>
-                    </div>
-                  </SelectItem>
-                )
-              )}
+                    ) : null}
+                  </div>
+                </SelectItem>
+              ))}
             </SelectGroup>
-          )}
+          ))}
         </SelectContent>
       </Select>
     </div>

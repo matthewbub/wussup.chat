@@ -68,7 +68,7 @@ export const ChatUserInput: React.FC = () => {
       <Separator />
       <form onSubmit={handleAddMessage} className="bg-background">
         <div className="flex items-end space-x-2 p-4">
-          <div className="flex flex-col w-full gap-2">
+          <div className="flex flex-col-reverse w-full gap-2">
             <div className="flex items-center space-x-2">
               <LanguageModalSelector
                 model={model}
@@ -76,7 +76,7 @@ export const ChatUserInput: React.FC = () => {
                 isSubscribed={subscription.isSubscribed}
               />
             </div>
-            <div className="relative">
+            <div className="relative flex items-center gap-2">
               <Textarea
                 ref={textareaRef}
                 value={newMessage}
@@ -89,14 +89,14 @@ export const ChatUserInput: React.FC = () => {
                 }}
                 rows={1}
                 placeholder="Type a message..."
-                className="flex-1 min-h-[48px] max-h-[200px] text-sm resize-none overflow-y-hidden"
+                className="flex-1 min-h-[48px] max-h-[200px] text-sm resize-none overflow-y-hidden bg-background border-none"
                 style={{ height: "auto" }}
               />
+              <Button type="submit" disabled={isLoadingMessageResponse}>
+                Send
+              </Button>
             </div>
           </div>
-          <Button type="submit" disabled={isLoadingMessageResponse}>
-            Send
-          </Button>
         </div>
       </form>
     </div>

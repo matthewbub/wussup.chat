@@ -4,31 +4,31 @@ export const chatModels = {
       id: "o3-mini-2025-01-31",
       name: "O3 Mini",
       free: true,
+      reasoning: true,
     },
     {
       id: "gpt-4o-mini",
       name: "GPT 4o Mini",
       free: true,
+      reasoning: false,
     },
     {
       id: "chatgpt-4o-latest",
-      name: "ChatGPT 4o Latest",
+      name: "ChatGPT 4o",
       free: true,
-    },
-    {
-      id: "gpt-4o",
-      name: "GPT 4o",
-      free: false,
+      reasoning: false,
     },
     {
       id: "o1",
       name: "O1",
       free: false,
+      reasoning: true,
     },
     {
       id: "o1-mini",
       name: "O1 Mini",
       free: false,
+      reasoning: true,
     },
   ],
   anthropic: [
@@ -36,21 +36,25 @@ export const chatModels = {
       id: "claude-3-haiku-latest",
       name: "Claude 3 Haiku Latest",
       free: true,
+      reasoning: true,
     },
     {
       id: "claude-3-5-sonnet-20241022",
       name: "Claude 3.5 Sonnet 20241022",
       free: false,
+      reasoning: true,
     },
     {
       id: "claude-3-5-haiku-20241022",
       name: "Claude 3.5 Haiku 20241022",
       free: false,
+      reasoning: true,
     },
     {
       id: "claude-3-opus-20240229",
       name: "Claude 3 Opus 20240229",
       free: false,
+      reasoning: true,
     },
   ],
   xai: [
@@ -65,21 +69,15 @@ export const chatModels = {
       free: true,
     },
   ],
-  deepseek: [
-    {
-      id: "deepseek-chat",
-      name: "DeepSeek Chat",
-      free: false,
-    },
-  ],
 };
 
 export interface AiModel {
   id: string;
   name: string;
-  provider: "openai" | "anthropic" | "xai" | "deepseek";
+  free: boolean;
+  provider: "openai" | "anthropic" | "xai";
 }
-export const providers = ["openai", "anthropic", "xai", "deepseek"] as const;
+export const providers = ["openai", "anthropic", "xai"] as const;
 export const AVAILABLE_MODELS: AiModel[] = providers.flatMap((provider) =>
   chatModels[provider].map((model) => ({
     ...model,
