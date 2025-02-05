@@ -68,7 +68,7 @@ export function BillingSettings() {
     setIsLoading(true);
     try {
       // Create Stripe customer portal session
-      const response = await fetch(`/api/subscription/manage?userId=${userId}`);
+      const response = await fetch(`/api/subscription/manage`);
       const { url } = await response.json();
       window.location.href = url;
     } catch (error) {
