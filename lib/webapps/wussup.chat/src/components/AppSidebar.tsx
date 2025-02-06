@@ -16,6 +16,13 @@ import { ChatHistory } from "@/components/chat/ChatHistory";
 import { useChatStore } from "@/stores/chatStore";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
+import { Pacifico } from "next/font/google";
+import clsx from "clsx";
+const pacifico = Pacifico({
+  subsets: ["latin"],
+  weight: ["400"],
+  variable: "--font-pacifico",
+});
 
 const data = {
   navMain: [
@@ -50,7 +57,9 @@ export function AppSidebar({
   return (
     <Sidebar className="border-r-0" {...props}>
       <SidebarHeader>
-        <h1 className="text-2xl px-2 pt-4 font-bold tracking-wider leading-8 font-newsreader">
+        <h1
+          className={clsx(pacifico.className, "text-2xl px-2 pt-4 font-bold")}
+        >
           Wussup
         </h1>
       </SidebarHeader>

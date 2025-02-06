@@ -1,5 +1,5 @@
 "use client";
-import { DashboardLayout } from "@/components/system/DashboardLayout";
+import { DashboardLayout } from "@/components/DashboardLayout";
 import TipTap from "./TipTap";
 import { CreateFileModal } from "./CreateFile";
 

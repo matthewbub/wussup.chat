@@ -11,9 +11,9 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/system/AppSidebar";
+import { AppSidebar } from "@/components/AppSidebar";
 import Link from "next/link";
-import { NavUser } from "@/components/system/NavUser";
+import { NavUser } from "@/components/NavUser";
 import { Fragment } from "react";
 
 interface BreadcrumbItem {

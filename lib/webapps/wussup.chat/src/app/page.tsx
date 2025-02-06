@@ -1,7 +1,7 @@
 "use client";
 
 import { useChatStore } from "@/stores/chatStore";
-import { DashboardLayout } from "@/components/system/DashboardLayout";
+import { DashboardLayout } from "@/components/DashboardLayout";
 import { ChatUserInput } from "@/components/chat/ChatUserInput";
 import { ChatMessages } from "@/components/chat/ChatMessages";
 import { useEffect } from "react";
