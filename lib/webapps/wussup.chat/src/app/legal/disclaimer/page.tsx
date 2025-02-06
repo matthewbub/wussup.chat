@@ -1,4 +1,4 @@
-import BlogPost from "@/components/Marketing/blog-post";
+import BlogPost from "@/components/BlogPost";
 
 const disclaimer = `
 ## GENERAL INFORMATION

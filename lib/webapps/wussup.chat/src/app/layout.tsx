@@ -23,8 +23,8 @@ const newsreader = Newsreader({
 });
 
 export const metadata: Metadata = {
-  title: "NineMbs Studio",
-  description: "Small tech studio building AI tools into the future",
+  title: "Wussup Chat",
+  description: "Universal AI Chat",
 };
 
 export default function RootLayout({

@@ -1,4 +1,4 @@
-import BlogPost from "@/components/Marketing/blog-post";
+import BlogPost from "@/components/BlogPost";
 
 const privacy = `
 NineMbs Studio LLC. (“company”, “I”, “we” or “us”) is dedicated to respecting the privacy of your personal information. This Privacy Policy describes what information is collected from you on https://ninembs.studio (hereinafter the “Website”) and how it is used. This Privacy Policy applies to this website and any products or services that we offer that link to this policy. The term “you” refers to anyone who uses, visits, or views the website.

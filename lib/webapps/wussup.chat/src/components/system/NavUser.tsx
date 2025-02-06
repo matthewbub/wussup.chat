@@ -1,11 +1,11 @@
 "use client";
 
 import {
-  BadgeCheck,
   CreditCard,
+  File,
   LogOut,
+  MessageCircle,
   Settings,
-  Sparkles,
 } from "lucide-react";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -55,17 +55,20 @@ export function NavUser() {
   // const avatarFallback = user?.username?.slice(0, 2).toUpperCase();
   const avatarFallback = user ? user.email?.slice(0, 2).toUpperCase() : "GU";
   const handleManageSubscription = async () => {
-    try {
-      // Create Stripe customer portal session
-      const response = await fetch(
-        `/api/subscription/manage?userId=${user?.id}`
-      );
-      const { url } = await response.json();
-      window.location.href = url;
-    } catch (error) {
-      console.error("[BillingSettings] Failed to open customer portal:", error);
-    }
+    setIsBillingOpen(true);
   };
+  // const handleManageSubscription = async () => {
+  //   try {
+  //     // Create Stripe customer portal session
+  //     const response = await fetch(
+  //       `/api/subscription/manage?userId=${user?.id}`
+  //     );
+  //     const { url } = await response.json();
+  //     window.location.href = url;
+  //   } catch (error) {
+  //     console.error("[BillingSettings] Failed to open customer portal:", error);
+  //   }
+  // };
 
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   // const [user, setUser] = useState<User | null>(null);
@@ -131,28 +134,26 @@ export function NavUser() {
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuGroup>
-                    <Link href="/settings?tab=billing">
-                      <DropdownMenuItem>
-                        <Sparkles />
-                        {subscription?.isSubscribed ? "Pro" : "Upgrade to Pro"}
-                      </DropdownMenuItem>
-                    </Link>
-                  </DropdownMenuGroup>
+                  <DropdownMenuItem onClick={handleManageSubscription}>
+                    <CreditCard />
+                    {subscription?.isSubscribed
+                      ? "Manage Subscription"
+                      : "Upgrade to Pro"}
+                  </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuGroup>
-                    <Link href="/settings?tab=account">
+                    <Link href="/legal">
                       <DropdownMenuItem>
-                        <BadgeCheck />
-                        Account
+                        <File />
+                        Legal
                       </DropdownMenuItem>
                     </Link>
-
-                    <DropdownMenuItem onClick={handleManageSubscription}>
-                      <CreditCard />
-                      Billing
-                    </DropdownMenuItem>
-
+                    <Link href="/support">
+                      <DropdownMenuItem>
+                        <MessageCircle />
+                        Support
+                      </DropdownMenuItem>
+                    </Link>
                     <Link href="/settings?tab=settings">
                       <DropdownMenuItem>
                         <Settings />

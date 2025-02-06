@@ -1,15 +1,14 @@
 "use client";
 
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useSubscriptionStore } from "@/stores/useSubscription";
-import { useToast } from "@/hooks/use-toast";
 import Confetti from "@/components/ui/Confetti";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Check, Loader2 } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { AlertCircle, AlertTriangle, CheckCircle2, Info } from "lucide-react";
+import { CheckCircle2 } from "lucide-react";
 
 interface BillingModalProps {
   isOpen: boolean;
@@ -21,7 +20,7 @@ export function BillingModal({ isOpen, onClose, userId }: BillingModalProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [confetti, setConfetti] = useState(false);
   const { subscription } = useSubscriptionStore();
-  const { toast } = useToast();
+  // const { toast } = useToast();
 
   const handleSubscribe = async () => {
     setIsLoading(true);
@@ -122,10 +121,9 @@ export function BillingModal({ isOpen, onClose, userId }: BillingModalProps) {
 
                     <ul className="space-y-2">
                       {[
-                        "Unlimited AI chat conversations",
-                        "Unlimited Document Storage for Contextual AI",
-                        "Anonymous AI Chat",
-                        "Much more!",
+                        "Conversations with models from OpenAI, Anthropic, and xAI",
+                        "Unlimited document storage for contextual AI",
+                        "Anonymous AI chat, fork conversations, and much more",
                       ].map((feature, index) => (
                         <li key={index} className="flex items-center gap-x-2">
                           <Check className="h-4 w-4 text-green-500" />
