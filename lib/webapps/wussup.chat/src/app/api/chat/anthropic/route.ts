@@ -1,92 +1,146 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase-server";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import Anthropic from "@anthropic-ai/sdk";
 import { formatContextMessages } from "@/lib/utils";
 
+/*
+ * post route handler for anthropic chat completions.
+ * this function receives the request, saves the user message,
+ * converts the context to anthropic format, calls the anthropic sdk,
+ * saves the bot message, and streams the response back via sse.
+ */
 export async function POST(request: Request) {
-  const { message, history, sessionId, model } = await request.json();
+  // extract data from the request body
+  const {
+    message,
+    history,
+    sessionId,
+    userMessageId,
+    botMessageId,
+    userCreatedAt,
+    botCreatedAt,
+  } = await request.json();
+
+  // create supabase client
   const supabase = await createClient();
 
+  // get user id from supabase auth
   const {
     data: { user },
   } = await supabase.auth.getUser();
   const userId = user?.id;
 
   if (!userId) {
-    return NextResponse.json({ error: "User ID is required" }, { status: 400 });
+    return NextResponse.json({ error: "user id is required" }, { status: 400 });
   }
 
-  // Increment message count at the start
-  const { error: updateError } = await supabase.rpc("increment_message_count", {
-    incoming_uid: userId,
-    increment_by: 2,
-  });
+  // insert user message and increment message count concurrently
+  const [{ error: userError }, { error: updateError }] = await Promise.all([
+    supabase.from("ChatBot_Messages").insert({
+      id: userMessageId,
+      chat_session_id: sessionId,
+      content: message,
+      user_id: userId,
+      is_user: true,
+      model: null,
+      created_at: userCreatedAt,
+    }),
+    supabase.rpc("increment_message_count", {
+      incoming_uid: userId,
+      increment_by: 2,
+      // todo: detect which model was used and enforce limits
+    }),
+  ]);
 
-  if (updateError) {
-    console.error("Failed to update message count:", updateError);
-    // Continue processing even if count update fails
+  if (updateError || userError) {
+    console.error("[chat api error]", updateError || userError);
+    // continue processing even if count update fails
   }
 
-  // Filter out empty messages and deduplicate
+  // filter out empty messages and deduplicate
   const contextMessages = formatContextMessages(history);
-  // Add the new message to the context
+  // add the new user message to the context
   contextMessages.push({ role: "user", content: message });
 
   try {
     if (!Array.isArray(contextMessages) || contextMessages.length === 0) {
-      throw new Error("Invalid context messages format");
+      throw new Error("invalid context messages format");
     }
 
-    // Initialize Gemini
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-
-    // Convert messages to Gemini format
-    const geminiMessages = contextMessages.map((msg) => ({
-      role: msg.role === "assistant" ? "model" : msg.role,
-      parts: [{ text: msg.content }],
+    // convert context messages to anthropic format
+    const systemPrompt = "you are a helpful assistant.";
+    const anthropicMessages = contextMessages.map((msg) => ({
+      role: msg.role as "user" | "assistant",
+      content: msg.content,
     }));
 
-    // Initialize chat with history
-    const chat = model.startChat({
-      history: geminiMessages,
-    });
+    // initialize anthropic sdk
+    const anthropic = new Anthropic();
 
-    // Send message and get stream
-    const result = await chat.sendMessageStream(message);
-
-    // Create readable stream for response
-    const stream = new ReadableStream({
+    // create a readable stream to handle the anthropic response
+    const responseStream = new ReadableStream({
       async start(controller) {
         try {
-          for await (const chunk of result.stream) {
-            const chunkText = chunk.text();
-            if (chunkText) {
-              // Format response to match expected client format
-              const response = {
-                choices: [
-                  {
-                    delta: {
-                      content: chunkText,
-                    },
+          // create streaming chat completion
+          const stream = await anthropic.messages.stream({
+            model: "claude-3-5-sonnet-20241022",
+            max_tokens: 1000,
+            temperature: 0,
+            system: systemPrompt,
+            messages: anthropicMessages,
+          });
+
+          let completeBotMessage = "";
+
+          // handle text chunks as they arrive
+          stream.on("text", (text) => {
+            completeBotMessage += text;
+
+            // send each chunk to the client
+            const payload = {
+              choices: [
+                {
+                  delta: {
+                    content: text,
                   },
-                ],
-              };
-              controller.enqueue(`data: ${JSON.stringify(response)}\n\n`);
-            }
+                },
+              ],
+            };
+            controller.enqueue(`data: ${JSON.stringify(payload)}\n\n`);
+          });
+
+          // handle end of stream
+          await stream.done();
+
+          // save complete message to database
+          try {
+            await supabase.from("ChatBot_Messages").insert({
+              id: botMessageId,
+              chat_session_id: sessionId,
+              content: completeBotMessage,
+              user_id: userId,
+              is_user: false,
+              model: "claude-3-5-sonnet-20241022",
+              created_at: botCreatedAt,
+            });
+          } catch (error) {
+            console.error("error updating bot message:", error);
           }
+
           controller.close();
         } catch (error) {
-          console.error("Stream error:", error);
           controller.error(error);
         }
       },
     });
 
-    return new Response(stream, {
+    return new Response(responseStream, {
       headers: { "Content-Type": "text/event-stream" },
     });
-  } catch (error) {
-    return NextResponse.json({ response: error }, { status: 500 });
+  } catch (error: unknown) {
+    return NextResponse.json(
+      { response: error instanceof Error ? error.message : "Unknown error" },
+      { status: 500 }
+    );
   }
 }
