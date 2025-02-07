@@ -1,12 +1,12 @@
 "use client";
 import * as React from "react";
-import { type LucideIcon } from "lucide-react";
 import {
+  SidebarFooter,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { MessageCircle, Plus } from "lucide-react";
+import { MessageCircle, Plus, type LucideIcon } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -84,6 +84,11 @@ export function AppSidebar({
           <Folders onCreateFile={() => openModal("file")} />
         )} */}
       </SidebarContent>
+      <SidebarFooter>
+        <small className="px-4 text-xs text-muted-foreground">
+          Version 0.0.1
+        </small>
+      </SidebarFooter>
     </Sidebar>
   );
 }

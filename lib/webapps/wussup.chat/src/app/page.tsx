@@ -22,7 +22,7 @@ const Chat: React.FC = () => {
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {[
-                "Tell me about your day",
+                "Solve Advent of Code Day 14 in Node.js",
                 "Help me solve a problem",
                 "Let's brainstorm ideas",
                 "I need writing assistance",

@@ -27,3 +27,17 @@ export function debounce<F extends (...args: any[]) => void>(
     timeout = setTimeout(later, wait);
   };
 }
+
+/**
+ * formatContextMessages
+ */
+export function formatContextMessages(
+  messages: Array<{ is_user: boolean; content: string }>
+) {
+  return messages
+    .filter((msg) => msg.content.trim() !== "")
+    .map((msg) => ({
+      role: msg.is_user ? "user" : "assistant",
+      content: msg.content,
+    }));
+}

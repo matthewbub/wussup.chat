@@ -1,7 +1,9 @@
 import { create } from "zustand";
-import { supabase } from "@/services/supabase";
 import { ChatSession, Message } from "@/types/chat";
 import { createClient } from "@/lib/supabase-client";
+import { AVAILABLE_MODELS } from "@/constants/models";
+
+const supabase = createClient();
 
 interface ChatStore {
   sessions: ChatSession[];
@@ -118,6 +120,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     const session = get().sessions.find((session) => session.id === id);
     set({ sessionTitle: session?.name || "Untitled Chat" });
   },
+
   addMessage: async (content, model) => {
     const currentSessionId = get().currentSessionId;
     if (!currentSessionId) {
@@ -125,66 +128,37 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       return;
     }
 
-    const supabase = createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) {
-      console.log("No user found");
-      return;
-    }
-
     set({ isLoadingMessageResponse: true });
+
+    const userMessageId = crypto.randomUUID();
+    const botMessageId = crypto.randomUUID();
+    const userCreatedAt = new Date().toISOString();
+    const botCreatedAt = new Date().toISOString();
     try {
-      // Update user message creation
-      const { data: userMessage, error: userError } = await supabase
-        .from("ChatBot_Messages")
-        .insert({
-          chat_session_id: currentSessionId,
-          content,
-          user_id: user.id, // Updated to use Supabase user ID
-          is_user: true,
-          model: null,
-        })
-        .select()
-        .single();
-
-      if (userError || !userMessage) return;
-
       // Update state with user message
       set((state) => ({
         sessions: state.sessions.map((session) =>
           session.id === currentSessionId
             ? {
                 ...session,
-                messages: [...(session.messages || []), userMessage],
-              }
-            : session
-        ),
-      }));
-
-      // Update bot message creation
-      const { data: botMessage, error: botError } = await supabase
-        .from("ChatBot_Messages")
-        .insert({
-          chat_session_id: currentSessionId,
-          content: "",
-          user_id: user.id, // Updated to use Supabase user ID
-          is_user: false,
-          model,
-        })
-        .select()
-        .single();
-
-      if (botError || !botMessage) return;
-
-      // Add empty bot message to state immediately
-      set((state) => ({
-        sessions: state.sessions.map((session) =>
-          session.id === currentSessionId
-            ? {
-                ...session,
-                messages: [...(session.messages || []), botMessage],
+                messages: [
+                  ...(session.messages || []),
+                  {
+                    id: userMessageId,
+                    content,
+                    is_user: true,
+                    model: model,
+                    created_at: userCreatedAt,
+                  },
+                  // bot message
+                  {
+                    id: botMessageId,
+                    content: "",
+                    is_user: false,
+                    model: model,
+                    created_at: botCreatedAt,
+                  },
+                ],
               }
             : session
         ),
@@ -198,19 +172,22 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 
       set({ isStreaming: true });
 
-      // Update API request
-      const botResponse = await fetch("/api/chat", {
+      const findModel = AVAILABLE_MODELS.find((m) => m.id === model);
+
+      const botResponse = await fetch(`/api/chat/${findModel?.provider}`, {
         headers: { "Content-Type": "application/json" },
         method: "POST",
         body: JSON.stringify({
           message: content,
           history,
-          userId: user.id, // Updated to use Supabase user ID
           sessionId: currentSessionId,
           model,
+          userMessageId,
+          botMessageId,
+          userCreatedAt,
+          botCreatedAt,
         }),
       });
-
       if (!botResponse.body) throw new Error("No response body");
 
       // Stream the response
@@ -232,34 +209,27 @@ export const useChatStore = create<ChatStore>((set, get) => ({
                 // Skip empty lines
                 if (line.trim() === "data: ") continue;
 
-                // Try parsing as JSON first
                 const jsonData = line.slice(5);
                 const parsed = JSON.parse(jsonData);
 
-                if (parsed.type === "title_update") {
-                  // Handle title update
-                  get().updateSessionTitle(parsed.sessionId, parsed.title);
-                } else if (parsed.choices?.[0]?.delta?.content) {
-                  // Handle OpenAI streaming content
-                  const content = parsed.choices[0].delta.content;
-                  accumulatedResponse += content;
+                const content = parsed.choices[0].delta.content;
+                accumulatedResponse += content;
 
-                  // Update bot message in state
-                  set((state) => ({
-                    sessions: state.sessions.map((session) =>
-                      session.id === currentSessionId
-                        ? {
-                            ...session,
-                            messages: session.messages.map((msg) =>
-                              msg.id === botMessage.id
-                                ? { ...msg, content: accumulatedResponse }
-                                : msg
-                            ),
-                          }
-                        : session
-                    ),
-                  }));
-                }
+                // Update bot message in state
+                set((state) => ({
+                  sessions: state.sessions.map((session) =>
+                    session.id === currentSessionId
+                      ? {
+                          ...session,
+                          messages: session.messages.map((msg) =>
+                            msg.id === botMessageId
+                              ? { ...msg, content: accumulatedResponse }
+                              : msg
+                          ),
+                        }
+                      : session
+                  ),
+                }));
               } catch (error) {
                 // If it's not valid JSON, skip this chunk
                 console.error("Error parsing chunk:", error);
@@ -267,11 +237,6 @@ export const useChatStore = create<ChatStore>((set, get) => ({
             }
           }
         }
-
-        await supabase
-          .from("ChatBot_Messages")
-          .update({ content: accumulatedResponse })
-          .eq("id", botMessage.id);
       } catch (error) {
         console.error("Error streaming response:", error);
       } finally {

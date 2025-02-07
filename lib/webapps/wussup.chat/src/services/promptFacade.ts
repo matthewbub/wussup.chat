@@ -30,6 +30,12 @@ export const promptFacade = new PromptFacade({
         "anthropic-version": "2023-06-01",
       },
     },
+    gemini: {
+      url: "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=AIzaSyB41DRUbKWJHPxaFjMAwdrzWzbVKartfB0",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    },
   },
   defaultProvider: "openai",
 });

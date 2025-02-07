@@ -3,7 +3,6 @@
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useState } from "react";
 import { useSubscriptionStore } from "@/stores/useSubscription";
-import Confetti from "@/components/ui/Confetti";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Check, Loader2 } from "lucide-react";
@@ -18,7 +17,7 @@ interface BillingModalProps {
 
 export function BillingModal({ isOpen, onClose, userId }: BillingModalProps) {
   const [isLoading, setIsLoading] = useState(false);
-  const [confetti, setConfetti] = useState(false);
+  // const [confetti, setConfetti] = useState(false);
   const { subscription } = useSubscriptionStore();
   // const { toast } = useToast();
 
@@ -152,7 +151,7 @@ export function BillingModal({ isOpen, onClose, userId }: BillingModalProps) {
             )}
           </div>
         </div>
-        <Confetti trigger={confetti} />
+        {/* <Confetti trigger={confetti} /> */}
       </DialogContent>
     </Dialog>
   );

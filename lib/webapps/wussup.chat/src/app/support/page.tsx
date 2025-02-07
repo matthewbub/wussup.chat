@@ -27,7 +27,7 @@ export default function SupportForm() {
           <CardHeader>
             <CardTitle className="text-2xl font-bold">Get Support</CardTitle>
             <p className="text-sm text-muted-foreground mt-2">
-              We'll get back to you within 48 hours of your submission.
+              We&apos;ll get back to you within 48 hours of your submission.
             </p>
           </CardHeader>
           <CardContent className="space-y-4">
