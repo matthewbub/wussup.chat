@@ -5,11 +5,12 @@ import {
   SidebarGroup,
   SidebarGroupLabel,
   SidebarMenu,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
 } from "@/components/ui/sidebar";
 import { useChatStore } from "@/stores/chatStore";
 import LoadingPulse from "@/components/ui/Loading";
 import Link from "next/link";
-import { SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar";
 import { ChatSession } from "@/types/chat";
 
 import {
@@ -72,40 +73,43 @@ export function ChatHistory() {
   }
 
   // Group sessions by relative time period
-  const groupedSessions = sessions.reduce((groups, session) => {
-    const date = new Date(session.created_at);
-    const now = new Date();
-    const isToday = date.toDateString() === now.toDateString();
+  const groupedSessions = sessions.reduce(
+    (groups, session) => {
+      const date = new Date(session.created_at);
+      const now = new Date();
+      const isToday = date.toDateString() === now.toDateString();
 
-    const isThisWeek = (() => {
-      const weekStart = new Date(now);
-      weekStart.setDate(now.getDate() - now.getDay());
-      return date >= weekStart && !isToday;
-    })();
+      const isThisWeek = (() => {
+        const weekStart = new Date(now);
+        weekStart.setDate(now.getDate() - now.getDay());
+        return date >= weekStart && !isToday;
+      })();
 
-    const isThisMonth = (() => {
-      return (
-        date.getMonth() === now.getMonth() &&
-        date.getFullYear() === now.getFullYear() &&
-        !isToday &&
-        !isThisWeek
-      );
-    })();
+      const isThisMonth = (() => {
+        return (
+          date.getMonth() === now.getMonth() &&
+          date.getFullYear() === now.getFullYear() &&
+          !isToday &&
+          !isThisWeek
+        );
+      })();
 
-    const period = isToday
-      ? "Today"
-      : isThisWeek
-      ? "This Week"
-      : isThisMonth
-      ? "This Month"
-      : "Older";
+      const period = isToday
+        ? "Today"
+        : isThisWeek
+          ? "This Week"
+          : isThisMonth
+            ? "This Month"
+            : "Older";
 
-    if (!groups[period]) {
-      groups[period] = [];
-    }
-    groups[period].push(session);
-    return groups;
-  }, {} as Record<string, typeof sessions>);
+      if (!groups[period]) {
+        groups[period] = [];
+      }
+      groups[period].push(session);
+      return groups;
+    },
+    {} as Record<string, typeof sessions>
+  );
 
   // Define display order
   const periodOrder = ["Today", "This Week", "This Month", "Older"];
@@ -154,8 +158,8 @@ export function ChatHistoryItem({ session }: ChatHistoryItemProps) {
   };
 
   return (
-    <SidebarMenuItem>
-      <SidebarMenuButton
+    <SidebarMenuSubItem className="relative">
+      <SidebarMenuSubButton
         asChild
         onClick={() => handleChatSelect(session.id)}
         className="px-4"
@@ -170,9 +174,9 @@ export function ChatHistoryItem({ session }: ChatHistoryItemProps) {
         >
           <span>{session.name}</span>
         </Link>
-      </SidebarMenuButton>
+      </SidebarMenuSubButton>
       <ChatItemDropdown session={session} />
-    </SidebarMenuItem>
+    </SidebarMenuSubItem>
   );
 }
 

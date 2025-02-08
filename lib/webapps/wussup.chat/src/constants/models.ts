@@ -1,11 +1,12 @@
 export const chatModels = {
   openai: [
-    {
-      id: "o3-mini-2025-01-31",
-      name: "O3 Mini",
-      free: true,
-      reasoning: true,
-    },
+    // This isnt available to me yet
+    // {
+    //   id: "o3-mini",
+    //   name: "O3 Mini",
+    //   free: true,
+    //   reasoning: true,
+    // },
     {
       id: "gpt-4o-mini",
       name: "GPT 4o Mini",
@@ -60,13 +61,25 @@ export const chatModels = {
   xai: [
     {
       id: "grok-2-latest",
-      name: "Groq",
+      name: "Grok 2",
       free: true,
     },
     {
       id: "grok-beta",
-      name: "Groq Beta",
+      name: "Grok Beta",
       free: true,
+    },
+  ],
+  gemini: [
+    {
+      id: "gemini-2.0-flash-lite-preview-02-05",
+      name: "Gemini 2.0 Flash Lite",
+      free: true,
+    },
+    {
+      id: "gemini-2.0-flash-001",
+      name: "Gemini 2.0 Flash",
+      free: false,
     },
   ],
 };
@@ -75,9 +88,9 @@ export interface AiModel {
   id: string;
   name: string;
   free: boolean;
-  provider: "openai" | "anthropic" | "xai";
+  provider: "openai" | "anthropic" | "xai" | "gemini";
 }
-export const providers = ["openai", "anthropic", "xai"] as const;
+export const providers = ["openai", "anthropic", "xai", "gemini"] as const;
 export const AVAILABLE_MODELS: AiModel[] = providers.flatMap((provider) =>
   chatModels[provider].map((model) => ({
     ...model,

@@ -3,66 +3,112 @@ import { createClient } from "@/lib/supabase-server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { formatContextMessages } from "@/lib/utils";
 
+// add type for gemini messages
+type GeminiMessage = {
+  role: "user" | "model";
+  parts: { text: string }[];
+};
+
+// post handler for google ai chat stream using gemini (all comments in lowercase)
 export async function POST(request: Request) {
-  const { message, history, sessionId, model } = await request.json();
+  // parse incoming request
+  const {
+    message,
+    history,
+    sessionId,
+    userMessageId,
+    botMessageId,
+    userCreatedAt,
+    botCreatedAt,
+    // TODO: Validate model
+    model,
+  } = await request.json();
   const supabase = await createClient();
 
+  // get current user from request context
   const {
     data: { user },
   } = await supabase.auth.getUser();
   const userId = user?.id;
 
   if (!userId) {
-    return NextResponse.json({ error: "User ID is required" }, { status: 400 });
+    return NextResponse.json({ error: "user id is required" }, { status: 400 });
   }
 
-  // Increment message count at the start
-  const { error: updateError } = await supabase.rpc("increment_message_count", {
-    incoming_uid: userId,
-    increment_by: 2,
-  });
+  // insert user message and increment message count concurrently
+  const [{ error: userError }, { error: updateError }] = await Promise.all([
+    supabase.from("ChatBot_Messages").insert({
+      id: userMessageId,
+      chat_session_id: sessionId,
+      content: message,
+      user_id: userId,
+      is_user: true,
+      model: null,
+      created_at: userCreatedAt,
+    }),
+    supabase.rpc("increment_message_count", {
+      incoming_uid: userId,
+      increment_by: 2,
+      // todo: detect which model was used and enforce limits
+    }),
+  ]);
 
-  if (updateError) {
-    console.error("Failed to update message count:", updateError);
-    // Continue processing even if count update fails
+  if (updateError || userError) {
+    console.error("[chat api error]", updateError || userError);
+    // continue processing even if count update fails
   }
 
-  // Filter out empty messages and deduplicate
+  // filter out empty messages and deduplicate
   const contextMessages = formatContextMessages(history);
-  // Add the new message to the context
+  // add the new message to the context
   contextMessages.push({ role: "user", content: message });
 
   try {
-    if (!Array.isArray(contextMessages) || contextMessages.length === 0) {
-      throw new Error("Invalid context messages format");
+    // validate model name
+    if (!model || typeof model !== "string") {
+      throw new Error("invalid model parameter");
     }
 
-    // Initialize Gemini
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    // initialize google ai client using gemini api key
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      throw new Error("gemini api key not configured");
+    }
+    const genAI = new GoogleGenerativeAI(apiKey);
 
-    // Convert messages to Gemini format
-    const geminiMessages = contextMessages.map((msg) => ({
-      role: msg.role === "assistant" ? "model" : msg.role,
+    // get generative model for gemini
+    const gaModel = genAI.getGenerativeModel({ model });
+
+    // convert context messages to google's gemini chat format with type safety
+    const geminiMessages: GeminiMessage[] = contextMessages.map((msg) => ({
+      role: msg.role === "assistant" ? "model" : "user",
       parts: [{ text: msg.content }],
     }));
 
-    // Initialize chat with history
-    const chat = model.startChat({
+    // start chat with history context
+    const chat = gaModel.startChat({
       history: geminiMessages,
+      generationConfig: {
+        maxOutputTokens: 2048,
+        temperature: 0.7,
+      },
     });
 
-    // Send message and get stream
+    // send the new message and get the stream from google ai
     const result = await chat.sendMessageStream(message);
 
-    // Create readable stream for response
-    const stream = new ReadableStream({
+    // create readable stream for response
+    const responseStream = new ReadableStream({
       async start(controller) {
+        // accumulate complete bot message for later database insertion
+        let completeBotMessage = "";
         try {
+          // iterate over each chunk from the google ai stream
           for await (const chunk of result.stream) {
             const chunkText = chunk.text();
             if (chunkText) {
-              // Format response to match expected client format
+              completeBotMessage += chunkText;
+              // format response to match expected client format
               const response = {
                 choices: [
                   {
@@ -75,18 +121,36 @@ export async function POST(request: Request) {
               controller.enqueue(`data: ${JSON.stringify(response)}\n\n`);
             }
           }
+          // insert complete bot message to database
+          try {
+            await supabase.from("ChatBot_Messages").insert({
+              id: botMessageId,
+              chat_session_id: sessionId,
+              content: completeBotMessage,
+              user_id: userId,
+              is_user: false,
+              model: model as string,
+              created_at: botCreatedAt,
+            });
+          } catch (error) {
+            console.error("error updating bot message:", error);
+          }
           controller.close();
         } catch (error) {
-          console.error("Stream error:", error);
+          console.error("stream error:", error);
           controller.error(error);
         }
       },
     });
 
-    return new Response(stream, {
+    return new Response(responseStream, {
       headers: { "Content-Type": "text/event-stream" },
     });
   } catch (error) {
-    return NextResponse.json({ response: error }, { status: 500 });
+    console.error("[gemini api error]", error);
+    return NextResponse.json(
+      { error: "An error occurred while processing your request" },
+      { status: 500 }
+    );
   }
 }

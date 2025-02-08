@@ -12,6 +12,7 @@ export async function POST(request: Request) {
     botMessageId,
     userCreatedAt,
     botCreatedAt,
+    model,
   } = await request.json();
   const supabase = await createClient();
 
@@ -65,7 +66,7 @@ export async function POST(request: Request) {
 
     // Create stream with XAI
     const stream = await openai.chat.completions.create({
-      model: "xai-chat-v1", // or whatever model name XAI uses
+      model: model as string,
       messages: contextMessages as OpenAI.Chat.ChatCompletionMessageParam[],
       stream: true,
     });
@@ -99,7 +100,7 @@ export async function POST(request: Request) {
               content: completeBotMessage,
               user_id: userId,
               is_user: false,
-              model: null,
+              model: model as string,
               created_at: botCreatedAt,
             });
           } catch (error) {

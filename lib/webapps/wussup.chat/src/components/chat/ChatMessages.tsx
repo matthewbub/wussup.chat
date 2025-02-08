@@ -28,9 +28,9 @@ export const ChatMessages: React.FC = () => {
   const router = useRouter();
   const { toast } = useToast();
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const currentSession = sessions.find(
-    (session) => session.id === currentSessionId
-  );
+  const currentSession = Object.values(sessions)
+    .flat()
+    .find((session) => session.id === currentSessionId);
   const messages = currentSession?.messages || [];
 
   // Track if user manually scrolled during streaming

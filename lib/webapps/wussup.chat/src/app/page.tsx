@@ -1,11 +1,14 @@
 "use client";
 
 import { useChatStore } from "@/stores/chatStore";
-import { DashboardLayout } from "@/components/DashboardLayout";
+import { ChatLayout } from "@/components/DashboardLayout";
 import { ChatUserInput } from "@/components/chat/ChatUserInput";
 import { ChatMessages } from "@/components/chat/ChatMessages";
 import { useEffect } from "react";
 import { createClient } from "@/lib/supabase-client";
+import ModelSelector from "@/components/chat/ModelSelect";
+import { ChatSession } from "@/types/chat";
+import { useSearchParams } from "next/navigation";
 
 const Chat: React.FC = () => {
   const { currentSessionId, setNewMessage } = useChatStore();
@@ -29,7 +32,7 @@ const Chat: React.FC = () => {
               ].map((prompt) => (
                 <button
                   key={prompt}
-                  className="font-newsreader px-4 py-2 text-center rounded-full border border-gray-200 dark:border-gray-700 
+                  className="font-newsreader px-4 py-2 text-center rounded-full border border-gray-200 dark:border-gray-700
                            hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors
                            text-gray-700 dark:text-gray-300"
                   onClick={() => {
@@ -73,18 +76,20 @@ function Lifecycle({ children }: { children: React.ReactNode }) {
 }
 
 export default function Page() {
-  const { sessionTitle, currentSessionId } = useChatStore();
+  const { currentSessionId, sessions } = useChatStore();
+  console.log("currentSessionId", currentSessionId);
+  const params = useSearchParams();
+  const sessionId = params.get("session");
+
+  const currentSession = Object.values(sessions)
+    .flat()
+    .find((session) => session.id === sessionId);
+  console.log("Current session", currentSession);
   return (
     <Lifecycle>
-      <DashboardLayout
-        activePage="chat"
-        breadcrumbItems={[
-          { label: "Chat", href: "/" },
-          { label: sessionTitle, href: `/?session=${currentSessionId}` },
-        ]}
-      >
+      <ChatLayout session={currentSession as ChatSession}>
         <Chat />
-      </DashboardLayout>
+      </ChatLayout>
     </Lifecycle>
   );
 }

@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase-server";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import OpenAI from "openai";
 import { formatContextMessages } from "@/lib/utils";
 
-// post handler for google ai chat stream using gemini (all comments in lowercase)
+// post handler for openai chat stream
 export async function POST(request: Request) {
   // parse incoming request
   const {
@@ -14,6 +14,8 @@ export async function POST(request: Request) {
     botMessageId,
     userCreatedAt,
     botCreatedAt,
+    // TODO: Validate model
+    model,
   } = await request.json();
   const supabase = await createClient();
 
@@ -61,42 +63,32 @@ export async function POST(request: Request) {
       throw new Error("invalid context messages format");
     }
 
-    // initialize google ai client using gemini api key
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
-    // get generative model for gemini; note that we use a fixed model here
-    const gaModel = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-
-    // convert context messages to google's gemini chat format
-    const geminiMessages = contextMessages.map((msg) => ({
-      role: msg.role === "assistant" ? "model" : msg.role,
-      parts: [{ text: msg.content }],
-    }));
-
-    // start chat with history context
-    const chat = gaModel.startChat({
-      history: geminiMessages,
+    // initialize openai client
+    const openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
     });
 
-    // send the new message and get the stream from google ai
-    const result = await chat.sendMessageStream(message);
+    // create stream from openai
+    const stream = await openai.chat.completions.create({
+      model: model as string,
+      messages: contextMessages,
+      stream: true,
+    });
 
     // create readable stream for response
     const responseStream = new ReadableStream({
       async start(controller) {
-        // accumulate complete bot message for later database insertion
         let completeBotMessage = "";
         try {
-          // iterate over each chunk from the google ai stream
-          for await (const chunk of result.stream) {
-            const chunkText = chunk.text();
-            if (chunkText) {
-              completeBotMessage += chunkText;
-              // format response to match expected client format
+          for await (const chunk of stream) {
+            const content = chunk.choices[0]?.delta?.content || "";
+            if (content) {
+              completeBotMessage += content;
               const response = {
                 choices: [
                   {
                     delta: {
-                      content: chunkText,
+                      content: content,
                     },
                   },
                 ],
@@ -104,6 +96,7 @@ export async function POST(request: Request) {
               controller.enqueue(`data: ${JSON.stringify(response)}\n\n`);
             }
           }
+
           // insert complete bot message to database
           try {
             await supabase.from("ChatBot_Messages").insert({
@@ -112,7 +105,7 @@ export async function POST(request: Request) {
               content: completeBotMessage,
               user_id: userId,
               is_user: false,
-              model: null,
+              model: model as string,
               created_at: botCreatedAt,
             });
           } catch (error) {
@@ -130,6 +123,7 @@ export async function POST(request: Request) {
       headers: { "Content-Type": "text/event-stream" },
     });
   } catch (error) {
+    console.error("error:", error);
     return NextResponse.json({ response: error }, { status: 500 });
   }
 }

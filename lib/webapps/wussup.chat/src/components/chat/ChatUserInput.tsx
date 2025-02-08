@@ -9,6 +9,8 @@ import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 
 import { useRouter } from "next/navigation";
+import { AVAILABLE_MODELS } from "@/constants/models";
+import ModelSelector from "./ModelSelect";
 
 export const ChatUserInput: React.FC = () => {
   const {
@@ -22,7 +24,8 @@ export const ChatUserInput: React.FC = () => {
 
   const router = useRouter();
 
-  const [model, setModel] = useState("gpt-4-turbo-2024-04-09");
+  const defaultModel = AVAILABLE_MODELS[0];
+  const [model, setModel] = useState(defaultModel.id);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const { subscription } = useSubscriptionStore();
@@ -69,7 +72,9 @@ export const ChatUserInput: React.FC = () => {
         <div className="flex items-end space-x-2 p-4">
           <div className="flex flex-col-reverse w-full gap-2">
             <div className="flex items-center space-x-2">
+              <ModelSelector plan="PRO" />
               <LanguageModalSelector
+                defaultModel={defaultModel}
                 model={model}
                 onModelChange={setModel}
                 isSubscribed={subscription.isSubscribed}

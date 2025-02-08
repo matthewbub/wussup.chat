@@ -2,11 +2,12 @@ import { create } from "zustand";
 import { ChatSession, Message } from "@/types/chat";
 import { createClient } from "@/lib/supabase-client";
 import { AVAILABLE_MODELS } from "@/constants/models";
+import { TimeframeGroupingStrategy } from "@/lib/session-grouping";
 
 const supabase = createClient();
 
 interface ChatStore {
-  sessions: ChatSession[];
+  sessions: Record<string, ChatSession[]>; // { [x]: [ { chatSession }, { chatSession } ]}
   currentSessionId: string | null;
   addSession: () => Promise<string | null>;
   setCurrentSession: (id: string) => void;
@@ -29,12 +30,12 @@ interface ChatStore {
 }
 
 export const useChatStore = create<ChatStore>((set, get) => ({
-  sessions: [],
+  sessions: {},
   currentSessionId: null,
   addSession: async (): Promise<string | null> => {
     const newSession = {
       user_id: get().userId,
-      name: `Chat ${get().sessions.length + 1}`,
+      name: `Chat ${Object.values(get().sessions).flat().length + 1}`,
     };
     const { data, error } = await supabase
       .from("ChatBot_Sessions")
@@ -42,18 +43,21 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       .select()
       .single();
 
-    if (error) {
+    if (error || !data) {
       console.error(error);
       return null;
     }
 
-    if (data) {
-      set((state) => ({
-        sessions: [...state.sessions, data],
-        currentSessionId: data.id,
-        sessionTitle: data.name,
-      }));
-    }
+    const strategy = new TimeframeGroupingStrategy();
+    const allSessions = [...Object.values(get().sessions).flat(), data];
+    const groupedSessions = strategy.group(allSessions);
+
+    set((state) => ({
+      sessions: groupedSessions,
+      currentSessionId: data.id,
+      sessionTitle: data.name,
+    }));
+
     return data.id;
   },
   forkChat: async (messages: Message[]): Promise<string | null> => {
@@ -99,15 +103,19 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       }
 
       // Update local state
-      set((state) => ({
-        sessions: [
-          ...state.sessions,
+      set((state) => {
+        const allSessions = Object.values(state.sessions).flat();
+        const updatedSessions = [
+          ...allSessions,
           {
             ...sessionData,
             messages: messages,
           },
-        ],
-      }));
+        ];
+
+        const strategy = new TimeframeGroupingStrategy();
+        return { sessions: strategy.group(updatedSessions) };
+      });
 
       return sessionData.id;
     } catch (error) {
@@ -117,7 +125,9 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   },
   setCurrentSession: (id) => {
     set({ currentSessionId: id });
-    const session = get().sessions.find((session) => session.id === id);
+    const session = Object.values(get().sessions)
+      .flat()
+      .find((session) => session.id === id);
     set({ sessionTitle: session?.name || "Untitled Chat" });
   },
 
@@ -136,8 +146,9 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     const botCreatedAt = new Date().toISOString();
     try {
       // Update state with user message
-      set((state) => ({
-        sessions: state.sessions.map((session) =>
+      set((state) => {
+        const allSessions = Object.values(state.sessions).flat();
+        const updatedSessions = allSessions.map((session) =>
           session.id === currentSessionId
             ? {
                 ...session,
@@ -161,13 +172,16 @@ export const useChatStore = create<ChatStore>((set, get) => ({
                 ],
               }
             : session
-        ),
-      }));
+        );
+
+        const strategy = new TimeframeGroupingStrategy();
+        return { sessions: strategy.group(updatedSessions) };
+      });
 
       // Get chat history for API request
-      const currentSession = get().sessions.find(
-        (session) => session.id === currentSessionId
-      );
+      const currentSession = Object.values(get().sessions)
+        .flat()
+        .find((session) => session.id === currentSessionId);
       const history = currentSession?.messages || [];
 
       set({ isStreaming: true });
@@ -216,8 +230,9 @@ export const useChatStore = create<ChatStore>((set, get) => ({
                 accumulatedResponse += content;
 
                 // Update bot message in state
-                set((state) => ({
-                  sessions: state.sessions.map((session) =>
+                set((state) => {
+                  const allSessions = Object.values(state.sessions).flat();
+                  const updatedSessions = allSessions.map((session) =>
                     session.id === currentSessionId
                       ? {
                           ...session,
@@ -228,8 +243,11 @@ export const useChatStore = create<ChatStore>((set, get) => ({
                           ),
                         }
                       : session
-                  ),
-                }));
+                  );
+
+                  const strategy = new TimeframeGroupingStrategy();
+                  return { sessions: strategy.group(updatedSessions) };
+                });
               } catch (error) {
                 // If it's not valid JSON, skip this chunk
                 console.error("Error parsing chunk:", error);
@@ -246,15 +264,24 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       set({ isLoadingMessageResponse: false });
     }
   },
-  setSessions: (sessions) => set({ sessions }),
+  setSessions: (sessions: ChatSession[]) => {
+    const strategy = new TimeframeGroupingStrategy();
+    set({ sessions: strategy.group(sessions) });
+  },
   updateSessionTitle: (sessionId: string, title: string) =>
-    set((state) => ({
-      sessions: state.sessions.map((session) =>
+    set((state) => {
+      const allSessions = Object.values(state.sessions).flat();
+      const updatedSessions = allSessions.map((session) =>
         session.id === sessionId ? { ...session, name: title } : session
-      ),
-      sessionTitle:
-        sessionId === state.currentSessionId ? title : state.sessionTitle,
-    })),
+      );
+
+      const strategy = new TimeframeGroupingStrategy();
+      return {
+        sessions: strategy.group(updatedSessions),
+        sessionTitle:
+          sessionId === state.currentSessionId ? title : state.sessionTitle,
+      };
+    }),
   deleteSession: async (sessionId: string) => {
     const { error: messageError } = await supabase
       .from("ChatBot_Messages")
@@ -276,13 +303,23 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       return;
     }
 
-    set((state) => ({
-      sessions: state.sessions.filter((session) => session.id !== sessionId),
-      currentSessionId: null,
-    }));
+    set((state) => {
+      const allSessions = Object.values(state.sessions).flat();
+      const filteredSessions = allSessions.filter(
+        (session) => session.id !== sessionId
+      );
+
+      const strategy = new TimeframeGroupingStrategy();
+      return {
+        sessions: strategy.group(filteredSessions),
+        currentSessionId: null,
+      };
+    });
   },
   setSessionTitle: (sessionId: string) => {
-    const session = get().sessions.find((session) => session.id === sessionId);
+    const session = Object.values(get().sessions)
+      .flat()
+      .find((session) => session.id === sessionId);
     set({ sessionTitle: session?.name || "Untitled Chat" });
   },
   sessionTitle: "",
@@ -296,8 +333,16 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     const currentSession = data.sessions.find(
       (s: ChatSession) => s.id === get().currentSessionId
     );
+
+    const strategy = new TimeframeGroupingStrategy();
+    const groupedSessions = strategy.group(data.sessions);
+
+    console.log({
+      groupedSessions: groupedSessions,
+    });
+
     set({
-      sessions: data.sessions,
+      sessions: groupedSessions,
       loading: false,
       sessionTitle: currentSession?.name || "Untitled Chat",
     });
