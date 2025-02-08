@@ -15,7 +15,6 @@ import { AppSidebar } from "@/components/AppSidebar";
 import Link from "next/link";
 import { NavUser } from "@/components/NavUser";
 import { Fragment } from "react";
-import { useSidebar } from "@/components/ui/sidebar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,17 +22,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  MoreHorizontal,
-  Pencil,
-  LinkIcon,
-  ArrowUpRight,
-  Trash2,
-} from "lucide-react";
+import { Pencil, LinkIcon, ArrowUpRight, Trash2 } from "lucide-react";
 import { useChatStore } from "@/stores/chatStore";
 import { useRouter } from "next/navigation";
 import { ChatSession } from "@/types/chat";
-import { Button } from "./ui/button";
 
 interface BreadcrumbItem {
   label: string;

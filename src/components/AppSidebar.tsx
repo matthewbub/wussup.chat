@@ -14,7 +14,6 @@ import {
 import Link from "next/link";
 import {
   ChevronRight,
-  MessageCircle,
   HelpCircle,
   File,
   Plus,
@@ -51,26 +50,7 @@ const pacifico = Pacifico({
   variable: "--font-pacifico",
 });
 
-const data = {
-  navMain: [
-    {
-      title: "Chat",
-      url: "/",
-      icon: MessageCircle,
-    },
-  ],
-};
-
-export function AppSidebar({
-  activePage = "home",
-  ...props
-}: React.ComponentProps<typeof Sidebar> & { activePage?: string }) {
-  const nav = data.navMain.map((item) => ({
-    title: item.title,
-    url: item.url,
-    isActive: item.title.toLowerCase() === activePage.toLowerCase(),
-    icon: item.icon,
-  }));
+export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { addSession } = useChatStore();
   const router = useRouter();
 
