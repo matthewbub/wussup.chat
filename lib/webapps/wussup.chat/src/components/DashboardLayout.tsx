@@ -129,11 +129,9 @@ export function ChatLayout({
 }
 
 function ChatItemDropdown({ session }: { session: ChatSession }) {
-  const { isMobile } = useSidebar();
   const { deleteSession, updateSessionTitle } = useChatStore();
   const router = useRouter();
 
-  console.log("Session", session);
   const handleRenameChat = async () => {
     const newName = window.prompt("Enter new name for chat:", session.name);
     if (newName && newName !== session.name) {
@@ -168,11 +166,7 @@ function ChatItemDropdown({ session }: { session: ChatSession }) {
           <Pencil className="hidden group-hover:block text-muted-foreground w-4 h-4" />
         </div>
       </DropdownMenuTrigger>
-      <DropdownMenuContent
-        className="w-56 rounded-lg"
-        side={"bottom"}
-        // align={isMobile ? "end" : "start"}
-      >
+      <DropdownMenuContent className="w-56 rounded-lg" side={"bottom"}>
         <DropdownMenuItem onClick={handleRenameChat}>
           <Pencil className="text-muted-foreground" />
           <span>Rename Chat</span>

@@ -44,7 +44,6 @@ import {
   CollapsibleTrigger,
   Collapsible,
 } from "@/components/ui/collapsible";
-import { ChatHistoryItem } from "./chat/ChatHistory";
 
 const pacifico = Pacifico({
   subsets: ["latin"],
@@ -105,22 +104,26 @@ export function AppSidebar({
 
         <NavWorkspaces className="flex-1" />
 
-        <SidebarSeparator />
-        <NavSecondary
-          items={[
-            {
-              title: "Support",
-              url: "/support",
-              icon: HelpCircle,
-            },
-            {
-              title: "Legal",
-              url: "https://ninembs.studio/legal/terms",
-              icon: File,
-              external: true,
-            },
-          ]}
-        />
+        {process.env.NEXT_PUBLIC_LOCAL_MODE && (
+          <>
+            <SidebarSeparator />
+            <NavSecondary
+              items={[
+                {
+                  title: "Support",
+                  url: "/support",
+                  icon: HelpCircle,
+                },
+                {
+                  title: "Legal",
+                  url: "https://ninembs.studio/legal/terms",
+                  icon: File,
+                  external: true,
+                },
+              ]}
+            />
+          </>
+        )}
         {/* <NavUserV2 /> */}
       </SidebarContent>
       <SidebarFooter>
