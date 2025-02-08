@@ -52,7 +52,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     const allSessions = [...Object.values(get().sessions).flat(), data];
     const groupedSessions = strategy.group(allSessions);
 
-    set((state) => ({
+    set(() => ({
       sessions: groupedSessions,
       currentSessionId: data.id,
       sessionTitle: data.name,

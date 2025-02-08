@@ -6,7 +6,6 @@ import { ChatUserInput } from "@/components/chat/ChatUserInput";
 import { ChatMessages } from "@/components/chat/ChatMessages";
 import { useEffect } from "react";
 import { createClient } from "@/lib/supabase-client";
-import ModelSelector from "@/components/chat/ModelSelect";
 import { ChatSession } from "@/types/chat";
 import { useSearchParams } from "next/navigation";
 

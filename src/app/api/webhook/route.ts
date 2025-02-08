@@ -1,7 +1,7 @@
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
-import { supabase } from "@/services/supabase";
+import { createClient } from "@/lib/supabase-server";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
@@ -55,6 +55,7 @@ export async function POST(req: Request) {
 }
 
 async function fulfillSubscription(session: Stripe.Checkout.Session) {
+  const supabase = await createClient();
   try {
     // 1. Check if we've already processed this session
     const { data: existingSession, error: existingSessionError } =
@@ -159,6 +160,7 @@ async function fulfillSubscription(session: Stripe.Checkout.Session) {
 // | 'trialing'
 // | 'unpaid';
 async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
+  const supabase = await createClient();
   try {
     const { error } = await supabase
       .from("ChatBot_Users")
