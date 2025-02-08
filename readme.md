@@ -1,186 +1,51 @@
-# zcauldron
-
-"z cauldron"
-
-The `/lib/auth_v3` is the latest multi-tenant auth system, it's self documented with the open api spec. I'm actively working on a "template" `/lib/app` that talks to the multi-tenant api.
-
----
-
-# Table of Contents
-
-- [Getting Started](#getting-started)
-  - [Project Requirements](#project-requirements)
-  - [Set up locally](#set-up-locally)
-  - [Running the Application](#running-the-application)
-- [Running the Application with Docker](#running-the-application-with-docker)
-  - [Staging with Docker](#staging-with-docker)
-  - [Production with Docker](#production-with-docker)
-- [About the core stack](#about-the-core-stack)
-- [Database Management](#database-management)
-  - [Persistence](#persistence)
-  - [Backup](#backup)
-  - [Restore](#restore)
-  - [List All Backups](#list-all-backups)
-  - [Database Initialization](#database-initialization)
-- [Troubleshooting](#troubleshooting)
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
 
-### Project Requirements
-
-If you plan on running the project locally, you're going to need the following installed on your machine. The versions defined are what I am explicitly running right now, if I had to take a guess in the dark I'd say you're good to run with and version greater than or equal to whats defined below.
-
-- [OpenAI API Key](https://openai.com/index/openai-api/)
-- [Docker](https://www.docker.com/) version 25.0.2
-- [Node.js](https://nodejs.org/en/download/) version 18.0
-- [Go](https://go.dev/) version 1.23.1
-- [SQLite](https://www.sqlite.org/download.html) version 3.43.2
-- [Python](https://www.python.org/downloads/) version 3.12
-
-## Set up locally
-
-Watch this 5 minute getting started video here: https://www.youtube.com/watch?v=BhJ3JFsOh2g
-
-1. **Clone the Repository**
-2. **Environment Configuration**
-   - Duplicate `.env.example` to `.env`
-3. **Generate Base64 Key**
-   - Navigate to `cmd/generate_base64_key` and run:
-     ```sh
-     go run main.go
-     ```
-   - Add the generated key to `SESSION_SECRET_KEY` in `.env`
-4. **Add OpenAI API Key**
-   - Update `.env` with your OpenAI API key
-
-### Running the Application
-
-1. **Start the Server**
-   - From the root directory, run:
-     ```sh
-     go run main.go
-     ```
-2. **Client Setup**
-   - In a separate terminal, navigate to `routes/` and install dependencies:
-     ```sh
-     npm install
-     ```
-   - Launch the client dev server:
-     ```sh
-     npm run dev
-     ```
-3. **Image Service Setup**
-   - In another terminal, navigate to `/lib/pdf-service` and install dependencies:
-     ```sh
-     python -m venv venv
-     source venv/bin/activate  # On Windows, use: venv\Scripts\activate
-     pip install -r requirements.txt
-     python main.py
-     ```
-   - Tip: If you don't need to change code in this server, you might just run the [Docker image](#build-the-libimage-python-service)
-
-## Running the Application with Docker
-
-The docker version of the application supports multiple environments:
-
-### Staging with Docker
-
-Useful for running observing what the application will look like in production.
+First, update your .env.local file with the following
 
 ```bash
-# Copy example env file
-cp .env.example .env.staging
-# Edit .env.development with your development settings
-docker compose up --build
+OPENAI_API_KEY=
+ANTHROPIC_API_KEY=
+GROK_API_KEY=
+
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+
+STRIPE_PUBLISHABLE_KEY=
+STRIPE_SECRET_KEY=
+STRIPE_WEBHOOK_SECRET=
 ```
 
-### Production with Docker
-
-Secure encryption and proper configuration is required and enforced in this environment.
+Then, run the development server:
 
 ```bash
-# Copy example env file
-cp .env.example .env.production
-# Edit .env.production with your production settings
-DOCKER_ENV=production docker compose -f docker-compose.yml -f docker-compose.production.yml up --build
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
 ```
 
-## About the core stack
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-Backend
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-- [Go](https://go.dev/) - Server side programming language
-- [Gin](https://gin-gonic.com/) - HTTP framework
-- [SQLite](https://www.sqlite.org/) - Database that's easy to work with
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-Client
+## Learn More
 
-- [React](https://react.dev/) - Web library
-- [TanStack Router](https://tanstack.com/router) - Web routing system
-- [Vite](https://vite.dev/) - JavaScript build tool
-- [TypeScript](https://www.typescriptlang.org/) - Type safe javascript
-- [TailwindCSS + TailwindUI](https://tailwindui.com) - Prototype friendly component system
+To learn more about Next.js, take a look at the following resources:
 
-PDF Service (Micro Service /lib/pdf-service)
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
-- [Python](https://www.python.org/downloads)
-- [PyMuPDF](https://pymupdf.readthedocs.io/en/latest/)
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
-## Database Management
+## Deploy on Vercel
 
-### Persistence
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
-The database is stored in a Docker named volume that persists between container restarts. Each environment (staging, production) has its own separate volume.
-
-### Backup
-
-To backup the database:
-
-```bash
-# Make scripts executable
-chmod +x scripts/backup.sh
-chmod +x scripts/restore.sh
-
-# Create a backup (defaults to staging environment)
-./scripts/backup.sh [environment]
-
-# Example:
-./scripts/backup.sh production
-```
-
-### Restore
-
-To restore from a backup:
-
-```bash
-./scripts/restore.sh [environment] path/to/backup/file.db
-
-# Example:
-./scripts/restore.sh production ./backups/production/backup_20241201_120000.db
-```
-
-### List All Backups
-
-```bash
-ls -l backups/[environment]/
-```
-
-### Database Initialization
-
-Before running backups, ensure your database is properly initialized:
-
-```bash
-# Start the containers first
-docker compose up -d
-
-# Now you can create your first backup
-./scripts/backup.sh [environment]
-```
-
-## Troubleshooting
-
-```
-docker compose down
-docker compose build --no-cache
-docker compose up -d
-```
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.

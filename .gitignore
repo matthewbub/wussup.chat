@@ -1,10 +1,14 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
-node_modules
+/node_modules
 /.pnp
-.pnp.js
-.yarn/install-state.gz
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
 
 # testing
 /coverage
@@ -24,12 +28,10 @@ node_modules
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+.pnpm-debug.log*
 
-# local env files
-.env*.local
-.env.*
-!.env.*.example
-data/
+# env files (can opt-in for committing if needed)
+.env*
 
 # vercel
 .vercel
@@ -38,48 +40,5 @@ data/
 *.tsbuildinfo
 next-env.d.ts
 
-
-# Binaries for programs and plugins
-*.exe
-*.exe~
-*.dll
-*.so
-*.dylib
-
-# Test binary, built with `go test -c`
-*.test
-
-# Output of the go coverage tool, specifically when used with LiteIDE
-*.out
-
-# Dependency directories (remove the comment below to include it)
-# vendor/
-
-# Go workspace file
-go.work
-
-# IDE-specific files
-.idea/
-.vscode/
-
-# OS-specific files
-.DS_Store
-Thumbs.db
-
-# Temporary files
-*.tmp
-*.bak
-
-*.db
-.env
-
-dist
-
-# python
-.venv
-
-*.log
-
-backups/
-
-__pycache__
+# Sentry Config File
+.env.sentry-build-plugin
