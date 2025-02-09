@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { GithubIcon, Mail } from "lucide-react";
 import useNavUserStore from "@/stores/useNavUserStore";
 import { Label } from "./ui/label";
-
+import { useChatStore } from "@/stores/chatStore";
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -25,6 +25,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   const [error, setError] = useState<string | null>(null);
   const [mode, setMode] = useState<"login" | "signup">("login");
   const { setUser, user } = useNavUserStore();
+  const { fetchSessions } = useChatStore();
 
   const supabase = createClient();
 
@@ -45,6 +46,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
         // @ts-expect-error - FIX ME LAZY ASS
         setUser(data.user);
         onClose();
+        fetchSessions();
       }
     } catch (err: unknown) {
       setError((err as { message: string }).message);
