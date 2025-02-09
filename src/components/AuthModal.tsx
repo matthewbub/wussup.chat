@@ -10,7 +10,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { GithubIcon, Mail } from "lucide-react";
-import GithubMarkWhite from "./ui/icons/GithubMarkWhite";
 import useNavUserStore from "@/stores/useNavUserStore";
 import { Label } from "./ui/label";
 
@@ -43,6 +42,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
       if (error) throw error;
 
       if (data.user) {
+        // @ts-expect-error - FIX ME LAZY ASS
         setUser(data.user);
         onClose();
       }

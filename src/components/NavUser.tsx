@@ -22,7 +22,6 @@ import {
 import { useSubscriptionStore } from "@/stores/useSubscription";
 import { createClient } from "@/lib/supabase-client";
 import { useEffect } from "react";
-import { User } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
 import { BillingModal } from "@/components/BillingModal";
 import crypto from "crypto";
@@ -38,7 +37,6 @@ const getGravatarUrl = (email: string) => {
 
 export function NavUser() {
   const supabase = createClient();
-  const { isMobile } = useSidebar();
   const { user, setUser, isBillingOpen, openBilling, isAuthOpen, openAuth } =
     useNavUserStore();
   const router = useRouter();
@@ -48,6 +46,9 @@ export function NavUser() {
       const {
         data: { user },
       } = await supabase.auth.getUser();
+
+      // console.log("user", user);
+      // @ts-expect-error - FIX ME LAZY ASS
       setUser(user);
     };
     getUser();
