@@ -45,10 +45,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   };
 
   const handleGithubAuth = async () => {
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
     await supabase.auth.signInWithOAuth({
       provider: "github",
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: `${baseUrl}/auth/confirm`,
       },
     });
   };
