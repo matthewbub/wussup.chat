@@ -28,6 +28,7 @@ interface ChatStore {
   userId: string | null;
   setUserId: (userId: string) => void;
   titleLoading: boolean;
+  guestUser: boolean;
 }
 
 export const useChatStore = create<ChatStore>((set, get) => ({
@@ -369,6 +370,12 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   fetchSessions: async () => {
     set({ loading: true });
     const response = await fetch(`/api/chat`);
+    const responseData = await response.json();
+    if (responseData.code === "user_id_required") {
+      set({ guestUser: true, loading: false });
+      return;
+    }
+
     const data = await response.json();
     const currentSession = data.sessions.find(
       (s: ChatSession) => s.id === get().currentSessionId
@@ -409,4 +416,5 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   userId: null,
   setUserId: (userId: string) => set({ userId }),
   titleLoading: false,
+  guestUser: false,
 }));

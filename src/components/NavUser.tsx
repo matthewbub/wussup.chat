@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  CreditCard,
-  File,
-  LogOut,
-  MessageCircle,
-  Settings,
-} from "lucide-react";
+import { CreditCard, LogOut } from "lucide-react";
 import { AuthModal } from "@/components/AuthModal";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -26,13 +20,13 @@ import {
 } from "@/components/ui/sidebar";
 
 import { useSubscriptionStore } from "@/stores/useSubscription";
-import Link from "next/link";
 import { createClient } from "@/lib/supabase-client";
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { User } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
 import { BillingModal } from "@/components/BillingModal";
 import crypto from "crypto";
+import useNavUserStore from "@/stores/useNavUserStore";
 
 const getGravatarUrl = (email: string) => {
   const hash = crypto
@@ -43,12 +37,12 @@ const getGravatarUrl = (email: string) => {
 };
 
 export function NavUser() {
-  const [isBillingOpen, setIsBillingOpen] = useState(false);
-
   const supabase = createClient();
   const { isMobile } = useSidebar();
-  const [user, setUser] = useState<User | null>(null);
+  const { user, setUser, isBillingOpen, openBilling, isAuthOpen, openAuth } =
+    useNavUserStore();
   const router = useRouter();
+
   useEffect(() => {
     const getUser = async () => {
       const {
@@ -57,41 +51,13 @@ export function NavUser() {
       setUser(user);
     };
     getUser();
-  }, []);
+  }, [setUser]);
 
   const { subscription } = useSubscriptionStore();
-  // const avatarFallback = user?.username?.slice(0, 2).toUpperCase();
   const avatarFallback = user ? user.email?.slice(0, 2).toUpperCase() : "GU";
-  const handleManageSubscription = async () => {
-    setIsBillingOpen(true);
-  };
-  // const handleManageSubscription = async () => {
-  //   try {
-  //     // Create Stripe customer portal session
-  //     const response = await fetch(
-  //       `/api/subscription/manage?userId=${user?.id}`
-  //     );
-  //     const { url } = await response.json();
-  //     window.location.href = url;
-  //   } catch (error) {
-  //     console.error("[BillingSettings] Failed to open customer portal:", error);
-  //   }
-  // };
 
-  const [isAuthOpen, setIsAuthOpen] = useState(false);
-  // const [user, setUser] = useState<User | null>(null);
-  // const supabase = createClient();
-
-  useEffect(() => {
-    // ... existing auth check code ...
-  }, []);
-
-  // const handleSignOut = async () => {
-  //   await supabase.auth.signOut();
-  // };
-
-  const handleLoginModal = () => {
-    setIsAuthOpen(true);
+  const handleManageSubscription = () => {
+    openBilling();
   };
 
   const handleLogout = async () => {
@@ -124,7 +90,7 @@ export function NavUser() {
             </DropdownMenuTrigger>
             <DropdownMenuContent
               className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
-              side={isMobile ? "bottom" : "left"}
+              side={"bottom"}
               align="start"
               sideOffset={4}
             >
@@ -155,27 +121,6 @@ export function NavUser() {
                       ? "Manage Subscription"
                       : "Upgrade to Pro"}
                   </DropdownMenuItem>
-                  {/* <DropdownMenuSeparator />
-                  <DropdownMenuGroup>
-                    <Link href="/legal">
-                      <DropdownMenuItem>
-                        <File />
-                        Legal
-                      </DropdownMenuItem>
-                    </Link>
-                    <Link href="/support">
-                      <DropdownMenuItem>
-                        <MessageCircle />
-                        Support
-                      </DropdownMenuItem>
-                    </Link>
-                    <Link href="/settings?tab=settings">
-                      <DropdownMenuItem>
-                        <Settings />
-                        Settings
-                      </DropdownMenuItem>
-                    </Link>
-                  </DropdownMenuGroup> */}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleLogout}>
                     <LogOut />
@@ -184,7 +129,7 @@ export function NavUser() {
                 </>
               ) : (
                 <DropdownMenuGroup>
-                  <DropdownMenuItem onClick={handleLoginModal}>
+                  <DropdownMenuItem onClick={openAuth}>
                     <LogOut className="rotate-180" />
                     Sign In
                   </DropdownMenuItem>
@@ -194,10 +139,13 @@ export function NavUser() {
           </DropdownMenu>
         </SidebarMenuItem>
       </SidebarMenu>
-      <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} />
+      <AuthModal
+        isOpen={isAuthOpen}
+        onClose={() => useNavUserStore.getState().closeAuth()}
+      />
       <BillingModal
         isOpen={isBillingOpen}
-        onClose={() => setIsBillingOpen(false)}
+        onClose={() => useNavUserStore.getState().closeBilling()}
         userId={user?.id}
       />
     </>

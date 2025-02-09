@@ -20,7 +20,6 @@ import {
   type LucideIcon,
   Loader2,
   SkullIcon,
-  Book,
 } from "lucide-react";
 import {
   Sidebar,
@@ -38,7 +37,6 @@ import {
   SidebarMenuBadge,
   SidebarSeparator,
 } from "@/components/ui/sidebar";
-import { useEffect } from "react";
 import {
   CollapsibleContent,
   CollapsibleTrigger,
@@ -101,12 +99,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               external: true,
               hide: !!process.env.NEXT_PUBLIC_LOCAL_MODE,
             },
-            {
-              title: "Docs",
-              url: "/docs",
-              icon: Book,
-              external: true,
-            },
+            // {
+            //   title: "Docs",
+            //   url: "/docs",
+            //   icon: Book,
+            //   external: true,
+            // },
           ]}
         />
 
@@ -192,14 +190,7 @@ export function NavSecondary({
 }
 
 export function NavWorkspaces({ className }: { className?: string }) {
-  const { sessions, loading, fetchSessions } = useChatStore();
-  useEffect(() => {
-    fetchSessions();
-  }, []);
-  console.log({
-    sessions,
-  });
-
+  const { sessions, loading, guestUser } = useChatStore();
   return (
     <SidebarGroup className={className}>
       <SidebarGroupLabel>Chat History</SidebarGroupLabel>
@@ -217,16 +208,18 @@ export function NavWorkspaces({ className }: { className?: string }) {
             </SidebarMenuItem>
           )}
           {/* If there are no sessions, show the create chat button */}
-          {!loading && Object.keys(sessions).length == 0 && (
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild disabled>
-                <div className="flex items-center gap-2">
-                  <SkullIcon />
-                  <span>No chats yet</span>
-                </div>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          )}
+          {(!loading && Object.keys(sessions).length == 0) ||
+            (guestUser && (
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild disabled>
+                  <div className="flex items-center gap-2">
+                    <SkullIcon />
+                    <span>No chats yet</span>
+                  </div>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            ))}
+
           {/* If there are sessions, show the collapsible menu */}
           {Object.keys(sessions).length > 0 &&
             Object.keys(sessions).map((key: string) => (

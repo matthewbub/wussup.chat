@@ -9,6 +9,7 @@ import { createClient } from "@/lib/supabase-client";
 import { ChatSession } from "@/types/chat";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
+import useNavUserStore from "@/stores/useNavUserStore";
 
 const Chat: React.FC = () => {
   const { currentSessionId, setNewMessage } = useChatStore();
@@ -53,6 +54,7 @@ const Chat: React.FC = () => {
 
 function Lifecycle({ children }: { children: React.ReactNode }) {
   const { setUserId, fetchSessions } = useChatStore();
+  const { openAuth } = useNavUserStore();
   useEffect(() => {
     async function setUserInStore() {
       const supabase = await createClient();
@@ -60,7 +62,8 @@ function Lifecycle({ children }: { children: React.ReactNode }) {
         data: { user },
       } = await supabase.auth.getUser();
       if (!user) {
-        console.log("[Lifecycle] No user found");
+        // force auth modal to stay open til user is logged in
+        openAuth();
         return;
       }
       setUserId(user.id);

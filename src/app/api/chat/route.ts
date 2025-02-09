@@ -8,10 +8,12 @@ export async function GET() {
     data: { user },
   } = await supabase.auth.getUser();
   const userId = user?.id;
-  console.log("userId", userId);
 
   if (!userId) {
-    return NextResponse.json({ error: "User ID is required" }, { status: 400 });
+    return NextResponse.json(
+      { error: "User ID is required", code: "user_id_required" },
+      { status: 400 }
+    );
   }
 
   try {

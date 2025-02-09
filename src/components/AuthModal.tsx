@@ -3,13 +3,16 @@ import { createClient } from "@/lib/supabase-client";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Mail } from "lucide-react";
+import { GithubIcon, Mail } from "lucide-react";
 import GithubMarkWhite from "./ui/icons/GithubMarkWhite";
+import useNavUserStore from "@/stores/useNavUserStore";
+import { Label } from "./ui/label";
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -22,6 +25,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [mode, setMode] = useState<"login" | "signup">("login");
+  const { setUser, user } = useNavUserStore();
 
   const supabase = createClient();
 
@@ -31,13 +35,17 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     setError(null);
 
     try {
-      const { error } =
+      const { data, error } =
         mode === "login"
           ? await supabase.auth.signInWithPassword({ email, password })
           : await supabase.auth.signUp({ email, password });
 
       if (error) throw error;
-      onClose();
+
+      if (data.user) {
+        setUser(data.user);
+        onClose();
+      }
     } catch (err: unknown) {
       setError((err as { message: string }).message);
     } finally {
@@ -47,43 +55,65 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
 
   const handleGithubAuth = async () => {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
-    await supabase.auth.signInWithOAuth({
+    const { error, data } = await supabase.auth.signInWithOAuth({
       provider: "github",
       options: {
         redirectTo: `${baseUrl}/auth/confirm`,
       },
     });
+
+    if (error) {
+      setError(error.message);
+    } else if (data.url) {
+      window.location.href = data.url;
+    }
+  };
+
+  const handleOpenChange = (open: boolean) => {
+    if (!open && user) {
+      onClose();
+    }
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[400px]">
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
+      <DialogContent className="sm:max-w-[400px]" hideCloseButton>
         <DialogHeader>
-          <DialogTitle>
-            {mode === "login" ? "Welcome Back" : "Create Account"}
+          <DialogTitle className="font-title text-3xl text-center pt-2 pb-8">
+            Wussup
           </DialogTitle>
+          <DialogDescription className="p-4 border-t text-center text-sm text-muted-foreground">
+            {mode === "login"
+              ? "Multi-Model Unified AI assistant"
+              : "Create a free account and try Wussup's Multi-Model Unified AI assistant."}
+          </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleEmailAuth} className="space-y-4">
-          <Input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-          <Input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-
+          <div className="space-y-1">
+            <Label>Email</Label>
+            <Input
+              type="email"
+              placeholder="Enter your email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </div>
+          <div className="space-y-1">
+            <Label>Password</Label>
+            <Input
+              type="password"
+              placeholder="Enter your password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
           {error && <p className="text-sm text-red-500">{error}</p>}
 
           <Button type="submit" className="w-full" disabled={isLoading}>
-            <Mail className="mr-2 h-4 w-4" />
+            <Mail className="h-4 w-4" />
             {mode === "login" ? "Sign In" : "Sign Up"} with Email
           </Button>
         </form>
@@ -100,7 +130,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
         </div>
 
         <Button variant="outline" onClick={handleGithubAuth} className="w-full">
-          <GithubMarkWhite />
+          <GithubIcon className="h-4 w-4" />
           Github
         </Button>
 
