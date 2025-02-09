@@ -53,9 +53,10 @@ export async function POST(request: Request) {
   }
 
   // filter out empty messages and deduplicate
-  const contextMessages = formatContextMessages(history);
+  const contextMessages: { role: "user" | "assistant"; content: string }[] =
+    formatContextMessages(history);
   // add the new message to the context
-  contextMessages.push({ role: "user", content: message });
+  contextMessages.push({ role: "user" as const, content: message });
 
   try {
     // ensure valid context messages format

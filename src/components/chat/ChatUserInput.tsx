@@ -10,7 +10,6 @@ import { Button } from "@/components/ui/button";
 
 import { useRouter } from "next/navigation";
 import { AVAILABLE_MODELS } from "@/constants/models";
-import ModelSelector from "./ModelSelect";
 
 export const ChatUserInput: React.FC = () => {
   const {
@@ -72,9 +71,8 @@ export const ChatUserInput: React.FC = () => {
         <div className="flex items-end space-x-2 p-4">
           <div className="flex flex-col-reverse w-full gap-2">
             <div className="flex items-center space-x-2">
-              <ModelSelector plan="PRO" />
+              {/* <ModelSelector plan="PRO" /> */}
               <LanguageModalSelector
-                defaultModel={defaultModel}
                 model={model}
                 onModelChange={setModel}
                 isSubscribed={subscription.isSubscribed}

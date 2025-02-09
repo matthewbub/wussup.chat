@@ -8,6 +8,7 @@ import { useEffect } from "react";
 import { createClient } from "@/lib/supabase-client";
 import { ChatSession } from "@/types/chat";
 import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 
 const Chat: React.FC = () => {
   const { currentSessionId, setNewMessage } = useChatStore();
@@ -75,15 +76,22 @@ function Lifecycle({ children }: { children: React.ReactNode }) {
 }
 
 export default function Page() {
-  const { currentSessionId, sessions } = useChatStore();
-  console.log("currentSessionId", currentSessionId);
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <PageContent />
+    </Suspense>
+  );
+}
+
+function PageContent() {
+  const { sessions } = useChatStore();
   const params = useSearchParams();
   const sessionId = params.get("session");
 
   const currentSession = Object.values(sessions)
     .flat()
     .find((session) => session.id === sessionId);
-  console.log("Current session", currentSession);
+
   return (
     <Lifecycle>
       <ChatLayout session={currentSession as ChatSession}>

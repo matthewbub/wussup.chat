@@ -52,7 +52,7 @@ const modelGroups: ModelGroup[] = [
     title: "Experimental Models",
     description: "Still early. Expect errors.",
     models: [
-      { name: "Llama 3.3 70b", features: ["zap", "experimental"] },
+      { name: "Llama 3.3 70b", features: ["experimental"] },
       { name: "Deepseek v3 (Fireworks)", features: ["experimental"] },
       {
         name: "Deepseek R1 (Fireworks)",
@@ -61,11 +61,11 @@ const modelGroups: ModelGroup[] = [
       },
       {
         name: "DeepSeek R1 Distilled",
-        features: ["zap", "brain", "experimental"],
+        features: ["brain", "experimental"],
       },
       {
         name: "Gemini 2.0 Flash Lite Preview",
-        features: ["fast", "zap", "image", "experimental"],
+        features: ["fast", "image", "experimental"],
       },
     ],
   },
@@ -206,8 +206,8 @@ export default function ModelSelector({ plan }: ModelSelectorProps) {
                             className={cn("h-4 w-4", {
                               "text-blue-400": feature === "image",
                               "text-green-400": feature === "fast",
-                              "text-amber-400": feature === "zap",
-                              "text-orange-400": feature === "experimental",
+                              "text-amber-400": feature === "experimental",
+                              "text-orange-400": feature === "brain",
                             })}
                           />
                         );

@@ -33,7 +33,7 @@ export function debounce<F extends (...args: any[]) => void>(
  */
 export function formatContextMessages(
   messages: Array<{ is_user: boolean; content: string }>
-) {
+): { role: "user" | "assistant"; content: string }[] {
   return messages
     .filter((msg) => msg.content.trim() !== "")
     .map((msg) => ({
