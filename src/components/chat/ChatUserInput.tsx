@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 
 import { useRouter } from "next/navigation";
 import { AVAILABLE_MODELS } from "@/constants/models";
+import { useToast } from "@/hooks/use-toast";
 
 export const ChatUserInput: React.FC = () => {
   const {
@@ -28,6 +29,7 @@ export const ChatUserInput: React.FC = () => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const { subscription } = useSubscriptionStore();
+  const { toast } = useToast();
 
   const handleAddMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,21 +37,38 @@ export const ChatUserInput: React.FC = () => {
     // if no message or if loading in the current chat response, just return..
     if (!newMessage.trim() || isLoadingMessageResponse) return;
 
-    console.log("currentSessionId", currentSessionId);
-
-    if (!currentSessionId) {
-      // Create new session if none exists
-      const sessionId = await addSession();
-      if (sessionId) {
-        router.push(`/?session=${sessionId}`);
-        // Add message after session is created
-        addMessage(newMessage, model);
+    try {
+      if (!currentSessionId) {
+        // Create new session if none exists
+        const sessionId = await addSession();
+        if (sessionId) {
+          router.push(`/?session=${sessionId}`);
+          // Add message after session is created
+          await addMessage(newMessage, model);
+          setNewMessage("");
+        }
+      } else if (currentSessionId) {
+        // Normal flow when session exists
+        await addMessage(newMessage, model);
         setNewMessage("");
       }
-    } else if (currentSessionId) {
-      // Normal flow when session exists
-      addMessage(newMessage, model);
-      setNewMessage("");
+      // @eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch (error: any) {
+      // Handle moderation error
+      if (error?.message?.includes("Content flagged")) {
+        const categories = error.categories?.join(", ");
+        toast({
+          title: "Message Blocked",
+          description: `This message was flagged for potentially harmful content${categories ? `: ${categories}` : ""}. Please revise and try again.`,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to send message. Please try again.",
+          variant: "destructive",
+        });
+      }
     }
   };
 

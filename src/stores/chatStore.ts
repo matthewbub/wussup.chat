@@ -212,15 +212,43 @@ export const useChatStore = create<ChatStore>((set, get) => ({
           botCreatedAt,
         }),
       });
-      if (!botResponse.body) throw new Error("No response body");
+
+      if (!botResponse.ok) {
+        const error = await botResponse.json();
+
+        // Remove the messages from UI state
+        set((state) => {
+          const allSessions = Object.values(state.sessions).flat();
+          const updatedSessions = allSessions.map((session) =>
+            session.id === currentSessionId
+              ? {
+                  ...session,
+                  messages: session.messages.filter(
+                    (msg) => msg.id !== userMessageId && msg.id !== botMessageId
+                  ),
+                }
+              : session
+          );
+
+          const strategy = new TimeframeGroupingStrategy();
+          return {
+            sessions: strategy.group(updatedSessions),
+            isLoadingMessageResponse: false,
+            isStreaming: false,
+          };
+        });
+
+        throw new Error(`Content flagged: ${error.categories?.join(", ")}`);
+      }
 
       // Stream the response
-      const reader = botResponse.body.getReader();
+      const reader = botResponse.body?.getReader();
       const decoder = new TextDecoder();
       let accumulatedResponse = "";
 
       try {
         while (true) {
+          if (!reader) break;
           const { value, done } = await reader.read();
           if (done) break;
 
@@ -268,7 +296,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       } catch (error) {
         console.error("Error streaming response:", error);
       } finally {
-        set({ isStreaming: false });
+        set({ isStreaming: false, isLoadingMessageResponse: false });
       }
 
       if (currentSession?.messages?.length === 2) {
@@ -283,8 +311,9 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 
         await get().updateSessionTitle(currentSessionId, title);
       }
-    } finally {
+    } catch (error) {
       set({ isLoadingMessageResponse: false });
+      throw error;
     }
   },
   setSessions: (sessions: ChatSession[]) => {

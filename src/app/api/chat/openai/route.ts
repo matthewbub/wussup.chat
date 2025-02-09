@@ -3,6 +3,31 @@ import { createClient } from "@/lib/supabase-server";
 import OpenAI from "openai";
 import { formatContextMessages } from "@/lib/utils";
 
+async function checkModeration(openai: OpenAI, text: string) {
+  // check content moderation
+  const moderation = await openai.moderations.create({
+    model: "text-moderation-latest",
+    input: text,
+  });
+
+  const result = moderation.results[0];
+  console.log("moderation result", result);
+  if (result.flagged) {
+    // find categories that were flagged
+    const flaggedCategories = Object.entries(result.categories)
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      .filter(([_, flagged]) => flagged)
+      .map(([category]) => category);
+
+    return {
+      flagged: true,
+      categories: flaggedCategories,
+    };
+  }
+
+  return { flagged: false };
+}
+
 // post handler for openai chat stream
 export async function POST(request: Request) {
   // parse incoming request
@@ -68,6 +93,18 @@ export async function POST(request: Request) {
     const openai = new OpenAI({
       apiKey: process.env.OPENAI_API_KEY,
     });
+
+    // Add moderation check before creating chat completion
+    const moderationResult = await checkModeration(openai, message);
+    if (moderationResult.flagged) {
+      return NextResponse.json(
+        {
+          error: "Content flagged by moderation",
+          categories: moderationResult.categories,
+        },
+        { status: 400 }
+      );
+    }
 
     // create stream from openai
     const stream = await openai.chat.completions.create({
