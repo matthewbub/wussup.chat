@@ -27,6 +27,7 @@ interface ChatStore {
   setNewMessage: (message: string) => void;
   userId: string | null;
   setUserId: (userId: string) => void;
+  titleLoading: boolean;
 }
 
 export const useChatStore = create<ChatStore>((set, get) => ({
@@ -37,6 +38,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       user_id: get().userId,
       name: `Chat ${Object.values(get().sessions).flat().length + 1}`,
     };
+
     const { data, error } = await supabase
       .from("ChatBot_Sessions")
       .insert([newSession])
@@ -148,6 +150,14 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       // Update state with user message
       set((state) => {
         const allSessions = Object.values(state.sessions).flat();
+        const session = allSessions.find(
+          (session) => session.id === currentSessionId
+        );
+        if (!session) {
+          console.error("Session not found");
+          return state;
+        }
+
         const updatedSessions = allSessions.map((session) =>
           session.id === currentSessionId
             ? {
@@ -260,6 +270,19 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       } finally {
         set({ isStreaming: false });
       }
+
+      if (currentSession?.messages?.length === 2) {
+        const titleResponse = await fetch(`/api/chat/title-gen`, {
+          method: "POST",
+          body: JSON.stringify({
+            messages: currentSession?.messages,
+          }),
+        });
+        const titleData = await titleResponse.json();
+        const title = titleData.title;
+
+        await get().updateSessionTitle(currentSessionId, title);
+      }
     } finally {
       set({ isLoadingMessageResponse: false });
     }
@@ -268,7 +291,22 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     const strategy = new TimeframeGroupingStrategy();
     set({ sessions: strategy.group(sessions) });
   },
-  updateSessionTitle: (sessionId: string, title: string) =>
+  updateSessionTitle: async (sessionId: string, title: string) => {
+    set({ titleLoading: true });
+
+    console.log({
+      title,
+    });
+    const { error } = await supabase
+      .from("ChatBot_Sessions")
+      .update({ name: title })
+      .eq("id", sessionId);
+
+    if (error) {
+      console.error(error);
+      return;
+    }
+
     set((state) => {
       const allSessions = Object.values(state.sessions).flat();
       const updatedSessions = allSessions.map((session) =>
@@ -281,7 +319,9 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         sessionTitle:
           sessionId === state.currentSessionId ? title : state.sessionTitle,
       };
-    }),
+    });
+    set({ titleLoading: false });
+  },
   deleteSession: async (sessionId: string) => {
     const { error: messageError } = await supabase
       .from("ChatBot_Messages")
@@ -337,10 +377,6 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     const strategy = new TimeframeGroupingStrategy();
     const groupedSessions = strategy.group(data.sessions);
 
-    console.log({
-      groupedSessions: groupedSessions,
-    });
-
     set({
       sessions: groupedSessions,
       loading: false,
@@ -372,4 +408,5 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   setNewMessage: (message: string) => set({ newMessage: message }),
   userId: null,
   setUserId: (userId: string) => set({ userId }),
+  titleLoading: false,
 }));

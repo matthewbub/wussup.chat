@@ -20,6 +20,7 @@ import {
   type LucideIcon,
   Loader2,
   SkullIcon,
+  Book,
 } from "lucide-react";
 import {
   Sidebar,
@@ -84,26 +85,31 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
         <NavWorkspaces className="flex-1" />
 
-        {process.env.NEXT_PUBLIC_LOCAL_MODE && (
-          <>
-            <SidebarSeparator />
-            <NavSecondary
-              items={[
-                {
-                  title: "Support",
-                  url: "/support",
-                  icon: HelpCircle,
-                },
-                {
-                  title: "Legal",
-                  url: "https://ninembs.studio/legal/terms",
-                  icon: File,
-                  external: true,
-                },
-              ]}
-            />
-          </>
-        )}
+        <SidebarSeparator />
+        <NavSecondary
+          items={[
+            {
+              title: "Support",
+              url: "/support",
+              icon: HelpCircle,
+              hide: !!process.env.NEXT_PUBLIC_LOCAL_MODE,
+            },
+            {
+              title: "Legal",
+              url: "https://ninembs.studio/legal/terms",
+              icon: File,
+              external: true,
+              hide: !!process.env.NEXT_PUBLIC_LOCAL_MODE,
+            },
+            {
+              title: "Docs",
+              url: "/docs",
+              icon: Book,
+              external: true,
+            },
+          ]}
+        />
+
         {/* <NavUserV2 /> */}
       </SidebarContent>
       <SidebarFooter>
@@ -154,23 +160,31 @@ export function NavSecondary({
     icon: LucideIcon;
     badge?: React.ReactNode;
     external?: boolean;
+    hide?: boolean;
   }[];
 } & React.ComponentPropsWithoutRef<typeof SidebarGroup>) {
   return (
     <SidebarGroup {...props}>
       <SidebarGroupContent>
         <SidebarMenu>
-          {items.map((item) => (
-            <SidebarMenuItem key={item.title}>
-              <SidebarMenuButton asChild>
-                <a href={item.url} target={item.external ? "_blank" : "_self"}>
-                  <item.icon />
-                  <span>{item.title}</span>
-                </a>
-              </SidebarMenuButton>
-              {item.badge && <SidebarMenuBadge>{item.badge}</SidebarMenuBadge>}
-            </SidebarMenuItem>
-          ))}
+          {items
+            .filter((item) => !item.hide)
+            .map((item) => (
+              <SidebarMenuItem key={item.title}>
+                <SidebarMenuButton asChild>
+                  <a
+                    href={item.url}
+                    target={item.external ? "_blank" : "_self"}
+                  >
+                    <item.icon />
+                    <span>{item.title}</span>
+                  </a>
+                </SidebarMenuButton>
+                {item.badge && (
+                  <SidebarMenuBadge>{item.badge}</SidebarMenuBadge>
+                )}
+              </SidebarMenuItem>
+            ))}
         </SidebarMenu>
       </SidebarGroupContent>
     </SidebarGroup>
@@ -182,6 +196,9 @@ export function NavWorkspaces({ className }: { className?: string }) {
   useEffect(() => {
     fetchSessions();
   }, []);
+  console.log({
+    sessions,
+  });
 
   return (
     <SidebarGroup className={className}>
@@ -214,6 +231,10 @@ export function NavWorkspaces({ className }: { className?: string }) {
           {Object.keys(sessions).length > 0 &&
             Object.keys(sessions).map((key: string) => (
               <Collapsible key={key}>
+                {/* {console.log({
+                  key,
+                  sessions,
+                })} */}
                 <SidebarMenuItem>
                   <CollapsibleTrigger asChild>
                     <div className="flex items-center gap-2 group">
