@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Newsreader } from "next/font/google";
+import { Pacifico } from "next/font/google";
 import { Background } from "@/components/ui/Background";
 import "../styles/globals.css";
 import "katex/dist/katex.min.css";
@@ -22,9 +23,15 @@ const newsreader = Newsreader({
   weight: ["400", "700"],
 });
 
+const title = Pacifico({
+  variable: "--font-title",
+  subsets: ["latin"],
+  weight: ["400"],
+});
+
 export const metadata: Metadata = {
   title: "Wussup Chat",
-  description: "Universal AI Chat",
+  description: "Unified AI assistant",
 };
 
 export default function RootLayout({
@@ -35,7 +42,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full dark">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${newsreader.variable} antialiased h-full`}
+        className={`${geistSans.variable} ${geistMono.variable} ${newsreader.variable} ${title.variable} antialiased h-full`}
       >
         <PostHogProvider>
           <Background>{children}</Background>

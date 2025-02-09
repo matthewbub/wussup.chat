@@ -12,6 +12,7 @@ export default {
     extend: {
       fontFamily: {
         newsreader: ["var(--font-newsreader)"],
+        title: ["var(--font-title)"],
       },
       colors: {
         background: "hsl(var(--background))",
