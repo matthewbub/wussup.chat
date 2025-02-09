@@ -5,11 +5,8 @@ import typography from "@tailwindcss/typography";
 export default {
   darkMode: ["class", ".dark"],
   content: [
-    "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
-    "./src/components/Marketing/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
-    "./src/app/chat/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
     extend: {
