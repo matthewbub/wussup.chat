@@ -8,7 +8,8 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Github, Mail } from "lucide-react";
+import { Mail } from "lucide-react";
+import GithubMarkWhite from "./ui/icons/GithubMarkWhite";
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -99,7 +100,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
         </div>
 
         <Button variant="outline" onClick={handleGithubAuth} className="w-full">
-          <Github className="mr-2 h-4 w-4" />
+          <GithubMarkWhite />
           Github
         </Button>
 

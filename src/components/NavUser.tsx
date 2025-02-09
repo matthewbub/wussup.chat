@@ -124,7 +124,7 @@ export function NavUser() {
             </DropdownMenuTrigger>
             <DropdownMenuContent
               className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
-              side={isMobile ? "bottom" : "right"}
+              side={isMobile ? "bottom" : "left"}
               align="start"
               sideOffset={4}
             >
@@ -155,7 +155,7 @@ export function NavUser() {
                       ? "Manage Subscription"
                       : "Upgrade to Pro"}
                   </DropdownMenuItem>
-                  <DropdownMenuSeparator />
+                  {/* <DropdownMenuSeparator />
                   <DropdownMenuGroup>
                     <Link href="/legal">
                       <DropdownMenuItem>
@@ -175,7 +175,7 @@ export function NavUser() {
                         Settings
                       </DropdownMenuItem>
                     </Link>
-                  </DropdownMenuGroup>
+                  </DropdownMenuGroup> */}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleLogout}>
                     <LogOut />
