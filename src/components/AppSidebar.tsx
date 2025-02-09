@@ -190,7 +190,7 @@ export function NavSecondary({
 }
 
 export function NavWorkspaces({ className }: { className?: string }) {
-  const { sessions, loading, guestUser } = useChatStore();
+  const { sessions, loading } = useChatStore();
   return (
     <SidebarGroup className={className}>
       <SidebarGroupLabel>Chat History</SidebarGroupLabel>
