@@ -28,7 +28,6 @@ interface ChatStore {
   userId: string | null;
   setUserId: (userId: string) => void;
   titleLoading: boolean;
-  guestUser: boolean;
 }
 
 export const useChatStore = create<ChatStore>((set, get) => ({
@@ -372,17 +371,16 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     const response = await fetch(`/api/chat`);
     const responseData = await response.json();
     if (responseData.code === "user_id_required") {
-      set({ guestUser: true, loading: false });
+      set({ loading: false });
       return;
     }
 
-    const data = await response.json();
-    const currentSession = data.sessions.find(
+    const currentSession = responseData.sessions.find(
       (s: ChatSession) => s.id === get().currentSessionId
     );
 
     const strategy = new TimeframeGroupingStrategy();
-    const groupedSessions = strategy.group(data.sessions);
+    const groupedSessions = strategy.group(responseData.sessions);
 
     set({
       sessions: groupedSessions,
@@ -416,5 +414,4 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   userId: null,
   setUserId: (userId: string) => set({ userId }),
   titleLoading: false,
-  guestUser: false,
 }));

@@ -208,17 +208,16 @@ export function NavWorkspaces({ className }: { className?: string }) {
             </SidebarMenuItem>
           )}
           {/* If there are no sessions, show the create chat button */}
-          {(!loading && Object.keys(sessions).length == 0) ||
-            (guestUser && (
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild disabled>
-                  <div className="flex items-center gap-2">
-                    <SkullIcon />
-                    <span>No chats yet</span>
-                  </div>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            ))}
+          {!loading && Object.keys(sessions).length == 0 && (
+            <SidebarMenuItem>
+              <SidebarMenuButton asChild disabled>
+                <div className="flex items-center gap-2">
+                  <SkullIcon />
+                  <span>No chats yet</span>
+                </div>
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          )}
 
           {/* If there are sessions, show the collapsible menu */}
           {Object.keys(sessions).length > 0 &&
