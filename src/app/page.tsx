@@ -31,7 +31,7 @@ const Chat: React.FC = () => {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {[
-                "Write a poem about cats",
+                "Write a song about cats",
                 "Suggest names for my business",
                 "Briefly summarize gulliver's travels",
                 "Suggest dinner ideas for 2 people",
