@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase-server";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import {
+  GoogleGenerativeAI,
+  HarmCategory,
+  HarmBlockThreshold,
+} from "@google/generative-ai";
 import { formatContextMessages } from "@/lib/utils";
 
 // add type for gemini messages
@@ -11,141 +15,177 @@ type GeminiMessage = {
 
 // post handler for google ai chat stream using gemini (all comments in lowercase)
 export async function POST(request: Request) {
-  // parse incoming request
-  const {
-    message,
-    history,
-    sessionId,
-    userMessageId,
-    botMessageId,
-    userCreatedAt,
-    botCreatedAt,
-    // TODO: Validate model
-    model,
-  } = await request.json();
-  const supabase = await createClient();
-
-  // get current user from request context
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  const userId = user?.id;
-
-  if (!userId) {
-    return NextResponse.json({ error: "user id is required" }, { status: 400 });
-  }
-
-  // insert user message and increment message count concurrently
-  const [{ error: userError }, { error: updateError }] = await Promise.all([
-    supabase.from("ChatBot_Messages").insert({
-      id: userMessageId,
-      chat_session_id: sessionId,
-      content: message,
-      user_id: userId,
-      is_user: true,
-      model: null,
-      created_at: userCreatedAt,
-    }),
-    supabase.rpc("increment_message_count", {
-      incoming_uid: userId,
-      increment_by: 2,
-      // todo: detect which model was used and enforce limits
-    }),
-  ]);
-
-  if (updateError || userError) {
-    console.error("[chat api error]", updateError || userError);
-    // continue processing even if count update fails
-  }
-
-  // filter out empty messages and deduplicate
-  const contextMessages = formatContextMessages(history);
-  // add the new message to the context
-  contextMessages.push({ role: "user", content: message });
-
   try {
+    // parse incoming request
+    const {
+      message,
+      history,
+      sessionId,
+      userMessageId,
+      botMessageId,
+      userCreatedAt,
+      botCreatedAt,
+      model,
+    } = await request.json();
+    const supabase = await createClient();
+
+    // get current user from request context
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    const userId = user?.id;
+
+    if (!userId) {
+      return NextResponse.json(
+        { error: "user id is required" },
+        { status: 400 }
+      );
+    }
+
     // validate model name
     if (!model || typeof model !== "string") {
-      throw new Error("invalid model parameter");
+      return NextResponse.json(
+        { error: "invalid model parameter" },
+        { status: 400 }
+      );
     }
 
     // initialize google ai client using gemini api key
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
-      throw new Error("gemini api key not configured");
+      return NextResponse.json(
+        { error: "gemini api key not configured" },
+        { status: 500 }
+      );
     }
+
+    // handle database operations
+    const [{ error: userError }, { error: updateError }] = await Promise.all([
+      supabase.from("ChatBot_Messages").insert({
+        id: userMessageId,
+        chat_session_id: sessionId,
+        content: message,
+        user_id: userId,
+        is_user: true,
+        model: null,
+        created_at: userCreatedAt,
+      }),
+      supabase.rpc("increment_message_count", {
+        incoming_uid: userId,
+        increment_by: 2,
+      }),
+    ]);
+
+    if (userError) {
+      console.error("[chat api error]", userError);
+      return NextResponse.json(
+        { error: "Failed to save user message" },
+        { status: 500 }
+      );
+    }
+    if (updateError) {
+      console.error("[chat api error]", updateError);
+      // continue processing even if count update fails
+    }
+
     const genAI = new GoogleGenerativeAI(apiKey);
+    const gaModel = genAI.getGenerativeModel({
+      model,
+      safetySettings: [
+        {
+          category: HarmCategory.HARM_CATEGORY_HARASSMENT,
+          threshold: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE,
+        },
+        {
+          category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
+          threshold: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE,
+        },
+        {
+          category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
+          threshold: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE,
+        },
+        {
+          category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+          threshold: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE,
+        },
+      ],
+    });
 
-    // get generative model for gemini
-    const gaModel = genAI.getGenerativeModel({ model });
+    // perform initial safety check
+    const result = await gaModel.generateContent(message);
+    if (result.response.promptFeedback?.blockReason || !result.response.text) {
+      return NextResponse.json(
+        {
+          error: "Content flagged by moderation",
+          categories: result.response.promptFeedback?.blockReason || "UNKNOWN",
+          code: "SAFETY_BLOCK",
+        },
+        { status: 400 }
+      );
+    }
 
-    // convert context messages to google's gemini chat format with type safety
+    // prepare chat context
+    const contextMessages = formatContextMessages(history);
+    contextMessages.push({ role: "user", content: message });
     const geminiMessages: GeminiMessage[] = contextMessages.map((msg) => ({
       role: msg.role === "assistant" ? "model" : "user",
       parts: [{ text: msg.content }],
     }));
 
-    // start chat with history context
+    // start chat and create stream
     const chat = gaModel.startChat({
       history: geminiMessages,
       generationConfig: {
-        maxOutputTokens: 2048,
         temperature: 0.7,
       },
     });
 
-    // send the new message and get the stream from google ai
-    const result = await chat.sendMessageStream(message);
+    const resultStream = await chat.sendMessageStream(message);
 
-    // create readable stream for response
-    const responseStream = new ReadableStream({
-      async start(controller) {
-        // accumulate complete bot message for later database insertion
-        let completeBotMessage = "";
-        try {
-          // iterate over each chunk from the google ai stream
-          for await (const chunk of result.stream) {
-            const chunkText = chunk.text();
-            if (chunkText) {
-              completeBotMessage += chunkText;
-              // format response to match expected client format
-              const response = {
-                choices: [
-                  {
-                    delta: {
-                      content: chunkText,
-                    },
-                  },
-                ],
-              };
-              controller.enqueue(`data: ${JSON.stringify(response)}\n\n`);
-            }
-          }
-          // insert complete bot message to database
+    // create response stream
+    return new Response(
+      new ReadableStream({
+        async start(controller) {
+          let completeBotMessage = "";
           try {
+            for await (const chunk of resultStream.stream) {
+              const chunkText = chunk.text();
+              if (chunkText) {
+                completeBotMessage += chunkText;
+                controller.enqueue(
+                  `data: ${JSON.stringify({
+                    choices: [{ delta: { content: chunkText } }],
+                  })}\n\n`
+                );
+              }
+            }
+
+            // save complete bot message
             await supabase.from("ChatBot_Messages").insert({
               id: botMessageId,
               chat_session_id: sessionId,
               content: completeBotMessage,
               user_id: userId,
               is_user: false,
-              model: model as string,
+              model,
               created_at: botCreatedAt,
             });
-          } catch (error) {
-            console.error("error updating bot message:", error);
-          }
-          controller.close();
-        } catch (error) {
-          console.error("stream error:", error);
-          controller.error(error);
-        }
-      },
-    });
 
-    return new Response(responseStream, {
-      headers: { "Content-Type": "text/event-stream" },
-    });
+            controller.close();
+          } catch (error) {
+            console.error("[stream error]", error);
+            controller.error(error);
+          }
+        },
+      }),
+      {
+        headers: {
+          "Content-Type": "text/event-stream",
+          Connection: "keep-alive",
+          "Cache-Control": "no-cache",
+        },
+      }
+    );
   } catch (error) {
     console.error("[gemini api error]", error);
     return NextResponse.json(
