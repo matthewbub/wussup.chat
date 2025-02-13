@@ -119,7 +119,8 @@ export function ChatLayout({
 }
 
 function ChatItemDropdown({ session }: { session: ChatSession }) {
-  const { deleteSession, updateSessionTitle } = useChatStore();
+  const { deleteSession, updateSessionTitle, setCurrentSession } =
+    useChatStore();
   const router = useRouter();
 
   const handleRenameChat = async () => {
@@ -140,8 +141,8 @@ function ChatItemDropdown({ session }: { session: ChatSession }) {
 
   const handleDeleteChat = async () => {
     if (window.confirm("Are you sure you want to delete this chat?")) {
-      await deleteSession(session.id);
       router.push("/");
+      await deleteSession(session.id);
     }
   };
 

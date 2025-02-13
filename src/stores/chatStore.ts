@@ -10,7 +10,7 @@ interface ChatStore {
   sessions: Record<string, ChatSession[]>; // { [x]: [ { chatSession }, { chatSession } ]}
   currentSessionId: string | null;
   addSession: () => Promise<string | null>;
-  setCurrentSession: (id: string) => void;
+  setCurrentSession: (id: string | null) => void;
   addMessage: (content: string, model: string) => void;
   setSessions: (sessions: ChatSession[]) => void;
   updateSessionTitle: (sessionId: string, title: string) => void;
@@ -127,6 +127,10 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   },
   setCurrentSession: (id) => {
     set({ currentSessionId: id });
+    if (!id) {
+      set({ sessionTitle: "Untitled Chat" });
+      return;
+    }
     const session = Object.values(get().sessions)
       .flat()
       .find((session) => session.id === id);
