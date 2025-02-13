@@ -222,11 +222,7 @@ export function NavWorkspaces({ className }: { className?: string }) {
           {/* If there are sessions, show the collapsible menu */}
           {Object.keys(sessions).length > 0 &&
             Object.keys(sessions).map((key: string) => (
-              <Collapsible key={key}>
-                {/* {console.log({
-                  key,
-                  sessions,
-                })} */}
+              <Collapsible key={key} defaultOpen={key === "Today"}>
                 <SidebarMenuItem>
                   <CollapsibleTrigger asChild>
                     <div className="flex items-center gap-2 group">
