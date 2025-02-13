@@ -92,9 +92,16 @@ export default function Page() {
 }
 
 function PageContent() {
-  const { sessions } = useChatStore();
+  const { sessions, setCurrentSession } = useChatStore();
   const params = useSearchParams();
   const sessionId = params.get("session");
+
+  // Add this effect to sync URL session with store
+  useEffect(() => {
+    if (sessionId) {
+      setCurrentSession(sessionId);
+    }
+  }, [sessionId, setCurrentSession]);
 
   const currentSession = Object.values(sessions)
     .flat()
