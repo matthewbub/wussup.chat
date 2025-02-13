@@ -356,26 +356,17 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     set({ titleLoading: false });
   },
   deleteSession: async (sessionId: string) => {
-    const { error: messageError } = await supabase
-      .from("ChatBot_Messages")
-      .delete()
-      .eq("chat_session_id", sessionId);
+    const response = await fetch(`/api/chat/delete?sessionId=${sessionId}`, {
+      method: "DELETE",
+    });
 
-    if (messageError) {
-      console.error(messageError);
-      return;
+    if (!response.ok) {
+      const error = await response.json();
+      console.error("Failed to delete session:", error);
+      throw new Error(error.message || "Failed to delete session");
     }
 
-    const { error } = await supabase
-      .from("ChatBot_Sessions")
-      .delete()
-      .eq("id", sessionId);
-
-    if (error) {
-      console.error(error);
-      return;
-    }
-
+    // Update local state
     set((state) => {
       const allSessions = Object.values(state.sessions).flat();
       const filteredSessions = allSessions.filter(
