@@ -1,12 +1,12 @@
 export const subscriptionService = {
   // check if user has active subscription via api endpoint
-  async hasActiveSubscription(userId: string): Promise<{
+  async hasActiveSubscription(): Promise<{
     active: boolean;
     expiresAt: Date | null;
     status: string | null;
   }> {
     try {
-      const response = await fetch("/api/subscription/check?userId=" + userId);
+      const response = await fetch("/api/subscription/check");
       if (!response.ok) {
         throw new Error("Failed to check subscription");
       }

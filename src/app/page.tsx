@@ -10,6 +10,8 @@ import { ChatSession } from "@/types/chat";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import useNavUserStore from "@/stores/useNavUserStore";
+import { useSubscriptionStore } from "@/stores/useSubscription";
+import { subscriptionService } from "@/services/subscription";
 
 const Chat: React.FC = () => {
   const { currentSessionId, setNewMessage } = useChatStore();
@@ -60,6 +62,8 @@ const Chat: React.FC = () => {
 function Lifecycle({ children }: { children: React.ReactNode }) {
   const { setUserId, fetchSessions } = useChatStore();
   const { openAuth } = useNavUserStore();
+  const { setSubscription, setLoading, setError } = useSubscriptionStore();
+
   useEffect(() => {
     async function setUserInStore() {
       const supabase = await createClient();
@@ -72,6 +76,24 @@ function Lifecycle({ children }: { children: React.ReactNode }) {
         return;
       }
       setUserId(user.id);
+
+      // Check subscription status
+      setLoading(true);
+      try {
+        const subscription = await subscriptionService.hasActiveSubscription();
+        setSubscription({
+          isSubscribed: true,
+          ...subscription,
+        });
+      } catch (error) {
+        setError(
+          error instanceof Error
+            ? error.message
+            : "Failed to check subscription"
+        );
+      } finally {
+        setLoading(false);
+      }
     }
     setUserInStore();
   }, []);
