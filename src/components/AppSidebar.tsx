@@ -42,6 +42,7 @@ import {
   CollapsibleTrigger,
   Collapsible,
 } from "@/components/ui/collapsible";
+import { ChatSession } from "@/types/chat";
 
 const pacifico = Pacifico({
   subsets: ["latin"],
@@ -190,7 +191,13 @@ export function NavSecondary({
 }
 
 export function NavWorkspaces({ className }: { className?: string }) {
-  const { sessions, loading } = useChatStore();
+  const { sessions, loading, currentSessionId } = useChatStore();
+
+  // Helper function to check if a group contains the current session
+  const groupContainsCurrentSession = (sessions: ChatSession[]) => {
+    return sessions.some((session) => session.id === currentSessionId);
+  };
+
   return (
     <SidebarGroup className={className}>
       <SidebarGroupLabel>Chat History</SidebarGroupLabel>
@@ -222,7 +229,12 @@ export function NavWorkspaces({ className }: { className?: string }) {
           {/* If there are sessions, show the collapsible menu */}
           {Object.keys(sessions).length > 0 &&
             Object.keys(sessions).map((key: string) => (
-              <Collapsible key={key} defaultOpen={key === "Today"}>
+              <Collapsible
+                key={key}
+                defaultOpen={
+                  key === "Today" || groupContainsCurrentSession(sessions[key])
+                }
+              >
                 <SidebarMenuItem>
                   <CollapsibleTrigger asChild>
                     <div className="flex items-center gap-2 group">
@@ -237,9 +249,11 @@ export function NavWorkspaces({ className }: { className?: string }) {
                   <CollapsibleContent>
                     <SidebarMenuSub>
                       {sessions[key].map((session) => (
-                        // <ChatHistoryItem key={session.id} session={session} />
                         <SidebarMenuSubItem key={session.id}>
-                          <SidebarMenuSubButton asChild>
+                          <SidebarMenuSubButton
+                            asChild
+                            isActive={session.id === currentSessionId}
+                          >
                             <Link href={`/?session=${session.id}`}>
                               <span>{session.name}</span>
                             </Link>
