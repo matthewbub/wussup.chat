@@ -119,8 +119,7 @@ export function ChatLayout({
 }
 
 function ChatItemDropdown({ session }: { session: ChatSession }) {
-  const { deleteSession, updateSessionTitle, setCurrentSession } =
-    useChatStore();
+  const { deleteSession, updateSessionTitle } = useChatStore();
   const router = useRouter();
 
   const handleRenameChat = async () => {

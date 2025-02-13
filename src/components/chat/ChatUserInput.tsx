@@ -53,10 +53,12 @@ export const ChatUserInput: React.FC = () => {
         setNewMessage("");
       }
       // @eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Handle moderation error
-      if (error?.message?.includes("Content flagged")) {
-        const categories = error.categories?.join(", ");
+      if (error instanceof Error && error.message.includes("Content flagged")) {
+        const categories = (
+          error as unknown as { categories?: string[] }
+        ).categories?.join(", ");
         toast({
           title: "Message Blocked",
           description: `This message was flagged for potentially harmful content${categories ? `: ${categories}` : ""}. Please revise and try again.`,
