@@ -76,10 +76,8 @@ export function DashboardLayout({
   );
 }
 
-export function ChatLayout({
-  children,
-  session,
-}: DashboardLayoutProps & { session: ChatSession }) {
+export function ChatLayout({ children }: DashboardLayoutProps) {
+  const { deleteSession, updateSessionTitle, currentSession } = useChatStore();
   return (
     <SidebarProvider>
       <AppSidebar />
@@ -95,12 +93,16 @@ export function ChatLayout({
                     <Link href="/">Chat</Link>
                   </BreadcrumbPage>
                 </BreadcrumbItem>
-                {session && (
+                {currentSession?.id && (
                   <>
                     <BreadcrumbSeparator />
                     <BreadcrumbItem>
                       <BreadcrumbPage className="line-clamp-1">
-                        <ChatItemDropdown session={session} />
+                        <ChatItemDropdown
+                          session={currentSession}
+                          onRename={updateSessionTitle}
+                          onDelete={deleteSession}
+                        />
                       </BreadcrumbPage>
                     </BreadcrumbItem>
                   </>
@@ -118,14 +120,25 @@ export function ChatLayout({
   );
 }
 
-function ChatItemDropdown({ session }: { session: ChatSession }) {
-  const { deleteSession, updateSessionTitle } = useChatStore();
+function ChatItemDropdown({
+  session,
+  onRename,
+  onDelete,
+}: {
+  session: ChatSession;
+  onRename: (sessionId: string, title: string) => void;
+  onDelete: (sessionId: string) => void;
+}) {
   const router = useRouter();
+
+  if (!session) {
+    return null;
+  }
 
   const handleRenameChat = async () => {
     const newName = window.prompt("Enter new name for chat:", session.name);
     if (newName && newName !== session.name) {
-      await updateSessionTitle(session.id, newName);
+      await onRename(session.id, newName);
     }
   };
 
@@ -141,7 +154,7 @@ function ChatItemDropdown({ session }: { session: ChatSession }) {
   const handleDeleteChat = async () => {
     if (window.confirm("Are you sure you want to delete this chat?")) {
       router.push("/");
-      await deleteSession(session.id);
+      await onDelete(session.id);
     }
   };
 

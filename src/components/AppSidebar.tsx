@@ -104,16 +104,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               external: true,
               hide: !!process.env.NEXT_PUBLIC_LOCAL_MODE,
             },
-            // {
-            //   title: "Docs",
-            //   url: "/docs",
-            //   icon: Book,
-            //   external: true,
-            // },
           ]}
         />
-
-        {/* <NavUserV2 /> */}
       </SidebarContent>
       <SidebarFooter>
         <Link
@@ -272,7 +264,7 @@ export function NavWorkspaces({ className }: { className?: string }) {
                             asChild
                             isActive={session.id === currentSessionId}
                           >
-                            <Link href={`/~/${session.id}`}>
+                            <Link href={`/~/chat?session=${session.id}`}>
                               <span>{session.name}</span>
                             </Link>
                           </SidebarMenuSubButton>

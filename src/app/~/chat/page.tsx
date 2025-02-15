@@ -10,14 +10,29 @@ import { AVAILABLE_MODELS } from "@/constants/models";
 import { Message } from "./_components/Message";
 import useNavUserStore from "@/stores/useNavUserStore";
 import { useChatStore } from "@/stores/chatStore";
-import { useParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 
-export default function Home() {
-  const { session } = useParams();
+const ForceAuth = ({ children }: { children: React.ReactNode }) => {
+  const { user, loading } = useChatStore();
+  const { openAuth } = useNavUserStore();
+
+  useEffect(() => {
+    if (!user && !loading) {
+      openAuth();
+      return;
+    }
+  }, [user, loading]);
+
+  return children;
+};
+
+function App() {
+  const searchParams = useSearchParams();
+  const initialSession = searchParams.get("session");
+
   const defaultModel = AVAILABLE_MODELS[0];
   const [model, setModel] = useState(defaultModel.id);
-  const { init, user, currentSession } = useChatStore();
-  const { openAuth } = useNavUserStore();
+  const { init, user, currentSession, updateCurrentSession } = useChatStore();
 
   const [loadingInitialMessages, setLoadingInitialMessages] = useState(true);
   const [initialMessages, setInitialMessages] = useState<AiMessage[]>([]);
@@ -25,11 +40,10 @@ export default function Home() {
   useEffect(() => {
     // init app &&
     // fetch session, if there is a session that actually exisits with the id,
-    init(session as string);
+    init(initialSession as string);
   }, []);
 
   useEffect(() => {
-    console.log("currentSession", currentSession?.messages);
     if (currentSession) {
       setInitialMessages(
         currentSession.messages.map((message) => ({
@@ -42,13 +56,12 @@ export default function Home() {
     }
   }, [currentSession]);
 
-  if (!user) {
-    // force auth modal to stay open til user is logged in
-    openAuth();
-    return null;
-  }
-
-  console.log("initialMessages", initialMessages, currentSession);
+  useEffect(() => {
+    const sessionFromUrl = searchParams.get("session");
+    if (sessionFromUrl) {
+      updateCurrentSession(sessionFromUrl);
+    }
+  }, [searchParams]);
 
   const {
     messages,
@@ -139,5 +152,13 @@ export default function Home() {
         </form>
       </div>
     </ChatLayout>
+  );
+}
+
+export default function Page() {
+  return (
+    <ForceAuth>
+      <App />
+    </ForceAuth>
   );
 }

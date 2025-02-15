@@ -36,6 +36,7 @@ interface ChatStore {
     subscriptionStatus: string;
   };
   currentSession: ChatSession | null;
+  updateCurrentSession: (sessionId: string) => void;
 }
 
 export const useChatStore = create<ChatStore>((set, get) => ({
@@ -481,4 +482,10 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     subscriptionStatus: "",
   },
   currentSession: null,
+  updateCurrentSession: (sessionId: string) =>
+    set((state) => {
+      const allSessions = Object.values(state.sessions).flat();
+      const session = allSessions.find((s) => s.id === sessionId);
+      return { currentSession: session || null };
+    }),
 }));
