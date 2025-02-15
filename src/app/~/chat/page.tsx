@@ -92,73 +92,73 @@ function App() {
   });
 
   return (
-    <ChatLayout>
-      <div className="flex flex-col h-[calc(100vh-100px)]">
-        <div className="space-y-4 mb-6 flex-1 overflow-y-scroll p-4">
-          {messages.map((message, index) => (
-            <Message key={index} message={message} />
-          ))}
-        </div>
-
-        <form
-          onSubmit={handleSubmit}
-          className="flex flex-col gap-2 rounded-lg bg-secondary p-4"
-        >
-          <Textarea
-            value={input}
-            onChange={handleInputChange}
-            placeholder="Type your message..."
-          />
-
-          <div className="flex justify-between gap-2">
-            <LanguageModalSelector
-              model={model}
-              onModelChange={setModel}
-              isSubscribed={user?.subscriptionStatus === "active"}
-            />
-            <div className="flex gap-2">
-              {(status === "submitted" || status === "streaming") && (
-                <Button
-                  type="button"
-                  variant="destructive"
-                  onClick={() => stop()}
-                  className="animate-pulse"
-                  disabled={!(status === "streaming" || status === "submitted")}
-                >
-                  Stop
-                </Button>
-              )}
-
-              {error && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => reload()}
-                  disabled={!(status === "ready" || status === "error")}
-                >
-                  Retry
-                </Button>
-              )}
-
-              <Button
-                type="submit"
-                className="self-end w-fit"
-                disabled={loadingInitialMessages}
-              >
-                Send
-              </Button>
-            </div>
-          </div>
-        </form>
+    <div className="flex flex-col h-[calc(100vh-100px)]">
+      <div className="space-y-4 mb-6 flex-1 overflow-y-scroll p-4">
+        {messages.map((message, index) => (
+          <Message key={index} message={message} />
+        ))}
       </div>
-    </ChatLayout>
+
+      <form
+        onSubmit={handleSubmit}
+        className="flex flex-col gap-2 rounded-lg bg-secondary p-4"
+      >
+        <Textarea
+          value={input}
+          onChange={handleInputChange}
+          placeholder="Type your message..."
+        />
+
+        <div className="flex justify-between gap-2">
+          <LanguageModalSelector
+            model={model}
+            onModelChange={setModel}
+            isSubscribed={user?.subscriptionStatus === "active"}
+          />
+          <div className="flex gap-2">
+            {(status === "submitted" || status === "streaming") && (
+              <Button
+                type="button"
+                variant="destructive"
+                onClick={() => stop()}
+                className="animate-pulse"
+                disabled={!(status === "streaming" || status === "submitted")}
+              >
+                Stop
+              </Button>
+            )}
+
+            {error && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => reload()}
+                disabled={!(status === "ready" || status === "error")}
+              >
+                Retry
+              </Button>
+            )}
+
+            <Button
+              type="submit"
+              className="self-end w-fit"
+              disabled={loadingInitialMessages}
+            >
+              Send
+            </Button>
+          </div>
+        </div>
+      </form>
+    </div>
   );
 }
 
 export default function Page() {
   return (
     <ForceAuth>
-      <App />
+      <ChatLayout>
+        <App />
+      </ChatLayout>
     </ForceAuth>
   );
 }
