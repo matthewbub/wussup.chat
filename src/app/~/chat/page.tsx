@@ -52,12 +52,14 @@ function App() {
           id: message.id,
         }))
       );
-      setLoadingInitialMessages(false);
     }
+    setLoadingInitialMessages(false);
   }, [currentSession]);
 
+  // update chat session if the URL changes
   useEffect(() => {
     const sessionFromUrl = searchParams.get("session");
+    console.log("Session from url", sessionFromUrl);
     if (sessionFromUrl) {
       updateCurrentSession(sessionFromUrl);
     }
@@ -72,13 +74,31 @@ function App() {
     stop,
     error,
     reload,
+    setInput,
   } = useChat({
     api: "/api/v1/chat",
     initialMessages: initialMessages as AiMessage[] | undefined,
-    onFinish: (message, { usage, finishReason }) => {
+    onFinish: async (message, { usage, finishReason }) => {
       console.log("Finished streaming message:", message);
       console.log("Token usage:", usage);
       console.log("Finish reason:", finishReason);
+
+      // Shoudln't this be on the server to begin w
+      const response = await fetch("/api/v1/info", {
+        method: "POST",
+        body: JSON.stringify({
+          created_at: message.createdAt,
+          content: message.content,
+          role: message.role,
+          message_id: message.id,
+          session_id: currentSession?.id,
+          prompt_tokens: usage?.promptTokens,
+          completion_tokens: usage?.completionTokens,
+          total_tokens: usage?.totalTokens,
+        }),
+      });
+      const data = await response.json();
+      console.log("Response:", data);
     },
     onError: (error) => {
       console.error("An error occurred:", error);
@@ -91,6 +111,17 @@ function App() {
     },
   });
 
+  const componentSubmitHandler = (ev: React.FormEvent<HTMLFormElement>) => {
+    ev.preventDefault();
+    console.log("Current session id", currentSession?.id);
+    handleSubmit(ev, {
+      data: {
+        session_id: currentSession?.id,
+      },
+    });
+    setInput("");
+  };
+
   return (
     <div className="flex flex-col h-[calc(100vh-100px)]">
       <div className="space-y-4 mb-6 flex-1 overflow-y-scroll p-4">
@@ -100,7 +131,7 @@ function App() {
       </div>
 
       <form
-        onSubmit={handleSubmit}
+        onSubmit={componentSubmitHandler}
         className="flex flex-col gap-2 rounded-lg bg-secondary p-4"
       >
         <Textarea

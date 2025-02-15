@@ -485,7 +485,26 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   updateCurrentSession: (sessionId: string) =>
     set((state) => {
       const allSessions = Object.values(state.sessions).flat();
-      const session = allSessions.find((s) => s.id === sessionId);
-      return { currentSession: session || null };
+      const session = allSessions.find((s) => s.id === sessionId) as
+        | ChatSession
+        | undefined;
+
+      // there's a high chance the session isn't going to be found
+      // in this case, we should create a new session
+      if (!session) {
+        return {
+          currentSession: {
+            id: sessionId,
+            name: "Untitled Chat",
+            messages: [],
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            user_id: state.userId || "",
+          },
+        };
+      }
+      return {
+        currentSession: session,
+      };
     }),
 }));

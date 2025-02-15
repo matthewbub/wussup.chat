@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/sidebar";
 import { useChatStore } from "@/stores/chatStore";
 import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Pacifico } from "next/font/google";
 import clsx from "clsx";
 import {
@@ -54,22 +54,18 @@ const pacifico = Pacifico({
 type OpenGroups = Record<string, boolean>;
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { addSession } = useChatStore();
   const router = useRouter();
-
   const handleCreateChat = async () => {
-    const sessionId = await addSession();
+    const sessionId = crypto.randomUUID();
     if (sessionId) {
-      router.push(`/?session=${sessionId}`);
+      router.push(`/~/chat?session=${sessionId}`);
     }
   };
 
   return (
     <Sidebar className="border-r-0" {...props}>
       <SidebarHeader>
-        <h1
-          className={clsx("font-title text-2xl px-2 pt-4 font-bold")}
-        >
+        <h1 className={clsx("font-title text-2xl px-2 pt-4 font-bold")}>
           Wussup
         </h1>
       </SidebarHeader>
@@ -160,25 +156,13 @@ export function NavSecondary({
 }
 
 export function NavWorkspaces({ className }: { className?: string }) {
-  const { sessions, loading, currentSessionId } = useChatStore();
+  const { sessions, loading } = useChatStore();
   const [openGroups, setOpenGroups] = React.useState<OpenGroups>({});
-
-  // Load saved state on mount
-  useEffect(() => {
-    const savedState = localStorage.getItem("sidebarOpenGroups");
-    if (savedState) {
-      setOpenGroups(JSON.parse(savedState));
-    }
-  }, []);
-
-  // Save state when it changes
-  useEffect(() => {
-    localStorage.setItem("sidebarOpenGroups", JSON.stringify(openGroups));
-  }, [openGroups]);
-
+  const searchParams = useSearchParams();
+  const initialSession = searchParams.get("session");
   // Helper function to check if a group contains the current session
   const groupContainsCurrentSession = (sessions: ChatSession[]) => {
-    return sessions.some((session) => session.id === currentSessionId);
+    return sessions.some((session) => session.id === initialSession);
   };
 
   // Handle group open/close
@@ -235,7 +219,7 @@ export function NavWorkspaces({ className }: { className?: string }) {
                         <SidebarMenuSubItem key={session.id}>
                           <SidebarMenuSubButton
                             asChild
-                            isActive={session.id === currentSessionId}
+                            isActive={session.id === initialSession}
                           >
                             <Link href={`/~/chat?session=${session.id}`}>
                               <span>{session.name}</span>
