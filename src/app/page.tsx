@@ -1,3 +1,4 @@
+// LEGACY PAGE
 "use client";
 
 import { useChatStore } from "@/stores/chatStore";
@@ -12,6 +13,7 @@ import { Suspense } from "react";
 import useNavUserStore from "@/stores/useNavUserStore";
 import { useSubscriptionStore } from "@/stores/useSubscription";
 import { subscriptionService } from "@/services/subscription";
+import { useChat } from "@ai-sdk/react";
 
 const Chat: React.FC = () => {
   const { currentSessionId, setNewMessage } = useChatStore();

@@ -18,6 +18,7 @@ interface ChatStore {
   setSessionTitle: (sessionId: string) => void;
   sessionTitle: string;
   fetchSessions: () => Promise<void>;
+  init: (sessionId: string) => Promise<void>;
   loading: boolean;
   isLoadingMessageResponse: boolean;
   isStreaming: boolean;
@@ -28,6 +29,13 @@ interface ChatStore {
   userId: string | null;
   setUserId: (userId: string) => void;
   titleLoading: boolean;
+  user: {
+    email: string;
+    message_count: number;
+    stripeSubscriptionId: string;
+    subscriptionStatus: string;
+  };
+  currentSession: ChatSession | null;
 }
 
 export const useChatStore = create<ChatStore>((set, get) => ({
@@ -390,6 +398,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   loading: false,
   isLoadingMessageResponse: false,
   isStreaming: false,
+  // DEPRECATED - use init instead
   fetchSessions: async () => {
     set({ loading: true });
     const response = await fetch(`/api/chat`);
@@ -410,6 +419,33 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       sessions: groupedSessions,
       loading: false,
       sessionTitle: currentSession?.name || "Untitled Chat",
+      user: responseData.user,
+    });
+  },
+  init: async (sessionId: string) => {
+    set({ loading: true });
+    const response = await fetch(`/api/chat`);
+    const responseData = await response.json();
+    if (responseData.code === "user_id_required") {
+      set({ loading: false });
+      return;
+    }
+
+    const currentSession = responseData.sessions.find(
+      (s: ChatSession) => s.id === sessionId
+    );
+    console.log("currentSession", currentSession);
+
+    const strategy = new TimeframeGroupingStrategy();
+    const groupedSessions = strategy.group(responseData.sessions);
+
+    set({
+      sessions: groupedSessions,
+      loading: false,
+      currentSessionId: currentSession ? sessionId : null,
+      currentSession: currentSession || null,
+      sessionTitle: currentSession?.name || "Untitled Chat",
+      user: responseData.user,
     });
   },
   generateSpeech: async (text: string) => {
@@ -438,4 +474,11 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   userId: null,
   setUserId: (userId: string) => set({ userId }),
   titleLoading: false,
+  user: {
+    email: "",
+    message_count: 0,
+    stripeSubscriptionId: "",
+    subscriptionStatus: "",
+  },
+  currentSession: null,
 }));

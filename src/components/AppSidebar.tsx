@@ -43,12 +43,16 @@ import {
   Collapsible,
 } from "@/components/ui/collapsible";
 import { ChatSession } from "@/types/chat";
+import { useEffect } from "react";
 
 const pacifico = Pacifico({
   subsets: ["latin"],
   weight: ["400"],
   variable: "--font-pacifico",
 });
+
+// Add this type outside the component
+type OpenGroups = Record<string, boolean>;
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { addSession } = useChatStore();
@@ -192,10 +196,32 @@ export function NavSecondary({
 
 export function NavWorkspaces({ className }: { className?: string }) {
   const { sessions, loading, currentSessionId } = useChatStore();
+  const [openGroups, setOpenGroups] = React.useState<OpenGroups>({});
+
+  // Load saved state on mount
+  useEffect(() => {
+    const savedState = localStorage.getItem("sidebarOpenGroups");
+    if (savedState) {
+      setOpenGroups(JSON.parse(savedState));
+    }
+  }, []);
+
+  // Save state when it changes
+  useEffect(() => {
+    localStorage.setItem("sidebarOpenGroups", JSON.stringify(openGroups));
+  }, [openGroups]);
 
   // Helper function to check if a group contains the current session
   const groupContainsCurrentSession = (sessions: ChatSession[]) => {
     return sessions.some((session) => session.id === currentSessionId);
+  };
+
+  // Handle group open/close
+  const handleGroupToggle = (key: string, open: boolean) => {
+    setOpenGroups((prev) => ({
+      ...prev,
+      [key]: open,
+    }));
   };
 
   return (
@@ -203,17 +229,6 @@ export function NavWorkspaces({ className }: { className?: string }) {
       <SidebarGroupLabel>Chat History</SidebarGroupLabel>
       <SidebarGroupContent>
         <SidebarMenu>
-          {/* Load if loading */}
-          {loading && (
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild>
-                <div className="flex items-center gap-2">
-                  <Loader2 className="animate-spin" />
-                  <span className="sr-only">Loading...</span>
-                </div>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          )}
           {/* If there are no sessions, show the create chat button */}
           {!loading && Object.keys(sessions).length == 0 && (
             <SidebarMenuItem>
@@ -232,8 +247,11 @@ export function NavWorkspaces({ className }: { className?: string }) {
               <Collapsible
                 key={key}
                 defaultOpen={
-                  key === "Today" || groupContainsCurrentSession(sessions[key])
+                  openGroups[key] ??
+                  (key === "Today" ||
+                    groupContainsCurrentSession(sessions[key]))
                 }
+                onOpenChange={(open) => handleGroupToggle(key, open)}
               >
                 <SidebarMenuItem>
                   <CollapsibleTrigger asChild>
@@ -254,7 +272,7 @@ export function NavWorkspaces({ className }: { className?: string }) {
                             asChild
                             isActive={session.id === currentSessionId}
                           >
-                            <Link href={`/?session=${session.id}`}>
+                            <Link href={`/~/${session.id}`}>
                               <span>{session.name}</span>
                             </Link>
                           </SidebarMenuSubButton>

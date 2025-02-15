@@ -74,7 +74,10 @@ export default function MessageDropdown({
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="opacity-0 group-hover:opacity-100 transition-opacity">
+      <DropdownMenuTrigger
+        asChild
+        className="opacity-0 group-hover:opacity-100 transition-opacity"
+      >
         <Button variant="ghost" size="icon" className="h-6 w-6 text-slate-400">
           <MoreHorizontal className="h-4 w-4" />
         </Button>
