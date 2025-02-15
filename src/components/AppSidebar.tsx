@@ -18,7 +18,6 @@ import {
   File,
   Plus,
   type LucideIcon,
-  Loader2,
   SkullIcon,
 } from "lucide-react";
 import {
@@ -69,7 +68,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     <Sidebar className="border-r-0" {...props}>
       <SidebarHeader>
         <h1
-          className={clsx(pacifico.className, "text-2xl px-2 pt-4 font-bold")}
+          className={clsx("font-title text-2xl px-2 pt-4 font-bold")}
         >
           Wussup
         </h1>
@@ -116,32 +115,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </Link>
       </SidebarFooter>
     </Sidebar>
-  );
-}
-
-export function NavItems({
-  items,
-}: {
-  items: {
-    title: string;
-    url: string;
-    icon: LucideIcon;
-    isActive?: boolean;
-  }[];
-}) {
-  return (
-    <SidebarMenu>
-      {items.map((item) => (
-        <SidebarMenuItem key={item.title}>
-          <SidebarMenuButton asChild isActive={item.isActive}>
-            <a href={item.url}>
-              <item.icon />
-              <span>{item.title}</span>
-            </a>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
-      ))}
-    </SidebarMenu>
   );
 }
 

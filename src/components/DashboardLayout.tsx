@@ -32,51 +32,12 @@ interface BreadcrumbItem {
   href: string;
 }
 
-interface DashboardLayoutProps {
+interface ChatLayoutProps {
   children: React.ReactNode;
   breadcrumbItems?: BreadcrumbItem[];
 }
 
-export function DashboardLayout({
-  children,
-  breadcrumbItems = [],
-}: DashboardLayoutProps) {
-  return (
-    <SidebarProvider>
-      <AppSidebar />
-      <SidebarInset>
-        <header className="sticky top-0 flex h-14 shrink-0 items-center gap-2 bg-background">
-          <div className="flex flex-1 items-center gap-2 px-3">
-            <SidebarTrigger />
-            <Separator orientation="vertical" className="mr-2 h-4" />
-            <Breadcrumb>
-              <BreadcrumbList>
-                {breadcrumbItems.map((item, index) => (
-                  <Fragment key={index}>
-                    <BreadcrumbItem>
-                      <BreadcrumbPage className="line-clamp-1">
-                        <Link href={item.href}>{item.label}</Link>
-                      </BreadcrumbPage>
-                    </BreadcrumbItem>
-                    {index < breadcrumbItems.length - 1 && (
-                      <BreadcrumbSeparator />
-                    )}
-                  </Fragment>
-                ))}
-              </BreadcrumbList>
-            </Breadcrumb>
-          </div>
-          <div className="flex items-center pr-4">
-            <NavUser />
-          </div>
-        </header>
-        <div className="flex flex-1 flex-col gap-4 p-4">{children}</div>
-      </SidebarInset>
-    </SidebarProvider>
-  );
-}
-
-export function ChatLayout({ children }: DashboardLayoutProps) {
+export function ChatLayout({ children }: ChatLayoutProps) {
   const { deleteSession, updateSessionTitle, currentSession } = useChatStore();
   return (
     <SidebarProvider>
