@@ -9,6 +9,8 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@ai-sdk/openai": "^1.1.11",
+    "@ai-sdk/react": "^1.1.15",
     "@anthropic-ai/sdk": "^0.36.3",
     "@google/generative-ai": "^0.21.0",
     "@headlessui/react": "^2.2.0",
@@ -46,6 +48,7 @@
     "@tiptap/extension-underline": "^2.11.2",
     "@tiptap/react": "^2.11.2",
     "@tiptap/starter-kit": "^2.11.2",
+    "ai": "^4.1.38",
     "canvas-confetti": "^1.9.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
