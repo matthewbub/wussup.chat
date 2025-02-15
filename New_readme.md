@@ -5,16 +5,40 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 First, update your .env.local file with the following
 
 ```bash
+# AI Providers
 OPENAI_API_KEY=
 ANTHROPIC_API_KEY=
-GROK_API_KEY=
+XAI_API_KEY=
+DEEPSEEK_API_KEY=
+GEMINI_API_KEY=
 
+# Supabase
 NEXT_PUBLIC_SUPABASE_URL=
 NEXT_PUBLIC_SUPABASE_ANON_KEY=
 
+# Stripe
 STRIPE_PUBLISHABLE_KEY=
 STRIPE_SECRET_KEY=
 STRIPE_WEBHOOK_SECRET=
+STRIPE_PRICE_ID=
+
+# PostHog
+NEXT_PUBLIC_POSTHOG_KEY=
+NEXT_PUBLIC_POSTHOG_HOST=
+
+# Sentry
+SENTRY_AUTH_TOKEN=
+
+# Resend
+RESEND_API_KEY=
+ADMIN_EMAIL=example@example.com
+
+# Meta
+NEXT_PUBLIC_APP_URL=
+
+# Local
+# Leave this as true if you're self hosting
+NEXT_PUBLIC_LOCAL_MODE=true
 ```
 
 Then, run the development server:
