@@ -16,6 +16,7 @@ const eslintConfig = [
       "react-hooks/exhaustive-deps": "off",
       "@next/next/no-img-element": "off",
       "@typescript-eslint/no-explicit-any": "warn",
+      "@next/next/no-sync-scripts": "warn", // React Scan Only
     },
   },
 ];
