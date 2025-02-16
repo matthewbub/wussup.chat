@@ -64,6 +64,22 @@ function ChatUI() {
     initialMessages: initialMessages as AiMessage[] | undefined,
     onFinish: async (message, { usage, finishReason }) => {
       const sessionId = searchParams.get("session");
+      const wasFirstMessage = currentSession?.messages.length === 0;
+
+      if (wasFirstMessage) {
+        const titleResponse = await fetch("/api/v1/title", {
+          method: "POST",
+          body: JSON.stringify({
+            session_id: sessionId,
+            messages: currentSession?.messages,
+          }),
+        });
+
+        const titleData = await titleResponse.json();
+        console.log("Title response:", titleData);
+      }
+
+      // TODO: ADD THIS
       console.log("Finished streaming message:", message);
       console.log("Token usage:", usage);
       console.log("Finish reason:", finishReason);
