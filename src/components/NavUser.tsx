@@ -1,6 +1,6 @@
 "use client";
 
-import { CreditCard, LogOut } from "lucide-react";
+import { CreditCard, LogOut, User } from "lucide-react";
 import { AuthModal } from "@/components/AuthModal";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -17,8 +17,6 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { createClient } from "@/lib/supabase-client";
-import { useRouter } from "next/navigation";
 import { BillingModal } from "@/components/BillingModal";
 import crypto from "crypto";
 import { useChatStore } from "@/stores/chatStore";
@@ -32,9 +30,8 @@ const getGravatarUrl = (email: string) => {
 };
 
 export function NavUser() {
-  const supabase = createClient();
-  const { user, openModal, closeModal, activeModal } = useChatStore();
-  const router = useRouter();
+  const { user, openModal, closeModal, activeModal, clearStore } =
+    useChatStore();
 
   const avatarFallback = user ? user.email?.slice(0, 2).toUpperCase() : "GU";
 
@@ -43,8 +40,24 @@ export function NavUser() {
   };
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    await router.refresh();
+    try {
+      // Call server-side logout endpoint
+      const response = await fetch("/api/auth/logout", {
+        method: "POST",
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        throw new Error("Logout failed");
+      }
+
+      // Clear the chat store state
+      clearStore();
+
+      openModal("auth");
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
   };
 
   const gravatarUrl = user?.email ? getGravatarUrl(user.email) : "";
@@ -59,14 +72,16 @@ export function NavUser() {
                 size="lg"
                 className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
               >
-                <Avatar className="h-8 w-8 rounded-lg">
-                  {user?.email && (
+                {user?.email ? (
+                  <Avatar className="h-8 w-8 rounded-lg">
                     <AvatarImage src={gravatarUrl} alt={user.email} />
-                  )}
-                  <AvatarFallback className="rounded-lg">
-                    {avatarFallback}
-                  </AvatarFallback>
-                </Avatar>
+                    <AvatarFallback className="rounded-lg">
+                      {avatarFallback}
+                    </AvatarFallback>
+                  </Avatar>
+                ) : (
+                  <User className="h-8 w-8 rounded-lg" />
+                )}
               </SidebarMenuButton>
             </DropdownMenuTrigger>
             <DropdownMenuContent
@@ -75,18 +90,18 @@ export function NavUser() {
               align="start"
               sideOffset={4}
             >
-              {user ? (
+              {user?.user_id ? (
                 <>
                   <DropdownMenuLabel className="p-0 font-normal">
                     <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                      <Avatar className="h-8 w-8 rounded-lg">
-                        {user.email && (
+                      {user.email && (
+                        <Avatar className="h-8 w-8 rounded-lg">
                           <AvatarImage src={gravatarUrl} alt={user.email} />
-                        )}
-                        <AvatarFallback className="rounded-lg">
-                          {avatarFallback}
-                        </AvatarFallback>
-                      </Avatar>
+                          <AvatarFallback className="rounded-lg">
+                            {avatarFallback}
+                          </AvatarFallback>
+                        </Avatar>
+                      )}
                       <div className="grid flex-1 text-left text-sm leading-tight">
                         <span className="truncate font-semibold">
                           {user.email || "Guest User"}

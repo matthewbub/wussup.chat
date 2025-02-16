@@ -27,6 +27,7 @@ interface ChatStore {
   activeModal: ModalType | null;
   openModal: (type: ModalType) => void;
   closeModal: () => void;
+  clearStore: () => void;
 }
 
 export const useChatStore = create<ChatStore>((set, get) => ({
@@ -175,7 +176,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     const response = await fetch(`/api/chat`);
     const responseData = await response.json();
     if (responseData.code === "user_id_required") {
-      set({ loading: false });
+      set({ loading: false, activeModal: "auth" });
       return;
     }
 
@@ -229,4 +230,17 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   closeModal: () => {
     set({ activeModal: null });
   },
+  clearStore: () =>
+    set(() => ({
+      user: {
+        user_id: "",
+        email: "",
+        message_count: 0,
+        stripeSubscriptionId: "",
+        subscriptionStatus: "",
+        subscriptionPeriodEnd: "",
+      },
+      activeModal: null,
+      sessions: {},
+    })),
 }));

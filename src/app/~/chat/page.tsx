@@ -27,8 +27,7 @@ function ChatUI() {
 
   const defaultModel = AVAILABLE_MODELS[0];
   const [model, setModel] = useState(defaultModel.id);
-  const { init, user } = useChatStore();
-
+  const { init, user, loading, openModal } = useChatStore();
   const [loadingInitialMessages, setLoadingInitialMessages] = useState(true);
   const [initialMessages, setInitialMessages] = useState<AiMessage[]>([]);
 
@@ -36,6 +35,14 @@ function ChatUI() {
     // load all the data into the app, account for the current session since we already have it
     init(sessionId as string);
   }, []);
+
+  // useEffect(() => {
+  //   if (!user?.user_id && !loading) {
+  //     console.log("User is not logged in, opening auth modal");
+  //     openModal("auth");
+  //     return;
+  //   }
+  // }, [user?.user_id, loading]);
 
   useEffect(() => {
     if (currentSession) {
@@ -181,35 +188,10 @@ function App() {
   );
 }
 
-// Wrap ForceAuth with Suspense as well
-function ForceAuthContent({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useChatStore();
-  const { openModal } = useChatStore();
-
-  useEffect(() => {
-    if (!user && !loading) {
-      openModal("auth");
-      return;
-    }
-  }, [user, loading]);
-
-  return children;
-}
-
-function ForceAuth({ children }: { children: React.ReactNode }) {
-  return (
-    <Suspense fallback={<div>Loading auth...</div>}>
-      <ForceAuthContent>{children}</ForceAuthContent>
-    </Suspense>
-  );
-}
-
 export default function Page() {
   return (
-    <ForceAuth>
-      <ChatLayout>
-        <App />
-      </ChatLayout>
-    </ForceAuth>
+    <ChatLayout>
+      <App />
+    </ChatLayout>
   );
 }
