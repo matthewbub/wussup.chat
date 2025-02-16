@@ -174,16 +174,19 @@ function ChatUI() {
 // Wrap the main component with Suspense
 function App() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<div>Loading chat...</div>}>
       <ChatUI />
     </Suspense>
   );
 }
 
+// Move ChatLayout inside Suspense
 export default function Page() {
   return (
-    <ChatLayout>
-      <App />
-    </ChatLayout>
+    <Suspense fallback={<div>Loading...</div>}>
+      <ChatLayout>
+        <App />
+      </ChatLayout>
+    </Suspense>
   );
 }
