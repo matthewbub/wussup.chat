@@ -28,18 +28,26 @@ const ForceAuth = ({ children }: { children: React.ReactNode }) => {
 
 function App() {
   const searchParams = useSearchParams();
-  const initialSession = searchParams.get("session");
+  const sessionId = searchParams.get("session");
+  const { sessions } = useChatStore();
+
+  // Find current session
+  const currentSession = sessionId
+    ? Object.values(sessions)
+        .flat()
+        .find((s) => s.id === sessionId)
+    : null;
 
   const defaultModel = AVAILABLE_MODELS[0];
   const [model, setModel] = useState(defaultModel.id);
-  const { init, user, currentSession, updateCurrentSession } = useChatStore();
+  const { init, user } = useChatStore();
 
   const [loadingInitialMessages, setLoadingInitialMessages] = useState(true);
   const [initialMessages, setInitialMessages] = useState<AiMessage[]>([]);
 
   useEffect(() => {
     // load all the data into the app, account for the current session since we already have it
-    init(initialSession as string);
+    init(sessionId as string);
   }, []);
 
   useEffect(() => {
@@ -54,15 +62,6 @@ function App() {
     }
     setLoadingInitialMessages(false);
   }, [currentSession]);
-
-  // update chat session if the URL changes
-  useEffect(() => {
-    const sessionFromUrl = searchParams.get("session");
-    console.log("[Session Updated] ", sessionFromUrl);
-    if (sessionFromUrl) {
-      updateCurrentSession(sessionFromUrl);
-    }
-  }, [searchParams]);
 
   const {
     messages,

@@ -7,7 +7,6 @@ const supabase = createClient();
 
 interface ChatStore {
   sessions: Record<string, ChatSession[]>; // { [x]: [ { chatSession }, { chatSession } ]}
-  currentSessionId: string | null;
   addSession: (sessionId: string, userId: string) => Promise<string | null>;
   updateSessionTitle: (sessionId: string, title: string) => void;
   deleteSession: (sessionId: string) => void;
@@ -22,13 +21,10 @@ interface ChatStore {
     stripeSubscriptionId: string;
     subscriptionStatus: string;
   };
-  currentSession: ChatSession | null;
-  updateCurrentSession: (sessionId: string) => void;
 }
 
 export const useChatStore = create<ChatStore>((set, get) => ({
   sessions: {},
-  currentSessionId: null,
   addSession: async (
     sessionId: string,
     userId: string
@@ -49,8 +45,6 @@ export const useChatStore = create<ChatStore>((set, get) => ({
 
     set(() => ({
       sessions: groupedSessions,
-      currentSessionId: sessionId,
-      currentSession: newSession,
     }));
 
     return sessionId;
@@ -138,11 +132,6 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       const strategy = new TimeframeGroupingStrategy();
       return {
         sessions: strategy.group(updatedSessions),
-        // Also update currentSession if this is the current session
-        currentSession:
-          sessionId === state.currentSessionId
-            ? { ...state.currentSession!, name: title }
-            : state.currentSession,
       };
     });
   },
@@ -168,7 +157,6 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       const strategy = new TimeframeGroupingStrategy();
       return {
         sessions: strategy.group(filteredSessions),
-        currentSessionId: null,
       };
     });
   },
@@ -196,8 +184,6 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     set({
       sessions: groupedSessions,
       loading: false,
-      currentSessionId: currentSession ? sessionId : null,
-      currentSession: currentSession || null,
       user: responseData.user,
     });
   },
@@ -229,31 +215,4 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     stripeSubscriptionId: "",
     subscriptionStatus: "",
   },
-  currentSession: null,
-  updateCurrentSession: (sessionId: string) =>
-    set((state) => {
-      const allSessions = Object.values(state.sessions).flat();
-      const session = allSessions.find((s) => s.id === sessionId) as
-        | ChatSession
-        | undefined;
-
-      // there's a high chance the session isn't going to be found
-      // in this case, we should create a new session
-      if (!session) {
-        return {
-          currentSession: {
-            id: sessionId,
-            name: "Untitled Chat",
-            messages: [],
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-            user_id: state.user.user_id || "",
-          },
-        };
-      }
-      console.log("session", session);
-      return {
-        currentSession: session,
-      };
-    }),
 }));

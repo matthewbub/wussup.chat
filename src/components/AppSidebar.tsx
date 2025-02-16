@@ -42,9 +42,6 @@ import {
 } from "@/components/ui/collapsible";
 import { ChatSession } from "@/types/chat";
 
-// Add this type outside the component
-type OpenGroups = Record<string, boolean>;
-
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const router = useRouter();
   const { addSession, user } = useChatStore();
@@ -152,20 +149,12 @@ export function NavSecondary({
 
 export function NavWorkspaces({ className }: { className?: string }) {
   const { sessions, loading } = useChatStore();
-  const [openGroups, setOpenGroups] = React.useState<OpenGroups>({});
   const searchParams = useSearchParams();
-  const initialSession = searchParams.get("session");
-  // Helper function to check if a group contains the current session
-  const groupContainsCurrentSession = (sessions: ChatSession[]) => {
-    return sessions.some((session) => session.id === initialSession);
-  };
+  const currentSessionId = searchParams.get("session");
 
-  // Handle group open/close
-  const handleGroupToggle = (key: string, open: boolean) => {
-    setOpenGroups((prev) => ({
-      ...prev,
-      [key]: open,
-    }));
+  // Use currentSessionId from URL instead of store
+  const groupContainsCurrentSession = (sessions: ChatSession[]) => {
+    return sessions.some((session) => session.id === currentSessionId);
   };
 
   return (
@@ -190,12 +179,7 @@ export function NavWorkspaces({ className }: { className?: string }) {
             Object.keys(sessions).map((key: string) => (
               <Collapsible
                 key={key}
-                defaultOpen={
-                  openGroups[key] ??
-                  (key === "Today" ||
-                    groupContainsCurrentSession(sessions[key]))
-                }
-                onOpenChange={(open) => handleGroupToggle(key, open)}
+                defaultOpen={groupContainsCurrentSession(sessions[key])}
               >
                 <SidebarMenuItem>
                   <CollapsibleTrigger asChild>
@@ -214,7 +198,7 @@ export function NavWorkspaces({ className }: { className?: string }) {
                         <SidebarMenuSubItem key={session.id}>
                           <SidebarMenuSubButton
                             asChild
-                            isActive={session.id === initialSession}
+                            isActive={session.id === currentSessionId}
                           >
                             <Link href={`/~/chat?session=${session.id}`}>
                               <span>{session.name}</span>

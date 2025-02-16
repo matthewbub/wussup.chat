@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Pencil, LinkIcon, ArrowUpRight, Trash2 } from "lucide-react";
 import { useChatStore } from "@/stores/chatStore";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 interface BreadcrumbItem {
   label: string;
@@ -36,7 +36,17 @@ interface ChatLayoutProps {
 }
 
 export function ChatLayout({ children }: ChatLayoutProps) {
-  const { currentSession } = useChatStore();
+  const searchParams = useSearchParams();
+  const sessionId = searchParams.get("session");
+  const { sessions } = useChatStore();
+
+  // Find current session from sessions using sessionId
+  const currentSession = sessionId
+    ? Object.values(sessions)
+        .flat()
+        .find((s) => s.id === sessionId)
+    : null;
+
   return (
     <SidebarProvider>
       <AppSidebar />
@@ -52,7 +62,7 @@ export function ChatLayout({ children }: ChatLayoutProps) {
                     <Link href="/">Chat</Link>
                   </BreadcrumbPage>
                 </BreadcrumbItem>
-                {currentSession?.id && (
+                {currentSession && (
                   <>
                     <BreadcrumbSeparator />
                     <BreadcrumbItem>
@@ -76,9 +86,15 @@ export function ChatLayout({ children }: ChatLayoutProps) {
 }
 
 function ChatItemDropdown() {
-  const { deleteSession, updateSessionTitle, currentSession } = useChatStore();
-
+  const { deleteSession, updateSessionTitle, sessions } = useChatStore();
   const router = useRouter();
+
+  const sessionId = useSearchParams().get("session");
+  const currentSession = sessionId
+    ? Object.values(sessions)
+        .flat()
+        .find((s) => s.id === sessionId)
+    : null;
 
   if (!currentSession) {
     return null;
