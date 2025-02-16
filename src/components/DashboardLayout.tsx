@@ -24,6 +24,16 @@ import {
 import { Pencil, LinkIcon, ArrowUpRight, Trash2 } from "lucide-react";
 import { useChatStore } from "@/stores/chatStore";
 import { useRouter, useSearchParams } from "next/navigation";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { useState } from "react";
 
 interface BreadcrumbItem {
   label: string;
@@ -88,6 +98,7 @@ export function ChatLayout({ children }: ChatLayoutProps) {
 function ChatItemDropdown() {
   const { deleteSession, updateSessionTitle, sessions } = useChatStore();
   const router = useRouter();
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   const sessionId = useSearchParams().get("session");
   const currentSession = sessionId
@@ -120,43 +131,69 @@ function ChatItemDropdown() {
   };
 
   const handleDeleteChat = async () => {
-    if (window.confirm("Are you sure you want to delete this chat?")) {
-      router.push("/");
-      await deleteSession(currentSession.id);
-    }
+    setIsDeleteDialogOpen(false);
+    await deleteSession(currentSession.id);
+
+    router.push(`/~}`);
+    router.refresh();
   };
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger
-        asChild
-        className="w-full hover:bg-accent rounded-md px-2 py-1 group"
-      >
-        <div className="cursor-pointer flex items-center gap-2">
-          <span>{currentSession?.name}</span>
-          <Pencil className="hidden group-hover:block text-muted-foreground w-4 h-4" />
-        </div>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56 rounded-lg" side={"bottom"}>
-        <DropdownMenuItem onClick={handleRenameChat}>
-          <Pencil className="text-muted-foreground" />
-          <span>Rename Chat</span>
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleCopyLink}>
-          <LinkIcon className="text-muted-foreground" />
-          <span>Copy Link</span>
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={handleOpenInNewTab}>
-          <ArrowUpRight className="text-muted-foreground" />
-          <span>Open in New Tab</span>
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleDeleteChat}>
-          <Trash2 className="text-muted-foreground" />
-          <span>Delete</span>
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger
+          asChild
+          className="w-full hover:bg-accent rounded-md px-2 py-1 group"
+        >
+          <div className="cursor-pointer flex items-center gap-2">
+            <span>{currentSession?.name}</span>
+            <Pencil className="hidden group-hover:block text-muted-foreground w-4 h-4" />
+          </div>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className="w-56 rounded-lg" side={"bottom"}>
+          <DropdownMenuItem onClick={handleRenameChat}>
+            <Pencil className="text-muted-foreground" />
+            <span>Rename Chat</span>
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={handleCopyLink}>
+            <LinkIcon className="text-muted-foreground" />
+            <span>Copy Link</span>
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={handleOpenInNewTab}>
+            <ArrowUpRight className="text-muted-foreground" />
+            <span>Open in New Tab</span>
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem onClick={() => setIsDeleteDialogOpen(true)}>
+            <Trash2 className="text-muted-foreground" />
+            <span>Delete</span>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Chat</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this chat? This action cannot be
+              undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="ghost"
+              onClick={() => setIsDeleteDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleDeleteChat}>
+              Delete
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

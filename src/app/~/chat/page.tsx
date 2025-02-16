@@ -10,7 +10,7 @@ import { LanguageModalSelector } from "@/components/chat/LanguageModalSelector";
 import { AVAILABLE_MODELS } from "@/constants/models";
 import { Message } from "./_components/Message";
 import { useChatStore } from "@/stores/chatStore";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 // Separate the chat UI into its own component
 function ChatUI() {
@@ -30,10 +30,18 @@ function ChatUI() {
   const { init, user } = useChatStore();
   const [loadingInitialMessages, setLoadingInitialMessages] = useState(true);
   const [initialMessages, setInitialMessages] = useState<AiMessage[]>([]);
+  const router = useRouter();
 
   useEffect(() => {
+    let sessionToInit = sessionId;
+    // if no session id, create a new one
+    if (!sessionId) {
+      sessionToInit = crypto.randomUUID();
+      router.push(`/~/chat?session=${sessionToInit}`);
+    }
+
     // load all the data into the app, account for the current session since we already have it
-    init(sessionId as string);
+    init(sessionToInit as string);
   }, []);
 
   useEffect(() => {
