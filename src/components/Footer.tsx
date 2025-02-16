@@ -6,11 +6,6 @@ export default function Footer() {
           <div className="text-sm">
             © {new Date().getFullYear()} Wussup.chat. All rights reserved.
           </div>
-          <div className="space-x-4">
-            <a href="/legal" className="text-sm">
-              Legal
-            </a>
-          </div>
         </div>
       </div>
     </footer>
