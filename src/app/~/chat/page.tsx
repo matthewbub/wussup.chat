@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useChat, Message as AiMessage } from "@ai-sdk/react";
@@ -12,21 +13,8 @@ import useNavUserStore from "@/stores/useNavUserStore";
 import { useChatStore } from "@/stores/chatStore";
 import { useSearchParams } from "next/navigation";
 
-const ForceAuth = ({ children }: { children: React.ReactNode }) => {
-  const { user, loading } = useChatStore();
-  const { openAuth } = useNavUserStore();
-
-  useEffect(() => {
-    if (!user && !loading) {
-      openAuth();
-      return;
-    }
-  }, [user, loading]);
-
-  return children;
-};
-
-function App() {
+// Separate the chat UI into its own component
+function ChatUI() {
   const searchParams = useSearchParams();
   const sessionId = searchParams.get("session");
   const { sessions } = useChatStore();
@@ -182,6 +170,38 @@ function App() {
         </div>
       </form>
     </div>
+  );
+}
+
+// Wrap the main component with Suspense
+function App() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ChatUI />
+    </Suspense>
+  );
+}
+
+// Wrap ForceAuth with Suspense as well
+function ForceAuthContent({ children }: { children: React.ReactNode }) {
+  const { user, loading } = useChatStore();
+  const { openAuth } = useNavUserStore();
+
+  useEffect(() => {
+    if (!user && !loading) {
+      openAuth();
+      return;
+    }
+  }, [user, loading]);
+
+  return children;
+}
+
+function ForceAuth({ children }: { children: React.ReactNode }) {
+  return (
+    <Suspense fallback={<div>Loading auth...</div>}>
+      <ForceAuthContent>{children}</ForceAuthContent>
+    </Suspense>
   );
 }
 
