@@ -79,6 +79,7 @@ function App() {
     api: "/api/v1/chat",
     initialMessages: initialMessages as AiMessage[] | undefined,
     onFinish: async (message, { usage, finishReason }) => {
+      const sessionId = searchParams.get("session");
       console.log("Finished streaming message:", message);
       console.log("Token usage:", usage);
       console.log("Finish reason:", finishReason);
@@ -91,7 +92,7 @@ function App() {
           content: message.content,
           role: message.role,
           message_id: message.id,
-          session_id: currentSession?.id,
+          session_id: sessionId,
           prompt_tokens: usage?.promptTokens,
           completion_tokens: usage?.completionTokens,
           total_tokens: usage?.totalTokens,
@@ -116,7 +117,8 @@ function App() {
     console.log("Current session id", currentSession?.id);
     handleSubmit(ev, {
       data: {
-        session_id: currentSession?.id,
+        session_id: searchParams.get("session"),
+        session_title: currentSession?.name,
       },
     });
     setInput("");

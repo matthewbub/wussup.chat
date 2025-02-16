@@ -28,7 +28,6 @@ import {
 import { useChatStore } from "@/stores/chatStore";
 import { Button } from "@/components/ui/button";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Pacifico } from "next/font/google";
 import clsx from "clsx";
 import {
   SidebarGroup,
@@ -42,24 +41,20 @@ import {
   Collapsible,
 } from "@/components/ui/collapsible";
 import { ChatSession } from "@/types/chat";
-import { useEffect } from "react";
-
-const pacifico = Pacifico({
-  subsets: ["latin"],
-  weight: ["400"],
-  variable: "--font-pacifico",
-});
 
 // Add this type outside the component
 type OpenGroups = Record<string, boolean>;
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const router = useRouter();
+  const { addSession, user } = useChatStore();
   const handleCreateChat = async () => {
     const sessionId = crypto.randomUUID();
     if (sessionId) {
       router.push(`/~/chat?session=${sessionId}`);
     }
+    // push temporary chat to the sidebar
+    addSession(sessionId, user?.user_id as string);
   };
 
   return (

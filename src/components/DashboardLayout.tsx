@@ -81,41 +81,38 @@ export function ChatLayout({ children }: ChatLayoutProps) {
   );
 }
 
-function ChatItemDropdown({
-  session,
-  onRename,
-  onDelete,
-}: {
-  session: ChatSession;
-  onRename: (sessionId: string, title: string) => void;
-  onDelete: (sessionId: string) => void;
-}) {
+function ChatItemDropdown() {
+  const { deleteSession, updateSessionTitle, currentSession } = useChatStore();
+
   const router = useRouter();
 
-  if (!session) {
+  if (!currentSession) {
     return null;
   }
 
   const handleRenameChat = async () => {
-    const newName = window.prompt("Enter new name for chat:", session.name);
-    if (newName && newName !== session.name) {
-      await onRename(session.id, newName);
+    const newName = window.prompt(
+      "Enter new name for chat:",
+      currentSession.name
+    );
+    if (newName && newName !== currentSession.name) {
+      await updateSessionTitle(currentSession.id, newName);
     }
   };
 
   const handleCopyLink = () => {
-    const url = `${window.location.origin}/?session=${session.id}`;
+    const url = `${window.location.origin}/?session=${currentSession.id}`;
     navigator.clipboard.writeText(url);
   };
 
   const handleOpenInNewTab = () => {
-    window.open(`/?session=${session.id}`, "_blank");
+    window.open(`/?session=${currentSession.id}`, "_blank");
   };
 
   const handleDeleteChat = async () => {
     if (window.confirm("Are you sure you want to delete this chat?")) {
       router.push("/");
-      await onDelete(session.id);
+      await deleteSession(currentSession.id);
     }
   };
 
@@ -126,7 +123,7 @@ function ChatItemDropdown({
         className="w-full hover:bg-accent rounded-md px-2 py-1 group"
       >
         <div className="cursor-pointer flex items-center gap-2">
-          <span>{session?.name}</span>
+          <span>{currentSession?.name}</span>
           <Pencil className="hidden group-hover:block text-muted-foreground w-4 h-4" />
         </div>
       </DropdownMenuTrigger>

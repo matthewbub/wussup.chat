@@ -9,7 +9,7 @@ export const maxDuration = 30;
 export async function POST(req: Request) {
   const {
     messages,
-    data: { session_id },
+    data: { session_id, session_title },
   } = await req.json();
   const supabase = await createClient();
 
@@ -23,13 +23,27 @@ export async function POST(req: Request) {
   const user_message_id = crypto.randomUUID();
   const user_created_at = new Date().toISOString();
 
+  const messageLength = messages.length;
+
+  const upsertData: {
+    id: string;
+    updated_at: string;
+    user_id: string;
+    name?: string;
+  } = {
+    id: session_id,
+    updated_at: new Date().toISOString(),
+    user_id: userId,
+  };
+  console.log("messageLength", messageLength);
+
+  if (messageLength === 1) {
+    upsertData.name = session_title;
+  }
+
   const { data: session_data, error: session_error } = await supabase
     .from("ChatBot_Sessions")
-    .upsert({
-      id: session_id,
-      updated_at: new Date().toISOString(),
-      user_id: userId,
-    })
+    .upsert(upsertData)
     .select("*")
     .single();
 
