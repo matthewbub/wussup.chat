@@ -173,7 +173,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
   isStreaming: false,
   init: async (sessionId?: string) => {
     set({ loading: true });
-    const response = await fetch(`/api/chat`);
+    const response = await fetch(`/api/v1/init`);
     const responseData = await response.json();
     if (responseData.code === "user_id_required") {
       set({ loading: false, activeModal: "auth" });

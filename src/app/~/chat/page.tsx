@@ -126,7 +126,7 @@ function ChatUI() {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-100px)]">
+    <div className="flex flex-col h-[calc(100vh-87px)]">
       <div className="space-y-4 mb-6 flex-1 overflow-y-scroll p-4">
         {messages.map((message, index) => (
           <Message key={index} message={message} />
@@ -135,7 +135,7 @@ function ChatUI() {
 
       <form
         onSubmit={componentSubmitHandler}
-        className="flex flex-col gap-2 rounded-lg bg-secondary p-4"
+        className="flex flex-col gap-2 rounded-xl bg-secondary p-4"
       >
         <Textarea
           value={input}
