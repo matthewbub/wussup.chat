@@ -9,6 +9,7 @@ import {
   SelectGroup,
 } from "@/components/ui/select";
 import { AVAILABLE_MODELS, AiModel, providers } from "@/constants/models";
+import clsx from "clsx";
 
 const IS_LOCAL_MODE = process.env.NEXT_PUBLIC_LOCAL_MODE === "true";
 
@@ -25,13 +26,16 @@ export const LanguageModalSelector: React.FC<ModelSelectProps> = ({
 }) => {
   const defaultModel = AVAILABLE_MODELS[0];
   // Group models by provider
-  const groupedModels = AVAILABLE_MODELS.reduce((acc, model) => {
-    if (!acc[model.provider]) {
-      acc[model.provider] = [];
-    }
-    acc[model.provider].push(model);
-    return acc;
-  }, {} as Record<string, AiModel[]>);
+  const groupedModels = AVAILABLE_MODELS.reduce(
+    (acc, model) => {
+      if (!acc[model.provider]) {
+        acc[model.provider] = [];
+      }
+      acc[model.provider].push(model);
+      return acc;
+    },
+    {} as Record<string, AiModel[]>
+  );
 
   const hasFullAccess = IS_LOCAL_MODE || isSubscribed;
 
@@ -53,7 +57,11 @@ export const LanguageModalSelector: React.FC<ModelSelectProps> = ({
         <SelectContent className="bg-[hsl(240,10%,5%)] border-[hsl(240,10%,15%)] text-white">
           {providers.map((provider) => (
             <SelectGroup key={provider}>
-              <SelectLabel className="text-gray-400 font-semibold text-sm">
+              <SelectLabel
+                className={clsx("text-slate-200 font-bold text-sm border-b", {
+                  "border-t": provider !== providers[0],
+                })}
+              >
                 {provider.charAt(0).toUpperCase() + provider.slice(1)}
               </SelectLabel>
               {groupedModels[provider].map((model) => (
@@ -84,6 +92,9 @@ export const LanguageModalSelector: React.FC<ModelSelectProps> = ({
               ))}
             </SelectGroup>
           ))}
+          {/* <div className={clsx(selectItemClassName, "border-t")}>
+            <button onClick={() => alert("hola")}>Request a model</button>
+          </div> */}
         </SelectContent>
       </Select>
     </div>

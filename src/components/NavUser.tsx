@@ -1,6 +1,6 @@
 "use client";
 
-import { CreditCard, LogOut } from "lucide-react";
+import { CreditCard, LogOut, User } from "lucide-react";
 import { AuthModal } from "@/components/AuthModal";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -16,16 +16,10 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  useSidebar,
 } from "@/components/ui/sidebar";
-
-import { useSubscriptionStore } from "@/stores/useSubscription";
-import { createClient } from "@/lib/supabase-client";
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { BillingModal } from "@/components/BillingModal";
 import crypto from "crypto";
-import useNavUserStore from "@/stores/useNavUserStore";
+import { useChatStore } from "@/stores/chatStore";
 
 const getGravatarUrl = (email: string) => {
   const hash = crypto
@@ -36,37 +30,36 @@ const getGravatarUrl = (email: string) => {
 };
 
 export function NavUser() {
-  const supabase = createClient();
-  const { user, setUser, isBillingOpen, openBilling, isAuthOpen, openAuth } =
-    useNavUserStore();
-  const router = useRouter();
+  const { user, openModal, closeModal, activeModal, clearStore } =
+    useChatStore();
 
-  useEffect(() => {
-    const getUser = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      // console.log("user", user);
-      // @ts-expect-error - FIX ME LAZY ASS
-      setUser(user);
-    };
-    getUser();
-  }, [setUser]);
-
-  const { subscription } = useSubscriptionStore();
   const avatarFallback = user ? user.email?.slice(0, 2).toUpperCase() : "GU";
 
   const handleManageSubscription = () => {
-    openBilling();
+    openModal("billing");
   };
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    await router.refresh();
+    try {
+      // Call server-side logout endpoint
+      const response = await fetch("/api/auth/logout", {
+        method: "POST",
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        throw new Error("Logout failed");
+      }
+
+      // Clear the chat store state
+      clearStore();
+
+      openModal("auth");
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
   };
 
-  // Add gravatarUrl computation
   const gravatarUrl = user?.email ? getGravatarUrl(user.email) : "";
 
   return (
@@ -79,14 +72,16 @@ export function NavUser() {
                 size="lg"
                 className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
               >
-                <Avatar className="h-8 w-8 rounded-lg">
-                  {user?.email && (
+                {user?.email ? (
+                  <Avatar className="h-8 w-8 rounded-lg">
                     <AvatarImage src={gravatarUrl} alt={user.email} />
-                  )}
-                  <AvatarFallback className="rounded-lg">
-                    {avatarFallback}
-                  </AvatarFallback>
-                </Avatar>
+                    <AvatarFallback className="rounded-lg">
+                      {avatarFallback}
+                    </AvatarFallback>
+                  </Avatar>
+                ) : (
+                  <User className="h-8 w-8 rounded-lg" />
+                )}
               </SidebarMenuButton>
             </DropdownMenuTrigger>
             <DropdownMenuContent
@@ -95,18 +90,18 @@ export function NavUser() {
               align="start"
               sideOffset={4}
             >
-              {user ? (
+              {user?.user_id ? (
                 <>
                   <DropdownMenuLabel className="p-0 font-normal">
                     <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                      <Avatar className="h-8 w-8 rounded-lg">
-                        {user.email && (
+                      {user.email && (
+                        <Avatar className="h-8 w-8 rounded-lg">
                           <AvatarImage src={gravatarUrl} alt={user.email} />
-                        )}
-                        <AvatarFallback className="rounded-lg">
-                          {avatarFallback}
-                        </AvatarFallback>
-                      </Avatar>
+                          <AvatarFallback className="rounded-lg">
+                            {avatarFallback}
+                          </AvatarFallback>
+                        </Avatar>
+                      )}
                       <div className="grid flex-1 text-left text-sm leading-tight">
                         <span className="truncate font-semibold">
                           {user.email || "Guest User"}
@@ -118,7 +113,7 @@ export function NavUser() {
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleManageSubscription}>
                     <CreditCard />
-                    {subscription?.isSubscribed
+                    {user?.subscriptionStatus === "active"
                       ? "Manage Subscription"
                       : "Upgrade to Pro"}
                   </DropdownMenuItem>
@@ -130,7 +125,7 @@ export function NavUser() {
                 </>
               ) : (
                 <DropdownMenuGroup>
-                  <DropdownMenuItem onClick={openAuth}>
+                  <DropdownMenuItem onClick={() => openModal("auth")}>
                     <LogOut className="rotate-180" />
                     Sign In
                   </DropdownMenuItem>
@@ -140,100 +135,12 @@ export function NavUser() {
           </DropdownMenu>
         </SidebarMenuItem>
       </SidebarMenu>
-      <AuthModal
-        isOpen={isAuthOpen}
-        onClose={() => useNavUserStore.getState().closeAuth()}
-      />
+      <AuthModal isOpen={activeModal === "auth"} onClose={() => closeModal()} />
       <BillingModal
-        isOpen={isBillingOpen}
-        onClose={() => useNavUserStore.getState().closeBilling()}
-        userId={user?.id}
+        isOpen={activeModal === "billing"}
+        onClose={() => closeModal()}
+        userId={user?.user_id}
       />
     </>
-  );
-}
-
-import { BadgeCheck, Bell, ChevronsUpDown, Sparkles } from "lucide-react";
-
-export function NavUserV2({
-  user,
-}: {
-  user: {
-    name: string;
-    email: string;
-    avatar: string;
-  };
-}) {
-  const { isMobile } = useSidebar();
-
-  return (
-    <SidebarMenu>
-      <SidebarMenuItem>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <SidebarMenuButton
-              size="lg"
-              className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
-            >
-              <Avatar className="h-8 w-8 rounded-lg">
-                {/* <AvatarImage src={user.avatar} alt={user.name} /> */}
-                <AvatarFallback className="rounded-lg">CN</AvatarFallback>
-              </Avatar>
-              <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-semibold">{user.name}</span>
-                <span className="truncate text-xs">{user.email}</span>
-              </div>
-              <ChevronsUpDown className="ml-auto size-4" />
-            </SidebarMenuButton>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
-            side={isMobile ? "bottom" : "right"}
-            align="start"
-            sideOffset={4}
-          >
-            <DropdownMenuLabel className="p-0 font-normal">
-              <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
-                <Avatar className="h-8 w-8 rounded-lg">
-                  {/* <AvatarImage src={user.avatar} alt={user.name} /> */}
-                  <AvatarFallback className="rounded-lg">CN</AvatarFallback>
-                </Avatar>
-                <div className="grid flex-1 text-left text-sm leading-tight">
-                  {/* <span className="truncate font-semibold">{user.name}</span> */}
-                  {/* <span className="truncate text-xs">{user.email}</span> */}
-                </div>
-              </div>
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <Sparkles />
-                Upgrade to Pro
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <BadgeCheck />
-                Account
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <CreditCard />
-                Billing
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Bell />
-                Notifications
-              </DropdownMenuItem>
-            </DropdownMenuGroup>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem>
-              <LogOut />
-              Log out
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </SidebarMenuItem>
-    </SidebarMenu>
   );
 }

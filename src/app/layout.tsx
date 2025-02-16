@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Newsreader } from "next/font/google";
+import { Geist, Geist_Mono } from "next/font/google";
 import { Pacifico } from "next/font/google";
 import { Background } from "@/components/ui/Background";
 import "../styles/globals.css";
 import "katex/dist/katex.min.css";
 import { Toaster } from "@/components/ui/toaster";
 import { PostHogProvider } from "./providers";
+import { ReactScan } from "@/components/ReactScan";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -15,12 +16,6 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
-});
-
-const newsreader = Newsreader({
-  variable: "--font-newsreader",
-  subsets: ["latin"],
-  weight: ["400", "700"],
 });
 
 const title = Pacifico({
@@ -41,8 +36,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="h-full dark">
+      <head>
+        <script src="https://unpkg.com/react-scan/dist/auto.global.js" />
+      </head>
+      <ReactScan />
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${newsreader.variable} ${title.variable} antialiased h-full`}
+        className={`${geistSans.variable} ${geistMono.variable} ${title.variable} antialiased h-full`}
       >
         <PostHogProvider>
           <Background>{children}</Background>

@@ -18,7 +18,6 @@ import {
   File,
   Plus,
   type LucideIcon,
-  Loader2,
   SkullIcon,
 } from "lucide-react";
 import {
@@ -28,8 +27,7 @@ import {
 } from "@/components/ui/sidebar";
 import { useChatStore } from "@/stores/chatStore";
 import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
-import { Pacifico } from "next/font/google";
+import { useRouter, useSearchParams } from "next/navigation";
 import clsx from "clsx";
 import {
   SidebarGroup,
@@ -44,29 +42,22 @@ import {
 } from "@/components/ui/collapsible";
 import { ChatSession } from "@/types/chat";
 
-const pacifico = Pacifico({
-  subsets: ["latin"],
-  weight: ["400"],
-  variable: "--font-pacifico",
-});
-
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const { addSession } = useChatStore();
   const router = useRouter();
-
+  const { addSession, user } = useChatStore();
   const handleCreateChat = async () => {
-    const sessionId = await addSession();
+    const sessionId = crypto.randomUUID();
     if (sessionId) {
-      router.push(`/?session=${sessionId}`);
+      router.push(`/~/chat?session=${sessionId}`);
     }
+    // push temporary chat to the sidebar
+    addSession(sessionId, user?.user_id as string);
   };
 
   return (
     <Sidebar className="border-r-0" {...props}>
       <SidebarHeader>
-        <h1
-          className={clsx(pacifico.className, "text-2xl px-2 pt-4 font-bold")}
-        >
+        <h1 className={clsx("font-title text-2xl px-2 pt-4 font-bold")}>
           Wussup
         </h1>
       </SidebarHeader>
@@ -100,52 +91,18 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               external: true,
               hide: !!process.env.NEXT_PUBLIC_LOCAL_MODE,
             },
-            // {
-            //   title: "Docs",
-            //   url: "/docs",
-            //   icon: Book,
-            //   external: true,
-            // },
           ]}
         />
-
-        {/* <NavUserV2 /> */}
       </SidebarContent>
       <SidebarFooter>
         <Link
           href="/support"
           className="px-4 text-xs text-muted-foreground text-right"
         >
-          Version 0.0.1
+          Version 0.0.2
         </Link>
       </SidebarFooter>
     </Sidebar>
-  );
-}
-
-export function NavItems({
-  items,
-}: {
-  items: {
-    title: string;
-    url: string;
-    icon: LucideIcon;
-    isActive?: boolean;
-  }[];
-}) {
-  return (
-    <SidebarMenu>
-      {items.map((item) => (
-        <SidebarMenuItem key={item.title}>
-          <SidebarMenuButton asChild isActive={item.isActive}>
-            <a href={item.url}>
-              <item.icon />
-              <span>{item.title}</span>
-            </a>
-          </SidebarMenuButton>
-        </SidebarMenuItem>
-      ))}
-    </SidebarMenu>
   );
 }
 
@@ -191,9 +148,11 @@ export function NavSecondary({
 }
 
 export function NavWorkspaces({ className }: { className?: string }) {
-  const { sessions, loading, currentSessionId } = useChatStore();
+  const { sessions, loading } = useChatStore();
+  const searchParams = useSearchParams();
+  const currentSessionId = searchParams.get("session");
 
-  // Helper function to check if a group contains the current session
+  // Use currentSessionId from URL instead of store
   const groupContainsCurrentSession = (sessions: ChatSession[]) => {
     return sessions.some((session) => session.id === currentSessionId);
   };
@@ -203,17 +162,6 @@ export function NavWorkspaces({ className }: { className?: string }) {
       <SidebarGroupLabel>Chat History</SidebarGroupLabel>
       <SidebarGroupContent>
         <SidebarMenu>
-          {/* Load if loading */}
-          {loading && (
-            <SidebarMenuItem>
-              <SidebarMenuButton asChild>
-                <div className="flex items-center gap-2">
-                  <Loader2 className="animate-spin" />
-                  <span className="sr-only">Loading...</span>
-                </div>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          )}
           {/* If there are no sessions, show the create chat button */}
           {!loading && Object.keys(sessions).length == 0 && (
             <SidebarMenuItem>
@@ -231,9 +179,7 @@ export function NavWorkspaces({ className }: { className?: string }) {
             Object.keys(sessions).map((key: string) => (
               <Collapsible
                 key={key}
-                defaultOpen={
-                  key === "Today" || groupContainsCurrentSession(sessions[key])
-                }
+                defaultOpen={groupContainsCurrentSession(sessions[key])}
               >
                 <SidebarMenuItem>
                   <CollapsibleTrigger asChild>
@@ -254,7 +200,7 @@ export function NavWorkspaces({ className }: { className?: string }) {
                             asChild
                             isActive={session.id === currentSessionId}
                           >
-                            <Link href={`/?session=${session.id}`}>
+                            <Link href={`/~/chat?session=${session.id}`}>
                               <span>{session.name}</span>
                             </Link>
                           </SidebarMenuSubButton>

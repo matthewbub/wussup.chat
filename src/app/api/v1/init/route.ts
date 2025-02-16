@@ -17,9 +17,17 @@ export async function GET() {
   }
 
   try {
-    const [sessionsResult, messagesResult] = await Promise.all([
+    // TODO: Move this to RPC
+    const [sessionsResult, messagesResult, usersResult] = await Promise.all([
       supabase.from("ChatBot_Sessions").select("*").eq("user_id", userId),
       supabase.from("ChatBot_Messages").select("*").eq("user_id", userId),
+      supabase
+        .from("ChatBot_Users")
+        .select(
+          "email, message_count, stripeSubscriptionId, subscriptionStatus, user_id, subscriptionPeriodEnd"
+        )
+        .eq("user_id", userId)
+        .single(),
     ]);
 
     if (sessionsResult.error || messagesResult.error) {
@@ -38,6 +46,7 @@ export async function GET() {
 
     return NextResponse.json({
       sessions: sessionsWithMessages,
+      user: usersResult.data,
     });
   } catch (error) {
     console.error(error);

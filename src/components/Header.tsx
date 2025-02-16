@@ -1,12 +1,4 @@
 import Link from "next/link";
-import { Pacifico } from "next/font/google";
-import clsx from "clsx";
-
-const pacifico = Pacifico({
-  subsets: ["latin"],
-  weight: ["400"],
-  variable: "--font-pacifico",
-});
 
 export default function Header() {
   return (
@@ -15,10 +7,7 @@ export default function Header() {
         <nav className="flex items-center justify-between">
           <Link
             href="/"
-            className={clsx(
-              pacifico.className,
-              "text-3xl font-bold text-primary"
-            )}
+            className="font-title text-3xl font-bold text-primary"
           >
             Wussup.chat
           </Link>

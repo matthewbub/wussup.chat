@@ -1,66 +1,60 @@
 import { create } from "zustand";
 import { ChatSession, Message } from "@/types/chat";
 import { createClient } from "@/lib/supabase-client";
-import { AVAILABLE_MODELS } from "@/constants/models";
 import { TimeframeGroupingStrategy } from "@/lib/session-grouping";
 
 const supabase = createClient();
 
+type ModalType = "auth" | "billing";
+
 interface ChatStore {
   sessions: Record<string, ChatSession[]>; // { [x]: [ { chatSession }, { chatSession } ]}
-  currentSessionId: string | null;
-  addSession: () => Promise<string | null>;
-  setCurrentSession: (id: string | null) => void;
-  addMessage: (content: string, model: string) => void;
-  setSessions: (sessions: ChatSession[]) => void;
+  addSession: (sessionId: string, userId: string) => Promise<string | null>;
   updateSessionTitle: (sessionId: string, title: string) => void;
   deleteSession: (sessionId: string) => void;
-  setSessionTitle: (sessionId: string) => void;
-  sessionTitle: string;
-  fetchSessions: () => Promise<void>;
+  init: (sessionId: string) => Promise<void>;
   loading: boolean;
-  isLoadingMessageResponse: boolean;
-  isStreaming: boolean;
   forkChat: (messages: Message[]) => Promise<string | null>;
   generateSpeech: (text: string) => Promise<string>;
-  newMessage: string;
-  setNewMessage: (message: string) => void;
-  userId: string | null;
-  setUserId: (userId: string) => void;
-  titleLoading: boolean;
+  user: {
+    user_id: string;
+    email: string;
+    message_count: number;
+    stripeSubscriptionId: string;
+    subscriptionStatus: string;
+    subscriptionPeriodEnd: string;
+  };
+  activeModal: ModalType | null;
+  openModal: (type: ModalType) => void;
+  closeModal: () => void;
+  clearStore: () => void;
 }
 
 export const useChatStore = create<ChatStore>((set, get) => ({
   sessions: {},
-  currentSessionId: null,
-  addSession: async (): Promise<string | null> => {
+  addSession: async (
+    sessionId: string,
+    userId: string
+  ): Promise<string | null> => {
     const newSession = {
-      user_id: get().userId,
-      name: `Chat ${Object.values(get().sessions).flat().length + 1}`,
+      id: sessionId,
+      user_id: userId,
+      name:
+        "Untitled Chat " + (Object.values(get().sessions).flat().length + 1),
+      messages: [],
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     };
 
-    const { data, error } = await supabase
-      .from("ChatBot_Sessions")
-      .insert([newSession])
-      .select()
-      .single();
-
-    if (error || !data) {
-      console.error(error);
-      return null;
-    }
-
     const strategy = new TimeframeGroupingStrategy();
-    const allSessions = [...Object.values(get().sessions).flat(), data];
+    const allSessions = [...Object.values(get().sessions).flat(), newSession];
     const groupedSessions = strategy.group(allSessions);
 
     set(() => ({
       sessions: groupedSessions,
-      currentSessionId: data.id,
-      sessionTitle: data.name,
     }));
 
-    return data.id;
+    return sessionId;
   },
   forkChat: async (messages: Message[]): Promise<string | null> => {
     try {
@@ -69,7 +63,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         .from("ChatBot_Sessions")
         .insert([
           {
-            user_id: get().userId,
+            user_id: get().user.user_id,
             name: `Fork of: ${messages[0]?.content?.slice(0, 30)}...`, // Use first message as title
           },
         ])
@@ -86,7 +80,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         chat_session_id: sessionData.id,
         content: msg.content,
         is_user: msg.is_user,
-        user_id: get().userId,
+        user_id: get().user.user_id,
         model: msg.model,
       }));
 
@@ -125,211 +119,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       return null;
     }
   },
-  setCurrentSession: (id) => {
-    set({ currentSessionId: id });
-    if (!id) {
-      set({ sessionTitle: "Untitled Chat" });
-      return;
-    }
-    const session = Object.values(get().sessions)
-      .flat()
-      .find((session) => session.id === id);
-    set({ sessionTitle: session?.name || "Untitled Chat" });
-  },
-
-  addMessage: async (content, model) => {
-    const currentSessionId = get().currentSessionId;
-    if (!currentSessionId) {
-      console.log("No current session id");
-      return;
-    }
-
-    set({ isLoadingMessageResponse: true });
-
-    const userMessageId = crypto.randomUUID();
-    const botMessageId = crypto.randomUUID();
-    const userCreatedAt = new Date().toISOString();
-    const botCreatedAt = new Date().toISOString();
-    try {
-      // Update state with user message
-      set((state) => {
-        const allSessions = Object.values(state.sessions).flat();
-        const session = allSessions.find(
-          (session) => session.id === currentSessionId
-        );
-        if (!session) {
-          console.error("Session not found");
-          return state;
-        }
-
-        const updatedSessions = allSessions.map((session) =>
-          session.id === currentSessionId
-            ? {
-                ...session,
-                messages: [
-                  ...(session.messages || []),
-                  {
-                    id: userMessageId,
-                    content,
-                    is_user: true,
-                    model: model,
-                    created_at: userCreatedAt,
-                  },
-                  // bot message
-                  {
-                    id: botMessageId,
-                    content: "",
-                    is_user: false,
-                    model: model,
-                    created_at: botCreatedAt,
-                  },
-                ],
-              }
-            : session
-        );
-
-        const strategy = new TimeframeGroupingStrategy();
-        return { sessions: strategy.group(updatedSessions) };
-      });
-
-      // Get chat history for API request
-      const currentSession = Object.values(get().sessions)
-        .flat()
-        .find((session) => session.id === currentSessionId);
-      const history = currentSession?.messages || [];
-
-      set({ isStreaming: true });
-
-      const findModel = AVAILABLE_MODELS.find((m) => m.id === model);
-
-      const botResponse = await fetch(`/api/chat/${findModel?.provider}`, {
-        headers: { "Content-Type": "application/json" },
-        method: "POST",
-        body: JSON.stringify({
-          message: content,
-          history,
-          sessionId: currentSessionId,
-          model,
-          userMessageId,
-          botMessageId,
-          userCreatedAt,
-          botCreatedAt,
-        }),
-      });
-
-      if (!botResponse.ok) {
-        const error = await botResponse.json();
-
-        // Remove the messages from UI state
-        set((state) => {
-          const allSessions = Object.values(state.sessions).flat();
-          const updatedSessions = allSessions.map((session) =>
-            session.id === currentSessionId
-              ? {
-                  ...session,
-                  messages: session.messages.filter(
-                    (msg) => msg.id !== userMessageId && msg.id !== botMessageId
-                  ),
-                }
-              : session
-          );
-
-          const strategy = new TimeframeGroupingStrategy();
-          return {
-            sessions: strategy.group(updatedSessions),
-            isLoadingMessageResponse: false,
-            isStreaming: false,
-          };
-        });
-
-        throw new Error(`Content flagged: ${error.categories?.join(", ")}`);
-      }
-
-      // Stream the response
-      const reader = botResponse.body?.getReader();
-      const decoder = new TextDecoder();
-      let accumulatedResponse = "";
-
-      try {
-        while (true) {
-          if (!reader) break;
-          const { value, done } = await reader.read();
-          if (done) break;
-
-          const chunk = decoder.decode(value);
-          const lines = chunk.split("\n");
-
-          for (const line of lines) {
-            if (line.startsWith("data: ")) {
-              try {
-                // Skip empty lines
-                if (line.trim() === "data: ") continue;
-
-                const jsonData = line.slice(5);
-                const parsed = JSON.parse(jsonData);
-
-                const content = parsed.choices[0].delta.content;
-                accumulatedResponse += content;
-
-                // Update bot message in state
-                set((state) => {
-                  const allSessions = Object.values(state.sessions).flat();
-                  const updatedSessions = allSessions.map((session) =>
-                    session.id === currentSessionId
-                      ? {
-                          ...session,
-                          messages: session.messages.map((msg) =>
-                            msg.id === botMessageId
-                              ? { ...msg, content: accumulatedResponse }
-                              : msg
-                          ),
-                        }
-                      : session
-                  );
-
-                  const strategy = new TimeframeGroupingStrategy();
-                  return { sessions: strategy.group(updatedSessions) };
-                });
-              } catch (error) {
-                // If it's not valid JSON, skip this chunk
-                console.error("Error parsing chunk:", error);
-              }
-            }
-          }
-        }
-      } catch (error) {
-        console.error("Error streaming response:", error);
-      } finally {
-        set({ isStreaming: false, isLoadingMessageResponse: false });
-      }
-
-      if (currentSession?.messages?.length === 2) {
-        const titleResponse = await fetch(`/api/chat/title-gen`, {
-          method: "POST",
-          body: JSON.stringify({
-            messages: currentSession?.messages,
-          }),
-        });
-        const titleData = await titleResponse.json();
-        const title = titleData.title;
-
-        await get().updateSessionTitle(currentSessionId, title);
-      }
-    } catch (error) {
-      set({ isLoadingMessageResponse: false });
-      throw error;
-    }
-  },
-  setSessions: (sessions: ChatSession[]) => {
-    const strategy = new TimeframeGroupingStrategy();
-    set({ sessions: strategy.group(sessions) });
-  },
   updateSessionTitle: async (sessionId: string, title: string) => {
-    set({ titleLoading: true });
-
-    console.log({
-      title,
-    });
     const { error } = await supabase
       .from("ChatBot_Sessions")
       .update({ name: title })
@@ -349,12 +139,10 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       const strategy = new TimeframeGroupingStrategy();
       return {
         sessions: strategy.group(updatedSessions),
-        sessionTitle:
-          sessionId === state.currentSessionId ? title : state.sessionTitle,
       };
     });
-    set({ titleLoading: false });
   },
+
   deleteSession: async (sessionId: string) => {
     const response = await fetch(`/api/chat/delete?sessionId=${sessionId}`, {
       method: "DELETE",
@@ -376,32 +164,26 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       const strategy = new TimeframeGroupingStrategy();
       return {
         sessions: strategy.group(filteredSessions),
-        currentSessionId: null,
       };
     });
   },
-  setSessionTitle: (sessionId: string) => {
-    const session = Object.values(get().sessions)
-      .flat()
-      .find((session) => session.id === sessionId);
-    set({ sessionTitle: session?.name || "Untitled Chat" });
-  },
-  sessionTitle: "",
+
   loading: false,
   isLoadingMessageResponse: false,
   isStreaming: false,
-  fetchSessions: async () => {
+  init: async (sessionId?: string) => {
     set({ loading: true });
-    const response = await fetch(`/api/chat`);
+    const response = await fetch(`/api/v1/init`);
     const responseData = await response.json();
     if (responseData.code === "user_id_required") {
-      set({ loading: false });
+      set({ loading: false, activeModal: "auth" });
       return;
     }
 
     const currentSession = responseData.sessions.find(
-      (s: ChatSession) => s.id === get().currentSessionId
+      (s: ChatSession) => s.id === sessionId
     );
+    console.log("currentSession", currentSession);
 
     const strategy = new TimeframeGroupingStrategy();
     const groupedSessions = strategy.group(responseData.sessions);
@@ -409,7 +191,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     set({
       sessions: groupedSessions,
       loading: false,
-      sessionTitle: currentSession?.name || "Untitled Chat",
+      user: responseData.user,
     });
   },
   generateSpeech: async (text: string) => {
@@ -433,9 +215,32 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       throw error;
     }
   },
-  newMessage: "",
-  setNewMessage: (message: string) => set({ newMessage: message }),
-  userId: null,
-  setUserId: (userId: string) => set({ userId }),
-  titleLoading: false,
+  user: {
+    user_id: "",
+    email: "",
+    message_count: 0,
+    stripeSubscriptionId: "",
+    subscriptionStatus: "",
+    subscriptionPeriodEnd: "",
+  },
+  activeModal: null,
+  openModal: (type: ModalType) => {
+    set({ activeModal: type });
+  },
+  closeModal: () => {
+    set({ activeModal: null });
+  },
+  clearStore: () =>
+    set(() => ({
+      user: {
+        user_id: "",
+        email: "",
+        message_count: 0,
+        stripeSubscriptionId: "",
+        subscriptionStatus: "",
+        subscriptionPeriodEnd: "",
+      },
+      activeModal: null,
+      sessions: {},
+    })),
 }));
