@@ -9,7 +9,7 @@ export const maxDuration = 30;
 export async function POST(req: Request) {
   const {
     messages,
-    data: { session_id, session_title },
+    data: { session_id, session_title, user_specified_model },
   } = await req.json();
   const supabase = await createClient();
 
@@ -82,8 +82,17 @@ export async function POST(req: Request) {
 
   console.log("[Chat API] Successfully inserted user message");
 
+  const allowedModels = ["gpt-4o-mini", "chatgpt-4o-latest", "o1", "o1-mini"];
+
+  let model = "gpt-4o-mini";
+
+  if (allowedModels.includes(user_specified_model)) {
+    model = user_specified_model;
+  }
+
+  // TODO: Add user specified model
   const result = streamText({
-    model: openai("gpt-4-turbo"),
+    model: openai(model),
     system: "You are a helpful assistant.",
     messages,
   });
