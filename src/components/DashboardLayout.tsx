@@ -34,6 +34,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { Input } from "@/components/ui/input";
 
 interface BreadcrumbItem {
   label: string;
@@ -99,6 +100,8 @@ function ChatItemDropdown() {
   const { deleteSession, updateSessionTitle, sessions } = useChatStore();
   const router = useRouter();
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isRenameDialogOpen, setIsRenameDialogOpen] = useState(false);
+  const [newChatName, setNewChatName] = useState("");
 
   const sessionId = useSearchParams().get("session");
   const currentSession = sessionId
@@ -112,12 +115,9 @@ function ChatItemDropdown() {
   }
 
   const handleRenameChat = async () => {
-    const newName = window.prompt(
-      "Enter new name for chat:",
-      currentSession.name
-    );
-    if (newName && newName !== currentSession.name) {
-      await updateSessionTitle(currentSession.id, newName);
+    if (newChatName && newChatName !== currentSession.name) {
+      await updateSessionTitle(currentSession.id, newChatName);
+      setIsRenameDialogOpen(false);
     }
   };
 
@@ -151,7 +151,12 @@ function ChatItemDropdown() {
           </div>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-56 rounded-lg" side={"bottom"}>
-          <DropdownMenuItem onClick={handleRenameChat}>
+          <DropdownMenuItem
+            onClick={() => {
+              setNewChatName(currentSession.name);
+              setIsRenameDialogOpen(true);
+            }}
+          >
             <Pencil className="text-muted-foreground" />
             <span>Rename Chat</span>
           </DropdownMenuItem>
@@ -171,6 +176,31 @@ function ChatItemDropdown() {
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+
+      <Dialog open={isRenameDialogOpen} onOpenChange={setIsRenameDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Rename Chat</DialogTitle>
+            <DialogDescription>
+              Enter a new name for this chat.
+            </DialogDescription>
+          </DialogHeader>
+          <Input
+            value={newChatName}
+            onChange={(e) => setNewChatName(e.target.value)}
+            placeholder="Enter chat name"
+          />
+          <DialogFooter>
+            <Button
+              variant="ghost"
+              onClick={() => setIsRenameDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleRenameChat}>Save</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent>
