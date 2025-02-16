@@ -8,9 +8,9 @@ export async function POST(req: Request) {
     role,
     message_id,
     session_id,
-    prompt_tokens,
-    completion_tokens,
-    total_tokens,
+    // prompt_tokens,
+    // completion_tokens,
+    // total_tokens,
   } = await req.json();
   console.log(created_at, content, role, message_id);
 

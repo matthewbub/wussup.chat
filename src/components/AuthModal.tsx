@@ -13,12 +13,15 @@ import { GithubIcon, Mail } from "lucide-react";
 import useNavUserStore from "@/stores/useNavUserStore";
 import { Label } from "./ui/label";
 import { useChatStore } from "@/stores/chatStore";
+import { useSearchParams } from "next/navigation";
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
 export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
+  const searchParams = useSearchParams();
+  const sessionId = searchParams.get("session");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -46,7 +49,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
         // @ts-expect-error - FIX ME LAZY ASS
         setUser(data.user);
         onClose();
-        init();
+        init(sessionId as string);
       }
     } catch (err: unknown) {
       setError((err as { message: string }).message);

@@ -14,7 +14,6 @@ import {
 import { AppSidebar } from "@/components/AppSidebar";
 import Link from "next/link";
 import { NavUser } from "@/components/NavUser";
-import { Fragment } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,7 +24,6 @@ import {
 import { Pencil, LinkIcon, ArrowUpRight, Trash2 } from "lucide-react";
 import { useChatStore } from "@/stores/chatStore";
 import { useRouter } from "next/navigation";
-import { ChatSession } from "@/types/chat";
 
 interface BreadcrumbItem {
   label: string;
@@ -38,7 +36,7 @@ interface ChatLayoutProps {
 }
 
 export function ChatLayout({ children }: ChatLayoutProps) {
-  const { deleteSession, updateSessionTitle, currentSession } = useChatStore();
+  const { currentSession } = useChatStore();
   return (
     <SidebarProvider>
       <AppSidebar />
@@ -59,11 +57,7 @@ export function ChatLayout({ children }: ChatLayoutProps) {
                     <BreadcrumbSeparator />
                     <BreadcrumbItem>
                       <BreadcrumbPage className="line-clamp-1">
-                        <ChatItemDropdown
-                          session={currentSession}
-                          onRename={updateSessionTitle}
-                          onDelete={deleteSession}
-                        />
+                        <ChatItemDropdown />
                       </BreadcrumbPage>
                     </BreadcrumbItem>
                   </>

@@ -7,7 +7,6 @@ import {
   SelectTrigger,
   SelectLabel,
   SelectGroup,
-  selectItemClassName,
 } from "@/components/ui/select";
 import { AVAILABLE_MODELS, AiModel, providers } from "@/constants/models";
 import clsx from "clsx";
