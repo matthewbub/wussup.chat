@@ -20,6 +20,7 @@ import {
 import { BillingModal } from "@/components/BillingModal";
 import crypto from "crypto";
 import { useChatStore } from "@/stores/chatStore";
+import { useRouter } from "next/navigation";
 
 const getGravatarUrl = (email: string) => {
   const hash = crypto
@@ -32,7 +33,7 @@ const getGravatarUrl = (email: string) => {
 export function NavUser() {
   const { user, openModal, closeModal, activeModal, clearStore } =
     useChatStore();
-
+  const router = useRouter();
   const avatarFallback = user ? user.email?.slice(0, 2).toUpperCase() : "GU";
 
   const handleManageSubscription = () => {
@@ -54,7 +55,7 @@ export function NavUser() {
       // Clear the chat store state
       clearStore();
 
-      openModal("auth");
+      router.push("/");
     } catch (error) {
       console.error("Logout error:", error);
     }

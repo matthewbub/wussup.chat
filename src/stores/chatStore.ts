@@ -28,6 +28,7 @@ interface ChatStore {
   openModal: (type: ModalType) => void;
   closeModal: () => void;
   clearStore: () => void;
+  initGuest: () => Promise<void>;
 }
 
 export const useChatStore = create<ChatStore>((set, get) => ({
@@ -243,4 +244,18 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       activeModal: null,
       sessions: {},
     })),
+  // This is just to see if the user is logged in or not
+  initGuest: async () => {
+    set({ loading: true });
+    const response = await fetch(`/api/v1/init`);
+    const responseData = await response.json();
+
+    const strategy = new TimeframeGroupingStrategy();
+    const groupedSessions = strategy.group(responseData.sessions);
+    set({
+      loading: false,
+      user: responseData.user,
+      sessions: groupedSessions,
+    });
+  },
 }));

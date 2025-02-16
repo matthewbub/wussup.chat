@@ -11,6 +11,7 @@ import { AVAILABLE_MODELS } from "@/constants/models";
 import { Message } from "./_components/Message";
 import { useChatStore } from "@/stores/chatStore";
 import { useRouter, useSearchParams } from "next/navigation";
+import { EmptyChatScreen } from "@/components/EmptyChatScreen";
 
 // Separate the chat UI into its own component
 function ChatUI() {
@@ -137,9 +138,13 @@ function ChatUI() {
   return (
     <div className="flex flex-col h-[calc(100vh-87px)]">
       <div className="space-y-4 mb-6 flex-1 overflow-y-scroll p-4">
-        {messages.map((message, index) => (
-          <Message key={index} message={message} />
-        ))}
+        {messages.length === 0 ? (
+          <EmptyChatScreen setNewMessage={setInput} />
+        ) : (
+          messages.map((message, index) => (
+            <Message key={index} message={message} />
+          ))
+        )}
       </div>
 
       <form
