@@ -21,7 +21,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Pencil, LinkIcon, ArrowUpRight, Trash2 } from "lucide-react";
+import {
+  Pencil,
+  LinkIcon,
+  ArrowUpRight,
+  Trash2,
+  WandSparkles,
+} from "lucide-react";
 import { useChatStore } from "@/stores/chatStore";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
@@ -102,6 +108,7 @@ function ChatItemDropdown() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isRenameDialogOpen, setIsRenameDialogOpen] = useState(false);
   const [newChatName, setNewChatName] = useState("");
+  const [aiLoading, setAiLoading] = useState(false);
 
   const sessionId = useSearchParams().get("session");
   const currentSession = sessionId
@@ -134,7 +141,7 @@ function ChatItemDropdown() {
     setIsDeleteDialogOpen(false);
     await deleteSession(currentSession.id);
 
-    router.push(`/~}`);
+    router.push(`/~`);
     router.refresh();
   };
 
@@ -190,15 +197,40 @@ function ChatItemDropdown() {
             onChange={(e) => setNewChatName(e.target.value)}
             placeholder="Enter chat name"
           />
-          <DialogFooter>
+          <div className="flex justify-between">
             <Button
               variant="ghost"
-              onClick={() => setIsRenameDialogOpen(false)}
+              disabled={aiLoading}
+              onClick={async () => {
+                setAiLoading(true);
+                const data = {
+                  session_id: currentSession.id,
+                  messages: currentSession.messages,
+                };
+
+                const response = await fetch("/api/v1/title", {
+                  method: "POST",
+                  body: JSON.stringify(data),
+                });
+
+                const titleData = await response.json();
+
+                setNewChatName(titleData.title);
+                setAiLoading(false);
+              }}
             >
-              Cancel
+              <WandSparkles className="w-4 h-4" />
             </Button>
-            <Button onClick={handleRenameChat}>Save</Button>
-          </DialogFooter>
+            <div className="flex gap-2">
+              <Button
+                variant="ghost"
+                onClick={() => setIsRenameDialogOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button onClick={handleRenameChat}>Save</Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
 
