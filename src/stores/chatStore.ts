@@ -5,6 +5,8 @@ import { TimeframeGroupingStrategy } from "@/lib/session-grouping";
 
 const supabase = createClient();
 
+type ModalType = "auth" | "billing";
+
 interface ChatStore {
   sessions: Record<string, ChatSession[]>; // { [x]: [ { chatSession }, { chatSession } ]}
   addSession: (sessionId: string, userId: string) => Promise<string | null>;
@@ -20,7 +22,11 @@ interface ChatStore {
     message_count: number;
     stripeSubscriptionId: string;
     subscriptionStatus: string;
+    subscriptionPeriodEnd: string;
   };
+  activeModal: ModalType | null;
+  openModal: (type: ModalType) => void;
+  closeModal: () => void;
 }
 
 export const useChatStore = create<ChatStore>((set, get) => ({
@@ -214,5 +220,13 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     message_count: 0,
     stripeSubscriptionId: "",
     subscriptionStatus: "",
+    subscriptionPeriodEnd: "",
+  },
+  activeModal: null,
+  openModal: (type: ModalType) => {
+    set({ activeModal: type });
+  },
+  closeModal: () => {
+    set({ activeModal: null });
   },
 }));

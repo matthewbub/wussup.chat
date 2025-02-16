@@ -9,7 +9,6 @@ import { ChatLayout } from "@/components/DashboardLayout";
 import { LanguageModalSelector } from "@/components/chat/LanguageModalSelector";
 import { AVAILABLE_MODELS } from "@/constants/models";
 import { Message } from "./_components/Message";
-import useNavUserStore from "@/stores/useNavUserStore";
 import { useChatStore } from "@/stores/chatStore";
 import { useSearchParams } from "next/navigation";
 
@@ -185,11 +184,11 @@ function App() {
 // Wrap ForceAuth with Suspense as well
 function ForceAuthContent({ children }: { children: React.ReactNode }) {
   const { user, loading } = useChatStore();
-  const { openAuth } = useNavUserStore();
+  const { openModal } = useChatStore();
 
   useEffect(() => {
     if (!user && !loading) {
-      openAuth();
+      openModal("auth");
       return;
     }
   }, [user, loading]);

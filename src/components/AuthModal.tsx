@@ -10,10 +10,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { GithubIcon, Mail } from "lucide-react";
-import useNavUserStore from "@/stores/useNavUserStore";
 import { Label } from "./ui/label";
 import { useChatStore } from "@/stores/chatStore";
 import { useSearchParams } from "next/navigation";
+
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -27,7 +27,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [mode, setMode] = useState<"login" | "signup">("login");
-  const { setUser, user } = useNavUserStore();
+  const { user } = useChatStore();
   const { init } = useChatStore();
 
   const supabase = createClient();
@@ -46,8 +46,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
       if (error) throw error;
 
       if (data.user) {
-        // @ts-expect-error - FIX ME LAZY ASS
-        setUser(data.user);
         onClose();
         init(sessionId as string);
       }

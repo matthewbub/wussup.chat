@@ -2,7 +2,7 @@
 
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useState } from "react";
-import { useSubscriptionStore } from "@/stores/useSubscription";
+import { useChatStore } from "@/stores/chatStore";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Check, Loader2 } from "lucide-react";
@@ -17,9 +17,7 @@ interface BillingModalProps {
 
 export function BillingModal({ isOpen, onClose, userId }: BillingModalProps) {
   const [isLoading, setIsLoading] = useState(false);
-  // const [confetti, setConfetti] = useState(false);
-  const { subscription } = useSubscriptionStore();
-  // const { toast } = useToast();
+  const { user } = useChatStore();
 
   const handleSubscribe = async () => {
     setIsLoading(true);
@@ -52,7 +50,7 @@ export function BillingModal({ isOpen, onClose, userId }: BillingModalProps) {
     }
   };
 
-  const isPro = subscription.active;
+  const isPro = user?.subscriptionStatus === "active";
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -70,13 +68,15 @@ export function BillingModal({ isOpen, onClose, userId }: BillingModalProps) {
             {isPro ? (
               <div className="space-y-4">
                 {/* Subscription status alerts */}
-                {subscription.status === "active" && (
+                {user?.subscriptionStatus === "active" && (
                   <Alert>
                     <CheckCircle2 className="h-4 w-4" />
                     <AlertTitle>Pro Plan Active</AlertTitle>
                     <AlertDescription>
                       Next billing date:{" "}
-                      {subscription.expiresAt?.toLocaleDateString()}
+                      {new Date(
+                        user?.subscriptionPeriodEnd
+                      ).toLocaleDateString()}
                     </AlertDescription>
                   </Alert>
                 )}
@@ -93,7 +93,7 @@ export function BillingModal({ isOpen, onClose, userId }: BillingModalProps) {
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       Loading...
                     </>
-                  ) : subscription.status === "canceled" ? (
+                  ) : user?.subscriptionStatus === "canceled" ? (
                     "Reactivate Subscription"
                   ) : (
                     "Manage Subscription"
