@@ -128,6 +128,7 @@ function ChatUI() {
       data: {
         session_id: searchParams.get("session"),
         session_title: currentSession?.name,
+        user_specified_model: model,
       },
     });
     setInput("");
