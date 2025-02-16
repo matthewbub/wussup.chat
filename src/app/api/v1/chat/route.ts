@@ -23,8 +23,6 @@ export async function POST(req: Request) {
   const user_message_id = crypto.randomUUID();
   const user_created_at = new Date().toISOString();
 
-  const messageLength = messages.length;
-
   const upsertData: {
     id: string;
     updated_at: string;
@@ -35,13 +33,15 @@ export async function POST(req: Request) {
     updated_at: new Date().toISOString(),
     user_id: userId,
   };
-  console.log("messageLength", messageLength);
 
+  // If the user has only sent one message, then we will use the default name as the session name
+  // it increments from the client side
+  const messageLength = messages.length;
   if (messageLength === 1) {
     upsertData.name = session_title;
   }
 
-  const { data: session_data, error: session_error } = await supabase
+  const { error: session_error } = await supabase
     .from("ChatBot_Sessions")
     .upsert(upsertData)
     .select("*")
@@ -54,8 +54,6 @@ export async function POST(req: Request) {
       { status: 500 }
     );
   }
-
-  console.log("Session data", session_data);
 
   // insert user message and increment message count concurrently
   const [{ error: userError }, { error: updateError }] = await Promise.all([
@@ -76,11 +74,13 @@ export async function POST(req: Request) {
   ]);
 
   if (userError || updateError) {
-    console.error("[chat api error]", userError || updateError);
-    // continue processing even if count update fails
+    console.error(
+      "[Chat API] Error inserting user message: ",
+      userError || updateError
+    );
   }
 
-  console.log("Successfully inserted user message");
+  console.log("[Chat API] Successfully inserted user message");
 
   const result = streamText({
     model: openai("gpt-4-turbo"),

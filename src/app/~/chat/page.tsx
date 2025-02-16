@@ -38,8 +38,7 @@ function App() {
   const [initialMessages, setInitialMessages] = useState<AiMessage[]>([]);
 
   useEffect(() => {
-    // init app &&
-    // fetch session, if there is a session that actually exisits with the id,
+    // load all the data into the app, account for the current session since we already have it
     init(initialSession as string);
   }, []);
 
@@ -59,7 +58,7 @@ function App() {
   // update chat session if the URL changes
   useEffect(() => {
     const sessionFromUrl = searchParams.get("session");
-    console.log("Session from url", sessionFromUrl);
+    console.log("[Session Updated] ", sessionFromUrl);
     if (sessionFromUrl) {
       updateCurrentSession(sessionFromUrl);
     }
@@ -116,6 +115,7 @@ function App() {
     ev.preventDefault();
     console.log("Current session id", currentSession?.id);
     handleSubmit(ev, {
+      // @ts-expect-error - idk wussup this is valid stuff
       data: {
         session_id: searchParams.get("session"),
         session_title: currentSession?.name,
