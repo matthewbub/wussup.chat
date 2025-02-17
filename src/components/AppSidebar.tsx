@@ -99,7 +99,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           href="/support"
           className="px-4 text-xs text-muted-foreground text-right"
         >
-          Version 0.0.2
+          Version 0.0.3
         </Link>
       </SidebarFooter>
     </Sidebar>
