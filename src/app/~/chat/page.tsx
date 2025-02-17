@@ -141,9 +141,14 @@ function ChatUI() {
         {messages.length === 0 ? (
           <EmptyChatScreen setNewMessage={setInput} />
         ) : (
-          messages.map((message, index) => (
-            <Message key={index} message={message} />
-          ))
+          messages.map((message, index) => {
+            const createdAt = currentSession?.messages.find(
+              (m) => m.id === message.id
+            )?.created_at;
+            return (
+              <Message key={index} message={message} createdAt={createdAt} />
+            );
+          })
         )}
       </div>
 

@@ -1,12 +1,13 @@
 import MarkdownComponent from "@/components/ui/Markdown";
 import MessageDropdown from "./MessageDropdown";
-import { Message as MessageType } from "ai";
+import { UIMessage } from "ai";
 
 interface MessageProps {
-  message: MessageType;
+  message: UIMessage;
+  createdAt: string | undefined;
 }
 
-export function Message({ message }: MessageProps) {
+export function Message({ message, createdAt }: MessageProps) {
   return (
     <div
       className={`flex ${
@@ -34,6 +35,7 @@ export function Message({ message }: MessageProps) {
         >
           <MarkdownComponent>{message?.content}</MarkdownComponent>
         </div>
+        {createdAt && (
         <div
           className={
             "text-xs text-gray-600 dark:text-gray-400 " +
@@ -41,9 +43,10 @@ export function Message({ message }: MessageProps) {
           }
         >
           <p className="text-xs text-gray-600 dark:text-gray-400 pt-2 pl-1">
-            {/* {new Date(message.created_at).toLocaleString()} */}
+              {new Date(createdAt).toLocaleString()}
           </p>
         </div>
+        )}
       </div>
     </div>
   );
