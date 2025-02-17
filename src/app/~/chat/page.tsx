@@ -17,7 +17,7 @@ import { EmptyChatScreen } from "@/components/EmptyChatScreen";
 function ChatUI() {
   const searchParams = useSearchParams();
   const sessionId = searchParams.get("session");
-  const { sessions, init, user } = useChatStore();
+  const { sessions, init, user, updateSessionTitle } = useChatStore();
 
   // Find current session
   const currentSession = sessionId
@@ -84,7 +84,7 @@ function ChatUI() {
         });
 
         const titleData = await titleResponse.json();
-        console.log("Title response:", titleData);
+        updateSessionTitle(sessionId as string, titleData.title);
       }
 
       // TODO: ADD THIS
