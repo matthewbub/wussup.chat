@@ -1,6 +1,6 @@
 "use client";
 
-import { CreditCard, LogOut, User } from "lucide-react";
+import { CreditCard, LogOut, StickyNote, User } from "lucide-react";
 import { AuthModal } from "@/components/AuthModal";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -21,6 +21,9 @@ import { BillingModal } from "@/components/BillingModal";
 import crypto from "crypto";
 import { useChatStore } from "@/stores/chatStore";
 import { useRouter } from "next/navigation";
+import { Dialog, DialogTrigger } from "@/components/ui/dialog";
+import { ContextDialog } from "@/components/ContextModal";
+import { useState } from "react";
 
 const getGravatarUrl = (email: string) => {
   const hash = crypto
@@ -35,6 +38,7 @@ export function NavUser() {
     useChatStore();
   const router = useRouter();
   const avatarFallback = user ? user.email?.slice(0, 2).toUpperCase() : "GU";
+  const [showContextDialog, setShowContextDialog] = useState(false);
 
   const handleManageSubscription = () => {
     openModal("billing");
@@ -112,6 +116,10 @@ export function NavUser() {
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => setShowContextDialog(true)}>
+                    <StickyNote />
+                    Set Context
+                  </DropdownMenuItem>
                   <DropdownMenuItem onClick={handleManageSubscription}>
                     <CreditCard />
                     {user?.subscriptionStatus === "active"
@@ -141,6 +149,10 @@ export function NavUser() {
         isOpen={activeModal === "billing"}
         onClose={() => closeModal()}
         userId={user?.user_id}
+      />
+      <ContextDialog
+        open={showContextDialog}
+        onOpenChange={setShowContextDialog}
       />
     </>
   );

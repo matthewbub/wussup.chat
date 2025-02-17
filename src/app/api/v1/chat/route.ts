@@ -9,7 +9,7 @@ export const maxDuration = 30;
 export async function POST(req: Request) {
   const {
     messages,
-    data: { session_id, session_title, user_specified_model },
+    data: { session_id, session_title, user_specified_model, chat_context },
   } = await req.json();
   const supabase = await createClient();
 
@@ -93,7 +93,7 @@ export async function POST(req: Request) {
   // TODO: Add user specified model
   const result = streamText({
     model: openai(model),
-    system: "You are a helpful assistant.",
+    system: chat_context,
     messages,
   });
 

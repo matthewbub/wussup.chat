@@ -24,7 +24,7 @@ export async function GET() {
       supabase
         .from("ChatBot_Users")
         .select(
-          "email, message_count, stripeSubscriptionId, subscriptionStatus, user_id, subscriptionPeriodEnd"
+          "email, message_count, stripeSubscriptionId, subscriptionStatus, user_id, subscriptionPeriodEnd, chat_context"
         )
         .eq("user_id", userId)
         .single(),

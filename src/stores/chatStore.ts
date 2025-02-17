@@ -23,12 +23,14 @@ interface ChatStore {
     stripeSubscriptionId: string;
     subscriptionStatus: string;
     subscriptionPeriodEnd: string;
+    chat_context: string;
   };
   activeModal: ModalType | null;
   openModal: (type: ModalType) => void;
   closeModal: () => void;
   clearStore: () => void;
   initGuest: () => Promise<void>;
+  updateUserChatContext: (chatContext: string) => void;
 }
 
 export const useChatStore = create<ChatStore>((set, get) => ({
@@ -240,6 +242,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         stripeSubscriptionId: "",
         subscriptionStatus: "",
         subscriptionPeriodEnd: "",
+        chat_context: "",
       },
       activeModal: null,
       sessions: {},
@@ -257,5 +260,13 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       user: responseData.user,
       sessions: groupedSessions,
     });
+  },
+  updateUserChatContext: async (chatContext: string) => {
+    set((state) => ({
+      user: {
+        ...state.user,
+        chat_context: chatContext,
+      },
+    }));
   },
 }));

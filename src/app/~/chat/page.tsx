@@ -17,7 +17,7 @@ import { EmptyChatScreen } from "@/components/EmptyChatScreen";
 function ChatUI() {
   const searchParams = useSearchParams();
   const sessionId = searchParams.get("session");
-  const { sessions } = useChatStore();
+  const { sessions, init, user } = useChatStore();
 
   // Find current session
   const currentSession = sessionId
@@ -28,7 +28,6 @@ function ChatUI() {
 
   const defaultModel = AVAILABLE_MODELS[0];
   const [model, setModel] = useState(defaultModel.id);
-  const { init, user } = useChatStore();
   const [loadingInitialMessages, setLoadingInitialMessages] = useState(true);
   const [initialMessages, setInitialMessages] = useState<AiMessage[]>([]);
   const router = useRouter();
@@ -130,6 +129,7 @@ function ChatUI() {
         session_id: searchParams.get("session"),
         session_title: currentSession?.name,
         user_specified_model: model,
+        chat_context: user.chat_context,
       },
     });
     setInput("");
