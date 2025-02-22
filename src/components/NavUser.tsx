@@ -21,7 +21,6 @@ import { BillingModal } from "@/components/BillingModal";
 import crypto from "crypto";
 import { useChatStore } from "@/stores/chatStore";
 import { useRouter } from "next/navigation";
-import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { ContextDialog } from "@/components/ContextModal";
 import { useState } from "react";
 

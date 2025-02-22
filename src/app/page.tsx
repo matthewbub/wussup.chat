@@ -8,7 +8,7 @@ import { useEffect, useState } from "react";
 import { ChatLayout } from "@/components/DashboardLayout";
 import { LanguageModalSelector } from "@/components/chat/LanguageModalSelector";
 import { AVAILABLE_MODELS } from "@/constants/models";
-import { Message } from "@/app/~/chat/_components/Message";
+import { Message } from "@/app/~/[session]/_components/Message";
 import { useChatStore } from "@/stores/chatStore";
 import { useRouter } from "next/navigation";
 import { EmptyChatScreen } from "@/components/EmptyChatScreen";
@@ -21,7 +21,6 @@ function ChatUI() {
   const router = useRouter();
 
   useEffect(() => {
-    // load all the data into the app, account for the current session since we already have it
     initGuest();
   }, []);
 

@@ -34,6 +34,13 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const content = (
+    <>
+      <Background>{children}</Background>
+      <Toaster />
+    </>
+  );
+
   return (
     <html lang="en" className="h-full dark">
       {/* <head>
@@ -43,10 +50,11 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${title.variable} antialiased h-full`}
       >
-        <PostHogProvider>
-          <Background>{children}</Background>
-          <Toaster />
-        </PostHogProvider>
+        {process.env.NODE_ENV === "production" ? (
+          <PostHogProvider>{content}</PostHogProvider>
+        ) : (
+          content
+        )}
       </body>
     </html>
   );

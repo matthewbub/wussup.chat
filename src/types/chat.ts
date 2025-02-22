@@ -4,6 +4,14 @@ export interface Message {
   is_user: boolean;
   created_at: string;
   model: string;
+  chat_session_id?: string;
+  user_id?: string;
+  metadata?: {
+    type: string;
+    imageUrl: string;
+    prompt: string;
+    storagePath: string;
+  };
 }
 
 export interface ChatSession {
