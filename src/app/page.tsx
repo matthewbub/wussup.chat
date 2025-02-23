@@ -32,17 +32,7 @@ function ChatUI() {
     }
   }, [user]);
 
-  const {
-    messages,
-    input,
-    handleInputChange,
-    handleSubmit,
-    status,
-    stop,
-    error,
-    reload,
-    setInput,
-  } = useChat({
+  const { messages, input, handleInputChange, handleSubmit, status, stop, error, reload, setInput } = useChat({
     api: "/api/v1/guest/temp-chat",
   });
 
@@ -62,21 +52,12 @@ function ChatUI() {
         {messages.length === 0 ? (
           <EmptyChatScreen setNewMessage={setInput} />
         ) : (
-          messages.map((message, index) => (
-            <Message key={index} message={message} />
-          ))
+          messages.map((message, index) => <Message key={index} message={message} />)
         )}
       </div>
 
-      <form
-        onSubmit={componentSubmitHandler}
-        className="flex flex-col gap-2 rounded-xl bg-secondary p-4"
-      >
-        <Textarea
-          value={input}
-          onChange={handleInputChange}
-          placeholder="Type your message..."
-        />
+      <form onSubmit={componentSubmitHandler} className="flex flex-col gap-2 rounded-xl bg-secondary p-4">
+        <Textarea value={input} onChange={handleInputChange} placeholder="Type your message..." />
 
         <div className="flex justify-between gap-2">
           <LanguageModalSelector

@@ -42,18 +42,11 @@ export async function POST(req: Request) {
     upsertData.name = session_title;
   }
 
-  const { error: session_error } = await supabase
-    .from("ChatBot_Sessions")
-    .upsert(upsertData)
-    .select("*")
-    .single();
+  const { error: session_error } = await supabase.from("ChatBot_Sessions").upsert(upsertData).select("*").single();
 
   if (session_error) {
     console.error("[chat api error]", session_error);
-    return NextResponse.json(
-      { error: "Failed to get or create session" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to get or create session" }, { status: 500 });
   }
 
   // insert user message and increment message count concurrently
@@ -75,10 +68,7 @@ export async function POST(req: Request) {
   ]);
 
   if (userError || updateError) {
-    console.error(
-      "[Chat API] Error inserting user message: ",
-      userError || updateError
-    );
+    console.error("[Chat API] Error inserting user message: ", userError || updateError);
   }
 
   console.log("[Chat API] Successfully inserted user message");
@@ -131,13 +121,12 @@ export async function POST(req: Request) {
 
           // Add content-type and more structured path
           const imagePath = `${userId}/generated/${new Date().getFullYear()}/${crypto.randomUUID()}.png`;
-          const { data: uploadData, error: createError } =
-            await supabase.storage
-              .from("ChatBot_Images_Generated")
-              .upload(imagePath, imageBuffer, {
-                contentType: "image/png",
-                cacheControl: "3600",
-              });
+          const { data: uploadData, error: createError } = await supabase.storage
+            .from("ChatBot_Images_Generated")
+            .upload(imagePath, imageBuffer, {
+              contentType: "image/png",
+              cacheControl: "3600",
+            });
 
           if (createError) {
             console.error("Error uploading image to storage", createError);
@@ -149,29 +138,25 @@ export async function POST(req: Request) {
           // Get public URL for the uploaded image
           const {
             data: { publicUrl },
-          } = supabase.storage
-            .from("ChatBot_Images_Generated")
-            .getPublicUrl(imagePath);
+          } = supabase.storage.from("ChatBot_Images_Generated").getPublicUrl(imagePath);
 
           // After successfully uploading the image, store the message with image metadata
-          const { error: messageError } = await supabase
-            .from("ChatBot_Messages")
-            .insert([
-              {
-                id: crypto.randomUUID(),
-                chat_session_id: session_id,
-                content: "", // Empty content since this is an image message
-                user_id: userId,
-                is_user: false,
-                created_at: new Date().toISOString(),
-                metadata: {
-                  type: "image",
-                  imageUrl: publicUrl,
-                  prompt: prompt,
-                  storagePath: imagePath,
-                },
+          const { error: messageError } = await supabase.from("ChatBot_Messages").insert([
+            {
+              id: crypto.randomUUID(),
+              chat_session_id: session_id,
+              content: "", // Empty content since this is an image message
+              user_id: userId,
+              is_user: false,
+              created_at: new Date().toISOString(),
+              metadata: {
+                type: "image",
+                imageUrl: publicUrl,
+                prompt: prompt,
+                storagePath: imagePath,
               },
-            ]);
+            },
+          ]);
 
           if (messageError) {
             console.error("Error storing image message", messageError);

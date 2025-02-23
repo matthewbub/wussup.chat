@@ -1,15 +1,6 @@
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbList,
-  BreadcrumbPage,
-} from "@/components/ui/breadcrumb";
+import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage } from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/components/ui/sidebar";
+import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import Link from "next/link";
 import { NavUser } from "@/components/NavUser";
@@ -27,11 +18,7 @@ interface ChatLayoutProps {
   currentSessionId: string;
 }
 
-export function ChatLayout({
-  sessions,
-  currentSessionId,
-  children,
-}: ChatLayoutProps) {
+export function ChatLayout({ sessions, currentSessionId, children }: ChatLayoutProps) {
   return (
     <SidebarProvider>
       <AppSidebar sessions={sessions} currentSessionId={currentSessionId} />

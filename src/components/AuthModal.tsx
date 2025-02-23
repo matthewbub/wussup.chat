@@ -1,12 +1,6 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase-client";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { GithubIcon, Mail } from "lucide-react";
@@ -82,9 +76,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-[400px]" hideCloseButton>
         <DialogHeader>
-          <DialogTitle className="font-title text-3xl text-center pt-2 pb-8">
-            Wussup
-          </DialogTitle>
+          <DialogTitle className="font-title text-3xl text-center pt-2 pb-8">Wussup</DialogTitle>
           <DialogDescription className="p-4 border-t text-center text-sm text-muted-foreground">
             {mode === "login"
               ? "Multi-Model Unified AI assistant"
@@ -126,9 +118,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
             <span className="w-full border-t" />
           </div>
           <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-background px-2 text-muted-foreground">
-              Or continue with
-            </span>
+            <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
           </div>
         </div>
 
@@ -138,9 +128,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
         </Button>
 
         <p className="text-center text-sm text-muted-foreground">
-          {mode === "login"
-            ? "Don't have an account? "
-            : "Already have an account? "}
+          {mode === "login" ? "Don't have an account? " : "Already have an account? "}
           <button
             type="button"
             onClick={() => setMode(mode === "login" ? "signup" : "login")}

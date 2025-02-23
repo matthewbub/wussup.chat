@@ -19,11 +19,7 @@ interface ModelSelectProps {
   isSubscribed: boolean;
 }
 
-export const LanguageModalSelector: React.FC<ModelSelectProps> = ({
-  model,
-  onModelChange,
-  isSubscribed,
-}) => {
+export const LanguageModalSelector: React.FC<ModelSelectProps> = ({ model, onModelChange, isSubscribed }) => {
   const defaultModel = AVAILABLE_MODELS[0];
   // Group models by provider
   const groupedModels = AVAILABLE_MODELS.reduce(
@@ -41,17 +37,13 @@ export const LanguageModalSelector: React.FC<ModelSelectProps> = ({
 
   return (
     <div className="flex items-center gap-2 bg-[hsl(240,10%,3.9%)] text-white rounded-lg">
-      <label
-        htmlFor="model"
-        className="sr-only text-sm text-slate-300 font-bold flex items-center gap-2"
-      >
+      <label htmlFor="model" className="sr-only text-sm text-slate-300 font-bold flex items-center gap-2">
         Model
       </label>
       <Select value={model || defaultModel.id} onValueChange={onModelChange}>
         <SelectTrigger className="w-fit bg-transparent border-none text-white">
           <SelectValue defaultValue={defaultModel.id}>
-            {AVAILABLE_MODELS.find((m) => m.id === (model || defaultModel.id))
-              ?.name || defaultModel.name}
+            {AVAILABLE_MODELS.find((m) => m.id === (model || defaultModel.id))?.name || defaultModel.name}
           </SelectValue>
         </SelectTrigger>
         <SelectContent className="bg-[hsl(240,10%,5%)] border-[hsl(240,10%,15%)] text-white">
@@ -72,21 +64,9 @@ export const LanguageModalSelector: React.FC<ModelSelectProps> = ({
                   className="text-slate-200 hover:bg-[hsl(240,10%,10%)] hover:text-white"
                 >
                   <div className="flex items-center gap-2">
-                    {!hasFullAccess && !model.free && (
-                      <Lock className="h-3 w-3 text-orange-500" />
-                    )}
-                    <span
-                      className={
-                        !hasFullAccess && !model.free ? "opacity-50" : ""
-                      }
-                    >
-                      {model.name}
-                    </span>
-                    {model.free && !IS_LOCAL_MODE ? (
-                      <span className="text-xs text-green-400 ml-1">
-                        (Free)
-                      </span>
-                    ) : null}
+                    {!hasFullAccess && !model.free && <Lock className="h-3 w-3 text-orange-500" />}
+                    <span className={!hasFullAccess && !model.free ? "opacity-50" : ""}>{model.name}</span>
+                    {model.free && !IS_LOCAL_MODE ? <span className="text-xs text-green-400 ml-1">(Free)</span> : null}
                   </div>
                 </SelectItem>
               ))}

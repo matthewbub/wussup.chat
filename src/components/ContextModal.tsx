@@ -38,9 +38,7 @@ export function ContextDialog({ open, onOpenChange }: ContextDialogProps) {
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Set Chat Context</DialogTitle>
-          <DialogDescription>
-            This context will be used to guide the AI's responses.
-          </DialogDescription>
+          <DialogDescription>This context will be used to guide the AI's responses.</DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <div className="grid gap-4 py-4">

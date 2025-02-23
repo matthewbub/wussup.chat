@@ -74,10 +74,7 @@ export default function MessageDropdown({
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger
-        asChild
-        className="opacity-0 group-hover:opacity-100 transition-opacity"
-      >
+      <DropdownMenuTrigger asChild className="opacity-0 group-hover:opacity-100 transition-opacity">
         <Button variant="ghost" size="icon" className="h-6 w-6 text-slate-400">
           <MoreHorizontal className="h-4 w-4" />
         </Button>
@@ -93,10 +90,7 @@ export default function MessageDropdown({
           <Copy className="mr-2 h-4 w-4" />
           <span>Copy Message</span>
         </DropdownMenuItem>
-        <DropdownMenuItem
-          onClick={handleReadAloud}
-          disabled={isPlaying === message.id}
-        >
+        <DropdownMenuItem onClick={handleReadAloud} disabled={isPlaying === message.id}>
           {isPlaying === message.id ? (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
           ) : (

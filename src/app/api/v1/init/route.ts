@@ -10,17 +10,12 @@ export async function GET() {
   const userId = user?.id;
 
   if (!userId) {
-    return NextResponse.json(
-      { error: "User ID is required", code: "user_id_required" },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: "User ID is required", code: "user_id_required" }, { status: 400 });
   }
 
   try {
     // Ensure user folder exists within ChatBot_Images_Generated bucket
-    const { data: folderList, error: listError } = await supabase.storage
-      .from("ChatBot_Images_Generated")
-      .list(userId);
+    const { data: folderList, error: listError } = await supabase.storage.from("ChatBot_Images_Generated").list(userId);
 
     if (listError) {
       throw new Error(`Failed to check user folder: ${listError.message}`);
@@ -42,11 +37,7 @@ export async function GET() {
     // TODO: Move this to RPC
     const [sessionsResult, messagesResult, usersResult] = await Promise.all([
       supabase.from("ChatBot_Sessions").select("*").eq("user_id", userId),
-      supabase
-        .from("ChatBot_Messages")
-        .select("*")
-        .eq("user_id", userId)
-        .order("created_at", { ascending: false }),
+      supabase.from("ChatBot_Messages").select("*").eq("user_id", userId).order("created_at", { ascending: false }),
       supabase
         .from("ChatBot_Users")
         .select(
@@ -64,8 +55,7 @@ export async function GET() {
     // Create a Map to index messages by chat_session_id
     const messagesBySessionId = new Map();
     messagesResult.data.forEach((message) => {
-      const sessionMessages =
-        messagesBySessionId.get(message.chat_session_id) || [];
+      const sessionMessages = messagesBySessionId.get(message.chat_session_id) || [];
       sessionMessages.push(message);
       messagesBySessionId.set(message.chat_session_id, sessionMessages);
     });
@@ -81,9 +71,6 @@ export async function GET() {
     });
   } catch (error) {
     console.error(error);
-    return NextResponse.json(
-      { error: "Failed to fetch data" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to fetch data" }, { status: 500 });
   }
 }

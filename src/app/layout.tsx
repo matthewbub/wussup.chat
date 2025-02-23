@@ -48,14 +48,8 @@ export default function RootLayout({
         <script src="https://unpkg.com/react-scan/dist/auto.global.js" />
       </head>
       <ReactScan />
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} ${title.variable} antialiased h-full`}
-      >
-        {process.env.NODE_ENV === "production" ? (
-          <PostHogProvider>{content}</PostHogProvider>
-        ) : (
-          content
-        )}
+      <body className={`${geistSans.variable} ${geistMono.variable} ${title.variable} antialiased h-full`}>
+        {process.env.NODE_ENV === "production" ? <PostHogProvider>{content}</PostHogProvider> : content}
       </body>
     </html>
   );

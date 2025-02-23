@@ -12,11 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-} from "@/components/ui/sidebar";
+import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
 import { BillingModal } from "@/components/BillingModal";
 import crypto from "crypto";
 import { useChatStore } from "@/stores/chatStore";
@@ -25,16 +21,12 @@ import { ContextDialog } from "@/components/ContextModal";
 import { useState } from "react";
 
 const getGravatarUrl = (email: string) => {
-  const hash = crypto
-    .createHash("md5")
-    .update(email.toLowerCase().trim())
-    .digest("hex");
+  const hash = crypto.createHash("md5").update(email.toLowerCase().trim()).digest("hex");
   return `https://www.gravatar.com/avatar/${hash}?d=mp`;
 };
 
 export function NavUser() {
-  const { user, openModal, closeModal, activeModal, clearStore } =
-    useChatStore();
+  const { user, openModal, closeModal, activeModal, clearStore } = useChatStore();
   const router = useRouter();
   const avatarFallback = user ? user.email?.slice(0, 2).toUpperCase() : "GU";
   const [showContextDialog, setShowContextDialog] = useState(false);
@@ -79,9 +71,7 @@ export function NavUser() {
                 {user?.email ? (
                   <Avatar className="h-8 w-8 rounded-lg">
                     <AvatarImage src={gravatarUrl} alt={user.email} />
-                    <AvatarFallback className="rounded-lg">
-                      {avatarFallback}
-                    </AvatarFallback>
+                    <AvatarFallback className="rounded-lg">{avatarFallback}</AvatarFallback>
                   </Avatar>
                 ) : (
                   <User className="h-8 w-8 rounded-lg" />
@@ -101,15 +91,11 @@ export function NavUser() {
                       {user.email && (
                         <Avatar className="h-8 w-8 rounded-lg">
                           <AvatarImage src={gravatarUrl} alt={user.email} />
-                          <AvatarFallback className="rounded-lg">
-                            {avatarFallback}
-                          </AvatarFallback>
+                          <AvatarFallback className="rounded-lg">{avatarFallback}</AvatarFallback>
                         </Avatar>
                       )}
                       <div className="grid flex-1 text-left text-sm leading-tight">
-                        <span className="truncate font-semibold">
-                          {user.email || "Guest User"}
-                        </span>
+                        <span className="truncate font-semibold">{user.email || "Guest User"}</span>
                         <span className="truncate text-xs">{user.email}</span>
                       </div>
                     </div>
@@ -121,9 +107,7 @@ export function NavUser() {
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={handleManageSubscription}>
                     <CreditCard />
-                    {user?.subscriptionStatus === "active"
-                      ? "Manage Subscription"
-                      : "Upgrade to Pro"}
+                    {user?.subscriptionStatus === "active" ? "Manage Subscription" : "Upgrade to Pro"}
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleLogout}>
@@ -144,15 +128,8 @@ export function NavUser() {
         </SidebarMenuItem>
       </SidebarMenu>
       <AuthModal isOpen={activeModal === "auth"} onClose={() => closeModal()} />
-      <BillingModal
-        isOpen={activeModal === "billing"}
-        onClose={() => closeModal()}
-        userId={user?.user_id}
-      />
-      <ContextDialog
-        open={showContextDialog}
-        onOpenChange={setShowContextDialog}
-      />
+      <BillingModal isOpen={activeModal === "billing"} onClose={() => closeModal()} userId={user?.user_id} />
+      <ContextDialog open={showContextDialog} onOpenChange={setShowContextDialog} />
     </>
   );
 }

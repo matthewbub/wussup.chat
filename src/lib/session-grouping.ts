@@ -35,17 +35,13 @@ export class TimeframeGroupingStrategy implements SessionGroupingStrategy {
     return "Older";
   }
 
-  private sortGroups(
-    groups: Record<string, ChatSession[]>
-  ): Record<string, ChatSession[]> {
+  private sortGroups(groups: Record<string, ChatSession[]>): Record<string, ChatSession[]> {
     return this.periodOrder
       .filter((period) => groups[period]?.length)
       .reduce(
         (acc, period) => {
           acc[period] = groups[period].sort(
-            (a, b) =>
-              new Date(b.created_at).getTime() -
-              new Date(a.created_at).getTime()
+            (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
           );
           return acc;
         },

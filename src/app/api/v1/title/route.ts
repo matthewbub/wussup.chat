@@ -19,17 +19,12 @@ export async function POST(req: Request) {
     model: openai("gpt-4-turbo"),
     prompt: clsx([
       "Summarize the chat in a concise title using up to 6 words.",
-      titleMessages.map(
-        (m: { role: string; content: string }) => `${m.role}: ${m.content}`
-      ),
+      titleMessages.map((m: { role: string; content: string }) => `${m.role}: ${m.content}`),
     ]),
   });
 
   // update session title
-  const { error } = await supabase
-    .from("ChatBot_Sessions")
-    .update({ name: text })
-    .eq("id", session_id);
+  const { error } = await supabase.from("ChatBot_Sessions").update({ name: text }).eq("id", session_id);
 
   if (error) {
     console.error("[title] error updating session title:", error);

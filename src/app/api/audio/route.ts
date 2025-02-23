@@ -29,9 +29,6 @@ export async function POST(req: Request) {
     return NextResponse.json({ audio: base64Audio });
   } catch (error) {
     console.error("Error generating speech:", error);
-    return NextResponse.json(
-      { error: "Failed to generate speech" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to generate speech" }, { status: 500 });
   }
 }
