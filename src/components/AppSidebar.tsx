@@ -1,3 +1,5 @@
+"use client";
+
 import * as React from "react";
 import {
   SidebarFooter,
@@ -13,15 +15,34 @@ import clsx from "clsx";
 import { SidebarGroup, SidebarGroupContent } from "@/components/ui/sidebar";
 import { ChatSession } from "@/types/chat";
 import { CreateChatButton } from "@/app/~/[session]/_components/CreateChatButton";
+import { useEffect } from "react";
+import { useChatStore } from "@/app/~/[session]/_store/chat";
 
 export function AppSidebar({
   sessions,
-  currentSessionId,
+  currentSession,
   ...props
 }: {
   sessions: Record<string, ChatSession[]>;
-  currentSessionId: string;
+  currentSession: ChatSession;
 } & React.ComponentProps<typeof Sidebar>) {
+  const { setCurrentSession, currentSession: storeSession } = useChatStore();
+
+  useEffect(() => {
+    if (currentSession?.id) {
+      setCurrentSession(currentSession);
+    }
+  }, [currentSession?.id, setCurrentSession]);
+
+  const getCurrentSessionName = (session: ChatSession) => {
+    if (currentSession?.id === session.id && storeSession?.name) {
+      return storeSession.name;
+    } else if (session.name) {
+      return session.name;
+    }
+    return `Untitled Chat ${Object.values(sessions).flat().length + 1}`;
+  };
+
   return (
     <Sidebar className="border-r-0" {...props}>
       <SidebarHeader>
@@ -29,13 +50,13 @@ export function AppSidebar({
       </SidebarHeader>
       <SidebarContent>
         {/* CREATE CHAT BUTTON */}
-        <div className="p-2">
+        <div className="p-2 sticky top-0 z-10 bg-sidebar">
           <CreateChatButton />
         </div>
 
         {/* CHAT HISTORY */}
         <SidebarGroup>
-          <SidebarGroupLabel>Chat History</SidebarGroupLabel>
+          <SidebarGroupLabel className="sticky top-12 z-10 bg-sidebar font-bold">Chat History</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {/* If there are no sessions, show the create chat button */}
@@ -59,9 +80,11 @@ export function AppSidebar({
                     </SidebarMenuItem>
                     {sessions[dateKey].map((session: ChatSession) => (
                       <SidebarMenuItem key={session.id}>
-                        <SidebarMenuButton asChild isActive={session.id === currentSessionId}>
+                        <SidebarMenuButton asChild isActive={session.id === currentSession.id}>
                           <Link href={`/~/${session.id}`}>
-                            <span>{session.name}</span>
+                            <span>
+                              {currentSession?.id === session.id ? getCurrentSessionName(session) : session.name}
+                            </span>
                           </Link>
                         </SidebarMenuButton>
                       </SidebarMenuItem>

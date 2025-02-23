@@ -8,8 +8,10 @@ import { getButtonProps, getButtonChildren } from "../_helpers/getButtonProps";
 import { LanguageModalSelector } from "@/components/chat/LanguageModalSelector";
 import { Message } from "./Message";
 import { EmptyChatScreen } from "@/components/EmptyChatScreen";
+import { useChatStore } from "../_store/chat";
 
 export default function ChatApp({ isUserSubscribed, sessionId }: { isUserSubscribed: boolean; sessionId: string }) {
+  const { updateSessionName } = useChatStore();
   const { messages, input, handleInputChange, handleSubmit, status, stop, reload, setInput } = useChat({
     api: "/api/v1/chat",
     onFinish: async (message, { usage, finishReason }) => {
@@ -26,6 +28,8 @@ export default function ChatApp({ isUserSubscribed, sessionId }: { isUserSubscri
 
         const titleData = await titleResponse.json();
         console.log("Title response:", titleData);
+
+        await updateSessionName(titleData.title);
       }
 
       // TODO: ADD THIS

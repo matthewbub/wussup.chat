@@ -18,7 +18,7 @@ export async function POST(req: Request) {
   const { text, ...rest } = await generateText({
     model: openai("gpt-4-turbo"),
     prompt: clsx([
-      "Summarize the chat in a concise title using up to 6 words.",
+      "Summarize the chat in a concise title using up to 6 words. Text only, no special characters.",
       titleMessages.map((m: { role: string; content: string }) => `${m.role}: ${m.content}`),
     ]),
   });

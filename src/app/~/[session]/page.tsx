@@ -5,16 +5,22 @@ import { groupMessagesBySession } from "./_helpers/groupMessagesBySession";
 import { ensureUserStorageFolder } from "./_helpers/ensureUserStorageFolder";
 import { fetchUserChatData } from "./_helpers/fetchUserChatData";
 import { isSubscriptionActive } from "./_helpers/isSubscriptionActive";
+import { redirect } from "next/navigation";
 
 export default async function Page({ params }: { params: { session: string } }) {
   const supabase = await createClient();
-  const appParams = await params;
-  const sessionId = appParams.session;
   const { data: userData } = await supabase.auth.getUser();
   const userId = userData?.user?.id;
   if (!userId) {
     return <div>Not logged in</div>;
   }
+
+  const appParams = await params;
+  const sessionId = appParams.session;
+  if (!sessionId) {
+    return redirect(`/~/${crypto.randomUUID()}`);
+  }
+
   await ensureUserStorageFolder(supabase, userId); // ensure user storage folder exists & create if it doesn't
   const { sessionsResult, messagesResult, usersResult } = await fetchUserChatData(supabase, userId); // fetch user chat data
   const groupedSessions = groupMessagesBySession(messagesResult.data, sessionsResult.data); // group messages by session
@@ -23,7 +29,7 @@ export default async function Page({ params }: { params: { session: string } }) 
   const isUserSubscribed = isSubscriptionActive(subscriptionEndDate);
 
   return (
-    <ChatLayout sessions={groupedSessions} currentSessionId={currentSession?.id}>
+    <ChatLayout sessions={groupedSessions} currentSession={currentSession}>
       <ChatApp isUserSubscribed={isUserSubscribed} sessionId={sessionId} />
     </ChatLayout>
   );
