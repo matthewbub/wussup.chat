@@ -35,15 +35,11 @@ interface ChatStore {
 
 export const useChatStore = create<ChatStore>((set, get) => ({
   sessions: {},
-  addSession: async (
-    sessionId: string,
-    userId: string
-  ): Promise<string | null> => {
+  addSession: async (sessionId: string, userId: string): Promise<string | null> => {
     const newSession = {
       id: sessionId,
       user_id: userId,
-      name:
-        "Untitled Chat " + (Object.values(get().sessions).flat().length + 1),
+      name: "Untitled Chat " + (Object.values(get().sessions).flat().length + 1),
       messages: [],
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
@@ -87,17 +83,12 @@ export const useChatStore = create<ChatStore>((set, get) => ({
         model: msg.model,
       }));
 
-      const { error: messagesError } = await supabase
-        .from("ChatBot_Messages")
-        .insert(newMessages);
+      const { error: messagesError } = await supabase.from("ChatBot_Messages").insert(newMessages);
 
       if (messagesError) {
         console.error("Error copying messages:", messagesError);
         // Clean up the session if message copying failed
-        await supabase
-          .from("ChatBot_Sessions")
-          .delete()
-          .eq("id", sessionData.id);
+        await supabase.from("ChatBot_Sessions").delete().eq("id", sessionData.id);
         return null;
       }
 
@@ -123,10 +114,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     }
   },
   updateSessionTitle: async (sessionId: string, title: string) => {
-    const { error } = await supabase
-      .from("ChatBot_Sessions")
-      .update({ name: title })
-      .eq("id", sessionId);
+    const { error } = await supabase.from("ChatBot_Sessions").update({ name: title }).eq("id", sessionId);
 
     if (error) {
       console.error(error);
@@ -160,9 +148,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     // Update local state
     set((state) => {
       const allSessions = Object.values(state.sessions).flat();
-      const filteredSessions = allSessions.filter(
-        (session) => session.id !== sessionId
-      );
+      const filteredSessions = allSessions.filter((session) => session.id !== sessionId);
 
       const strategy = new TimeframeGroupingStrategy();
       return {
@@ -183,9 +169,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       return;
     }
 
-    const currentSession = responseData.sessions.find(
-      (s: ChatSession) => s.id === sessionId
-    );
+    const currentSession = responseData.sessions.find((s: ChatSession) => s.id === sessionId);
     console.log("currentSession", currentSession);
 
     const strategy = new TimeframeGroupingStrategy();

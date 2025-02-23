@@ -5,20 +5,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  Pencil,
-  LinkIcon,
-  ArrowUpRight,
-  Trash2,
-  WandSparkles,
-} from "lucide-react";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Pencil, LinkIcon, ArrowUpRight, Trash2, WandSparkles } from "lucide-react";
 import { useChatStore } from "@/stores/chatStore";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
@@ -71,10 +59,7 @@ export function ChatTitleWidget() {
   return (
     <>
       <DropdownMenu>
-        <DropdownMenuTrigger
-          asChild
-          className="w-full hover:bg-accent rounded-md px-2 py-1 group"
-        >
+        <DropdownMenuTrigger asChild className="w-full hover:bg-accent rounded-md px-2 py-1 group">
           <div className="cursor-pointer flex items-center gap-2">
             <span>{currentSession?.name}</span>
             <Pencil className="hidden group-hover:block text-muted-foreground w-4 h-4" />
@@ -111,15 +96,9 @@ export function ChatTitleWidget() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Rename Chat</DialogTitle>
-            <DialogDescription>
-              Enter a new name for this chat.
-            </DialogDescription>
+            <DialogDescription>Enter a new name for this chat.</DialogDescription>
           </DialogHeader>
-          <Input
-            value={newChatName}
-            onChange={(e) => setNewChatName(e.target.value)}
-            placeholder="Enter chat name"
-          />
+          <Input value={newChatName} onChange={(e) => setNewChatName(e.target.value)} placeholder="Enter chat name" />
           <div className="flex justify-between">
             <Button
               variant="ghost"
@@ -145,10 +124,7 @@ export function ChatTitleWidget() {
               <WandSparkles className="w-4 h-4" />
             </Button>
             <div className="flex gap-2">
-              <Button
-                variant="ghost"
-                onClick={() => setIsRenameDialogOpen(false)}
-              >
+              <Button variant="ghost" onClick={() => setIsRenameDialogOpen(false)}>
                 Cancel
               </Button>
               <Button onClick={handleRenameChat}>Save</Button>
@@ -162,15 +138,11 @@ export function ChatTitleWidget() {
           <DialogHeader>
             <DialogTitle>Delete Chat</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete this chat? This action cannot be
-              undone.
+              Are you sure you want to delete this chat? This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button
-              variant="ghost"
-              onClick={() => setIsDeleteDialogOpen(false)}
-            >
+            <Button variant="ghost" onClick={() => setIsDeleteDialogOpen(false)}>
               Cancel
             </Button>
             <Button variant="destructive" onClick={handleDeleteChat}>

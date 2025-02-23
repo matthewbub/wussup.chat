@@ -22,3 +22,8 @@ export interface ChatSession {
   updated_at: string;
   user_id: string;
 }
+
+type ChatSessionGroup = "Older" | "This Month" | "This Week" | "Today";
+export type GroupedSession = {
+  [key in ChatSessionGroup]: ChatSession[];
+};
