@@ -42,13 +42,6 @@ export async function POST(req: Request) {
     upsertData.name = session_title;
   }
 
-  const { error: session_error } = await supabase.from("ChatBot_Sessions").upsert(upsertData).select("*").single();
-
-  if (session_error) {
-    console.error("[chat api error]", session_error);
-    return NextResponse.json({ error: "Failed to get or create session" }, { status: 500 });
-  }
-
   // insert user message and increment message count concurrently
   const [{ error: userError }, { error: updateError }] = await Promise.all([
     supabase.from("ChatBot_Messages").insert([

@@ -79,11 +79,11 @@ export function AppSidebar({
                       <div className="px-2 py-1 text-xs text-muted-foreground">{dateKey}</div>
                     </SidebarMenuItem>
                     {sessions[dateKey].map((session: ChatSession) => (
-                      <SidebarMenuItem key={session.id}>
-                        <SidebarMenuButton asChild isActive={session.id === currentSession.id}>
-                          <Link href={`/~/${session.id}`}>
+                      <SidebarMenuItem key={session?.id}>
+                        <SidebarMenuButton asChild isActive={session?.id === currentSession?.id}>
+                          <Link href={`/~/${session?.id}`}>
                             <span>
-                              {currentSession?.id === session.id ? getCurrentSessionName(session) : session.name}
+                              {currentSession?.id === session?.id ? getCurrentSessionName(session) : session?.name}
                             </span>
                           </Link>
                         </SidebarMenuButton>
