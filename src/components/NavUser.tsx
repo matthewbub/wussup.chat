@@ -1,6 +1,6 @@
 "use client";
 
-import { CreditCard, LogOut, StickyNote, User } from "lucide-react";
+import { CreditCard, LogOut, StickyNote, User as UserIcon } from "lucide-react";
 import { AuthModal } from "@/components/AuthModal";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -15,24 +15,24 @@ import {
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
 import { BillingModal } from "@/components/BillingModal";
 import crypto from "crypto";
-import { useChatStore } from "@/stores/chatStore";
 import { useRouter } from "next/navigation";
 import { ContextDialog } from "@/components/ContextModal";
 import { useState } from "react";
+import { User } from "@/types/user";
 
 const getGravatarUrl = (email: string) => {
   const hash = crypto.createHash("md5").update(email.toLowerCase().trim()).digest("hex");
   return `https://www.gravatar.com/avatar/${hash}?d=mp`;
 };
 
-export function NavUser() {
-  const { user, openModal, closeModal, activeModal, clearStore } = useChatStore();
+export function NavUser({ user }: { user: User }) {
   const router = useRouter();
   const avatarFallback = user ? user.email?.slice(0, 2).toUpperCase() : "GU";
   const [showContextDialog, setShowContextDialog] = useState(false);
+  const [activeModal, setActiveModal] = useState<"auth" | "billing" | null>(null);
 
   const handleManageSubscription = () => {
-    openModal("billing");
+    setActiveModal("billing");
   };
 
   const handleLogout = async () => {
@@ -48,7 +48,7 @@ export function NavUser() {
       }
 
       // Clear the chat store state
-      clearStore();
+      // clearStore();
 
       router.push("/");
     } catch (error) {
@@ -74,7 +74,7 @@ export function NavUser() {
                     <AvatarFallback className="rounded-lg">{avatarFallback}</AvatarFallback>
                   </Avatar>
                 ) : (
-                  <User className="h-8 w-8 rounded-lg" />
+                  <UserIcon className="h-8 w-8 rounded-lg" />
                 )}
               </SidebarMenuButton>
             </DropdownMenuTrigger>
@@ -117,7 +117,7 @@ export function NavUser() {
                 </>
               ) : (
                 <DropdownMenuGroup>
-                  <DropdownMenuItem onClick={() => openModal("auth")}>
+                  <DropdownMenuItem onClick={() => setActiveModal("auth")}>
                     <LogOut className="rotate-180" />
                     Sign In
                   </DropdownMenuItem>
@@ -127,9 +127,9 @@ export function NavUser() {
           </DropdownMenu>
         </SidebarMenuItem>
       </SidebarMenu>
-      <AuthModal isOpen={activeModal === "auth"} onClose={() => closeModal()} />
-      <BillingModal isOpen={activeModal === "billing"} onClose={() => closeModal()} userId={user?.user_id} />
-      <ContextDialog open={showContextDialog} onOpenChange={setShowContextDialog} />
+      <AuthModal isOpen={activeModal === "auth"} onClose={() => setActiveModal(null)} user={user} />
+      <BillingModal isOpen={activeModal === "billing"} onClose={() => setActiveModal(null)} user={user} />
+      <ContextDialog open={showContextDialog} onOpenChange={setShowContextDialog} user={user} />
     </>
   );
 }

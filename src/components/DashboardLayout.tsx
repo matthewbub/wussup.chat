@@ -2,7 +2,8 @@ import { BreadcrumbItem } from "@/components/ui/breadcrumb";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { ChatSession } from "@/types/chat";
-import { AppShell } from "./AppShell";
+import { User } from "@/types/user";
+import { AppShell } from "@/components/AppShell";
 
 interface BreadcrumbItem {
   label: string;
@@ -14,13 +15,16 @@ interface ChatLayoutProps {
   breadcrumbItems?: BreadcrumbItem[];
   sessions: Record<string, ChatSession[]>;
   currentSession: ChatSession;
+  user: User;
 }
 
-export function ChatLayout({ sessions, currentSession, children }: ChatLayoutProps) {
+export function ChatLayout({ sessions, currentSession, children, user }: ChatLayoutProps) {
   return (
     <SidebarProvider>
       <AppSidebar sessions={sessions} currentSession={currentSession} />
-      <AppShell currentSession={currentSession}>{children}</AppShell>
+      <AppShell currentSession={currentSession} user={user}>
+        {children}
+      </AppShell>
     </SidebarProvider>
   );
 }

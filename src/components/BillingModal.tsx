@@ -2,22 +2,23 @@
 
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useState } from "react";
-import { useChatStore } from "@/stores/chatStore";
+import { useChatStore } from "@/app/~/[session]/_store/chat";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Check, Loader2 } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { CheckCircle2 } from "lucide-react";
+import { User } from "@/types/user";
 
 interface BillingModalProps {
   isOpen: boolean;
   onClose: () => void;
-  userId?: string;
+  user: User;
 }
 
-export function BillingModal({ isOpen, onClose, userId }: BillingModalProps) {
+export function BillingModal({ isOpen, onClose, user }: BillingModalProps) {
   const [isLoading, setIsLoading] = useState(false);
-  const { user } = useChatStore();
+  // const { user } = useChatStore();
 
   const handleSubscribe = async () => {
     setIsLoading(true);
@@ -37,7 +38,7 @@ export function BillingModal({ isOpen, onClose, userId }: BillingModalProps) {
   const handleManageSubscription = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`/api/subscription/manage?userId=${userId}`);
+      const response = await fetch(`/api/subscription/manage?userId=${user?.id}`);
       const { url } = await response.json();
       window.location.href = url;
     } catch (error) {
@@ -68,7 +69,8 @@ export function BillingModal({ isOpen, onClose, userId }: BillingModalProps) {
                     <CheckCircle2 className="h-4 w-4" />
                     <AlertTitle>Pro Plan Active</AlertTitle>
                     <AlertDescription>
-                      Next billing date: {new Date(user?.subscriptionPeriodEnd).toLocaleDateString()}
+                      Next billing date:{" "}
+                      {user?.subscriptionPeriodEnd ? new Date(user?.subscriptionPeriodEnd).toLocaleDateString() : "N/A"}
                     </AlertDescription>
                   </Alert>
                 )}

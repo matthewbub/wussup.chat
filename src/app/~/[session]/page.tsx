@@ -6,6 +6,7 @@ import { ensureUserStorageFolder } from "./_helpers/ensureUserStorageFolder";
 import { fetchUserChatData } from "./_helpers/fetchUserChatData";
 import { isSubscriptionActive } from "./_helpers/isSubscriptionActive";
 import { redirect } from "next/navigation";
+import { User } from "@/types/user";
 
 export default async function Page({ params }: { params: { session: string } }) {
   const supabase = await createClient();
@@ -28,8 +29,10 @@ export default async function Page({ params }: { params: { session: string } }) 
   const subscriptionEndDate = usersResult.data?.subscriptionPeriodEnd; // check if subscription is active
   const isUserSubscribed = isSubscriptionActive(subscriptionEndDate);
 
+  // console.log("userData", userData);
+
   return (
-    <ChatLayout sessions={groupedSessions} currentSession={currentSession}>
+    <ChatLayout sessions={groupedSessions} currentSession={currentSession} user={usersResult.data as unknown as User}>
       <ChatApp isUserSubscribed={isUserSubscribed} sessionId={sessionId} />
     </ChatLayout>
   );

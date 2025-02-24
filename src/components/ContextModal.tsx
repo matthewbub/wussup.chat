@@ -10,15 +10,16 @@ import {
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { useChatStore } from "@/stores/chatStore";
-
+import { useChatStore } from "@/app/~/[session]/_store/chat";
+import { User } from "@/types/user";
 interface ContextDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  user: User;
 }
 
-export function ContextDialog({ open, onOpenChange }: ContextDialogProps) {
-  const { user, updateUserChatContext } = useChatStore();
+export function ContextDialog({ open, onOpenChange, user }: ContextDialogProps) {
+  const { updateUserChatContext } = useChatStore();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     const formData = new FormData(e.currentTarget);

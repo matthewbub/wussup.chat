@@ -47,11 +47,22 @@ export function ChatTitleWidget({ currentSession }: { currentSession: ChatSessio
   };
 
   const handleDeleteChat = async () => {
-    setIsDeleteDialogOpen(false);
-    // await deleteSession(currentSession.id);
+    try {
+      const response = await fetch(`/api/chat/delete?sessionId=${currentSession.id}`, {
+        method: "DELETE",
+      });
 
-    router.push(`/~`);
-    router.refresh();
+      if (!response.ok) {
+        console.error("Failed to delete chat session");
+        return;
+      }
+
+      setIsDeleteDialogOpen(false);
+      router.push(`/~`);
+      router.refresh();
+    } catch (error) {
+      console.error("Error deleting chat session:", error);
+    }
   };
 
   return (

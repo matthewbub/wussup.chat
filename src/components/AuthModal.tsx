@@ -5,24 +5,20 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { GithubIcon, Mail } from "lucide-react";
 import { Label } from "./ui/label";
-import { useChatStore } from "@/stores/chatStore";
-import { useSearchParams } from "next/navigation";
+import { User } from "@/types/user";
 
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
+  user: User;
 }
 
-export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
-  const searchParams = useSearchParams();
-  const sessionId = searchParams.get("session");
+export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, user }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [mode, setMode] = useState<"login" | "signup">("login");
-  const { user } = useChatStore();
-  const { init } = useChatStore();
 
   const supabase = createClient();
 
@@ -32,16 +28,20 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     setError(null);
 
     try {
-      const { data, error } =
-        mode === "login"
-          ? await supabase.auth.signInWithPassword({ email, password })
-          : await supabase.auth.signUp({ email, password });
+      const response = await fetch("/api/auth", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password, mode }),
+      });
 
-      if (error) throw error;
+      const result = await response.json();
 
-      if (data.user) {
+      if (!response.ok) throw new Error(result.error);
+
+      if (result.user) {
         onClose();
-        init(sessionId as string);
       }
     } catch (err: unknown) {
       setError((err as { message: string }).message);

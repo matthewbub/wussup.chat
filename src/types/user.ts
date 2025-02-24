@@ -4,6 +4,11 @@ type User = {
   email_verified: boolean;
   expires_at: string;
   username?: string;
+  chat_context?: string;
+  subscriptionStatus?: string;
+  subscriptionPeriodEnd?: string;
+  subscriptionPlan?: string;
+  user_id?: string;
 };
 
 type SupabaseUser = {

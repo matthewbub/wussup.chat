@@ -17,5 +17,7 @@ export async function fetchUserChatData(supabase: SupabaseClient<any, "public", 
     throw new Error("Failed to fetch user chat data");
   }
 
+  console.log("usersResult in fetchUserChatData", usersResult);
+
   return { sessionsResult, messagesResult, usersResult };
 }
