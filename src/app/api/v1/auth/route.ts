@@ -1,11 +1,12 @@
-import { NextApiRequest, NextApiResponse } from "next";
 import { createClient } from "@/lib/supabase-server";
+import { NextResponse } from "next/server";
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const { email, password, mode, provider } = req.body;
+export async function POST(request: Request) {
   const supabase = await createClient();
 
   try {
+    const { email, password, mode, provider } = await request.json();
+
     if (provider === "github") {
       const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
       const { error, data } = await supabase.auth.signInWithOAuth({
@@ -16,10 +17,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       });
 
       if (error) {
-        return res.status(400).json({ error: error.message });
+        return NextResponse.json({ error: error.message }, { status: 400 });
       }
 
-      return res.status(200).json({ url: data.url });
+      return NextResponse.json({ url: data.url }, { status: 200 });
     } else {
       const { data, error } =
         mode === "login"
@@ -27,12 +28,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           : await supabase.auth.signUp({ email, password });
 
       if (error) {
-        return res.status(400).json({ error: error.message });
+        return NextResponse.json({ error: error.message }, { status: 400 });
       }
 
-      return res.status(200).json({ user: data.user });
+      return NextResponse.json({ user: data.user }, { status: 200 });
     }
   } catch (err: unknown) {
-    return res.status(500).json({ error: (err as { message: string }).message });
+    return NextResponse.json({ error: (err as { message: string }).message }, { status: 500 });
   }
 }

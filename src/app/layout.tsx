@@ -36,10 +36,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   const content = (
-    <>
+    <div className="h-full">
       <Background>{children}</Background>
       <Toaster />
-    </>
+    </div>
   );
 
   return (

@@ -13,7 +13,7 @@ export default async function Page({ params }: { params: { session: string } }) 
   const { data: userData } = await supabase.auth.getUser();
   const userId = userData?.user?.id;
   if (!userId) {
-    return <div>Not logged in</div>;
+    return redirect(`/`);
   }
 
   const appParams = await params;
@@ -28,8 +28,6 @@ export default async function Page({ params }: { params: { session: string } }) 
   const currentSession = sessionsResult.data.find((session) => session.id === sessionId); // find current session
   const subscriptionEndDate = usersResult.data?.subscriptionPeriodEnd; // check if subscription is active
   const isUserSubscribed = isSubscriptionActive(subscriptionEndDate);
-
-  // console.log("userData", userData);
 
   return (
     <ChatLayout sessions={groupedSessions} currentSession={currentSession} user={usersResult.data as unknown as User}>

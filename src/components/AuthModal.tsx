@@ -5,21 +5,20 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { GithubIcon, Mail } from "lucide-react";
 import { Label } from "./ui/label";
-import { User } from "@/types/user";
+import { useRouter } from "next/navigation";
 
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
-  user: User;
 }
 
-export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, user }) => {
+export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [mode, setMode] = useState<"login" | "signup">("login");
-
+  const router = useRouter();
   const supabase = createClient();
 
   const handleEmailAuth = async (e: React.FormEvent) => {
@@ -28,7 +27,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, user }) =
     setError(null);
 
     try {
-      const response = await fetch("/api/auth", {
+      const response = await fetch("/api/v1/auth", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -47,6 +46,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, user }) =
       setError((err as { message: string }).message);
     } finally {
       setIsLoading(false);
+      router.push("/~");
     }
   };
 
@@ -67,7 +67,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, user }) =
   };
 
   const handleOpenChange = (open: boolean) => {
-    if (!open && user) {
+    if (!open) {
       onClose();
     }
   };
