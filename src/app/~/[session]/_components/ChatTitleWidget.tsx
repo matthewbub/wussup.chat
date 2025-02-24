@@ -1,3 +1,5 @@
+"use client";
+import { useChatStore } from "../_store/chat";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -5,52 +7,48 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Pencil, LinkIcon, ArrowUpRight, Trash2, WandSparkles } from "lucide-react";
-import { useChatStore } from "@/stores/chatStore";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { ChatSession } from "@/types/chat";
 
-export function ChatTitleWidget() {
-  const { deleteSession, updateSessionTitle, sessions } = useChatStore();
+export function ChatTitleWidget({ currentSession }: { currentSession: ChatSession }) {
+  const { updateSessionName } = useChatStore();
   const router = useRouter();
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isRenameDialogOpen, setIsRenameDialogOpen] = useState(false);
   const [newChatName, setNewChatName] = useState("");
   const [aiLoading, setAiLoading] = useState(false);
 
-  const sessionId = useSearchParams().get("session");
-  const currentSession = sessionId
-    ? Object.values(sessions)
-        .flat()
-        .find((s) => s.id === sessionId)
-    : null;
-
-  if (!currentSession) {
-    return null;
-  }
-
   const handleRenameChat = async () => {
     if (newChatName && newChatName !== currentSession.name) {
-      await updateSessionTitle(currentSession.id, newChatName);
+      await updateSessionName(newChatName);
       setIsRenameDialogOpen(false);
     }
   };
 
   const handleCopyLink = () => {
-    const url = `${window.location.origin}/?session=${currentSession.id}`;
+    const url = `${window.location.origin}/${currentSession.id}`;
     navigator.clipboard.writeText(url);
   };
 
   const handleOpenInNewTab = () => {
-    window.open(`/?session=${currentSession.id}`, "_blank");
+    window.open(`/${currentSession.id}`, "_blank");
   };
 
   const handleDeleteChat = async () => {
     setIsDeleteDialogOpen(false);
-    await deleteSession(currentSession.id);
+    // await deleteSession(currentSession.id);
 
     router.push(`/~`);
     router.refresh();

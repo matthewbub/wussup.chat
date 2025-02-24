@@ -20,7 +20,7 @@ export function ChatLayout({ sessions, currentSession, children }: ChatLayoutPro
   return (
     <SidebarProvider>
       <AppSidebar sessions={sessions} currentSession={currentSession} />
-      <AppShell>{children}</AppShell>
+      <AppShell currentSession={currentSession}>{children}</AppShell>
     </SidebarProvider>
   );
 }

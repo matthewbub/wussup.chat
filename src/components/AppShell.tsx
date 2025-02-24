@@ -1,8 +1,16 @@
-import { Breadcrumb, BreadcrumbItem, BreadcrumbList, BreadcrumbPage } from "@/components/ui/breadcrumb";
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
 import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import Link from "next/link";
 import { NavUser } from "@/components/NavUser";
+import { ChatTitleWidget } from "@/app/~/[session]/_components/ChatTitleWidget";
+import { ChatSession } from "@/types/chat";
 
 interface BreadcrumbItem {
   label: string;
@@ -11,9 +19,10 @@ interface BreadcrumbItem {
 
 interface ChatLayoutProps {
   children: React.ReactNode;
+  currentSession: ChatSession;
 }
 
-export function AppShell({ children }: ChatLayoutProps) {
+export function AppShell({ children, currentSession }: ChatLayoutProps) {
   return (
     <SidebarInset>
       <header className="sticky top-0 flex h-14 shrink-0 items-center gap-2 bg-background z-10">
@@ -27,16 +36,16 @@ export function AppShell({ children }: ChatLayoutProps) {
                   <Link href="/">Chat</Link>
                 </BreadcrumbPage>
               </BreadcrumbItem>
-              {/* {currentSessionId && (
-                  <>
-                    <BreadcrumbSeparator />
-                    <BreadcrumbItem>
-                      <BreadcrumbPage className="line-clamp-1">
-                        <ChatTitleWidget />
-                      </BreadcrumbPage>
-                    </BreadcrumbItem>
-                  </>
-                )} */}
+              {currentSession && (
+                <>
+                  <BreadcrumbSeparator />
+                  <BreadcrumbItem>
+                    <BreadcrumbPage className="line-clamp-1">
+                      <ChatTitleWidget currentSession={currentSession} />
+                    </BreadcrumbPage>
+                  </BreadcrumbItem>
+                </>
+              )}
             </BreadcrumbList>
           </Breadcrumb>
         </div>
