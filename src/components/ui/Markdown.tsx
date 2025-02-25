@@ -5,13 +5,7 @@ import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { oneDark } from "react-syntax-highlighter/dist/cjs/styles/prism";
 import { Copy } from "lucide-react";
 
-export default function MarkdownComponent({
-  children,
-  className,
-}: {
-  children: string;
-  className?: string;
-}) {
+export default function MarkdownComponent({ children, className }: { children: string; className?: string }) {
   return (
     <ReactMarkdown
       className={className}
@@ -23,20 +17,14 @@ export default function MarkdownComponent({
         // @ts-expect-error - its annoying me
         code: ({ node }: Parameters<CodeComponent>[0]) => {
           // Check if parent is a pre tag
-          const isCodeBlock =
-            node.position.start.line !== node.position.end.line;
+          const isCodeBlock = node.position.start.line !== node.position.end.line;
 
           if (!isCodeBlock) {
-            return (
-              <code className="bg-base-300 px-1 rounded">
-                {node.children[0].value}
-              </code>
-            );
+            return <code className="bg-base-300 px-1 rounded">{node.children[0].value}</code>;
           }
 
           // Code block
-          const language =
-            node.properties.className?.[0]?.replace("language-", "") || "";
+          const language = node.properties.className?.[0]?.replace("language-", "") || "";
           const codeContent = node.children[0].value;
 
           return (
@@ -49,11 +37,7 @@ export default function MarkdownComponent({
               >
                 <Copy className="w-4 h-4" />
               </button>
-              <SyntaxHighlighter
-                style={oneDark}
-                language={language || "text"}
-                PreTag="div"
-              >
+              <SyntaxHighlighter style={oneDark} language={language || "text"} PreTag="div">
                 {codeContent.replace(/\n$/, "")}
               </SyntaxHighlighter>
             </div>
@@ -65,12 +49,7 @@ export default function MarkdownComponent({
         },
         a({ children, href }) {
           return (
-            <a
-              href={href}
-              className="text-primary hover:underline"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
+            <a href={href} className="text-primary hover:underline" target="_blank" rel="noopener noreferrer">
               {children}
             </a>
           );
@@ -82,11 +61,7 @@ export default function MarkdownComponent({
           return <ol className="list-decimal ml-6 mb-4">{children}</ol>;
         },
         blockquote({ children }) {
-          return (
-            <blockquote className="border-l-4 border-base-300 pl-4 italic">
-              {children}
-            </blockquote>
-          );
+          return <blockquote className="border-l-4 border-base-300 pl-4 italic">{children}</blockquote>;
         },
       }}
     >

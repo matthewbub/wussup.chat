@@ -2,32 +2,28 @@
 
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useState } from "react";
-import { useChatStore } from "@/stores/chatStore";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Check, Loader2 } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { CheckCircle2 } from "lucide-react";
+import { useChatStore } from "@/app/~/[session]/_store/chat";
 
 interface BillingModalProps {
   isOpen: boolean;
   onClose: () => void;
-  userId?: string;
 }
 
-export function BillingModal({ isOpen, onClose, userId }: BillingModalProps) {
+export function BillingModal({ isOpen, onClose }: BillingModalProps) {
   const [isLoading, setIsLoading] = useState(false);
   const { user } = useChatStore();
 
   const handleSubscribe = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(
-        "/api/subscription/create-checkout-session",
-        {
-          method: "POST",
-        }
-      );
+      const response = await fetch("/api/subscription/create-checkout-session", {
+        method: "POST",
+      });
       const { url } = await response.json();
       window.location.href = url;
     } catch (error) {
@@ -40,7 +36,7 @@ export function BillingModal({ isOpen, onClose, userId }: BillingModalProps) {
   const handleManageSubscription = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch(`/api/subscription/manage?userId=${userId}`);
+      const response = await fetch(`/api/subscription/manage?userId=${user?.id}`);
       const { url } = await response.json();
       window.location.href = url;
     } catch (error) {
@@ -58,9 +54,7 @@ export function BillingModal({ isOpen, onClose, userId }: BillingModalProps) {
         <div className="grid gap-6">
           <div>
             <h2 className="text-lg font-semibold">Billing Settings</h2>
-            <p className="text-sm text-muted-foreground">
-              Manage your subscription and billing preferences.
-            </p>
+            <p className="text-sm text-muted-foreground">Manage your subscription and billing preferences.</p>
           </div>
 
           {/* Rest of the billing content */}
@@ -74,20 +68,13 @@ export function BillingModal({ isOpen, onClose, userId }: BillingModalProps) {
                     <AlertTitle>Pro Plan Active</AlertTitle>
                     <AlertDescription>
                       Next billing date:{" "}
-                      {new Date(
-                        user?.subscriptionPeriodEnd
-                      ).toLocaleDateString()}
+                      {user?.subscriptionPeriodEnd ? new Date(user?.subscriptionPeriodEnd).toLocaleDateString() : "N/A"}
                     </AlertDescription>
                   </Alert>
                 )}
                 {/* Add other status alerts here */}
 
-                <Button
-                  variant="outline"
-                  onClick={handleManageSubscription}
-                  disabled={isLoading}
-                  className="w-full"
-                >
+                <Button variant="outline" onClick={handleManageSubscription} disabled={isLoading} className="w-full">
                   {isLoading ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -102,9 +89,7 @@ export function BillingModal({ isOpen, onClose, userId }: BillingModalProps) {
               </div>
             ) : (
               <div className="space-y-4">
-                <p className="text-sm text-muted-foreground">
-                  You are currently on the free plan.
-                </p>
+                <p className="text-sm text-muted-foreground">You are currently on the free plan.</p>
 
                 <Card className="p-6">
                   <div className="space-y-4">
@@ -112,9 +97,7 @@ export function BillingModal({ isOpen, onClose, userId }: BillingModalProps) {
                       <h4 className="text-lg font-medium">Pro Plan</h4>
                       <div className="flex items-baseline">
                         <span className="text-3xl font-bold">$9</span>
-                        <span className="text-sm text-muted-foreground ml-1">
-                          /month
-                        </span>
+                        <span className="text-sm text-muted-foreground ml-1">/month</span>
                       </div>
                     </div>
 
@@ -131,11 +114,7 @@ export function BillingModal({ isOpen, onClose, userId }: BillingModalProps) {
                       ))}
                     </ul>
 
-                    <Button
-                      className="w-full"
-                      onClick={handleSubscribe}
-                      disabled={isLoading}
-                    >
+                    <Button className="w-full" onClick={handleSubscribe} disabled={isLoading}>
                       {isLoading ? (
                         <>
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />

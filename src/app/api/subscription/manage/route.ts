@@ -23,10 +23,7 @@ export async function GET() {
       .single();
 
     if (userError || !userData?.stripeCustomerId) {
-      return NextResponse.json(
-        { error: "Customer not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Customer not found" }, { status: 404 });
     }
 
     // Create a Stripe billing portal session
@@ -38,9 +35,6 @@ export async function GET() {
     return NextResponse.json({ url: portalSession.url });
   } catch (error) {
     console.error("[stripe]", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

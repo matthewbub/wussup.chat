@@ -19,16 +19,10 @@ export async function POST(req: Request) {
   } catch (err: unknown) {
     if (err instanceof Error) {
       console.error("Webhook Error:", err);
-      return NextResponse.json(
-        { error: `Webhook Error: ${err.message}` },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: `Webhook Error: ${err.message}` }, { status: 400 });
     } else {
       console.error("Unknown error occurred", err);
-      return NextResponse.json(
-        { error: "Unknown error occurred" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Unknown error occurred" }, { status: 400 });
     }
   }
 
@@ -58,45 +52,32 @@ async function fulfillSubscription(session: Stripe.Checkout.Session) {
   const supabase = await createClient();
   try {
     // 1. Check if we've already processed this session
-    const { data: existingSession, error: existingSessionError } =
-      await supabase
-        .from("ChatBot_Users")
-        .select()
-        .eq("checkoutSessionId", session.id)
-        .single();
+    const { data: existingSession, error: existingSessionError } = await supabase
+      .from("ChatBot_Users")
+      .select()
+      .eq("checkoutSessionId", session.id)
+      .single();
 
     if (
       existingSessionError &&
       (!existingSessionError.message.includes("No rows found") ||
         !existingSessionError.message.includes("The result contains 0 rows"))
     ) {
-      console.error(
-        "Error checking for existing session:",
-        existingSessionError
-      );
+      console.error("Error checking for existing session:", existingSessionError);
     }
 
     if (existingSession) {
-      return NextResponse.json(
-        { message: `Session ${session.id} already fulfilled` },
-        { status: 200 }
-      );
+      return NextResponse.json({ message: `Session ${session.id} already fulfilled` }, { status: 200 });
     }
 
     // 2. Retrieve the full session details
-    const checkoutSession = await stripe.checkout.sessions.retrieve(
-      session.id,
-      {
-        expand: ["subscription"],
-      }
-    );
+    const checkoutSession = await stripe.checkout.sessions.retrieve(session.id, {
+      expand: ["subscription"],
+    });
 
     // 3. Verify payment status
     if (checkoutSession.payment_status === "unpaid") {
-      return NextResponse.json(
-        { message: `Session ${session.id} is unpaid` },
-        { status: 200 }
-      );
+      return NextResponse.json({ message: `Session ${session.id} is unpaid` }, { status: 200 });
     }
 
     // 4. Get customer and subscription details
@@ -117,10 +98,7 @@ async function fulfillSubscription(session: Stripe.Checkout.Session) {
     const userId = existingUser?.id;
     if (userError || !userId) {
       console.error("Error getting user:", userError);
-      return NextResponse.json(
-        { message: `Error getting user: ${userError?.message}` },
-        { status: 500 }
-      );
+      return NextResponse.json({ message: `Error getting user: ${userError?.message}` }, { status: 500 });
     }
 
     const { error } = await supabase
@@ -132,9 +110,7 @@ async function fulfillSubscription(session: Stripe.Checkout.Session) {
         stripeSubscriptionId: subscriptionId,
         subscriptionStatus: "active",
         checkoutSessionId: session.id,
-        subscriptionPeriodEnd: new Date(
-          subscription.current_period_end * 1000
-        ).toISOString(),
+        subscriptionPeriodEnd: new Date(subscription.current_period_end * 1000).toISOString(),
       })
       .eq("email", session.customer_email || session.customer_details?.email);
 
@@ -166,9 +142,7 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
       .from("ChatBot_Users")
       .update({
         subscriptionStatus: subscription.status,
-        subscriptionPeriodEnd: new Date(
-          subscription.current_period_end * 1000
-        ).toISOString(),
+        subscriptionPeriodEnd: new Date(subscription.current_period_end * 1000).toISOString(),
       })
       .eq("stripeSubscriptionId", subscription.id);
 
@@ -177,17 +151,13 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
       throw error;
     }
 
-    console.log(
-      `Updated subscription ${subscription.id} status to ${subscription.status}`
-    );
+    console.log(`Updated subscription ${subscription.id} status to ${subscription.status}`);
   } catch (error) {
     console.error("Subscription update error:", error);
     throw error;
   }
 }
 
-async function handleSubscriptionCancellation(
-  canceledSubscription: Stripe.Subscription
-) {
+async function handleSubscriptionCancellation(canceledSubscription: Stripe.Subscription) {
   console.log("Subscription canceled:", canceledSubscription);
 }

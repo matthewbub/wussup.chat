@@ -2,11 +2,7 @@
 
 import { createClient } from "@/lib/supabase-server";
 
-export async function registerUser(formData: {
-  email: string;
-  password: string;
-  confirmPassword: string;
-}) {
+export async function registerUser(formData: { email: string; password: string; confirmPassword: string }) {
   console.log("[Register User] Form Data:", formData);
   const supabase = await createClient();
 

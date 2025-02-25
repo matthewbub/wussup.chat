@@ -1,18 +1,11 @@
 import { useState } from "react";
 import { createClient } from "@/lib/supabase-client";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { GithubIcon, Mail } from "lucide-react";
 import { Label } from "./ui/label";
-import { useChatStore } from "@/stores/chatStore";
-import { useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -20,16 +13,12 @@ interface AuthModalProps {
 }
 
 export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
-  const searchParams = useSearchParams();
-  const sessionId = searchParams.get("session");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [mode, setMode] = useState<"login" | "signup">("login");
-  const { user } = useChatStore();
-  const { init } = useChatStore();
-
+  const router = useRouter();
   const supabase = createClient();
 
   const handleEmailAuth = async (e: React.FormEvent) => {
@@ -38,21 +27,26 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     setError(null);
 
     try {
-      const { data, error } =
-        mode === "login"
-          ? await supabase.auth.signInWithPassword({ email, password })
-          : await supabase.auth.signUp({ email, password });
+      const response = await fetch("/api/v1/auth", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password, mode }),
+      });
 
-      if (error) throw error;
+      const result = await response.json();
 
-      if (data.user) {
+      if (!response.ok) throw new Error(result.error);
+
+      if (result.user) {
         onClose();
-        init(sessionId as string);
       }
     } catch (err: unknown) {
       setError((err as { message: string }).message);
     } finally {
       setIsLoading(false);
+      router.push("/~");
     }
   };
 
@@ -73,7 +67,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   };
 
   const handleOpenChange = (open: boolean) => {
-    if (!open && user) {
+    if (!open) {
       onClose();
     }
   };
@@ -82,9 +76,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-[400px]" hideCloseButton>
         <DialogHeader>
-          <DialogTitle className="font-title text-3xl text-center pt-2 pb-8">
-            Wussup
-          </DialogTitle>
+          <DialogTitle className="font-title text-3xl text-center pt-2 pb-8">Wussup</DialogTitle>
           <DialogDescription className="p-4 border-t text-center text-sm text-muted-foreground">
             {mode === "login"
               ? "Multi-Model Unified AI assistant"
@@ -126,9 +118,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
             <span className="w-full border-t" />
           </div>
           <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-background px-2 text-muted-foreground">
-              Or continue with
-            </span>
+            <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
           </div>
         </div>
 
@@ -138,9 +128,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
         </Button>
 
         <p className="text-center text-sm text-muted-foreground">
-          {mode === "login"
-            ? "Don't have an account? "
-            : "Already have an account? "}
+          {mode === "login" ? "Don't have an account? " : "Already have an account? "}
           <button
             type="button"
             onClick={() => setMode(mode === "login" ? "signup" : "login")}

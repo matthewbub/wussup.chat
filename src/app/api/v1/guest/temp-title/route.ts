@@ -15,9 +15,7 @@ export async function POST(req: Request) {
     model: openai("gpt-4-turbo"),
     prompt: clsx([
       "Generate a brief, descriptive title (max 6 words) for this chat conversation based on the initial messages in raw text. Omit any punctuation or special characters.",
-      titleMessages.map(
-        (m: { role: string; content: string }) => `${m.role}: ${m.content}`
-      ),
+      titleMessages.map((m: { role: string; content: string }) => `${m.role}: ${m.content}`),
     ]),
   });
 

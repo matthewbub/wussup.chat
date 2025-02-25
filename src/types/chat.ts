@@ -4,6 +4,14 @@ export interface Message {
   is_user: boolean;
   created_at: string;
   model: string;
+  chat_session_id?: string;
+  user_id?: string;
+  metadata?: {
+    type: string;
+    imageUrl: string;
+    prompt: string;
+    storagePath: string;
+  };
 }
 
 export interface ChatSession {
@@ -14,3 +22,8 @@ export interface ChatSession {
   updated_at: string;
   user_id: string;
 }
+
+type ChatSessionGroup = "Older" | "This Month" | "This Week" | "Today";
+export type GroupedSession = {
+  [key in ChatSessionGroup]: ChatSession[];
+};

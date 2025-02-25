@@ -22,22 +22,15 @@ export async function GET() {
       .eq("user_id", user.id)
       .single();
 
-    if (
-      error ||
-      !userData?.stripeCustomerId ||
-      !userData?.stripeSubscriptionId
-    ) {
+    if (error || !userData?.stripeCustomerId || !userData?.stripeSubscriptionId) {
       return NextResponse.json({ active: false });
     }
 
     // verify subscription status with stripe
-    const subscription = await stripe.subscriptions.retrieve(
-      userData.stripeSubscriptionId
-    );
+    const subscription = await stripe.subscriptions.retrieve(userData.stripeSubscriptionId);
 
     // check if stripe subscription is active
-    const isActive =
-      subscription.status === "active" || subscription.status === "trialing";
+    const isActive = subscription.status === "active" || subscription.status === "trialing";
 
     // if stripe and supabase are out of sync, update supabase
     if (isActive && userData.subscriptionStatus !== subscription.status) {
@@ -45,9 +38,7 @@ export async function GET() {
         .from("ChatBot_Users")
         .update({
           subscriptionStatus: subscription.status,
-          subscriptionPeriodEnd: new Date(
-            subscription.current_period_end * 1000
-          ),
+          subscriptionPeriodEnd: new Date(subscription.current_period_end * 1000),
           updatedAt: new Date().toISOString(),
         })
         .eq("user_id", user.id);

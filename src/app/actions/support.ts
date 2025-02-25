@@ -2,10 +2,7 @@
 
 import { createClient } from "@/lib/supabase-server";
 import { Resend } from "resend";
-import {
-  EmailTemplate,
-  ConfirmationEmail,
-} from "@/components/email/SupportRequestRecieved";
+import { EmailTemplate, ConfirmationEmail } from "@/components/email/SupportRequestRecieved";
 import { revalidatePath } from "next/cache";
 
 const MAX_MESSAGE_LENGTH = 2000; // Reasonable limit for support messages
@@ -22,10 +19,7 @@ export async function submitSupportForm(formData: FormData): Promise<void> {
   const email = formData.get("email") as string;
   const category = formData.get("category") as string;
 
-  if (
-    message.length > MAX_MESSAGE_LENGTH ||
-    subject.length > MAX_SUBJECT_LENGTH
-  ) {
+  if (message.length > MAX_MESSAGE_LENGTH || subject.length > MAX_SUBJECT_LENGTH) {
     return;
   }
 

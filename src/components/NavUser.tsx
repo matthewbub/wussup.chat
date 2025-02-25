@@ -1,6 +1,6 @@
 "use client";
 
-import { CreditCard, LogOut, StickyNote, User } from "lucide-react";
+import { CreditCard, LogOut, StickyNote, User as UserIcon } from "lucide-react";
 import { AuthModal } from "@/components/AuthModal";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -12,36 +12,28 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-} from "@/components/ui/sidebar";
+import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
 import { BillingModal } from "@/components/BillingModal";
 import crypto from "crypto";
-import { useChatStore } from "@/stores/chatStore";
 import { useRouter } from "next/navigation";
-import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { ContextDialog } from "@/components/ContextModal";
 import { useState } from "react";
+import { useChatStore } from "@/app/~/[session]/_store/chat";
 
 const getGravatarUrl = (email: string) => {
-  const hash = crypto
-    .createHash("md5")
-    .update(email.toLowerCase().trim())
-    .digest("hex");
+  const hash = crypto.createHash("md5").update(email.toLowerCase().trim()).digest("hex");
   return `https://www.gravatar.com/avatar/${hash}?d=mp`;
 };
 
 export function NavUser() {
-  const { user, openModal, closeModal, activeModal, clearStore } =
-    useChatStore();
   const router = useRouter();
+  const { user } = useChatStore();
   const avatarFallback = user ? user.email?.slice(0, 2).toUpperCase() : "GU";
   const [showContextDialog, setShowContextDialog] = useState(false);
+  const [activeModal, setActiveModal] = useState<"auth" | "billing" | null>(null);
 
   const handleManageSubscription = () => {
-    openModal("billing");
+    setActiveModal("billing");
   };
 
   const handleLogout = async () => {
@@ -57,7 +49,7 @@ export function NavUser() {
       }
 
       // Clear the chat store state
-      clearStore();
+      // clearStore();
 
       router.push("/");
     } catch (error) {
@@ -80,12 +72,10 @@ export function NavUser() {
                 {user?.email ? (
                   <Avatar className="h-8 w-8 rounded-lg">
                     <AvatarImage src={gravatarUrl} alt={user.email} />
-                    <AvatarFallback className="rounded-lg">
-                      {avatarFallback}
-                    </AvatarFallback>
+                    <AvatarFallback className="rounded-lg">{avatarFallback}</AvatarFallback>
                   </Avatar>
                 ) : (
-                  <User className="h-8 w-8 rounded-lg" />
+                  <UserIcon className="h-8 w-8 rounded-lg" />
                 )}
               </SidebarMenuButton>
             </DropdownMenuTrigger>
@@ -102,15 +92,11 @@ export function NavUser() {
                       {user.email && (
                         <Avatar className="h-8 w-8 rounded-lg">
                           <AvatarImage src={gravatarUrl} alt={user.email} />
-                          <AvatarFallback className="rounded-lg">
-                            {avatarFallback}
-                          </AvatarFallback>
+                          <AvatarFallback className="rounded-lg">{avatarFallback}</AvatarFallback>
                         </Avatar>
                       )}
                       <div className="grid flex-1 text-left text-sm leading-tight">
-                        <span className="truncate font-semibold">
-                          {user.email || "Guest User"}
-                        </span>
+                        <span className="truncate font-semibold">{user.email || "Guest User"}</span>
                         <span className="truncate text-xs">{user.email}</span>
                       </div>
                     </div>
@@ -122,9 +108,7 @@ export function NavUser() {
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={handleManageSubscription}>
                     <CreditCard />
-                    {user?.subscriptionStatus === "active"
-                      ? "Manage Subscription"
-                      : "Upgrade to Pro"}
+                    {user?.subscriptionStatus === "active" ? "Manage Subscription" : "Upgrade to Pro"}
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleLogout}>
@@ -134,7 +118,7 @@ export function NavUser() {
                 </>
               ) : (
                 <DropdownMenuGroup>
-                  <DropdownMenuItem onClick={() => openModal("auth")}>
+                  <DropdownMenuItem onClick={() => setActiveModal("auth")}>
                     <LogOut className="rotate-180" />
                     Sign In
                   </DropdownMenuItem>
@@ -144,16 +128,9 @@ export function NavUser() {
           </DropdownMenu>
         </SidebarMenuItem>
       </SidebarMenu>
-      <AuthModal isOpen={activeModal === "auth"} onClose={() => closeModal()} />
-      <BillingModal
-        isOpen={activeModal === "billing"}
-        onClose={() => closeModal()}
-        userId={user?.user_id}
-      />
-      <ContextDialog
-        open={showContextDialog}
-        onOpenChange={setShowContextDialog}
-      />
+      <AuthModal isOpen={activeModal === "auth"} onClose={() => setActiveModal(null)} />
+      <BillingModal isOpen={activeModal === "billing"} onClose={() => setActiveModal(null)} />
+      <ContextDialog open={showContextDialog} onOpenChange={setShowContextDialog} />
     </>
   );
 }

@@ -12,11 +12,7 @@ const LoadingPulse: React.FC<LoadingPulseProps> = ({ size = "medium" }) => {
   };
 
   return (
-    <div
-      className="flex justify-center items-center h-full"
-      role="status"
-      aria-live="polite"
-    >
+    <div className="flex justify-center items-center h-full" role="status" aria-live="polite">
       <span className="sr-only">Loading, please wait...</span>
       <div className="flex space-x-2 motion-safe:animate-pulse">
         <div className={`${sizeClasses[size]} bg-blue-600 rounded-full`}></div>

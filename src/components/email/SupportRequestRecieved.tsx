@@ -7,19 +7,12 @@ interface EmailTemplateProps {
   userId?: string;
 }
 
-function EmailTemplate({
-  email,
-  category,
-  subject,
-  message,
-  userId,
-}: EmailTemplateProps) {
+function EmailTemplate({ email, category, subject, message, userId }: EmailTemplateProps) {
   return (
     <div>
       <h1>New Support Request</h1>
       <p>
-        <strong>From:</strong> {email}{" "}
-        {userId ? `(User ID: ${userId})` : "(Anonymous)"}
+        <strong>From:</strong> {email} {userId ? `(User ID: ${userId})` : "(Anonymous)"}
       </p>
       <p>
         <strong>Category:</strong> {category}
@@ -42,18 +35,13 @@ interface ConfirmationEmailProps {
   subject: string;
 }
 
-function ConfirmationEmail({
-  email,
-  category,
-  subject,
-}: ConfirmationEmailProps) {
+function ConfirmationEmail({ email, category, subject }: ConfirmationEmailProps) {
   return (
     <div>
       <h1>Support Request Received</h1>
       <p>Hello,</p>
       <p>
-        We have received your support request and our team will review it
-        shortly. Here are the details of your request:
+        We have received your support request and our team will review it shortly. Here are the details of your request:
       </p>
       <p>
         <strong>Email:</strong> {email}
