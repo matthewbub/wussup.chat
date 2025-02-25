@@ -24,9 +24,6 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "user id is required" }, { status: 400 });
   }
 
-  console.log("Message ID", message_id);
-  console.log("Session ID AFTER", session_id);
-  // insert user message and increment message count concurrently
   const [{ error: userError }, { error: updateError }] = await Promise.all([
     supabase.from("ChatBot_Messages").insert([
       {

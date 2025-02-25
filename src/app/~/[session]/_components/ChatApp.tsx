@@ -9,11 +9,21 @@ import { LanguageModalSelector } from "@/components/chat/LanguageModalSelector";
 import { Message } from "./Message";
 import { EmptyChatScreen } from "@/components/EmptyChatScreen";
 import { useChatStore } from "../_store/chat";
+import { ChatSession } from "@/types/chat";
 
-export default function ChatApp({ isUserSubscribed, sessionId }: { isUserSubscribed: boolean; sessionId: string }) {
-  const { updateSessionName } = useChatStore();
+export default function ChatApp({
+  isUserSubscribed,
+  sessionId,
+  initialMessages = [],
+}: {
+  isUserSubscribed: boolean;
+  sessionId: string;
+  initialMessages?: { id: string; content: string; role: "user" | "assistant" }[];
+}) {
+  const { updateSessionName, user } = useChatStore();
   const { messages, input, handleInputChange, handleSubmit, status, stop, reload, setInput } = useChat({
     api: "/api/v1/chat",
+    initialMessages: initialMessages,
     onFinish: async (message, { usage, finishReason }) => {
       const wasFirstMessage = messages.length === 0;
 
@@ -74,6 +84,8 @@ export default function ChatApp({ isUserSubscribed, sessionId }: { isUserSubscri
     handleSubmit(ev, {
       data: {
         user_specified_model: model,
+        session_id: sessionId,
+        chat_context: user?.chat_context || "You are a helpful assistant.",
       },
     });
     setInput("");

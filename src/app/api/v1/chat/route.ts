@@ -21,6 +21,19 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "user id is required" }, { status: 400 });
   }
 
+  const { error: sessionError } = await supabase
+    .from("ChatBot_Sessions")
+    .upsert({
+      id: session_id,
+      user_id: userId,
+      updated_at: new Date().toISOString(),
+    })
+    .select();
+
+  if (sessionError) {
+    return NextResponse.json({ error: "Failed to create session" }, { status: 500 });
+  }
+
   const user_message_id = crypto.randomUUID();
   const user_created_at = new Date().toISOString();
 
