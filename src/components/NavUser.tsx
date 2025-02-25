@@ -128,9 +128,9 @@ export function NavUser() {
           </DropdownMenu>
         </SidebarMenuItem>
       </SidebarMenu>
-      <AuthModal isOpen={activeModal === "auth"} onClose={() => setActiveModal(null)} user={user} />
-      <BillingModal isOpen={activeModal === "billing"} onClose={() => setActiveModal(null)} user={user} />
-      <ContextDialog open={showContextDialog} onOpenChange={setShowContextDialog} user={user} />
+      <AuthModal isOpen={activeModal === "auth"} onClose={() => setActiveModal(null)} />
+      <BillingModal isOpen={activeModal === "billing"} onClose={() => setActiveModal(null)} />
+      <ContextDialog open={showContextDialog} onOpenChange={setShowContextDialog} />
     </>
   );
 }

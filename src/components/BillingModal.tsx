@@ -2,23 +2,21 @@
 
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useState } from "react";
-import { useChatStore } from "@/app/~/[session]/_store/chat";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Check, Loader2 } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { CheckCircle2 } from "lucide-react";
-import { User } from "@/types/user";
+import { useChatStore } from "@/app/~/[session]/_store/chat";
 
 interface BillingModalProps {
   isOpen: boolean;
   onClose: () => void;
-  user: User;
 }
 
-export function BillingModal({ isOpen, onClose, user }: BillingModalProps) {
+export function BillingModal({ isOpen, onClose }: BillingModalProps) {
   const [isLoading, setIsLoading] = useState(false);
-  // const { user } = useChatStore();
+  const { user } = useChatStore();
 
   const handleSubscribe = async () => {
     setIsLoading(true);

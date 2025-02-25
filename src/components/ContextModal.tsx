@@ -10,15 +10,14 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { useChatStore } from "@/app/~/[session]/_store/chat";
-import { User } from "@/types/user";
+
 interface ContextDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  user: User;
 }
 
-export function ContextDialog({ open, onOpenChange, user }: ContextDialogProps) {
-  const { updateUserChatContext } = useChatStore();
+export function ContextDialog({ open, onOpenChange }: ContextDialogProps) {
+  const { updateUserChatContext, user } = useChatStore();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     const formData = new FormData(e.currentTarget);
@@ -38,7 +37,7 @@ export function ContextDialog({ open, onOpenChange, user }: ContextDialogProps) 
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Set Chat Context</DialogTitle>
-          <DialogDescription>This context will be used to guide the AI's responses.</DialogDescription>
+          <DialogDescription>This context will be used to guide the AI&apos;s responses.</DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit}>
           <div className="grid gap-4 py-4">

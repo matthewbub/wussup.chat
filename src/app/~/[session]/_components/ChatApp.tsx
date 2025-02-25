@@ -9,7 +9,6 @@ import { LanguageModalSelector } from "@/components/chat/LanguageModalSelector";
 import { Message } from "./Message";
 import { EmptyChatScreen } from "@/components/EmptyChatScreen";
 import { useChatStore } from "../_store/chat";
-import { ChatSession } from "@/types/chat";
 
 export default function ChatApp({
   isUserSubscribed,

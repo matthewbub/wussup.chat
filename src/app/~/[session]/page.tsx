@@ -11,7 +11,7 @@ import { ChatSession } from "@/types/chat";
 import { generateCurrentSessionPlaceholder } from "./_helpers/currentSessionPlaceholder";
 import { AppState } from "@/components/AppState";
 
-export default async function Page({ params }: { params: { session: string } }) {
+export default async function Page({ params }: { params: Promise<{ session: string }> }) {
   const supabase = await createClient();
   const { data: userData } = await supabase.auth.getUser();
   const userId = userData?.user?.id;
