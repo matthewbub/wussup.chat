@@ -15,28 +15,19 @@ import clsx from "clsx";
 import { SidebarGroup, SidebarGroupContent } from "@/components/ui/sidebar";
 import { ChatSession } from "@/types/chat";
 import { CreateChatButton } from "@/app/~/[session]/_components/CreateChatButton";
-import { useEffect } from "react";
 import { useChatStore } from "@/app/~/[session]/_store/chat";
 
 export function AppSidebar({
   sessions,
-  currentSession,
   ...props
 }: {
   sessions: Record<string, ChatSession[]>;
-  currentSession: ChatSession;
 } & React.ComponentProps<typeof Sidebar>) {
-  const { setCurrentSession, currentSession: storeSession } = useChatStore();
-
-  useEffect(() => {
-    if (currentSession?.id) {
-      setCurrentSession(currentSession);
-    }
-  }, [currentSession?.id, setCurrentSession]);
+  const { currentSession } = useChatStore();
 
   const getCurrentSessionName = (session: ChatSession) => {
-    if (currentSession?.id === session.id && storeSession?.name) {
-      return storeSession.name;
+    if (currentSession?.id === session.id && currentSession?.name) {
+      return currentSession.name;
     } else if (session.name) {
       return session.name;
     }

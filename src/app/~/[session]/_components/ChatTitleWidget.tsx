@@ -20,10 +20,9 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ChatSession } from "@/types/chat";
 
-export function ChatTitleWidget({ currentSession }: { currentSession: ChatSession }) {
-  const { updateSessionName } = useChatStore();
+export function ChatTitleWidget() {
+  const { updateSessionName, currentSession } = useChatStore();
   const router = useRouter();
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isRenameDialogOpen, setIsRenameDialogOpen] = useState(false);
@@ -31,24 +30,24 @@ export function ChatTitleWidget({ currentSession }: { currentSession: ChatSessio
   const [aiLoading, setAiLoading] = useState(false);
 
   const handleRenameChat = async () => {
-    if (newChatName && newChatName !== currentSession.name) {
+    if (newChatName && newChatName !== currentSession?.name) {
       await updateSessionName(newChatName);
       setIsRenameDialogOpen(false);
     }
   };
 
   const handleCopyLink = () => {
-    const url = `${window.location.origin}/${currentSession.id}`;
+    const url = `${window.location.origin}/${currentSession?.id}`;
     navigator.clipboard.writeText(url);
   };
 
   const handleOpenInNewTab = () => {
-    window.open(`/${currentSession.id}`, "_blank");
+    window.open(`/~/${currentSession?.id}`, "_blank");
   };
 
   const handleDeleteChat = async () => {
     try {
-      const response = await fetch(`/api/chat/delete?sessionId=${currentSession.id}`, {
+      const response = await fetch(`/api/chat/delete?sessionId=${currentSession?.id}`, {
         method: "DELETE",
       });
 
@@ -77,7 +76,7 @@ export function ChatTitleWidget({ currentSession }: { currentSession: ChatSessio
         <DropdownMenuContent className="w-56 rounded-lg" side={"bottom"}>
           <DropdownMenuItem
             onClick={() => {
-              setNewChatName(currentSession.name);
+              setNewChatName(currentSession?.name || "");
               setIsRenameDialogOpen(true);
             }}
           >
@@ -115,8 +114,8 @@ export function ChatTitleWidget({ currentSession }: { currentSession: ChatSessio
               onClick={async () => {
                 setAiLoading(true);
                 const data = {
-                  session_id: currentSession.id,
-                  messages: currentSession.messages,
+                  session_id: currentSession?.id || "",
+                  messages: currentSession?.messages || [],
                 };
 
                 const response = await fetch("/api/v1/title", {

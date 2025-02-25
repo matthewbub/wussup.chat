@@ -104,6 +104,7 @@ export async function POST(req: Request) {
   });
 
   // TODO: Add user specified model
+  console.log("chat_context", chat_context);
   const result = streamText({
     model: openai(model),
     system: chat_context,

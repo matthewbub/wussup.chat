@@ -7,7 +7,7 @@ interface ChatStore {
   updateSessionName: (name: string) => void;
   setCurrentSession: (session: ChatSession) => void;
   user: User | null;
-  updateUser: (user: User) => void;
+  setUser: (user: User) => void;
   updateUserChatContext: (context: string) => void;
 }
 
@@ -26,7 +26,7 @@ export const useChatStore = create<ChatStore>((set) => ({
     set({ currentSession: session });
   },
   user: null,
-  updateUser: (user: User) => {
+  setUser: (user: User) => {
     set({ user: user });
   },
   updateUserChatContext: (context: string) => {

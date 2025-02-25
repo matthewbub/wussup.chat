@@ -18,15 +18,16 @@ import crypto from "crypto";
 import { useRouter } from "next/navigation";
 import { ContextDialog } from "@/components/ContextModal";
 import { useState } from "react";
-import { User } from "@/types/user";
+import { useChatStore } from "@/app/~/[session]/_store/chat";
 
 const getGravatarUrl = (email: string) => {
   const hash = crypto.createHash("md5").update(email.toLowerCase().trim()).digest("hex");
   return `https://www.gravatar.com/avatar/${hash}?d=mp`;
 };
 
-export function NavUser({ user }: { user: User }) {
+export function NavUser() {
   const router = useRouter();
+  const { user } = useChatStore();
   const avatarFallback = user ? user.email?.slice(0, 2).toUpperCase() : "GU";
   const [showContextDialog, setShowContextDialog] = useState(false);
   const [activeModal, setActiveModal] = useState<"auth" | "billing" | null>(null);

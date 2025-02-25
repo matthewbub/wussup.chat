@@ -1,3 +1,4 @@
+"use client";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -10,8 +11,7 @@ import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import Link from "next/link";
 import { NavUser } from "@/components/NavUser";
 import { ChatTitleWidget } from "@/app/~/[session]/_components/ChatTitleWidget";
-import { ChatSession } from "@/types/chat";
-import { User } from "@/types/user";
+import { useChatStore } from "@/app/~/[session]/_store/chat";
 
 interface BreadcrumbItem {
   label: string;
@@ -20,11 +20,10 @@ interface BreadcrumbItem {
 
 interface ChatLayoutProps {
   children: React.ReactNode;
-  currentSession: ChatSession;
-  user: User;
 }
 
-export function AppShell({ children, currentSession, user }: ChatLayoutProps) {
+export function AppShell({ children }: ChatLayoutProps) {
+  const { currentSession } = useChatStore();
   return (
     <SidebarInset>
       <header className="sticky top-0 flex h-14 shrink-0 items-center gap-2 bg-background z-10">
@@ -43,7 +42,7 @@ export function AppShell({ children, currentSession, user }: ChatLayoutProps) {
                   <BreadcrumbSeparator />
                   <BreadcrumbItem>
                     <BreadcrumbPage className="line-clamp-1">
-                      <ChatTitleWidget currentSession={currentSession} />
+                      <ChatTitleWidget />
                     </BreadcrumbPage>
                   </BreadcrumbItem>
                 </>
@@ -52,7 +51,7 @@ export function AppShell({ children, currentSession, user }: ChatLayoutProps) {
           </Breadcrumb>
         </div>
         <div className="flex items-center pr-4">
-          <NavUser user={user} />
+          <NavUser />
         </div>
       </header>
       <div className="flex flex-1 flex-col gap-4 px-4 pt-4">{children}</div>

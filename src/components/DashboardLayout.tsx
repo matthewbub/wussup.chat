@@ -18,13 +18,11 @@ interface ChatLayoutProps {
   user: User;
 }
 
-export function ChatLayout({ sessions, currentSession, children, user }: ChatLayoutProps) {
+export function ChatLayout({ sessions, children }: ChatLayoutProps) {
   return (
     <SidebarProvider>
-      <AppSidebar sessions={sessions} currentSession={currentSession} />
-      <AppShell currentSession={currentSession} user={user}>
-        {children}
-      </AppShell>
+      <AppSidebar sessions={sessions} />
+      <AppShell>{children}</AppShell>
     </SidebarProvider>
   );
 }

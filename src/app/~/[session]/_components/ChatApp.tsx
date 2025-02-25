@@ -81,6 +81,7 @@ export default function ChatApp({
   const componentSubmitHandler = (ev: React.FormEvent<HTMLFormElement>) => {
     ev.preventDefault();
     console.log("Model at submit:", model);
+    console.log("User chat context:", user?.chat_context);
     handleSubmit(ev, {
       data: {
         user_specified_model: model,
