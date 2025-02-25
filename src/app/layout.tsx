@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Pacifico } from "next/font/google";
-import { Background } from "@/components/ui/Background";
 import "../styles/globals.css";
 import "katex/dist/katex.min.css";
 import { Toaster } from "@/components/ui/toaster";
@@ -35,7 +34,8 @@ export default function RootLayout({
 }>) {
   const content = (
     <div className="h-full">
-      <Background>{children}</Background>
+      {children}
+      {/* <Background>{children}</Background> */}
       <Toaster />
     </div>
   );

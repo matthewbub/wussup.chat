@@ -10,6 +10,7 @@ import { User } from "@/types/user";
 import { ChatSession } from "@/types/chat";
 import { generateCurrentSessionPlaceholder } from "./_helpers/currentSessionPlaceholder";
 import { AppState } from "@/components/AppState";
+import { Background } from "@/components/ui/Background";
 
 export default async function Page({ params }: { params: Promise<{ session: string }> }) {
   const supabase = await createClient();
@@ -38,18 +39,20 @@ export default async function Page({ params }: { params: Promise<{ session: stri
   const isUserSubscribed = isSubscriptionActive(subscriptionEndDate);
 
   return (
-    <AppState user={usersResult.data as unknown as User} currentSession={currentSession as ChatSession}>
-      <ChatLayout sessions={groupedSessions}>
-        <ChatApp
-          isUserSubscribed={isUserSubscribed}
-          sessionId={sessionId}
-          initialMessages={currentSession?.messages?.map((message) => ({
-            id: message.id,
-            content: message.content,
-            role: message.is_user ? "user" : "assistant",
-          }))}
-        />
-      </ChatLayout>
-    </AppState>
+    <Background>
+      <AppState user={usersResult.data as unknown as User} currentSession={currentSession as ChatSession}>
+        <ChatLayout sessions={groupedSessions}>
+          <ChatApp
+            isUserSubscribed={isUserSubscribed}
+            sessionId={sessionId}
+            initialMessages={currentSession?.messages?.map((message) => ({
+              id: message.id,
+              content: message.content,
+              role: message.is_user ? "user" : "assistant",
+            }))}
+          />
+        </ChatLayout>
+      </AppState>
+    </Background>
   );
 }
