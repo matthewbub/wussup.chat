@@ -1,13 +1,10 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Pacifico } from "next/font/google";
-import { Background } from "@/components/ui/Background";
 import "../styles/globals.css";
 import "katex/dist/katex.min.css";
 import { Toaster } from "@/components/ui/toaster";
 import { PostHogProvider } from "./providers";
-import { ReactScan } from "@/components/ReactScan";
-// import { ReactScan } from "@/components/ReactScan";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -37,17 +34,18 @@ export default function RootLayout({
 }>) {
   const content = (
     <div className="h-full">
-      <Background>{children}</Background>
+      {children}
+      {/* <Background>{children}</Background> */}
       <Toaster />
     </div>
   );
 
   return (
     <html lang="en" className="h-full dark">
-      <head>
+      {/* <head>
         <script src="https://unpkg.com/react-scan/dist/auto.global.js" />
-      </head>
-      <ReactScan />
+      </head> */}
+      {/* <ReactScan /> */}
       <body className={`${geistSans.variable} ${geistMono.variable} ${title.variable} antialiased h-full`}>
         {process.env.NODE_ENV === "production" ? <PostHogProvider>{content}</PostHogProvider> : content}
       </body>
