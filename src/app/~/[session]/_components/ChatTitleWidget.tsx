@@ -47,7 +47,7 @@ export function ChatTitleWidget() {
 
   const handleDeleteChat = async () => {
     try {
-      const response = await fetch(`/api/chat/delete?sessionId=${currentSession?.id}`, {
+      const response = await fetch(`/api/v1/delete-chat?sessionId=${currentSession?.id}`, {
         method: "DELETE",
       });
 
