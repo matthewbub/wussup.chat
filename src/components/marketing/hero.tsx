@@ -73,12 +73,9 @@ export default function Hero({ setActiveModal }: { setActiveModal: (modal: strin
                   ))}
                 </div> */}
                 <div className="py-6">
-                  <a
-                    href="#"
-                    className="-mx-3 block rounded-lg px-3 py-2.5 text-base/7 font-semibold text-white hover:bg-gray-800"
-                  >
+                  <Button variant="outline" onClick={() => setActiveModal("auth")}>
                     Log in
-                  </a>
+                  </Button>
                 </div>
               </div>
             </div>
