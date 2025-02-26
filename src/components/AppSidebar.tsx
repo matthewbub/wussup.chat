@@ -16,6 +16,7 @@ import { SidebarGroup, SidebarGroupContent } from "@/components/ui/sidebar";
 import { ChatSession } from "@/types/chat";
 import { CreateChatButton } from "@/app/~/[session]/_components/CreateChatButton";
 import { useChatStore } from "@/app/~/[session]/_store/chat";
+import { version } from "@/constants/version";
 
 export function AppSidebar({
   sessions,
@@ -90,7 +91,7 @@ export function AppSidebar({
       {/* FOOTER */}
       <SidebarFooter>
         <Link href="/support" className="px-4 text-xs text-muted-foreground text-right">
-          Version 0.0.4
+          Version {version}
         </Link>
       </SidebarFooter>
     </Sidebar>
