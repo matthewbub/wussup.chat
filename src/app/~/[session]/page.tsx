@@ -37,17 +37,22 @@ export default async function Page({ params }: { params: Promise<{ session: stri
   const currentSession = [...Object.values(groupedSessions).flat()].find((session) => session.id === sessionId);
   const subscriptionEndDate = usersResult.data?.subscriptionPeriodEnd;
   const isUserSubscribed = isSubscriptionActive(subscriptionEndDate);
-  const initialMessages = currentSession?.messages?.map((message) => ({
-    id: message.id,
-    content: message.content,
-    role: message.is_user ? "user" : "assistant",
-  }));
+  const initialMessages =
+    currentSession?.messages?.map((message) => ({
+      id: message.id,
+      content: message.content,
+      role: message.is_user ? "user" : "assistant",
+    })) || [];
 
   return (
     <Background>
       <AppState user={usersResult.data as unknown as User} currentSession={currentSession as ChatSession}>
         <ChatLayout sessions={groupedSessions}>
-          <ChatApp isUserSubscribed={isUserSubscribed} sessionId={sessionId} initialMessages={initialMessages} />
+          <ChatApp
+            isUserSubscribed={isUserSubscribed}
+            sessionId={sessionId}
+            initialMessages={initialMessages as { id: string; content: string; role: "user" | "assistant" }[]}
+          />
         </ChatLayout>
       </AppState>
     </Background>
