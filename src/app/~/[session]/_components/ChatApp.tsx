@@ -131,13 +131,15 @@ export default function ChatApp({
 
         {messages.length === 0 && <EmptyChatScreen setNewMessage={setInput} />}
       </div>
-      <form onSubmit={componentSubmitHandler} className="flex flex-col gap-2 rounded-xl bg-secondary p-4 mb-4">
-        <Textarea value={input} onChange={(e) => handleInputChange(e)} placeholder="Type your message..." />
+      <form onSubmit={componentSubmitHandler} className="sticky bottom-0 bg-background">
+        <div className="flex flex-col gap-2 rounded-xl bg-secondary p-4 mb-4">
+          <Textarea value={input} onChange={(e) => handleInputChange(e)} placeholder="Type your message..." />
 
-        <div className="flex justify-between gap-2">
-          <LanguageModalSelector model={model} onModelChange={setModel} isSubscribed={isUserSubscribed} />
-          <div className="flex gap-2">
-            <Button {...buttonProps}>{buttonChildren}</Button>
+          <div className="flex justify-between gap-2">
+            <LanguageModalSelector model={model} onModelChange={setModel} isSubscribed={isUserSubscribed} />
+            <div className="flex gap-2">
+              <Button {...buttonProps}>{buttonChildren}</Button>
+            </div>
           </div>
         </div>
       </form>
