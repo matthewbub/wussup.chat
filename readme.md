@@ -1,3 +1,9 @@
+# Wussup Chat
+
+A unified AI chatbot assistant
+
+<img src="./public/demo.png" height="500px" />
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
@@ -84,6 +90,15 @@ v0.0.2
 
 - Auto-Title Generation
 
-v0.0.3
+v0.0.4
 
-- Image Generation within Chat
+- Improve application efficiency
+- Add landing page
+
+- Fix bugs
+
+v0.0.5
+
+- Futurama titles on empty chat
+- UX enhancements
+- [ ] Change Models
