@@ -5,9 +5,12 @@ import { Dialog, DialogPanel } from "@headlessui/react";
 import { Bars3Icon, XMarkIcon } from "@heroicons/react/24/outline";
 import Image from "next/image";
 import { Button } from "../ui/button";
-
+import { useAuthStore } from "@/app/_store/chat";
+import { useRouter } from "next/navigation";
 export default function Hero({ setActiveModal }: { setActiveModal: (modal: string) => void }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const isLoggedIn = useAuthStore((state) => state.isLoggedIn);
+  const router = useRouter();
 
   return (
     <div className="">
@@ -37,9 +40,15 @@ export default function Hero({ setActiveModal }: { setActiveModal: (modal: strin
             ))} */}
           </div>
           <div className="hidden lg:flex lg:flex-1 lg:justify-end">
-            <Button variant="outline" onClick={() => setActiveModal("auth")}>
-              Log in <span aria-hidden="true">&rarr;</span>
-            </Button>
+            {isLoggedIn ? (
+              <Button variant="outline" asChild onClick={() => router.push("/~")}>
+                Dashboard <span aria-hidden="true">&rarr;</span>
+              </Button>
+            ) : (
+              <Button variant="outline" onClick={() => setActiveModal("auth")}>
+                Log in <span aria-hidden="true">&rarr;</span>
+              </Button>
+            )}
           </div>
         </nav>
         <Dialog open={mobileMenuOpen} onClose={setMobileMenuOpen} className="lg:hidden">
@@ -73,9 +82,15 @@ export default function Hero({ setActiveModal }: { setActiveModal: (modal: strin
                   ))}
                 </div> */}
                 <div className="py-6">
-                  <Button variant="outline" onClick={() => setActiveModal("auth")}>
-                    Log in
-                  </Button>
+                  {isLoggedIn ? (
+                    <Button variant="outline" asChild onClick={() => router.push("/~")}>
+                      Dashboard
+                    </Button>
+                  ) : (
+                    <Button variant="outline" onClick={() => setActiveModal("auth")}>
+                      Log in
+                    </Button>
+                  )}
                 </div>
               </div>
             </div>
