@@ -22,23 +22,6 @@ export default function ChatApp({
     api: "/api/v1/chat",
     initialMessages: initialMessages,
     onFinish: async (message, { usage, finishReason }) => {
-      const wasFirstMessage = messages.length === 0;
-
-      if (wasFirstMessage) {
-        const titleResponse = await fetch("/api/v1/title", {
-          method: "POST",
-          body: JSON.stringify({
-            session_id: sessionId,
-            messages: [message],
-          }),
-        });
-
-        const titleData = await titleResponse.json();
-        console.log("Title response:", titleData);
-
-        await updateSessionName(titleData.title);
-      }
-
       // TODO: ADD THIS
       console.log("Finished streaming message:", message);
       console.log("Token usage:", usage);
@@ -82,11 +65,28 @@ export default function ChatApp({
     setModelProvider(provider);
   };
 
-  const componentSubmitHandler = (ev: React.FormEvent<HTMLFormElement>) => {
+  const componentSubmitHandler = async (ev: React.FormEvent<HTMLFormElement>) => {
     ev.preventDefault();
     console.log("Model at submit:", model);
     console.log("Provider at submit:", modelProvider);
     console.log("User chat context:", user?.chat_context);
+
+    // Generate title if this is the first message
+    if (messages.length === 0) {
+      const titleResponse = await fetch("/api/v1/title", {
+        method: "POST",
+        body: JSON.stringify({
+          session_id: sessionId,
+          messages: [{ role: "user", content: input }],
+        }),
+      });
+
+      const titleData = await titleResponse.json();
+      console.log("Title response:", titleData);
+
+      await updateSessionName(titleData.title);
+    }
+
     handleSubmit(ev, {
       data: {
         user_specified_model: model,
