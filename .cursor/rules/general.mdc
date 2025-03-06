@@ -1,0 +1,9 @@
+---
+description: 
+globs: *.tsx, *.ts
+alwaysApply: false
+---
+
+# Your rule content
+
+- Always use the most minimal approach possible to solve a task.
