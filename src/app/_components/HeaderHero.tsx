@@ -27,6 +27,7 @@ export function HeaderHero({ setActiveModal }: { setActiveModal: (modal: string)
             <button
               type="button"
               onClick={() => setMobileMenuOpen(true)}
+              aria-label="Open main menu"
               className="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-gray-400"
             >
               <span className="sr-only">Open main menu</span>

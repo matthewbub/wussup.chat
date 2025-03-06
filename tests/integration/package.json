@@ -1,0 +1,14 @@
+{
+  "name": "integration-tests",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "test": "vitest"
+  },
+  "dependencies": {
+    "puppeteer": "^24.3.1"
+  },
+  "devDependencies": {
+    "vitest": "^3.0.7"
+  }
+}
