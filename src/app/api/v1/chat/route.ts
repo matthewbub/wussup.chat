@@ -1,8 +1,12 @@
 import { openai } from "@ai-sdk/openai";
-import { experimental_generateImage, streamText, tool, UIMessage } from "ai";
+import { anthropic } from "@ai-sdk/anthropic";
+import { google } from "@ai-sdk/google";
+import { xai } from "@ai-sdk/xai";
+import { experimental_generateImage, LanguageModelV1, streamText, tool, UIMessage } from "ai";
 import { createClient } from "@/lib/supabase-server";
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { AVAILABLE_MODELS } from "@/constants/models";
 
 // Allow streaming responses up to 30 seconds
 export const maxDuration = 30;
@@ -10,7 +14,7 @@ export const maxDuration = 30;
 export async function POST(req: Request) {
   const {
     messages,
-    data: { session_id, session_title, user_specified_model, chat_context },
+    data: { session_id, session_title, user_specified_model, model_provider, chat_context },
   } = await req.json();
   const supabase = await createClient();
 
@@ -19,6 +23,13 @@ export async function POST(req: Request) {
   const userId = data?.user?.id;
   if (!userId) {
     return NextResponse.json({ error: "user id is required" }, { status: 400 });
+  }
+
+  // Validate model and provider
+  const selectedModel = AVAILABLE_MODELS.find((m) => m.model === user_specified_model && m.provider === model_provider);
+
+  if (!selectedModel) {
+    return NextResponse.json({ error: "Invalid model or provider combination" }, { status: 400 });
   }
 
   const { error: sessionError } = await supabase
@@ -65,6 +76,8 @@ export async function POST(req: Request) {
         user_id: userId,
         is_user: true,
         created_at: user_created_at,
+        model: user_specified_model,
+        model_provider: model_provider,
       },
     ]),
     supabase.rpc("increment_message_count", {
@@ -78,14 +91,6 @@ export async function POST(req: Request) {
   }
 
   console.log("[Chat API] Successfully inserted user message");
-
-  const allowedModels = ["gpt-4o-mini", "chatgpt-4o-latest", "o1", "o1-mini"];
-
-  let model = "gpt-4o-mini";
-
-  if (allowedModels.includes(user_specified_model)) {
-    model = user_specified_model;
-  }
 
   // filter through messages and remove base64 image data to avoid sending to the model
   const formattedMessages = messages.map((m: UIMessage) => {
@@ -103,10 +108,27 @@ export async function POST(req: Request) {
     return m;
   });
 
-  // TODO: Add user specified model
-  console.log("chat_context", chat_context);
+  // Select the appropriate provider based on model_provider
+  let provider;
+  switch (model_provider) {
+    case "openai":
+      provider = openai(user_specified_model);
+      break;
+    case "anthropic":
+      provider = anthropic(user_specified_model);
+      break;
+    case "google":
+      provider = google(user_specified_model);
+      break;
+    case "xai":
+      provider = xai(user_specified_model);
+      break;
+    default:
+      return NextResponse.json({ error: "Unsupported provider" }, { status: 400 });
+  }
+
   const result = streamText({
-    model: openai(model),
+    model: provider as LanguageModelV1,
     system: chat_context,
     messages: formattedMessages,
     tools: {

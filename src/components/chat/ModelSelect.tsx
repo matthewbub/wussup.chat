@@ -5,9 +5,11 @@ import { ChevronDown, Info, Image, Sparkles, Zap, FlaskRoundIcon as Flask } from
 import { cn } from "@/lib/utils";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Button } from "@/components/ui/button";
+import { openAiModels, anthropicModels, xaiModels, geminiModels } from "@/constants/models";
 
 interface ModelOption {
   name: string;
+  provider: "openai" | "anthropic" | "xai" | "google";
   features: ("image" | "fast" | "experimental" | "brain")[];
   disabled?: boolean;
 }
@@ -19,75 +21,66 @@ interface ModelGroup {
 }
 
 interface ModelSelectorProps {
-  plan: "FREE" | "PRO" | "SUPERPRO";
+  onModelSelect: (model: string, provider: "openai" | "anthropic" | "xai" | "google") => void;
+  selectedModel: string;
 }
+
+const transformModels = (models: any[], provider: "openai" | "anthropic" | "xai" | "google"): ModelOption[] => {
+  return models.map((model) => ({
+    name: model.model,
+    provider: provider,
+    features: [
+      ...(model.image_input ? ["image" as const] : []),
+      ...(model.tool_usage ? ["brain" as const] : []),
+      ...(model.tool_streaming ? ["fast" as const] : []),
+      ...(model.model.includes("preview") || model.model.includes("exp") ? ["experimental" as const] : []),
+    ],
+    disabled: false,
+  }));
+};
 
 const modelGroups: ModelGroup[] = [
   {
-    title: "Standard Models",
-    models: [
-      { name: "GPT-4o-mini", features: ["image"] },
-      { name: "GPT-4o", features: ["image"] },
-      { name: "o3-mini", features: ["fast", "brain"] },
-      { name: "Gemini 2.0 Flash", features: ["fast", "image"] },
-    ],
+    title: "OpenAI Models",
+    models: transformModels(openAiModels, "openai"),
   },
   {
-    title: "Premium Models",
+    title: "Anthropic Models",
     description: "Smart, but expensive.",
-    models: [{ name: "Claude 3.5 Sonnet", features: ["image"] }],
+    models: transformModels(anthropicModels, "anthropic"),
   },
   {
-    title: "Experimental Models",
-    description: "Still early. Expect errors.",
-    models: [
-      { name: "Llama 3.3 70b", features: ["experimental"] },
-      { name: "Deepseek v3 (Fireworks)", features: ["experimental"] },
-      {
-        name: "Deepseek R1 (Fireworks)",
-        features: ["brain", "experimental"],
-        disabled: true,
-      },
-      {
-        name: "DeepSeek R1 Distilled",
-        features: ["brain", "experimental"],
-      },
-      {
-        name: "Gemini 2.0 Flash Lite Preview",
-        features: ["fast", "image", "experimental"],
-      },
-    ],
+    title: "xAI Models",
+    description: "Experimental models from xAI.",
+    models: transformModels(xaiModels, "xai"),
+  },
+  {
+    title: "Google Models",
+    description: "Models from Google's Vertex AI and Generative AI.",
+    models: transformModels(geminiModels, "google"),
   },
 ];
 
-export default function ModelSelector({ plan }: ModelSelectorProps) {
-  const [selectedModels, setSelectedModels] = React.useState<string[]>(["GPT-4o-mini"]);
+export default function ModelSelector({ onModelSelect, selectedModel }: ModelSelectorProps) {
   const [isOpen, setIsOpen] = React.useState(false);
-  const [openSections, setOpenSections] = React.useState<string[]>(["Standard Models"]);
+  const [openSections, setOpenSections] = React.useState<string[]>(["OpenAI Models"]);
 
-  const maxModels = plan === "SUPERPRO" ? 4 : 1;
-
-  const handleModelSelect = (modelName: string, disabled: boolean = false) => {
+  const handleModelSelect = (
+    modelName: string,
+    provider: "openai" | "anthropic" | "xai" | "google",
+    disabled: boolean = false
+  ) => {
     if (disabled) return;
-
-    setSelectedModels((current) => {
-      if (current.includes(modelName)) {
-        return current.filter((m) => m !== modelName);
-      }
-      if (current.length >= maxModels) {
-        return [...current.slice(1), modelName];
-      }
-      return [...current, modelName];
-    });
+    onModelSelect(modelName, provider);
   };
 
-  const selectedModelsDisplay = selectedModels.join(" + ");
+  const selectedModelDisplay = selectedModel || "Select a model";
 
   return (
     <Collapsible open={isOpen} onOpenChange={setIsOpen} className="relative w-full max-w-md">
       <CollapsibleTrigger asChild>
         <Button variant="outline" className="w-full flex justify-between items-center">
-          <div className="font-medium">{selectedModelsDisplay}</div>
+          <div className="font-medium">{selectedModelDisplay}</div>
           <ChevronDown className={cn("h-4 w-4 transition-transform duration-200", isOpen ? "rotate-180" : "")} />
         </Button>
       </CollapsibleTrigger>
@@ -140,10 +133,10 @@ export default function ModelSelector({ plan }: ModelSelectorProps) {
                     variant="ghost"
                     className={cn(
                       "w-full justify-between p-2 h-auto hover:bg-zinc-800 rounded-md",
-                      selectedModels.includes(model.name) && "bg-zinc-800",
+                      selectedModel === model.name && "bg-zinc-800",
                       model.disabled && "opacity-50 cursor-not-allowed"
                     )}
-                    onClick={() => handleModelSelect(model.name, model.disabled)}
+                    onClick={() => handleModelSelect(model.name, model.provider, model.disabled)}
                   >
                     <div className="flex items-center gap-2">
                       <span>{model.name}</span>

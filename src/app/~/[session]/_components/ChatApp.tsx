@@ -5,17 +5,15 @@ import { useChat } from "@ai-sdk/react";
 import React, { useState } from "react";
 import { AVAILABLE_MODELS } from "@/constants/models";
 import { getButtonProps, getButtonChildren } from "../_helpers/getButtonProps";
-import { LanguageModalSelector } from "@/components/chat/LanguageModalSelector";
 import { Message } from "./Message";
 import { EmptyChatScreen } from "@/components/EmptyChatScreen";
 import { useChatStore } from "../_store/chat";
+import ModelSelector from "@/components/chat/ModelSelect";
 
 export default function ChatApp({
-  isUserSubscribed,
   sessionId,
   initialMessages = [],
 }: {
-  isUserSubscribed: boolean;
   sessionId: string;
   initialMessages?: { id: string; content: string; role: "user" | "assistant" }[];
 }) {
@@ -74,16 +72,25 @@ export default function ChatApp({
     },
   });
 
-  // console.log("MESSAGES", messages);
+  const [model, setModel] = useState(AVAILABLE_MODELS[0].model);
+  const [modelProvider, setModelProvider] = useState<"openai" | "anthropic" | "xai" | "google">(
+    AVAILABLE_MODELS[0].provider
+  );
 
-  const [model, setModel] = useState(AVAILABLE_MODELS[0].id);
+  const handleModelSelect = (modelName: string, provider: "openai" | "anthropic" | "xai" | "google") => {
+    setModel(modelName);
+    setModelProvider(provider);
+  };
+
   const componentSubmitHandler = (ev: React.FormEvent<HTMLFormElement>) => {
     ev.preventDefault();
     console.log("Model at submit:", model);
+    console.log("Provider at submit:", modelProvider);
     console.log("User chat context:", user?.chat_context);
     handleSubmit(ev, {
       data: {
         user_specified_model: model,
+        model_provider: modelProvider,
         session_id: sessionId,
         chat_context: user?.chat_context || "You are a helpful assistant.",
       },
@@ -136,7 +143,7 @@ export default function ChatApp({
           <Textarea value={input} onChange={(e) => handleInputChange(e)} placeholder="Type your message..." />
 
           <div className="flex justify-between gap-2">
-            <LanguageModalSelector model={model} onModelChange={setModel} isSubscribed={isUserSubscribed} />
+            <ModelSelector onModelSelect={handleModelSelect} selectedModel={model} />
             <div className="flex gap-2">
               <Button {...buttonProps}>{buttonChildren}</Button>
             </div>
