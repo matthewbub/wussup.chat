@@ -1,10 +1,10 @@
 "use client";
+
 import { AuthModal } from "@/components/AuthModal";
 import { useEffect, useState } from "react";
-import Hero from "@/components/marketing/hero";
+import { HeaderHero } from "@/app/_components/HeaderHero";
 import Footer from "@/components/Footer";
-import { Background } from "@/components/ui/Background";
-import { useAuthStore } from "../_store/chat";
+import { useAuthStore } from "@/app/_store/auth";
 
 export function Client({ isLoggedIn }: { isLoggedIn: boolean }) {
   const [activeModal, setActiveModal] = useState<string | null>(null);
@@ -16,11 +16,9 @@ export function Client({ isLoggedIn }: { isLoggedIn: boolean }) {
 
   return (
     <div>
-      <Background>
-        <Hero setActiveModal={setActiveModal} />
-        <AuthModal isOpen={activeModal === "auth"} onClose={() => setActiveModal(null)} />
-        <Footer />
-      </Background>
+      <HeaderHero setActiveModal={setActiveModal} />
+      <AuthModal isOpen={activeModal === "auth"} onClose={() => setActiveModal(null)} />
+      <Footer />
     </div>
   );
 }
