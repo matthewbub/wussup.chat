@@ -42,21 +42,22 @@ const transformModels = (models: any[], provider: "openai" | "anthropic" | "xai"
 const modelGroups: ModelGroup[] = [
   {
     title: "OpenAI Models",
+    // description: "",
     models: transformModels(openAiModels, "openai"),
   },
   {
     title: "Anthropic Models",
-    description: "Smart, but expensive.",
+    // description: "",
     models: transformModels(anthropicModels, "anthropic"),
   },
   {
     title: "xAI Models",
-    description: "Experimental models from xAI.",
+    // description: "",
     models: transformModels(xaiModels, "xai"),
   },
   {
     title: "Google Models",
-    description: "Models from Google's Vertex AI and Generative AI.",
+    // description: "",
     models: transformModels(geminiModels, "google"),
   },
 ];
@@ -72,6 +73,7 @@ export default function ModelSelector({ onModelSelect, selectedModel }: ModelSel
   ) => {
     if (disabled) return;
     onModelSelect(modelName, provider);
+    setIsOpen(false);
   };
 
   const selectedModelDisplay = selectedModel || "Select a model";
@@ -97,7 +99,7 @@ export default function ModelSelector({ onModelSelect, selectedModel }: ModelSel
           </Button>
         </div>
 
-        <div className="p-2">
+        <div className="p-2 max-h-[60vh] overflow-y-auto">
           {modelGroups.map((group) => (
             <Collapsible
               key={group.title}
