@@ -23,6 +23,7 @@ interface ModelGroup {
 interface ModelSelectorProps {
   onModelSelect: (model: string, provider: "openai" | "anthropic" | "xai" | "google") => void;
   selectedModel: string;
+  isPremium?: boolean;
 }
 
 const transformModels = (models: any[], provider: "openai" | "anthropic" | "xai" | "google"): ModelOption[] => {
@@ -62,9 +63,23 @@ const modelGroups: ModelGroup[] = [
   },
 ];
 
-export default function ModelSelector({ onModelSelect, selectedModel }: ModelSelectorProps) {
+export default function ModelSelector({ onModelSelect, selectedModel, isPremium = false }: ModelSelectorProps) {
   const [isOpen, setIsOpen] = React.useState(false);
   const [openSections, setOpenSections] = React.useState<string[]>(["OpenAI Models"]);
+  const containerRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   const handleModelSelect = (
     modelName: string,
@@ -79,7 +94,7 @@ export default function ModelSelector({ onModelSelect, selectedModel }: ModelSel
   const selectedModelDisplay = selectedModel || "Select a model";
 
   return (
-    <Collapsible open={isOpen} onOpenChange={setIsOpen} className="relative w-full max-w-md">
+    <Collapsible open={isOpen} onOpenChange={setIsOpen} className="relative w-full max-w-md" ref={containerRef}>
       <CollapsibleTrigger asChild>
         <Button variant="outline" className="w-full flex justify-between items-center">
           <div className="font-medium">{selectedModelDisplay}</div>
@@ -88,16 +103,18 @@ export default function ModelSelector({ onModelSelect, selectedModel }: ModelSel
       </CollapsibleTrigger>
 
       <CollapsibleContent className="absolute bottom-full left-0 right-0 mb-2 bg-background border border-zinc-700 rounded-md shadow-lg z-50">
-        <div className="p-4 bg-zinc-800/50 border-b border-zinc-700">
-          <h2 className="text-lg font-medium mb-1">Unlock all models + higher rate limits with Pro</h2>
-          <div className="flex items-baseline gap-1 mb-2">
-            <span className="text-pink-400 text-2xl font-semibold">$8</span>
-            <span className="text-zinc-400">/month</span>
+        {!isPremium && (
+          <div className="p-4 bg-zinc-800/50 border-b border-zinc-700">
+            <h2 className="text-lg font-medium mb-1">Unlock all models + higher rate limits with Pro</h2>
+            <div className="flex items-baseline gap-1 mb-2">
+              <span className="text-pink-400 text-2xl font-semibold">$8</span>
+              <span className="text-zinc-400">/month</span>
+            </div>
+            <Button variant="link" className="text-zinc-400 hover:text-zinc-300 p-0 h-auto font-normal">
+              Upgrade now
+            </Button>
           </div>
-          <Button variant="link" className="text-zinc-400 hover:text-zinc-300 p-0 h-auto font-normal">
-            Upgrade now
-          </Button>
-        </div>
+        )}
 
         <div className="p-2 max-h-[60vh] overflow-y-auto">
           {modelGroups.map((group) => (

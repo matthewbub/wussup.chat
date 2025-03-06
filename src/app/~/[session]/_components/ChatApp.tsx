@@ -143,7 +143,11 @@ export default function ChatApp({
           <Textarea value={input} onChange={(e) => handleInputChange(e)} placeholder="Type your message..." />
 
           <div className="flex justify-between gap-2">
-            <ModelSelector onModelSelect={handleModelSelect} selectedModel={model} />
+            <ModelSelector
+              onModelSelect={handleModelSelect}
+              selectedModel={model}
+              isPremium={user?.subscriptionStatus === "active"}
+            />
             <div className="flex gap-2">
               <Button {...buttonProps}>{buttonChildren}</Button>
             </div>
