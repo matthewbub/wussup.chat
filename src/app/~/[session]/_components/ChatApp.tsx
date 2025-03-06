@@ -87,6 +87,7 @@ export default function ChatApp({
       await updateSessionName(titleData.title);
     }
 
+    // Submit the message after title is generated
     handleSubmit(ev, {
       data: {
         user_specified_model: model,
@@ -95,6 +96,7 @@ export default function ChatApp({
         chat_context: user?.chat_context || "You are a helpful assistant.",
       },
     });
+
     setInput("");
   };
 
