@@ -8,7 +8,7 @@ import { getButtonProps, getButtonChildren } from "../_helpers/getButtonProps";
 import { Message } from "./Message";
 import { EmptyChatScreen } from "@/components/EmptyChatScreen";
 import { useChatStore } from "../_store/chat";
-import ModelSelector from "@/components/chat/ModelSelect";
+import ModelSelector from "@/app/~/[session]/_components/ModelSelect";
 
 export default function ChatApp({
   sessionId,
