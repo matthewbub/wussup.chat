@@ -4,7 +4,6 @@ import ChatApp from "./_components/ChatApp";
 import { groupMessagesBySession } from "./_helpers/groupMessagesBySession";
 import { ensureUserStorageFolder } from "./_helpers/ensureUserStorageFolder";
 import { fetchUserChatData } from "./_helpers/fetchUserChatData";
-import { isSubscriptionActive } from "./_helpers/isSubscriptionActive";
 import { redirect } from "next/navigation";
 import { User } from "@/types/user";
 import { ChatSession } from "@/types/chat";
@@ -35,8 +34,6 @@ export default async function Page({ params }: { params: Promise<{ session: stri
   ];
   const groupedSessions = groupMessagesBySession(messagesResult.data, sessions); // group messages by session
   const currentSession = [...Object.values(groupedSessions).flat()].find((session) => session.id === sessionId);
-  const subscriptionEndDate = usersResult.data?.subscriptionPeriodEnd;
-  const isUserSubscribed = isSubscriptionActive(subscriptionEndDate);
   const initialMessages =
     currentSession?.messages?.map((message) => ({
       id: message.id,
@@ -49,7 +46,6 @@ export default async function Page({ params }: { params: Promise<{ session: stri
       <AppState user={usersResult.data as unknown as User} currentSession={currentSession as ChatSession}>
         <ChatLayout sessions={groupedSessions}>
           <ChatApp
-            isUserSubscribed={isUserSubscribed}
             sessionId={sessionId}
             initialMessages={initialMessages as { id: string; content: string; role: "user" | "assistant" }[]}
           />
