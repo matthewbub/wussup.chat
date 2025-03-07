@@ -101,4 +101,4 @@ v0.0.5
 
 - Futurama titles on empty chat
 - UX enhancements
-- [ ] Change Models
+- Change Models
