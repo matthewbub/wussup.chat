@@ -8,7 +8,9 @@ import { getButtonProps, getButtonChildren } from "../_helpers/getButtonProps";
 import { Message } from "./Message";
 import { EmptyChatScreen } from "@/components/EmptyChatScreen";
 import { useChatStore } from "../_store/chat";
-import ModelSelector from "@/app/~/[session]/_components/ModelSelect";
+import { ModelSelectionModal } from "./ModalSelectV3";
+import type { AiModel } from "@/constants/models";
+import { Sparkles } from "lucide-react";
 
 export default function ChatApp({
   sessionId,
@@ -55,21 +57,17 @@ export default function ChatApp({
     },
   });
 
-  const [model, setModel] = useState(AVAILABLE_MODELS[0].model);
-  const [modelProvider, setModelProvider] = useState<"openai" | "anthropic" | "xai" | "google">(
-    AVAILABLE_MODELS[0].provider
-  );
+  const [selectedModel, setSelectedModel] = useState<AiModel | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
 
-  const handleModelSelect = (modelName: string, provider: "openai" | "anthropic" | "xai" | "google") => {
-    setModel(modelName);
-    setModelProvider(provider);
+  const handleModelSelect = (model: AiModel) => {
+    setSelectedModel(model);
+    setModalOpen(false);
   };
 
   const componentSubmitHandler = async (ev: React.FormEvent<HTMLFormElement>) => {
     ev.preventDefault();
-    console.log("Model at submit:", model);
-    console.log("Provider at submit:", modelProvider);
-    console.log("User chat context:", user?.chat_context);
+    console.log("Selected model:", selectedModel);
 
     // Generate title if this is the first message
     if (messages.length === 0) {
@@ -87,16 +85,14 @@ export default function ChatApp({
       await updateSessionName(titleData.title);
     }
 
-    // Submit the message after title is generated
     handleSubmit(ev, {
       data: {
-        user_specified_model: model,
-        model_provider: modelProvider,
+        user_specified_model: selectedModel?.id || AVAILABLE_MODELS[0].model,
+        model_provider: selectedModel?.provider || AVAILABLE_MODELS[0].provider,
         session_id: sessionId,
         chat_context: user?.chat_context || "You are a helpful assistant.",
       },
     });
-
     setInput("");
   };
 
@@ -145,17 +141,23 @@ export default function ChatApp({
           <Textarea value={input} onChange={(e) => handleInputChange(e)} placeholder="Type your message..." />
 
           <div className="flex justify-between gap-2">
-            <ModelSelector
-              onModelSelect={handleModelSelect}
-              selectedModel={model}
-              isPremium={user?.subscriptionStatus === "active"}
-            />
+            <Button onClick={() => setModalOpen(true)} className="gap-2">
+              <Sparkles className="h-4 w-4" />
+              {selectedModel ? `Selected: ${selectedModel.name}` : "Select AI Model"}
+            </Button>
             <div className="flex gap-2">
               <Button {...buttonProps}>{buttonChildren}</Button>
             </div>
           </div>
         </div>
       </form>
+
+      <ModelSelectionModal
+        open={modalOpen}
+        onOpenChange={setModalOpen}
+        onSelectModel={handleModelSelect}
+        currentModelId={selectedModel?.id}
+      />
     </div>
   );
 }
