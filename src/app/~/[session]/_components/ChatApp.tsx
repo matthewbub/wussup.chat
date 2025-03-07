@@ -10,7 +10,7 @@ import { EmptyChatScreen } from "@/components/EmptyChatScreen";
 import { useChatStore } from "../_store/chat";
 import { ModelSelectionModal } from "./ModalSelectV3";
 import type { AiModel } from "@/constants/models";
-import { Sparkles } from "lucide-react";
+import { Sparkles, ArrowLeftRight, X } from "lucide-react";
 
 export default function ChatApp({
   sessionId,
@@ -57,17 +57,26 @@ export default function ChatApp({
     },
   });
 
-  const [selectedModel, setSelectedModel] = useState<AiModel | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [primaryModel, setPrimaryModel] = useState<AiModel | null>(AVAILABLE_MODELS[0]);
+  const [secondaryModel, setSecondaryModel] = useState<AiModel | null>(null);
 
-  const handleModelSelect = (model: AiModel) => {
-    setSelectedModel(model);
+  const handleModelSelect = (model: AiModel, isSecondary = false) => {
+    if (isSecondary) {
+      setSecondaryModel(model);
+    } else {
+      setPrimaryModel(model);
+    }
     setModalOpen(false);
+  };
+
+  const removeSecondaryModel = () => {
+    setSecondaryModel(null);
   };
 
   const componentSubmitHandler = async (ev: React.FormEvent<HTMLFormElement>) => {
     ev.preventDefault();
-    console.log("Selected model:", selectedModel);
+    console.log("Selected model:", primaryModel);
 
     // Generate title if this is the first message
     if (messages.length === 0) {
@@ -87,8 +96,8 @@ export default function ChatApp({
 
     handleSubmit(ev, {
       data: {
-        user_specified_model: selectedModel?.id || AVAILABLE_MODELS[0].model,
-        model_provider: selectedModel?.provider || AVAILABLE_MODELS[0].provider,
+        user_specified_model: primaryModel?.id || AVAILABLE_MODELS[0].id,
+        model_provider: primaryModel?.provider || AVAILABLE_MODELS[0].provider,
         session_id: sessionId,
         chat_context: user?.chat_context || "You are a helpful assistant.",
       },
@@ -141,10 +150,21 @@ export default function ChatApp({
           <Textarea value={input} onChange={(e) => handleInputChange(e)} placeholder="Type your message..." />
 
           <div className="flex justify-between gap-2">
-            <Button onClick={() => setModalOpen(true)} className="gap-2">
-              <Sparkles className="h-4 w-4" />
-              {selectedModel ? `Selected: ${selectedModel.name}` : "Select AI Model"}
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button onClick={() => setModalOpen(true)} className="gap-2">
+                <Sparkles className="h-4 w-4" />
+                {primaryModel
+                  ? `Selected: ${primaryModel.id} ${secondaryModel ? "and " + secondaryModel.id : ""}`
+                  : "Select AI Model"}
+              </Button>
+
+              {secondaryModel && (
+                <Button variant="outline" onClick={removeSecondaryModel} className="gap-2">
+                  <X className="h-4 w-4" />
+                  Remove Model B
+                </Button>
+              )}
+            </div>
             <div className="flex gap-2">
               <Button {...buttonProps}>{buttonChildren}</Button>
             </div>
@@ -156,7 +176,10 @@ export default function ChatApp({
         open={modalOpen}
         onOpenChange={setModalOpen}
         onSelectModel={handleModelSelect}
-        currentModelId={selectedModel?.id}
+        primaryModelId={primaryModel?.id}
+        secondaryModelId={secondaryModel?.id}
+        defaultModelId="o3-mini"
+        onRemoveSecondaryModel={removeSecondaryModel}
       />
     </div>
   );
