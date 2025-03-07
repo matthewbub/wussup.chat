@@ -10,7 +10,7 @@ import { EmptyChatScreen } from "@/components/EmptyChatScreen";
 import { useChatStore } from "../_store/chat";
 import { ModelSelectionModal } from "./ModalSelectV3";
 import type { AiModel } from "@/constants/models";
-import { Sparkles, ArrowLeftRight, X } from "lucide-react";
+import { Sparkles, X } from "lucide-react";
 
 export default function ChatApp({
   sessionId,
