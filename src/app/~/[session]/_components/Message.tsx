@@ -2,12 +2,12 @@ import MarkdownComponent from "@/components/ui/Markdown";
 import MessageDropdown from "./MessageDropdown";
 import { cn } from "@/lib/utils";
 
-interface MessageProps {
-  createdAt: string | undefined;
+export type MessageProps = {
   content: string;
   id: string;
   is_user: boolean;
-}
+  createdAt?: string | undefined;
+};
 
 export function Message({ createdAt, content, id, is_user }: MessageProps) {
   return (

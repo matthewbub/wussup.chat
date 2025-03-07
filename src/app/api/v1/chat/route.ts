@@ -2,7 +2,7 @@ import { openai } from "@ai-sdk/openai";
 import { anthropic } from "@ai-sdk/anthropic";
 import { google } from "@ai-sdk/google";
 import { xai } from "@ai-sdk/xai";
-import { experimental_generateImage, LanguageModelV1, streamText, tool, UIMessage } from "ai";
+import { experimental_generateImage, LanguageModelV1, streamText, tool } from "ai";
 import { createClient } from "@/lib/supabase-server";
 import { NextResponse } from "next/server";
 import { z } from "zod";
@@ -12,13 +12,16 @@ import { AVAILABLE_MODELS } from "@/constants/models";
 export const maxDuration = 30;
 
 export async function POST(req: Request) {
-  const {
-    messages,
-    data: { session_id, session_title, user_specified_model, model_provider, chat_context },
-  } = await req.json();
-  const supabase = await createClient();
+  const formData = await req.formData();
+  const content = formData.get("content") as string;
+  const session_id = formData.get("session_id") as string;
+  const model = formData.get("model") as string;
+  const model_provider = formData.get("model_provider") as string;
+  const chat_context = formData.get("chat_context") as string;
+  const messageHistory = formData.get("messageHistory") as string;
+  const attachments = formData.getAll("attachments") as File[];
 
-  // get current user from request context
+  const supabase = await createClient();
   const { data } = await supabase.auth.getUser();
   const userId = data?.user?.id;
   if (!userId) {
@@ -26,58 +29,27 @@ export async function POST(req: Request) {
   }
 
   // Validate model and provider
-  const selectedModel = AVAILABLE_MODELS.find((m) => m.model === user_specified_model && m.provider === model_provider);
-
+  const selectedModel = AVAILABLE_MODELS.find((m) => m.model === model && m.provider === model_provider);
   if (!selectedModel) {
     return NextResponse.json({ error: "Invalid model or provider combination" }, { status: 400 });
   }
 
-  const { error: sessionError } = await supabase
-    .from("ChatBot_Sessions")
-    .upsert({
-      id: session_id,
-      user_id: userId,
-      updated_at: new Date().toISOString(),
-    })
-    .select();
-
-  if (sessionError) {
-    return NextResponse.json({ error: "Failed to create session" }, { status: 500 });
-  }
-
   const user_message_id = crypto.randomUUID();
   const user_created_at = new Date().toISOString();
-
-  const upsertData: {
-    id: string;
-    updated_at: string;
-    user_id: string;
-    name?: string;
-  } = {
-    id: session_id,
-    updated_at: new Date().toISOString(),
-    user_id: userId,
-  };
-
-  // If the user has only sent one message, then we will use the default name as the session name
-  // it increments from the client side
-  const messageLength = messages.length;
-  if (messageLength === 1) {
-    upsertData.name = session_title;
-  }
-
-  // insert user message and increment message count concurrently
   const [{ error: userError }, { error: updateError }] = await Promise.all([
     supabase.from("ChatBot_Messages").insert([
       {
         id: user_message_id,
         chat_session_id: session_id,
-        content: messages[messages.length - 1].content,
+        content: content,
         user_id: userId,
         is_user: true,
         created_at: user_created_at,
-        model: user_specified_model,
+        model: model,
         model_provider: model_provider,
+        metadata: {
+          // attachments: attachments,
+        },
       },
     ]),
     supabase.rpc("increment_message_count", {
@@ -90,47 +62,87 @@ export async function POST(req: Request) {
     console.error("[Chat API] Error inserting user message: ", userError || updateError);
   }
 
-  console.log("[Chat API] Successfully inserted user message");
-
-  // filter through messages and remove base64 image data to avoid sending to the model
-  const formattedMessages = messages.map((m: UIMessage) => {
-    if (m.role === "assistant" && m.parts) {
-      m.parts.forEach((ti) => {
-        if (
-          ti.type === "tool-invocation" &&
-          ti.toolInvocation.toolName === "generateImage" &&
-          ti.toolInvocation.state === "result"
-        ) {
-          ti.toolInvocation.result.image = `redacted-for-length`;
-        }
-      });
-    }
-    return m;
-  });
-
   // Select the appropriate provider based on model_provider
-  let provider;
-  switch (model_provider) {
-    case "openai":
-      provider = openai(user_specified_model);
-      break;
-    case "anthropic":
-      provider = anthropic(user_specified_model);
-      break;
-    case "google":
-      provider = google(user_specified_model);
-      break;
-    case "xai":
-      provider = xai(user_specified_model);
-      break;
-    default:
-      return NextResponse.json({ error: "Unsupported provider" }, { status: 400 });
+  const modelOpts = {
+    openai: openai(model as string),
+    anthropic: anthropic(model as string),
+    google: google(model as string),
+    xai: xai(model as string),
+  };
+  const provider = modelOpts[model_provider as keyof typeof modelOpts];
+  if (!provider) {
+    // TODO: Log what that model was
+    return NextResponse.json({ error: "Unsupported provider" }, { status: 400 });
   }
 
+  // Prepare message content with attachments
+  let messageContent = content;
+
+  // Process attachments
+  const experimental_attachments: {
+    name: string;
+    contentType: string;
+    url: string;
+  }[] = [];
+
+  // Process attachments if they exist
+  if (attachments && attachments.length > 0) {
+    for (const file of attachments) {
+      const buffer = await file.arrayBuffer();
+      const base64Content = Buffer.from(buffer).toString("base64");
+
+      // Add file type specific handling
+      if (file.type.startsWith("image/")) {
+        experimental_attachments.push({
+          name: file.name,
+          contentType: file.type,
+          url: `data:${file.type};base64,${base64Content}`,
+        });
+      } else if (file.type === "application/pdf") {
+        experimental_attachments.push({
+          name: file.name,
+          contentType: "application/pdf",
+          url: `data:application/pdf;base64,${base64Content}`,
+        });
+      } else if (file.type === "text/plain") {
+        // For text files, we'll decode and include the content directly
+        const textContent = new TextDecoder().decode(buffer);
+        messageContent += `\n\nAttached Text Content:\n${textContent}`;
+      }
+    }
+  }
+
+  if (experimental_attachments.length > 0) {
+    messageContent +=
+      "\n\nAttachments:\n" +
+      experimental_attachments
+        .map((att) => {
+          if (att.contentType.startsWith("image/")) {
+            return `- Image: ${att.name}`;
+          } else if (att.contentType === "application/pdf") {
+            return `- PDF: ${att.name}`;
+          }
+          return `- File: ${att.name}`;
+        })
+        .join("\n");
+  }
+
+  console.log("Experimental attachments", experimental_attachments);
+  // Prepare the messages array with the current message and attachments
+  const currentMessage = {
+    role: "user",
+    content: messageContent,
+    // ...(experimental_attachments.length > 0 && { experimental_attachments }),
+  };
+
+  // Parse message history and add current message
+  const messages = messageHistory ? [...JSON.parse(messageHistory), currentMessage] : [currentMessage];
+
+  console.log("Prepped to stream, sending to model", provider);
   const result = streamText({
     model: provider as LanguageModelV1,
-    system: chat_context,
-    messages: formattedMessages,
+    system: chat_context as string,
+    messages,
     tools: {
       generateImage: tool({
         description: "Generate an image",

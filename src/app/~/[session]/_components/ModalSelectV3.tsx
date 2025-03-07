@@ -439,7 +439,9 @@ export function ModelSelectionModal({
                               )}
                               {primaryModelId === model.id && (
                                 <Badge className="text-xs bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-800">
-                                  Model A
+                                  {selectionMode === "secondary" || secondaryModelId === model.id
+                                    ? "Model A"
+                                    : "Selected"}
                                 </Badge>
                               )}
                               {secondaryModelId === model.id && (
