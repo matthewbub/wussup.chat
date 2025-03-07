@@ -40,7 +40,7 @@ export function ModelSelectionModal({ open, onOpenChange, onSelectModel, current
       const query = debouncedQuery.toLowerCase();
       models = models.filter(
         (model) =>
-          model.name.toLowerCase().includes(query) ||
+          model.model.toLowerCase().includes(query) ||
           model.id.toLowerCase().includes(query) ||
           model.provider.toLowerCase().includes(query)
       );
@@ -144,7 +144,7 @@ export function ModelSelectionModal({ open, onOpenChange, onSelectModel, current
                           <div className="flex items-center justify-between">
                             <div className="flex flex-col">
                               <div className="flex items-center gap-2">
-                                <span className="font-medium">{model.name}</span>
+                                <span className="font-medium">{model.model}</span>
                                 {model.free && (
                                   <Badge
                                     variant="outline"
@@ -154,7 +154,7 @@ export function ModelSelectionModal({ open, onOpenChange, onSelectModel, current
                                   </Badge>
                                 )}
                               </div>
-                              <span className="text-xs text-muted-foreground mt-1">{model.id}</span>
+                              <span className="text-xs text-muted-foreground mt-1">{model.provider}</span>
                             </div>
 
                             <div className="flex items-center gap-2">

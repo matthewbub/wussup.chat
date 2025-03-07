@@ -8,7 +8,6 @@ export interface AiModel {
   tool_usage: boolean;
   tool_streaming: boolean;
   id: string;
-  name: string;
   free: boolean;
 }
 
@@ -21,7 +20,6 @@ export const openAiModels: AiModel[] = [
     tool_usage: true,
     tool_streaming: true,
     id: "gpt-4o",
-    name: "GPT-4 Optimized",
     free: false,
   },
   {
@@ -32,7 +30,6 @@ export const openAiModels: AiModel[] = [
     tool_usage: true,
     tool_streaming: true,
     id: "gpt-4o-mini",
-    name: "GPT-4 Optimized Mini",
     free: true,
   },
   {
@@ -43,7 +40,6 @@ export const openAiModels: AiModel[] = [
     tool_usage: true,
     tool_streaming: true,
     id: "gpt-4-turbo",
-    name: "GPT-4 Turbo",
     free: false,
   },
   {
@@ -54,7 +50,6 @@ export const openAiModels: AiModel[] = [
     tool_usage: true,
     tool_streaming: true,
     id: "gpt-4",
-    name: "GPT-4",
     free: false,
   },
   {
@@ -65,7 +60,6 @@ export const openAiModels: AiModel[] = [
     tool_usage: true,
     tool_streaming: true,
     id: "o1",
-    name: "O1",
     free: true,
   },
   {
@@ -76,7 +70,6 @@ export const openAiModels: AiModel[] = [
     tool_usage: true,
     tool_streaming: true,
     id: "o1-mini",
-    name: "O1 Mini",
     free: true,
   },
   {
@@ -87,7 +80,6 @@ export const openAiModels: AiModel[] = [
     tool_usage: false,
     tool_streaming: false,
     id: "o1-preview",
-    name: "O1 Preview",
     free: true,
   },
 ];
@@ -101,7 +93,6 @@ export const anthropicModels: AiModel[] = [
     tool_usage: true,
     tool_streaming: true,
     id: "claude-3-7-sonnet",
-    name: "Claude 3.7 Sonnet",
     free: false,
   },
   {
@@ -112,7 +103,6 @@ export const anthropicModels: AiModel[] = [
     tool_usage: true,
     tool_streaming: true,
     id: "claude-3-5-sonnet",
-    name: "Claude 3.5 Sonnet",
     free: false,
   },
   {
@@ -123,7 +113,6 @@ export const anthropicModels: AiModel[] = [
     tool_usage: true,
     tool_streaming: true,
     id: "claude-3-5-sonnet-20240620",
-    name: "Claude 3.5 Sonnet (June 2024)",
     free: false,
   },
   {
@@ -134,7 +123,6 @@ export const anthropicModels: AiModel[] = [
     tool_usage: true,
     tool_streaming: true,
     id: "claude-3-5-haiku",
-    name: "Claude 3.5 Haiku",
     free: false,
   },
 ];
@@ -148,7 +136,6 @@ export const xaiModels: AiModel[] = [
     tool_usage: false,
     tool_streaming: false,
     id: "grok-2",
-    name: "Grok 2",
     free: false,
   },
   {
@@ -159,7 +146,6 @@ export const xaiModels: AiModel[] = [
     tool_usage: false,
     tool_streaming: false,
     id: "grok-2-vision",
-    name: "Grok 2 Vision",
     free: false,
   },
   {
@@ -170,7 +156,6 @@ export const xaiModels: AiModel[] = [
     tool_usage: false,
     tool_streaming: false,
     id: "grok-beta",
-    name: "Grok Beta",
     free: false,
   },
   {
@@ -181,7 +166,6 @@ export const xaiModels: AiModel[] = [
     tool_usage: false,
     tool_streaming: false,
     id: "grok-vision-beta",
-    name: "Grok Vision Beta",
     free: false,
   },
 ];
@@ -195,7 +179,6 @@ export const geminiModels: AiModel[] = [
     tool_usage: true,
     tool_streaming: true,
     id: "gemini-2.0-flash",
-    name: "Gemini 2.0 Flash",
     free: false,
   },
   {
@@ -206,7 +189,6 @@ export const geminiModels: AiModel[] = [
     tool_usage: true,
     tool_streaming: true,
     id: "gemini-2.0-flash-exp",
-    name: "Gemini 2.0 Flash Experimental",
     free: false,
   },
 ];
