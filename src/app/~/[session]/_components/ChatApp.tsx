@@ -134,60 +134,89 @@ export default function ChatApp({
       await updateSessionName(titleData.title);
     }
 
-    // Create FormData and append attachments
-    const formData = new FormData();
-    formData.append("content", input);
-    formData.append("session_id", sessionId);
-    formData.append("model", primaryModel?.id || AVAILABLE_MODELS[0].id);
-    formData.append("model_provider", primaryModel?.provider || AVAILABLE_MODELS[0].provider);
-    formData.append("chat_context", user?.chat_context || "You are a helpful assistant.");
-
-    // new
-    formData.append("messageHistory", JSON.stringify(messages));
-    formData.append("content", input);
-    // attachments
-    attachments.forEach((attachment) => {
-      formData.append("attachments", attachment.file);
-    });
-
     try {
-      const response = await fetch("/api/v1/chat", {
+      // Add user message immediately
+      const userMessage = {
+        id: crypto.randomUUID(),
+        content: input,
+        role: "user" as const,
+        createdAt: new Date().toISOString(),
+      };
+      addMessage(userMessage);
+
+      // Generate IDs for the response group
+      const responseGroupId = crypto.randomUUID();
+      const primaryMessageId = crypto.randomUUID();
+      const secondaryMessageId = secondaryModel ? crypto.randomUUID() : null;
+
+      // Store user message first
+      await fetch("/api/v1/chat-store", {
         method: "POST",
-        body: formData,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          messages: [
+            {
+              id: userMessage.id,
+              content: userMessage.content,
+              role: userMessage.role,
+              session_id: sessionId,
+              created_at: userMessage.createdAt,
+            },
+          ],
+        }),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Error:", errorData);
-        throw new Error(`HTTP error! status: ${response.status}`);
+      // Create FormData for the primary model
+      const primaryFormData = new FormData();
+      primaryFormData.append("content", input);
+      primaryFormData.append("session_id", sessionId);
+      primaryFormData.append("model", primaryModel?.id || AVAILABLE_MODELS[0].id);
+      primaryFormData.append("model_provider", primaryModel?.provider || AVAILABLE_MODELS[0].provider);
+      primaryFormData.append("chat_context", user?.chat_context || "You are a helpful assistant.");
+      primaryFormData.append("messageHistory", JSON.stringify(messages));
+      primaryFormData.append("response_type", "A");
+      primaryFormData.append("response_group_id", responseGroupId);
+      primaryFormData.append("parent_message_id", userMessage.id);
+
+      // Add attachments if any
+      attachments.forEach((attachment) => {
+        primaryFormData.append("attachments", attachment.file);
+      });
+
+      // Create primary message placeholder
+      const primaryMessage: AssistantMessage = {
+        id: primaryMessageId,
+        content: "",
+        role: "assistant",
+        createdAt: new Date().toISOString(),
+        responseType: "A",
+        responseGroupId,
+        parentMessageId: userMessage.id,
+      };
+      addMessage(primaryMessage);
+
+      // Start primary model request
+      const primaryResponse = await fetch("/api/v1/chat-ab", {
+        method: "POST",
+        body: primaryFormData,
+      });
+
+      if (!primaryResponse.ok) {
+        throw new Error(`Primary model error: ${primaryResponse.statusText}`);
       }
 
-      // Handle streaming response
-      const reader = response.body?.getReader();
+      // Handle primary model streaming
+      const primaryReader = primaryResponse.body?.getReader();
       const decoder = new TextDecoder();
 
-      if (reader) {
-        // Add user message immediately
-        const userMessage = {
-          id: crypto.randomUUID(),
-          content: input,
-          role: "user" as const,
-          createdAt: new Date().toISOString(),
-        };
-        addMessage(userMessage);
-
-        const assistantMessage = {
-          id: crypto.randomUUID(),
-          content: "",
-          role: "assistant" as const,
-          createdAt: new Date().toISOString(),
-        };
-
+      if (primaryReader) {
         while (true) {
-          const { done, value } = await reader.read();
+          const { done, value } = await primaryReader.read();
           if (done) break;
 
-          const chunk = decoder.decode(value, { stream: true });
+          const chunk = decoder.decode(value);
           const lines = chunk.split("\n").filter((line) => line.trim() !== "");
 
           for (const line of lines) {
@@ -196,48 +225,147 @@ export default function ChatApp({
                 const data = line.slice(3, -1);
                 if (data === "[DONE]") break;
 
-                // Replace escaped newlines with actual newlines
                 const cleanedData = data.replace(/\\n/g, "\n");
-                assistantMessage.content += cleanedData;
+                primaryMessage.content += cleanedData;
+
                 setMessages((prev: Message[]) => {
                   const newMessages = [...prev];
-                  const lastMessage = newMessages[newMessages.length - 1];
-                  if (lastMessage && lastMessage.role === "assistant") {
-                    newMessages[newMessages.length - 1] = assistantMessage;
-                  } else {
-                    newMessages.push(assistantMessage);
+                  const existingMessageIndex = newMessages.findIndex((m) => m.id === primaryMessage.id);
+
+                  if (existingMessageIndex !== -1) {
+                    newMessages[existingMessageIndex] = { ...primaryMessage };
                   }
+
                   return newMessages;
                 });
-              } else {
-                console.warn("Unexpected line format:", line);
               }
             } catch (e) {
               console.error("Error parsing chunk:", e);
-              setStatus("error");
             }
           }
         }
+      }
 
-        // Send message info to the info API route
-        try {
-          await fetch("/api/v1/info", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              created_at: assistantMessage.createdAt,
-              content: assistantMessage.content,
-              role: assistantMessage.role,
-              message_id: assistantMessage.id,
-              session_id: sessionId,
-            }),
-          });
-        } catch (error) {
-          console.error("Error sending message info:", error);
+      let secondaryMessage: AssistantMessage | undefined;
+
+      // If there's a secondary model, make a separate request
+      if (secondaryModel) {
+        const secondaryFormData = new FormData();
+        secondaryFormData.append("content", input);
+        secondaryFormData.append("session_id", sessionId);
+        secondaryFormData.append("model", secondaryModel.id);
+        secondaryFormData.append("model_provider", secondaryModel.provider);
+        secondaryFormData.append("chat_context", user?.chat_context || "You are a helpful assistant.");
+        secondaryFormData.append("messageHistory", JSON.stringify(messages));
+        secondaryFormData.append("response_type", "B");
+        secondaryFormData.append("response_group_id", responseGroupId);
+        secondaryFormData.append("parent_message_id", userMessage.id);
+
+        // Add attachments if any
+        attachments.forEach((attachment) => {
+          secondaryFormData.append("attachments", attachment.file);
+        });
+
+        // Create secondary message placeholder
+        secondaryMessage = {
+          id: secondaryMessageId!,
+          content: "",
+          role: "assistant",
+          createdAt: new Date().toISOString(),
+          responseType: "B",
+          responseGroupId,
+          parentMessageId: userMessage.id,
+        };
+        addMessage(secondaryMessage);
+
+        // Start secondary model request
+        const secondaryResponse = await fetch("/api/v1/chat-ab", {
+          method: "POST",
+          body: secondaryFormData,
+        });
+
+        if (!secondaryResponse.ok) {
+          throw new Error(`Secondary model error: ${secondaryResponse.statusText}`);
+        }
+
+        // Handle secondary model streaming
+        const secondaryReader = secondaryResponse.body?.getReader();
+
+        if (secondaryReader) {
+          while (true) {
+            const { done, value } = await secondaryReader.read();
+            if (done) break;
+
+            const chunk = decoder.decode(value);
+            const lines = chunk.split("\n").filter((line) => line.trim() !== "");
+
+            for (const line of lines) {
+              try {
+                if (line.startsWith("0")) {
+                  const data = line.slice(3, -1);
+                  if (data === "[DONE]") break;
+
+                  const cleanedData = data.replace(/\\n/g, "\n");
+                  secondaryMessage.content += cleanedData;
+
+                  setMessages((prev: Message[]) => {
+                    const newMessages = [...prev];
+                    const existingMessageIndex = newMessages.findIndex((m) => m.id === secondaryMessage!.id);
+
+                    if (existingMessageIndex !== -1) {
+                      newMessages[existingMessageIndex] = { ...secondaryMessage! };
+                    }
+
+                    return newMessages;
+                  });
+                }
+              } catch (e) {
+                console.error("Error parsing chunk:", e);
+              }
+            }
+          }
         }
       }
+
+      // Store both model responses
+      await fetch("/api/v1/chat-store", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          messages: [
+            {
+              id: primaryMessage.id,
+              content: primaryMessage.content,
+              role: primaryMessage.role,
+              session_id: sessionId,
+              created_at: primaryMessage.createdAt,
+              response_type: primaryMessage.responseType,
+              response_group_id: primaryMessage.responseGroupId,
+              parent_message_id: primaryMessage.parentMessageId,
+              model: primaryModel?.id,
+              model_provider: primaryModel?.provider,
+            },
+            ...(secondaryMessage
+              ? [
+                  {
+                    id: secondaryMessage.id,
+                    content: secondaryMessage.content,
+                    role: secondaryMessage.role,
+                    session_id: sessionId,
+                    created_at: secondaryMessage.createdAt,
+                    response_type: secondaryMessage.responseType,
+                    response_group_id: secondaryMessage.responseGroupId,
+                    parent_message_id: secondaryMessage.parentMessageId,
+                    model: secondaryModel?.id,
+                    model_provider: secondaryModel?.provider,
+                  },
+                ]
+              : []),
+          ],
+        }),
+      });
 
       setStatus("idle");
       if (textareaRef.current) {
