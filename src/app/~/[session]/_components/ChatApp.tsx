@@ -23,6 +23,9 @@ type Message = {
   content: string;
   role: "user" | "assistant";
   createdAt?: string;
+  responseType?: string;
+  responseGroupId?: string;
+  parentMessageId?: string;
 };
 
 export default function ChatApp({
@@ -186,7 +189,7 @@ export default function ChatApp({
       });
 
       // Create primary message placeholder
-      const primaryMessage: AssistantMessage = {
+      const primaryMessage: Message = {
         id: primaryMessageId,
         content: "",
         role: "assistant",
@@ -246,7 +249,7 @@ export default function ChatApp({
         }
       }
 
-      let secondaryMessage: AssistantMessage | undefined;
+      let secondaryMessage: Message | undefined;
 
       // If there's a secondary model, make a separate request
       if (secondaryModel) {
