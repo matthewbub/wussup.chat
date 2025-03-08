@@ -13,6 +13,8 @@ type StoreChatMessage = {
   model?: string;
   model_provider?: string;
   metadata?: Record<string, any>;
+  prompt_tokens?: number;
+  completion_tokens?: number;
 };
 
 export async function POST(req: Request) {
@@ -43,6 +45,8 @@ export async function POST(req: Request) {
           model: message.model,
           model_provider: message.model_provider,
           metadata: message.metadata,
+          prompt_tokens: message.prompt_tokens,
+          completion_tokens: message.completion_tokens,
         },
       ])
     );

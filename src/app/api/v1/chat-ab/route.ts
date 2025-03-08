@@ -183,9 +183,9 @@ export async function POST(req: Request) {
         }),
       },
     });
-
     return result.toDataStreamResponse({
       getErrorMessage: errorHandler,
+      sendUsage: true,
     });
   } catch (error) {
     console.error("[Chat API] Error streaming response:", error);

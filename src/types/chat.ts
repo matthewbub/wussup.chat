@@ -9,6 +9,8 @@ export interface Message {
   responseType?: "A" | "B";
   responseGroupId?: string;
   parentMessageId?: string;
+  prompt_tokens?: number;
+  completion_tokens?: number;
   metadata?: {
     type: string;
     imageUrl: string;

@@ -7,14 +7,14 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   Search,
-  Image,
+  Image as ImageIcon,
   FileText,
   Sparkles,
   Zap,
   Check,
   PlusCircle,
   Code,
-  ActivityIcon as Function,
+  ActivityIcon,
   Brain,
   Video,
   AudioLines,
@@ -41,6 +41,7 @@ interface ModelSelectionModalProps {
   secondaryModelId?: string;
   defaultModelId?: string;
   onRemoveSecondaryModel?: () => void;
+  disabled?: boolean;
 }
 
 export function ModelSelectionModal({
@@ -51,6 +52,7 @@ export function ModelSelectionModal({
   secondaryModelId,
   defaultModelId = "o3-mini",
   onRemoveSecondaryModel,
+  disabled,
 }: ModelSelectionModalProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeProvider, setActiveProvider] = useState<string>("all");
@@ -83,7 +85,7 @@ export function ModelSelectionModal({
 
     // Filter by image capability
     if (showImageCapable) {
-      models = models.filter((model) => model.inputs.includes("image"));
+      models = models.filter((model) => model.inputs?.includes("image"));
     }
 
     // Filter by reasoning capability
@@ -106,8 +108,6 @@ export function ModelSelectionModal({
       const query = debouncedQuery.toLowerCase();
       models = models.filter(
         (model) =>
-          model.name?.toLowerCase().includes(query) ||
-          false ||
           model.id.toLowerCase().includes(query) ||
           model.provider.toLowerCase().includes(query) ||
           model.meta?.optimized_for?.toLowerCase().includes(query) ||
@@ -164,7 +164,7 @@ export function ModelSelectionModal({
       case "text":
         return <FileText className="h-6 w-6" />;
       case "image":
-        return <Image className="h-6 w-6" />;
+        return <ImageIcon className="h-6 w-6" />;
       case "audio":
         return <AudioLines className="h-6 w-6" />;
       case "video":
@@ -230,8 +230,15 @@ export function ModelSelectionModal({
     setSelectionMode(selectionMode === "primary" ? "secondary" : "primary");
   };
 
+  // Add disabled check to onOpenChange
+  const handleOpenChange = (newOpen: boolean) => {
+    if (!disabled) {
+      onOpenChange(newOpen);
+    }
+  };
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-[600px] max-h-[85vh] overflow-hidden flex flex-col">
         <DialogHeader>
           <DialogTitle>{showRequestForm ? "Request a Model" : "Select AI Model"}</DialogTitle>
@@ -563,7 +570,7 @@ export function ModelSelectionModal({
                                   <Tooltip>
                                     <TooltipTrigger asChild>
                                       <div className="p-1.5 rounded-md bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-400 flex items-center justify-center">
-                                        <Function className="h-6 w-6" />
+                                        <ActivityIcon className="h-6 w-6" />
                                       </div>
                                     </TooltipTrigger>
                                     <TooltipContent>

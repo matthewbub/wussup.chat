@@ -5,16 +5,7 @@ import { Message as MessageType } from "@/types/chat";
 
 export type MessageProps = Omit<MessageType, "chat_session_id" | "user_id" | "metadata">;
 
-export function Message({
-  created_at,
-  content,
-  id,
-  is_user,
-  model,
-  responseType,
-  responseGroupId,
-  parentMessageId,
-}: MessageProps) {
+export function Message({ created_at, content, id, is_user, model }: MessageProps) {
   return (
     <div className={cn("flex", is_user ? "justify-end" : "justify-start")}>
       <div className="flex flex-col relative group">

@@ -8,7 +8,7 @@ import { EmptyChatScreen } from "@/components/EmptyChatScreen";
 import { useChatStore } from "../_store/chat";
 import { ModelSelectionModal } from "./ModalSelectV3";
 import type { AiModel } from "@/constants/models";
-import { Sparkles, X, FileUp, FileText, Image as ImageIcon } from "lucide-react";
+import { Sparkles, X, FileUp, FileText, Image as ImageIcon, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Message } from "@/types/chat";
 
@@ -161,6 +161,8 @@ export default function ChatApp({
               is_user: userMessage.is_user,
               session_id: sessionId,
               created_at: userMessage.created_at,
+              prompt_tokens: 0,
+              completion_tokens: 0,
             },
           ],
         }),
@@ -176,6 +178,8 @@ export default function ChatApp({
         responseType: "A",
         responseGroupId,
         parentMessageId: userMessage.id,
+        prompt_tokens: 0,
+        completion_tokens: 0,
       };
       addMessage(primaryMessage);
 
@@ -237,6 +241,30 @@ export default function ChatApp({
 
                   return newMessages;
                 });
+              } else if (line.startsWith("e:") || line.startsWith("d:")) {
+                const eventData = JSON.parse(line.slice(2));
+                if (eventData.usage) {
+                  primaryMessage.prompt_tokens = eventData.usage.promptTokens;
+                  primaryMessage.completion_tokens = eventData.usage.completionTokens;
+
+                  // Update user message with prompt tokens
+                  userMessage.prompt_tokens = eventData.usage.promptTokens;
+
+                  setMessages((prev: Message[]) => {
+                    const newMessages = [...prev];
+                    const userMessageIndex = newMessages.findIndex((m) => m.id === userMessage.id);
+                    const primaryMessageIndex = newMessages.findIndex((m) => m.id === primaryMessage.id);
+
+                    if (userMessageIndex !== -1) {
+                      newMessages[userMessageIndex] = { ...userMessage };
+                    }
+                    if (primaryMessageIndex !== -1) {
+                      newMessages[primaryMessageIndex] = { ...primaryMessage };
+                    }
+
+                    return newMessages;
+                  });
+                }
               }
             } catch (e) {
               console.error("Error parsing chunk:", e);
@@ -345,6 +373,8 @@ export default function ChatApp({
               response_type: primaryMessage.responseType,
               response_group_id: primaryMessage.responseGroupId,
               parent_message_id: primaryMessage.parentMessageId,
+              prompt_tokens: primaryMessage.prompt_tokens,
+              completion_tokens: primaryMessage.completion_tokens,
             },
             ...(secondaryMessage
               ? [
@@ -358,9 +388,21 @@ export default function ChatApp({
                     response_type: secondaryMessage.responseType,
                     response_group_id: secondaryMessage.responseGroupId,
                     parent_message_id: secondaryMessage.parentMessageId,
+                    prompt_tokens: secondaryMessage.prompt_tokens || 0,
+                    completion_tokens: secondaryMessage.completion_tokens || 0,
                   },
                 ]
               : []),
+            // Update user message with prompt tokens
+            {
+              id: userMessage.id,
+              content: userMessage.content,
+              is_user: userMessage.is_user,
+              session_id: sessionId,
+              created_at: userMessage.created_at,
+              prompt_tokens: userMessage.prompt_tokens,
+              completion_tokens: 0,
+            },
           ],
         }),
       });
@@ -399,10 +441,10 @@ export default function ChatApp({
                 acc.push(
                   <div key={message.id} className="flex gap-4">
                     <div className="flex-1 border-r pr-4">
-                      <MessageComponent {...message} />
+                      <MessageComponent {...message} isLoading={status === "streaming"} />
                     </div>
                     <div className="flex-1 pl-4">
-                      <MessageComponent {...nextMessage} />
+                      <MessageComponent {...nextMessage} isLoading={status === "streaming"} />
                     </div>
                   </div>
                 );
@@ -416,7 +458,7 @@ export default function ChatApp({
             }
 
             // Handle single responses
-            acc.push(<MessageComponent key={message.id} {...message} />);
+            acc.push(<MessageComponent key={message.id} {...message} isLoading={status === "streaming"} />);
             return acc;
           }, [])}
 
@@ -425,7 +467,7 @@ export default function ChatApp({
 
       <div className="sticky bottom-0 bg-background">
         <div className="flex items-center gap-2 mb-4">
-          <Button type="button" onClick={() => setModalOpen(true)} className="gap-2">
+          <Button type="button" onClick={() => setModalOpen(true)} className="gap-2" disabled={status === "streaming"}>
             <Sparkles className="h-4 w-4" />
             {primaryModel
               ? `Selected: ${primaryModel.id} ${secondaryModel ? "and " + secondaryModel.id : ""}`
@@ -433,7 +475,13 @@ export default function ChatApp({
           </Button>
 
           {secondaryModel && (
-            <Button type="button" variant="outline" onClick={removeSecondaryModel} className="gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={removeSecondaryModel}
+              className="gap-2"
+              disabled={status === "streaming"}
+            >
               <X className="h-4 w-4" />
               Remove Model B
             </Button>
@@ -492,7 +540,7 @@ export default function ChatApp({
           )}
 
           <div className="relative">
-            <Textarea ref={textareaRef} placeholder="Type your message..." />
+            <Textarea ref={textareaRef} placeholder="Type your message..." disabled={status === "streaming"} />
           </div>
 
           <div className="flex justify-between gap-2">
@@ -501,7 +549,8 @@ export default function ChatApp({
                 htmlFor="file-upload"
                 className={cn(
                   "bg-secondary text-secondary-foreground px-3 py-2 rounded-lg flex items-center gap-2 cursor-pointer transition-colors",
-                  "hover:bg-secondary/80"
+                  "hover:bg-secondary/80",
+                  status === "streaming" && "opacity-50 cursor-not-allowed"
                 )}
               >
                 <FileUp className="h-4 w-4" />
@@ -513,12 +562,20 @@ export default function ChatApp({
                   onChange={handleFileChange}
                   ref={fileInputRef}
                   accept=".pdf,.png,.jpg,.jpeg,.gif"
+                  disabled={status === "streaming"}
                 />
               </label>
             </div>
             <div className="flex gap-2">
               <Button type="submit" disabled={status === "streaming"}>
-                Send
+                {status === "streaming" ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Sending...
+                  </>
+                ) : (
+                  "Send"
+                )}
               </Button>
             </div>
           </div>
@@ -532,6 +589,7 @@ export default function ChatApp({
         primaryModelId={primaryModel?.id}
         defaultModelId="o3-mini"
         onRemoveSecondaryModel={removeSecondaryModel}
+        disabled={status === "streaming"}
       />
     </div>
   );

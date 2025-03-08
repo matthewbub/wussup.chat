@@ -22,17 +22,23 @@ create table public."ChatBot_Messages" (
   user_id uuid null,
   metadata jsonb null,
   model_provider text null,
-  response_type text null CHECK (response_type IN ('A', 'B')),
-  parent_message_id uuid null REFERENCES public."ChatBot_Messages"(id),
+  response_type text null,
+  parent_message_id uuid null,
   response_group_id uuid null,
+  prompt_tokens integer null default 0,
+  completion_tokens integer null default 0,
   constraint ChatBot_Messages_pkey primary key (id),
   constraint ChatBot_Messages_chat_session_id_fkey foreign KEY (chat_session_id) references "ChatBot_Sessions" (id),
-  constraint ChatBot_Messages_user_id_fkey foreign KEY (user_id) references auth.users (id)
+  constraint ChatBot_Messages_parent_message_id_fkey foreign KEY (parent_message_id) references "ChatBot_Messages" (id),
+  constraint ChatBot_Messages_user_id_fkey foreign KEY (user_id) references auth.users (id),
+  constraint ChatBot_Messages_response_type_check check (
+    (response_type = any (array['A'::text, 'B'::text]))
+  )
 ) TABLESPACE pg_default;
 
--- Indexes
-CREATE INDEX IF NOT EXISTS idx_chatbot_messages_response_group ON public."ChatBot_Messages"(response_group_id);
-CREATE INDEX IF NOT EXISTS idx_chatbot_messages_parent ON public."ChatBot_Messages"(parent_message_id);
+create index IF not exists idx_chatbot_messages_response_group on public."ChatBot_Messages" using btree (response_group_id) TABLESPACE pg_default;
+
+create index IF not exists idx_chatbot_messages_parent on public."ChatBot_Messages" using btree (parent_message_id) TABLESPACE pg_default;
 
 create table public."ChatBot_Sessions" (
   id uuid not null default gen_random_uuid (),
