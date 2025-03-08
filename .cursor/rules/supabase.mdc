@@ -22,10 +22,17 @@ create table public."ChatBot_Messages" (
   user_id uuid null,
   metadata jsonb null,
   model_provider text null,
+  response_type text null CHECK (response_type IN ('A', 'B')),
+  parent_message_id uuid null REFERENCES public."ChatBot_Messages"(id),
+  response_group_id uuid null,
   constraint ChatBot_Messages_pkey primary key (id),
   constraint ChatBot_Messages_chat_session_id_fkey foreign KEY (chat_session_id) references "ChatBot_Sessions" (id),
   constraint ChatBot_Messages_user_id_fkey foreign KEY (user_id) references auth.users (id)
 ) TABLESPACE pg_default;
+
+-- Indexes
+CREATE INDEX IF NOT EXISTS idx_chatbot_messages_response_group ON public."ChatBot_Messages"(response_group_id);
+CREATE INDEX IF NOT EXISTS idx_chatbot_messages_parent ON public."ChatBot_Messages"(parent_message_id);
 
 create table public."ChatBot_Sessions" (
   id uuid not null default gen_random_uuid (),
@@ -55,15 +62,18 @@ create table public."ChatBot_Users" (
   constraint ChatBot_Users_user_id_fkey foreign KEY (user_id) references auth.users (id)
 ) TABLESPACE pg_default;
 
-
 # functions
+
+create_response_group
+BEGIN
+    RETURN gen_random_uuid();
+END;
 
 delete_chat_session
 BEGIN
     DELETE FROM public."ChatBot_Messages" WHERE chat_session_id = session_id;
     DELETE FROM public."ChatBot_Sessions" WHERE id = session_id;
 END;
-
 
 increment_message_count
 DECLARE
@@ -77,5 +87,4 @@ BEGIN
     
     RETURN new_count;
 END;
-
 ```
