@@ -408,7 +408,7 @@ export function ModelSelectionModal({
                   className="space-y-4"
                 >
                   {filteredModels.length > 0 ? (
-                    filteredModels.map((model) => (
+                    filteredModels.map((model: AiModel) => (
                       <motion.div
                         key={model.id}
                         variants={item}
@@ -428,7 +428,7 @@ export function ModelSelectionModal({
                         <div className="flex items-center justify-between">
                           <div className="flex flex-col">
                             <div className="flex items-center gap-2">
-                              <span className="font-medium">{model.name || model.id}</span>
+                              <span className="font-medium">{model.id}</span>
                               {model.free && (
                                 <Badge
                                   variant="outline"
@@ -480,30 +480,31 @@ export function ModelSelectionModal({
                           <div className="space-y-2">
                             <div className="flex items-center justify-between">
                               <h4 className="text-xs font-medium text-muted-foreground">Inputs</h4>
-                              {model.outputs.length > 0 && (
+                              {model.outputs && model.outputs.length > 0 && (
                                 <h4 className="text-xs font-medium text-muted-foreground">Outputs</h4>
                               )}
                             </div>
 
                             <div className="flex justify-between">
                               <div className="flex flex-wrap items-center gap-2">
-                                {model.inputs.map((input, idx) => (
-                                  <TooltipProvider key={`${model.id}-input-${idx}`}>
-                                    <Tooltip>
-                                      <TooltipTrigger asChild>
-                                        <span className="bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-400 p-1.5 rounded-md flex items-center justify-center">
-                                          {getInputTypeIcon(input)}
-                                        </span>
-                                      </TooltipTrigger>
-                                      <TooltipContent>
-                                        <p className="text-xs capitalize">{input} input</p>
-                                      </TooltipContent>
-                                    </Tooltip>
-                                  </TooltipProvider>
-                                ))}
+                                {model.inputs &&
+                                  model.inputs.map((input, idx) => (
+                                    <TooltipProvider key={`${model.id}-input-${idx}`}>
+                                      <Tooltip>
+                                        <TooltipTrigger asChild>
+                                          <span className="bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-400 p-1.5 rounded-md flex items-center justify-center">
+                                            {getInputTypeIcon(input)}
+                                          </span>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                          <p className="text-xs capitalize">{input} input</p>
+                                        </TooltipContent>
+                                      </Tooltip>
+                                    </TooltipProvider>
+                                  ))}
                               </div>
 
-                              {model.outputs.length > 0 && (
+                              {model.outputs && model.outputs.length > 0 && (
                                 <div className="flex flex-wrap items-center gap-2">
                                   {model.outputs.map((output, idx) => (
                                     <TooltipProvider key={`${model.id}-output-${idx}`}>
