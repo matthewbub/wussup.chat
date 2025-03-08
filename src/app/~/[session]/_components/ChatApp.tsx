@@ -102,8 +102,12 @@ export default function ChatApp({
     }
   };
 
-  const handleModelSelect = (model: AiModel) => {
-    setPrimaryModel(model);
+  const handleModelSelect = (model: AiModel, isSecondary?: boolean) => {
+    if (isSecondary) {
+      setSecondaryModel(model);
+    } else {
+      setPrimaryModel(model);
+    }
     setModalOpen(false);
   };
 
