@@ -29,7 +29,7 @@ export async function POST(req: Request) {
   }
 
   // Validate model and provider
-  const selectedModel = AVAILABLE_MODELS.find((m) => m.model === model && m.provider === model_provider);
+  const selectedModel = AVAILABLE_MODELS.find((m) => m.id === model && m.provider === model_provider);
   if (!selectedModel) {
     return NextResponse.json({ error: "Invalid model or provider combination" }, { status: 400 });
   }
@@ -62,6 +62,8 @@ export async function POST(req: Request) {
     console.error("[Chat API] Error inserting user message: ", userError || updateError);
   }
 
+  console.log("Model", model);
+  console.log("Model provider", model_provider);
   // Select the appropriate provider based on model_provider
   const modelOpts = {
     openai: openai(model as string),
@@ -70,6 +72,7 @@ export async function POST(req: Request) {
     xai: xai(model as string),
   };
   const provider = modelOpts[model_provider as keyof typeof modelOpts];
+
   if (!provider) {
     // TODO: Log what that model was
     return NextResponse.json({ error: "Unsupported provider" }, { status: 400 });
@@ -127,18 +130,16 @@ export async function POST(req: Request) {
         .join("\n");
   }
 
-  console.log("Experimental attachments", experimental_attachments);
   // Prepare the messages array with the current message and attachments
   const currentMessage = {
     role: "user",
     content: messageContent,
-    // ...(experimental_attachments.length > 0 && { experimental_attachments }),
+    ...(experimental_attachments.length > 0 && { experimental_attachments }),
   };
 
   // Parse message history and add current message
   const messages = messageHistory ? [...JSON.parse(messageHistory), currentMessage] : [currentMessage];
 
-  console.log("Prepped to stream, sending to model", provider);
   const result = streamText({
     model: provider as LanguageModelV1,
     system: chat_context as string,
