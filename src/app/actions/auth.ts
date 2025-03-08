@@ -3,7 +3,6 @@
 import { createClient } from "@/lib/supabase-server";
 
 export async function registerUser(formData: { email: string; password: string; confirmPassword: string }) {
-  console.log("[Register User] Form Data:", formData);
   const supabase = await createClient();
 
   const { error, data: signUpData } = await supabase.auth.signUp({
@@ -15,8 +14,6 @@ export async function registerUser(formData: { email: string; password: string; 
     console.error("[Register User] Error signing up:", error);
     // redirect("/error");
   }
-
-  console.log("[Register User] Sign Up Data:", signUpData);
 
   return { success: true, error: null };
 }

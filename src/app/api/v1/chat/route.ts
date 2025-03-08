@@ -62,8 +62,6 @@ export async function POST(req: Request) {
     console.error("[Chat API] Error inserting user message: ", userError || updateError);
   }
 
-  console.log("Model", selectedModel.model);
-  console.log("Model provider", selectedModel.provider);
   // Select the appropriate provider based on model_provider
   const modelOpts = {
     openai: openai(selectedModel.model),
@@ -157,8 +155,6 @@ export async function POST(req: Request) {
               prompt,
             });
 
-            console.log("image", image);
-
             // Decode base64 to Buffer before uploading
             const imageBuffer = Buffer.from(image.base64, "base64");
 
@@ -175,8 +171,6 @@ export async function POST(req: Request) {
               console.error("Error uploading image to storage", createError);
               throw new Error("Failed to upload generated image");
             }
-
-            console.log("uploadData", uploadData);
 
             // Get public URL for the uploaded image
             const {
@@ -212,8 +206,6 @@ export async function POST(req: Request) {
         }),
       },
     });
-
-    // console.log("Result", result);
 
     return result.toDataStreamResponse({
       getErrorMessage: errorHandler,

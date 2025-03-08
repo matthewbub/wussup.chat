@@ -45,7 +45,5 @@ export async function POST(req: Request) {
     console.error("[title] error updating session title:", error);
   }
 
-  console.log("[title] text", text);
-  // console.log("[title] rest", rest);
   return NextResponse.json({ title: text });
 }

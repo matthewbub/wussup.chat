@@ -134,7 +134,6 @@ export default function ChatApp({
     const formData = new FormData();
     formData.append("content", input);
     formData.append("session_id", sessionId);
-    console.log("Sending Primary Model", primaryModel);
     formData.append("model", primaryModel?.id || AVAILABLE_MODELS[0].id);
     formData.append("model_provider", primaryModel?.provider || AVAILABLE_MODELS[0].provider);
     formData.append("chat_context", user?.chat_context || "You are a helpful assistant.");
