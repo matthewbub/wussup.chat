@@ -748,7 +748,7 @@ export const xaiModels: AiModel[] = [
 export const geminiModels: AiModel[] = [
   {
     provider: "google",
-    model: "Gemini 2.0 Flash",
+    model: "gemini-2.0-flash",
     inputs: ["audio", "images", "videos", "text"],
     outputs: ["text", "images (coming soon)", "audio (coming soon)"],
     id: "gemini-2.0-flash",
@@ -805,7 +805,7 @@ export const geminiModels: AiModel[] = [
 
   {
     provider: "google",
-    model: "Gemini 2.0 Flash Lite",
+    model: "gemini-2.0-flash-lite",
     inputs: ["audio", "images", "videos", "text"],
     outputs: ["text"],
     id: "gemini-2.0-flash-lite",

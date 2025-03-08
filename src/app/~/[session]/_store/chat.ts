@@ -1,13 +1,6 @@
 import { create } from "zustand";
-import { ChatSession } from "@/types/chat";
+import { ChatSession, Message } from "@/types/chat";
 import { User } from "@/types/user";
-
-interface Message {
-  id: string;
-  content: string;
-  role: "user" | "assistant";
-  createdAt?: string;
-}
 
 interface ChatStore {
   currentSession: ChatSession | null;

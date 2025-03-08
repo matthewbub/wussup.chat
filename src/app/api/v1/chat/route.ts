@@ -130,13 +130,21 @@ export async function POST(req: Request) {
 
   // Prepare the messages array with the current message and attachments
   const currentMessage = {
-    role: "user",
+    role: "user" as const,
     content: messageContent,
     experimental_attachments,
   };
 
   // Parse message history and add current message
-  const messages = messageHistory ? [...JSON.parse(messageHistory), currentMessage] : [currentMessage];
+  const messages = messageHistory
+    ? [
+        ...JSON.parse(messageHistory).map((msg: { is_user: boolean; content: string }) => ({
+          role: msg.is_user ? ("user" as const) : ("assistant" as const),
+          content: msg.content,
+        })),
+        currentMessage,
+      ]
+    : [currentMessage];
 
   try {
     const result = streamText({
@@ -160,7 +168,7 @@ export async function POST(req: Request) {
 
             // Add content-type and more structured path
             const imagePath = `${userId}/generated/${new Date().getFullYear()}/${crypto.randomUUID()}.png`;
-            const { data: uploadData, error: createError } = await supabase.storage
+            const { error: createError } = await supabase.storage
               .from("ChatBot_Images_Generated")
               .upload(imagePath, imageBuffer, {
                 contentType: "image/png",

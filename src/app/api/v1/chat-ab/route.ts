@@ -89,13 +89,21 @@ export async function POST(req: Request) {
 
   // Prepare the messages array with the current message and attachments
   const currentMessage = {
-    role: "user",
+    role: "user" as const,
     content: messageContent,
     experimental_attachments,
   };
 
   // Parse message history and add current message
-  const messages = messageHistory ? [...JSON.parse(messageHistory), currentMessage] : [currentMessage];
+  const messages = messageHistory
+    ? [
+        ...JSON.parse(messageHistory).map((msg: { is_user: boolean; content: string }) => ({
+          role: msg.is_user ? ("user" as const) : ("assistant" as const),
+          content: msg.content,
+        })),
+        currentMessage,
+      ]
+    : [currentMessage];
 
   try {
     // Select the appropriate provider based on model_provider

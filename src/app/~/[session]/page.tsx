@@ -6,10 +6,21 @@ import { ensureUserStorageFolder } from "./_helpers/ensureUserStorageFolder";
 import { fetchUserChatData } from "./_helpers/fetchUserChatData";
 import { redirect } from "next/navigation";
 import { User } from "@/types/user";
-import { ChatSession } from "@/types/chat";
+import { ChatSession, Message } from "@/types/chat";
 import { generateCurrentSessionPlaceholder } from "./_helpers/currentSessionPlaceholder";
 import { AppState } from "@/components/AppState";
 import { Background } from "@/components/ui/Background";
+
+type DBMessage = {
+  id: string;
+  content: string;
+  is_user: boolean;
+  response_group_id: string | null;
+  parent_message_id: string | null;
+  response_type: "A" | "B" | null;
+  model: string;
+  created_at: string;
+};
 
 export default async function Page({ params }: { params: Promise<{ session: string }> }) {
   const supabase = await createClient();
@@ -35,20 +46,22 @@ export default async function Page({ params }: { params: Promise<{ session: stri
   const groupedSessions = groupMessagesBySession(messagesResult.data, sessions); // group messages by session
   const currentSession = [...Object.values(groupedSessions).flat()].find((session) => session.id === sessionId);
   const initialMessages =
-    currentSession?.messages?.map((message) => ({
+    (currentSession?.messages as unknown as DBMessage[])?.map((message) => ({
       id: message.id,
       content: message.content,
-      role: message.is_user ? "user" : "assistant",
+      is_user: message.is_user,
+      created_at: message.created_at,
+      model: message.model || "",
+      responseType: message.response_type,
+      responseGroupId: message.response_group_id,
+      parentMessageId: message.parent_message_id,
     })) || [];
 
   return (
     <Background>
       <AppState user={usersResult.data as unknown as User} currentSession={currentSession as ChatSession}>
         <ChatLayout sessions={groupedSessions}>
-          <ChatApp
-            sessionId={sessionId}
-            initialMessages={initialMessages as { id: string; content: string; role: "user" | "assistant" }[]}
-          />
+          <ChatApp sessionId={sessionId} initialMessages={initialMessages as Message[]} />
         </ChatLayout>
       </AppState>
     </Background>

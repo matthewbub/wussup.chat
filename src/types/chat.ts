@@ -6,6 +6,9 @@ export interface Message {
   model: string;
   chat_session_id?: string;
   user_id?: string;
+  responseType?: "A" | "B";
+  responseGroupId?: string;
+  parentMessageId?: string;
   metadata?: {
     type: string;
     imageUrl: string;

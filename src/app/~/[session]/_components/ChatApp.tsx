@@ -3,29 +3,20 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import React, { useState, useRef, useEffect } from "react";
 import { AVAILABLE_MODELS } from "@/constants/models";
-import { Message } from "./Message";
+import { Message as MessageComponent } from "./Message";
 import { EmptyChatScreen } from "@/components/EmptyChatScreen";
 import { useChatStore } from "../_store/chat";
 import { ModelSelectionModal } from "./ModalSelectV3";
 import type { AiModel } from "@/constants/models";
 import { Sparkles, X, FileUp, FileText, Image as ImageIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Message } from "@/types/chat";
 
 const CHARACTER_LIMIT = 1000;
 
 type Attachment = {
   file: File;
   type: string;
-};
-
-type Message = {
-  id: string;
-  content: string;
-  role: "user" | "assistant";
-  createdAt?: string;
-  responseType?: string;
-  responseGroupId?: string;
-  parentMessageId?: string;
 };
 
 export default function ChatApp({
@@ -129,7 +120,7 @@ export default function ChatApp({
         method: "POST",
         body: JSON.stringify({
           session_id: sessionId,
-          messages: [{ role: "user", content: input }],
+          messages: [{ is_user: true, content: input }],
         }),
       });
 
@@ -139,11 +130,15 @@ export default function ChatApp({
 
     try {
       // Add user message immediately
-      const userMessage = {
+      const userMessage: Message = {
         id: crypto.randomUUID(),
         content: input,
-        role: "user" as const,
-        createdAt: new Date().toISOString(),
+        is_user: true,
+        created_at: new Date().toISOString(),
+        model: "",
+        responseType: undefined,
+        responseGroupId: undefined,
+        parentMessageId: undefined,
       };
       addMessage(userMessage);
 
@@ -163,13 +158,26 @@ export default function ChatApp({
             {
               id: userMessage.id,
               content: userMessage.content,
-              role: userMessage.role,
+              is_user: userMessage.is_user,
               session_id: sessionId,
-              created_at: userMessage.createdAt,
+              created_at: userMessage.created_at,
             },
           ],
         }),
       });
+
+      // Create primary message placeholder
+      const primaryMessage: Message = {
+        id: primaryMessageId,
+        content: "",
+        is_user: false,
+        created_at: new Date().toISOString(),
+        model: primaryModel?.id || AVAILABLE_MODELS[0].id,
+        responseType: "A",
+        responseGroupId,
+        parentMessageId: userMessage.id,
+      };
+      addMessage(primaryMessage);
 
       // Create FormData for the primary model
       const primaryFormData = new FormData();
@@ -187,18 +195,6 @@ export default function ChatApp({
       attachments.forEach((attachment) => {
         primaryFormData.append("attachments", attachment.file);
       });
-
-      // Create primary message placeholder
-      const primaryMessage: Message = {
-        id: primaryMessageId,
-        content: "",
-        role: "assistant",
-        createdAt: new Date().toISOString(),
-        responseType: "A",
-        responseGroupId,
-        parentMessageId: userMessage.id,
-      };
-      addMessage(primaryMessage);
 
       // Start primary model request
       const primaryResponse = await fetch("/api/v1/chat-ab", {
@@ -273,8 +269,9 @@ export default function ChatApp({
         secondaryMessage = {
           id: secondaryMessageId!,
           content: "",
-          role: "assistant",
-          createdAt: new Date().toISOString(),
+          is_user: false,
+          created_at: new Date().toISOString(),
+          model: secondaryModel.id,
           responseType: "B",
           responseGroupId,
           parentMessageId: userMessage.id,
@@ -341,28 +338,26 @@ export default function ChatApp({
             {
               id: primaryMessage.id,
               content: primaryMessage.content,
-              role: primaryMessage.role,
+              is_user: primaryMessage.is_user,
               session_id: sessionId,
-              created_at: primaryMessage.createdAt,
+              created_at: primaryMessage.created_at,
+              model: primaryMessage.model,
               response_type: primaryMessage.responseType,
               response_group_id: primaryMessage.responseGroupId,
               parent_message_id: primaryMessage.parentMessageId,
-              model: primaryModel?.id,
-              model_provider: primaryModel?.provider,
             },
             ...(secondaryMessage
               ? [
                   {
                     id: secondaryMessage.id,
                     content: secondaryMessage.content,
-                    role: secondaryMessage.role,
+                    is_user: secondaryMessage.is_user,
                     session_id: sessionId,
-                    created_at: secondaryMessage.createdAt,
+                    created_at: secondaryMessage.created_at,
+                    model: secondaryMessage.model,
                     response_type: secondaryMessage.responseType,
                     response_group_id: secondaryMessage.responseGroupId,
                     parent_message_id: secondaryMessage.parentMessageId,
-                    model: secondaryModel?.id,
-                    model_provider: secondaryModel?.provider,
                   },
                 ]
               : []),
@@ -389,15 +384,41 @@ export default function ChatApp({
     <div className="h-full flex flex-col gap-4">
       <div className="space-y-4 mb-6 flex-1 overflow-y-scroll p-4">
         {messages &&
-          messages.map((message) => (
-            <Message
-              key={message.id}
-              content={message.content}
-              id={message.id}
-              is_user={message.role === "user"}
-              createdAt={message.createdAt}
-            />
-          ))}
+          messages.reduce((acc: React.JSX.Element[], message, index) => {
+            // If this is a user message, add it directly
+            if (message.is_user) {
+              acc.push(<MessageComponent key={message.id} {...message} />);
+              return acc;
+            }
+
+            // If this is an 'A' response, render both A and B side by side
+            if (message.responseType === "A") {
+              const nextMessage = messages[index + 1];
+              // Only render side by side if we have both messages
+              if (nextMessage?.responseType === "B") {
+                acc.push(
+                  <div key={message.id} className="flex gap-4">
+                    <div className="flex-1 border-r pr-4">
+                      <MessageComponent {...message} />
+                    </div>
+                    <div className="flex-1 pl-4">
+                      <MessageComponent {...nextMessage} />
+                    </div>
+                  </div>
+                );
+                return acc;
+              }
+            }
+
+            // Skip 'B' responses as they're handled with their 'A' pair
+            if (message.responseType === "B") {
+              return acc;
+            }
+
+            // Handle single responses
+            acc.push(<MessageComponent key={message.id} {...message} />);
+            return acc;
+          }, [])}
 
         {messages.length === 0 && <EmptyChatScreen setNewMessage={setLocalInput} />}
       </div>

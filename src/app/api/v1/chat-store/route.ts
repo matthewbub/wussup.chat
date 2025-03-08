@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 type StoreChatMessage = {
   id: string;
   content: string;
-  role: "user" | "assistant";
+  is_user: boolean;
   session_id: string;
   created_at: string;
   response_type?: "A" | "B";
@@ -35,7 +35,7 @@ export async function POST(req: Request) {
           chat_session_id: message.session_id,
           content: message.content,
           user_id: userId,
-          is_user: message.role === "user",
+          is_user: message.is_user,
           created_at: message.created_at,
           response_type: message.response_type,
           response_group_id: message.response_group_id,
