@@ -8,7 +8,7 @@ import { EmptyChatScreen } from "@/components/EmptyChatScreen";
 import { useChatStore } from "../_store/chat";
 import { ModelSelectionModal } from "./ModalSelectV3";
 import type { AiModel } from "@/constants/models";
-import { Sparkles, X, FileUp, FileText, Image } from "lucide-react";
+import { Sparkles, X, FileUp, FileText, Image as ImageIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const CHARACTER_LIMIT = 1000;
@@ -134,6 +134,7 @@ export default function ChatApp({
     const formData = new FormData();
     formData.append("content", input);
     formData.append("session_id", sessionId);
+    console.log("Sending Primary Model", primaryModel);
     formData.append("model", primaryModel?.id || AVAILABLE_MODELS[0].id);
     formData.append("model_provider", primaryModel?.provider || AVAILABLE_MODELS[0].provider);
     formData.append("chat_context", user?.chat_context || "You are a helpful assistant.");
@@ -250,14 +251,6 @@ export default function ChatApp({
     }
   };
 
-  const buttonProps = {
-    submit: {
-      type: "submit" as const,
-      disabled: status === "streaming",
-      className: "self-end w-fit",
-    },
-  };
-
   return (
     <div className="h-full flex flex-col gap-4">
       <div className="space-y-4 mb-6 flex-1 overflow-y-scroll p-4">
@@ -274,8 +267,25 @@ export default function ChatApp({
 
         {messages.length === 0 && <EmptyChatScreen setNewMessage={setLocalInput} />}
       </div>
-      <form onSubmit={handleSubmit} className="sticky bottom-0 bg-background">
-        <div className="flex flex-col gap-2 rounded-xl bg-secondary p-4 mb-4">
+
+      <div className="sticky bottom-0 bg-background">
+        <div className="flex items-center gap-2 mb-4">
+          <Button type="button" onClick={() => setModalOpen(true)} className="gap-2">
+            <Sparkles className="h-4 w-4" />
+            {primaryModel
+              ? `Selected: ${primaryModel.id} ${secondaryModel ? "and " + secondaryModel.id : ""}`
+              : "Select AI Model"}
+          </Button>
+
+          {secondaryModel && (
+            <Button type="button" variant="outline" onClick={removeSecondaryModel} className="gap-2">
+              <X className="h-4 w-4" />
+              Remove Model B
+            </Button>
+          )}
+        </div>
+
+        <form onSubmit={handleSubmit} className="flex flex-col gap-2 rounded-xl bg-secondary p-4 mb-4">
           {attachments.length > 0 && (
             <div className="flex flex-wrap gap-3 mb-4">
               {attachments.map((attachment) => (
@@ -296,7 +306,7 @@ export default function ChatApp({
                     {attachment.type === "pdf" ? (
                       <FileText size={20} className="text-white" />
                     ) : attachment.type === "image" ? (
-                      <Image size={20} className="text-white" />
+                      <ImageIcon size={20} className="text-white" />
                     ) : (
                       <FileUp size={20} className="text-white" />
                     )}
@@ -332,13 +342,6 @@ export default function ChatApp({
 
           <div className="flex justify-between gap-2">
             <div className="flex items-center gap-2">
-              <Button onClick={() => setModalOpen(true)} className="gap-2">
-                <Sparkles className="h-4 w-4" />
-                {primaryModel
-                  ? `Selected: ${primaryModel.id} ${secondaryModel ? "and " + secondaryModel.id : ""}`
-                  : "Select AI Model"}
-              </Button>
-
               <label
                 htmlFor="file-upload"
                 className={cn(
@@ -357,20 +360,15 @@ export default function ChatApp({
                   accept=".pdf,.png,.jpg,.jpeg,.gif"
                 />
               </label>
-
-              {secondaryModel && (
-                <Button variant="outline" onClick={removeSecondaryModel} className="gap-2">
-                  <X className="h-4 w-4" />
-                  Remove Model B
-                </Button>
-              )}
             </div>
             <div className="flex gap-2">
-              <Button {...buttonProps.submit}>Send</Button>
+              <Button type="submit" disabled={status === "streaming"}>
+                Send
+              </Button>
             </div>
           </div>
-        </div>
-      </form>
+        </form>
+      </div>
 
       <ModelSelectionModal
         open={modalOpen}

@@ -62,14 +62,14 @@ export async function POST(req: Request) {
     console.error("[Chat API] Error inserting user message: ", userError || updateError);
   }
 
-  console.log("Model", model);
-  console.log("Model provider", model_provider);
+  console.log("Model", selectedModel.model);
+  console.log("Model provider", selectedModel.provider);
   // Select the appropriate provider based on model_provider
   const modelOpts = {
-    openai: openai(model as string),
-    anthropic: anthropic(model as string),
-    google: google(model as string),
-    xai: xai(model as string),
+    openai: openai(selectedModel.model),
+    anthropic: anthropic(selectedModel.model),
+    google: google(selectedModel.model),
+    xai: xai(selectedModel.model),
   };
   const provider = modelOpts[model_provider as keyof typeof modelOpts];
 
@@ -134,83 +134,108 @@ export async function POST(req: Request) {
   const currentMessage = {
     role: "user",
     content: messageContent,
-    ...(experimental_attachments.length > 0 && { experimental_attachments }),
+    experimental_attachments,
   };
 
   // Parse message history and add current message
   const messages = messageHistory ? [...JSON.parse(messageHistory), currentMessage] : [currentMessage];
 
-  const result = streamText({
-    model: provider as LanguageModelV1,
-    system: chat_context as string,
-    messages,
-    tools: {
-      generateImage: tool({
-        description: "Generate an image",
-        parameters: z.object({
-          prompt: z.string().describe("The prompt to generate the image from"),
-        }),
-        execute: async ({ prompt }) => {
-          const { image } = await experimental_generateImage({
-            model: openai.image("dall-e-3"),
-            prompt,
-          });
-
-          console.log("image", image);
-
-          // Decode base64 to Buffer before uploading
-          const imageBuffer = Buffer.from(image.base64, "base64");
-
-          // Add content-type and more structured path
-          const imagePath = `${userId}/generated/${new Date().getFullYear()}/${crypto.randomUUID()}.png`;
-          const { data: uploadData, error: createError } = await supabase.storage
-            .from("ChatBot_Images_Generated")
-            .upload(imagePath, imageBuffer, {
-              contentType: "image/png",
-              cacheControl: "3600",
+  try {
+    const result = streamText({
+      model: provider as LanguageModelV1,
+      system: chat_context as string,
+      messages,
+      tools: {
+        generateImage: tool({
+          description: "Generate an image",
+          parameters: z.object({
+            prompt: z.string().describe("The prompt to generate the image from"),
+          }),
+          execute: async ({ prompt }) => {
+            const { image } = await experimental_generateImage({
+              model: openai.image("dall-e-3"),
+              prompt,
             });
 
-          if (createError) {
-            console.error("Error uploading image to storage", createError);
-            throw new Error("Failed to upload generated image");
-          }
+            console.log("image", image);
 
-          console.log("uploadData", uploadData);
+            // Decode base64 to Buffer before uploading
+            const imageBuffer = Buffer.from(image.base64, "base64");
 
-          // Get public URL for the uploaded image
-          const {
-            data: { publicUrl },
-          } = supabase.storage.from("ChatBot_Images_Generated").getPublicUrl(imagePath);
+            // Add content-type and more structured path
+            const imagePath = `${userId}/generated/${new Date().getFullYear()}/${crypto.randomUUID()}.png`;
+            const { data: uploadData, error: createError } = await supabase.storage
+              .from("ChatBot_Images_Generated")
+              .upload(imagePath, imageBuffer, {
+                contentType: "image/png",
+                cacheControl: "3600",
+              });
 
-          // After successfully uploading the image, store the message with image metadata
-          const { error: messageError } = await supabase.from("ChatBot_Messages").insert([
-            {
-              id: crypto.randomUUID(),
-              chat_session_id: session_id,
-              content: "", // Empty content since this is an image message
-              user_id: userId,
-              is_user: false,
-              created_at: new Date().toISOString(),
-              metadata: {
-                type: "image",
-                imageUrl: publicUrl,
-                prompt: prompt,
-                storagePath: imagePath,
+            if (createError) {
+              console.error("Error uploading image to storage", createError);
+              throw new Error("Failed to upload generated image");
+            }
+
+            console.log("uploadData", uploadData);
+
+            // Get public URL for the uploaded image
+            const {
+              data: { publicUrl },
+            } = supabase.storage.from("ChatBot_Images_Generated").getPublicUrl(imagePath);
+
+            // After successfully uploading the image, store the message with image metadata
+            const { error: messageError } = await supabase.from("ChatBot_Messages").insert([
+              {
+                id: crypto.randomUUID(),
+                chat_session_id: session_id,
+                content: "", // Empty content since this is an image message
+                user_id: userId,
+                is_user: false,
+                created_at: new Date().toISOString(),
+                metadata: {
+                  type: "image",
+                  imageUrl: publicUrl,
+                  prompt: prompt,
+                  storagePath: imagePath,
+                },
               },
-            },
-          ]);
+            ]);
 
-          if (messageError) {
-            console.error("Error storing image message", messageError);
-            throw new Error("Failed to store image message");
-          }
+            if (messageError) {
+              console.error("Error storing image message", messageError);
+              throw new Error("Failed to store image message");
+            }
 
-          // Return the public URL instead of base64
-          return { image: publicUrl, prompt };
-        },
-      }),
-    },
-  });
+            // Return the public URL instead of base64
+            return { image: publicUrl, prompt };
+          },
+        }),
+      },
+    });
 
-  return result.toDataStreamResponse();
+    // console.log("Result", result);
+
+    return result.toDataStreamResponse({
+      getErrorMessage: errorHandler,
+    });
+  } catch (error) {
+    console.error("[Chat API] Error streaming response:", error);
+    return NextResponse.json({ error: "Failed to generate response" }, { status: 500 });
+  }
+}
+
+export function errorHandler(error: unknown) {
+  if (error == null) {
+    return "[Chat API] unknown error";
+  }
+
+  if (typeof error === "string") {
+    return error;
+  }
+
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return JSON.stringify(error);
 }
