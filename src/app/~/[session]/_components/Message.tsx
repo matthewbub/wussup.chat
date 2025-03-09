@@ -3,9 +3,11 @@ import MessageDropdown from "./MessageDropdown";
 import { cn } from "@/lib/utils";
 import { Message as MessageType } from "@/types/chat";
 
-export type MessageProps = Omit<MessageType, "chat_session_id" | "user_id" | "metadata">;
+export type MessageProps = Omit<MessageType, "chat_session_id" | "user_id" | "metadata"> & {
+  isLoading?: boolean;
+};
 
-export function Message({ created_at, content, id, is_user, model }: MessageProps) {
+export function Message({ created_at, content, id, is_user, model, isLoading }: MessageProps) {
   return (
     <div className={cn("flex", is_user ? "justify-end" : "justify-start")}>
       <div className="flex flex-col relative group">
@@ -17,7 +19,8 @@ export function Message({ created_at, content, id, is_user, model }: MessageProp
           <div
             className={cn(
               "max-w-xs md:max-w-md lg:max-w-lg xl:max-w-xl rounded-lg p-2 pr-10",
-              is_user ? "bg-blue-500 dark:bg-blue-800 text-white dark:text-white" : "text-black dark:text-gray-200"
+              is_user ? "bg-blue-500 dark:bg-blue-800 text-white dark:text-white" : "text-black dark:text-gray-200",
+              isLoading && "animate-pulse"
             )}
           >
             <MarkdownComponent>{content}</MarkdownComponent>
