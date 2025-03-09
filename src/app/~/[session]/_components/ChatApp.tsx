@@ -141,6 +141,22 @@ export default function ChatApp({
   const handleSubmit = async (ev: React.FormEvent<HTMLFormElement>) => {
     ev.preventDefault();
     const input = textareaRef.current?.value || "";
+
+    // Clear input and attachments immediately
+    if (textareaRef.current) {
+      textareaRef.current.value = "";
+    }
+    setLocalInput("");
+    setAttachments([]);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+
+    // Add user message immediately
+    const userMessage = createUserMessage(input);
+    addMessage(userMessage);
+
+    // Start processing
     setStatus("streaming");
 
     try {
@@ -149,15 +165,6 @@ export default function ChatApp({
         const titleData = await generateChatTitle(sessionId, input);
         await updateSessionName(titleData.title);
       }
-
-      // Add user message immediately
-      const userMessage = createUserMessage(input);
-      addMessage(userMessage);
-
-      // Generate IDs for the response group
-      const responseGroupId = crypto.randomUUID();
-      const primaryMessageId = crypto.randomUUID();
-      const secondaryMessageId = secondaryModel ? crypto.randomUUID() : null;
 
       // Store user message
       await storeChatMessages([
@@ -171,6 +178,11 @@ export default function ChatApp({
           completion_tokens: 0,
         }),
       ]);
+
+      // Generate IDs for the response group
+      const responseGroupId = crypto.randomUUID();
+      const primaryMessageId = crypto.randomUUID();
+      const secondaryMessageId = secondaryModel ? crypto.randomUUID() : null;
 
       // Create and add primary message
       const primaryMessage = createAIMessage({
