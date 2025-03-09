@@ -387,24 +387,27 @@ export default function ChatApp({
               return acc;
             }
 
+            // Only pass isLoading=true to the last AI message when streaming
+            const isLastAIMessage = index === messages.length - 1 && !message.is_user;
+
             if (message.responseType === "A") {
               const nextMessage = messages[index + 1];
               if (nextMessage?.responseType === "B") {
                 acc.push(
-                  <div key={message.id} className="grid grid-cols-2 gap-4">
-                    <div className="col-span-1 p-2">
+                  <div key={message.id} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="col-span-1 px-2">
                       <MessageComponent
                         {...message}
-                        isLoading={status === "streaming"}
+                        isLoading={status === "streaming" && isLastAIMessage}
                         isPreferred={message.isPreferred}
                         isSelectable={true}
                         onSelect={() => handleMessageSelect(message.id, message.responseGroupId!)}
                       />
                     </div>
-                    <div className="col-span-1 p-2">
+                    <div className="col-span-1 px-2">
                       <MessageComponent
                         {...nextMessage}
-                        isLoading={status === "streaming"}
+                        isLoading={status === "streaming" && index === messages.length - 2}
                         isPreferred={nextMessage.isPreferred}
                         isSelectable={true}
                         onSelect={() => handleMessageSelect(nextMessage.id, nextMessage.responseGroupId!)}
@@ -421,12 +424,7 @@ export default function ChatApp({
             }
 
             acc.push(
-              <MessageComponent
-                key={message.id}
-                {...message}
-                isLoading={status === "streaming"}
-                // responseType={message.responseType}
-              />
+              <MessageComponent key={message.id} {...message} isLoading={status === "streaming" && isLastAIMessage} />
             );
             return acc;
           }, [])}

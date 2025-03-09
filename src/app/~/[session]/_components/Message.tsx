@@ -3,6 +3,7 @@ import MessageDropdown from "./MessageDropdown";
 import { cn } from "@/lib/utils";
 import { Message as MessageType } from "@/types/chat";
 import { Clock, Award, Bot } from "lucide-react";
+import { useRef, useEffect } from "react";
 
 export type MessageProps = Omit<MessageType, "chat_session_id" | "user_id" | "metadata"> & {
   isLoading?: boolean;
@@ -27,17 +28,26 @@ export function Message({
   // Only show selection UI for A/B messages
   const isABMessage = responseType === "A" || responseType === "B";
   const showSelectionUI = isABMessage && !is_user;
+  const messageRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (showSelectionUI && isPreferred && messageRef.current) {
+      // Add consistent spacing for preferred messages
+      messageRef.current.style.transform = "scale(1.05)";
+      messageRef.current.style.margin = "1.5rem 0";
+    }
+  }, [showSelectionUI, isPreferred]);
 
   return (
     <div className={cn("flex", is_user ? "justify-end" : "justify-start")}>
-      <div className="flex flex-col">
+      <div className="flex flex-col" ref={messageRef}>
         <div
           className={cn(
-            "flex flex-col relative group",
+            "flex flex-col relative group transition-all duration-200",
             showSelectionUI && isSelectable && "cursor-pointer hover:opacity-90",
             showSelectionUI &&
               isPreferred &&
-              "scale-105 border border-purple-500/30 bg-zinc-900 p-6 text-white shadow-[0_0_15px_rgba(168,85,247,0.35)] rounded-lg"
+              "border border-purple-500/30 bg-zinc-900 p-6 text-white shadow-[0_0_15px_rgba(168,85,247,0.35)] rounded-lg"
           )}
           onClick={showSelectionUI && isSelectable ? onSelect : undefined}
         >
@@ -115,19 +125,6 @@ export function Message({
             showSelectionUI={showSelectionUI}
             isPreferred={isPreferred}
           />
-          // <div
-          //   className={cn(
-          //     "text-xs text-gray-600 dark:text-gray-400",
-          //     is_user ? "text-right" : "text-left",
-          //     showSelectionUI && isPreferred && "mt-8"
-          //   )}
-          // >
-          //   <p className="text-xs text-gray-600 dark:text-gray-400 pt-2 pl-1">
-          //     {new Date(created_at).toLocaleString()}
-          //     {model && ` - ${model}`}
-          //     {showSelectionUI && isPreferred && " (Selected for future context)"}
-          //   </p>
-          // </div>
         )}
       </div>
     </div>
@@ -148,8 +145,7 @@ function MessageFooter({ created_at, model, is_user, showSelectionUI, isPreferre
       className={cn(
         "flex items-center gap-2 pt-1.5 pl-1 text-xs",
         is_user ? "justify-end" : "justify-start",
-        "text-gray-500 dark:text-gray-400",
-        showSelectionUI && isPreferred && "mt-8"
+        "text-gray-500 dark:text-gray-400"
       )}
     >
       <div className="flex items-center gap-1">
