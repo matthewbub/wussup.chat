@@ -379,7 +379,7 @@ export default function ChatApp({
 
   return (
     <div className="h-full flex flex-col gap-4">
-      <div className="space-y-4 mb-6 flex-1 overflow-y-scroll p-4">
+      <div className="space-y-8 mb-6 flex-1 overflow-y-scroll p-4">
         {messages &&
           messages.reduce((acc: React.JSX.Element[], message, index) => {
             if (message.is_user) {
@@ -391,8 +391,8 @@ export default function ChatApp({
               const nextMessage = messages[index + 1];
               if (nextMessage?.responseType === "B") {
                 acc.push(
-                  <div key={message.id} className="flex gap-4">
-                    <div className="flex-1 border-r pr-4">
+                  <div key={message.id} className="grid grid-cols-2 gap-4">
+                    <div className="col-span-1 p-2">
                       <MessageComponent
                         {...message}
                         isLoading={status === "streaming"}
@@ -401,7 +401,7 @@ export default function ChatApp({
                         onSelect={() => handleMessageSelect(message.id, message.responseGroupId!)}
                       />
                     </div>
-                    <div className="flex-1 pl-4">
+                    <div className="col-span-1 p-2">
                       <MessageComponent
                         {...nextMessage}
                         isLoading={status === "streaming"}
