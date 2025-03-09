@@ -19,6 +19,7 @@ export type MessageUpdate = {
   parent_message_id?: string;
   prompt_tokens?: number;
   completion_tokens?: number;
+  is_preferred?: boolean;
 };
 
 export type StreamingCallbacks = {

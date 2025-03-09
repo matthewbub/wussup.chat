@@ -52,9 +52,10 @@ export const createUserMessage = (content: string) => ({
 export const createAIMessage = (params: {
   id: string;
   model: string;
-  responseType: "A" | "B";
-  responseGroupId: string;
-  parentMessageId: string;
+  responseType?: "A" | "B";
+  responseGroupId?: string;
+  parentMessageId?: string;
+  isPreferred?: boolean;
 }) => ({
   id: params.id,
   content: "",
@@ -66,6 +67,7 @@ export const createAIMessage = (params: {
   parentMessageId: params.parentMessageId,
   prompt_tokens: 0,
   completion_tokens: 0,
+  isPreferred: params.isPreferred ?? (params.responseType === "A" ? true : undefined),
 });
 
 /**
@@ -83,6 +85,7 @@ export const createMessageUpdate = (params: {
   parent_message_id?: string;
   prompt_tokens?: number;
   completion_tokens?: number;
+  is_preferred?: boolean;
 }) => ({
   id: params.id,
   content: params.content,
@@ -95,6 +98,7 @@ export const createMessageUpdate = (params: {
   parent_message_id: params.parent_message_id,
   prompt_tokens: params.prompt_tokens || 0,
   completion_tokens: params.completion_tokens || 0,
+  is_preferred: params.is_preferred,
 });
 
 /**
@@ -145,9 +149,9 @@ export const createChatFormData = (params: {
   modelProvider: string;
   chatContext: string;
   messageHistory: any[];
-  responseType: string;
-  responseGroupId: string;
-  parentMessageId: string;
+  responseType?: string;
+  responseGroupId?: string;
+  parentMessageId?: string;
   attachments?: Array<{ file: File }>;
 }) => {
   const formData = new FormData();
@@ -157,9 +161,10 @@ export const createChatFormData = (params: {
   formData.append("model_provider", params.modelProvider);
   formData.append("chat_context", params.chatContext);
   formData.append("messageHistory", JSON.stringify(params.messageHistory));
-  formData.append("response_type", params.responseType);
-  formData.append("response_group_id", params.responseGroupId);
-  formData.append("parent_message_id", params.parentMessageId);
+
+  if (params.responseType) formData.append("response_type", params.responseType);
+  if (params.responseGroupId) formData.append("response_group_id", params.responseGroupId);
+  if (params.parentMessageId) formData.append("parent_message_id", params.parentMessageId);
 
   if (params.attachments) {
     params.attachments.forEach((attachment) => {
@@ -195,4 +200,21 @@ export const generateChatTitle = async (sessionId: string, content: string) => {
     }),
   });
   return response.json();
+};
+
+/**
+ * updates the preferred message in a response group
+ */
+export const updatePreferredMessage = async (params: {
+  sessionId: string;
+  responseGroupId: string;
+  messageId: string;
+}) => {
+  return fetch("/api/v1/chat-store/preferred", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(params),
+  });
 };

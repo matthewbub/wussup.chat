@@ -21,6 +21,7 @@ import {
   createUserMessage,
   createAIMessage,
   createMessageUpdate,
+  updatePreferredMessage,
 } from "../_utils/chat";
 import { ChatStatus, Attachment } from "../_types/chat";
 
@@ -42,7 +43,12 @@ export default function ChatApp({
   const [secondaryModel, setSecondaryModel] = useState<AiModel | null>(null);
 
   useEffect(() => {
-    setMessages(initialMessages);
+    // Set initial preferred state for A/B messages
+    const messagesWithPreferred = initialMessages.map((message) => ({
+      ...message,
+      isPreferred: message.responseType === "A" ? true : message.isPreferred,
+    }));
+    setMessages(messagesWithPreferred);
   }, [initialMessages, setMessages]);
 
   useEffect(() => {
@@ -102,6 +108,36 @@ export default function ChatApp({
     setSecondaryModel(null);
   };
 
+  const handleMessageSelect = async (messageId: string, responseGroupId: string) => {
+    try {
+      await updatePreferredMessage({
+        sessionId,
+        responseGroupId,
+        messageId,
+      });
+
+      // Update local state
+      setMessages((prev) => {
+        const newMessages = [...prev];
+        const groupMessages = newMessages.filter((m) => m.responseGroupId === responseGroupId);
+
+        groupMessages.forEach((message) => {
+          const index = newMessages.findIndex((m) => m.id === message.id);
+          if (index !== -1) {
+            newMessages[index] = {
+              ...message,
+              isPreferred: message.id === messageId,
+            };
+          }
+        });
+
+        return newMessages;
+      });
+    } catch (error) {
+      console.error("Error updating preferred message:", error);
+    }
+  };
+
   const handleSubmit = async (ev: React.FormEvent<HTMLFormElement>) => {
     ev.preventDefault();
     const input = textareaRef.current?.value || "";
@@ -140,9 +176,14 @@ export default function ChatApp({
       const primaryMessage = createAIMessage({
         id: primaryMessageId,
         model: primaryModel?.id || AVAILABLE_MODELS[0].id,
-        responseType: "A",
-        responseGroupId,
-        parentMessageId: userMessage.id,
+        ...(secondaryModel
+          ? {
+              responseType: "A",
+              responseGroupId,
+              parentMessageId: userMessage.id,
+              isPreferred: true,
+            }
+          : {}),
       });
       addMessage(primaryMessage);
 
@@ -154,9 +195,13 @@ export default function ChatApp({
         modelProvider: primaryModel?.provider || AVAILABLE_MODELS[0].provider,
         chatContext: user?.chat_context || "You are a helpful assistant.",
         messageHistory: messages,
-        responseType: "A",
-        responseGroupId,
-        parentMessageId: userMessage.id,
+        ...(secondaryModel
+          ? {
+              responseType: "A",
+              responseGroupId,
+              parentMessageId: userMessage.id,
+            }
+          : {}),
         attachments,
       });
 
@@ -217,6 +262,7 @@ export default function ChatApp({
           responseType: "B",
           responseGroupId,
           parentMessageId: userMessage.id,
+          isPreferred: false,
         });
         addMessage(secondaryMessage);
 
@@ -259,47 +305,50 @@ export default function ChatApp({
       }
 
       // Store final messages
-      await storeChatMessages([
-        createMessageUpdate({
-          id: primaryMessage.id,
-          content: primaryMessage.content,
-          is_user: primaryMessage.is_user,
-          session_id: sessionId,
-          created_at: primaryMessage.created_at,
-          model: primaryMessage.model,
-          response_type: primaryMessage.responseType,
-          response_group_id: primaryMessage.responseGroupId,
-          parent_message_id: primaryMessage.parentMessageId,
-          prompt_tokens: primaryMessage.prompt_tokens,
-          completion_tokens: primaryMessage.completion_tokens,
-        }),
-        ...(secondaryMessage
-          ? [
-              createMessageUpdate({
-                id: secondaryMessage.id,
-                content: secondaryMessage.content,
-                is_user: secondaryMessage.is_user,
-                session_id: sessionId,
-                created_at: secondaryMessage.created_at,
-                model: secondaryMessage.model,
-                response_type: secondaryMessage.responseType,
-                response_group_id: secondaryMessage.responseGroupId,
-                parent_message_id: secondaryMessage.parentMessageId,
-                prompt_tokens: secondaryMessage.prompt_tokens || 0,
-                completion_tokens: secondaryMessage.completion_tokens || 0,
-              }),
-            ]
-          : []),
-        createMessageUpdate({
-          id: userMessage.id,
-          content: userMessage.content,
-          is_user: userMessage.is_user,
-          session_id: sessionId,
-          created_at: userMessage.created_at,
-          prompt_tokens: userMessage.prompt_tokens,
-          completion_tokens: 0,
-        }),
-      ]);
+      await storeChatMessages(
+        [
+          createMessageUpdate({
+            id: primaryMessage.id,
+            content: primaryMessage.content,
+            is_user: primaryMessage.is_user,
+            session_id: sessionId,
+            created_at: primaryMessage.created_at,
+            model: primaryMessage.model,
+            ...(secondaryModel
+              ? {
+                  response_type: primaryMessage.responseType,
+                  response_group_id: primaryMessage.responseGroupId,
+                  parent_message_id: primaryMessage.parentMessageId,
+                }
+              : {}),
+            prompt_tokens: primaryMessage.prompt_tokens,
+            completion_tokens: primaryMessage.completion_tokens,
+          }),
+          secondaryMessage &&
+            createMessageUpdate({
+              id: secondaryMessage.id,
+              content: secondaryMessage.content,
+              is_user: secondaryMessage.is_user,
+              session_id: sessionId,
+              created_at: secondaryMessage.created_at,
+              model: secondaryMessage.model,
+              response_type: secondaryMessage.responseType,
+              response_group_id: secondaryMessage.responseGroupId,
+              parent_message_id: secondaryMessage.parentMessageId,
+              prompt_tokens: secondaryMessage.prompt_tokens || 0,
+              completion_tokens: secondaryMessage.completion_tokens || 0,
+            }),
+          createMessageUpdate({
+            id: userMessage.id,
+            content: userMessage.content,
+            is_user: userMessage.is_user,
+            session_id: sessionId,
+            created_at: userMessage.created_at,
+            prompt_tokens: userMessage.prompt_tokens,
+            completion_tokens: 0,
+          }),
+        ].filter(Boolean)
+      );
 
       setStatus("idle");
       if (textareaRef.current) {
@@ -332,10 +381,22 @@ export default function ChatApp({
                 acc.push(
                   <div key={message.id} className="flex gap-4">
                     <div className="flex-1 border-r pr-4">
-                      <MessageComponent {...message} isLoading={status === "streaming"} />
+                      <MessageComponent
+                        {...message}
+                        isLoading={status === "streaming"}
+                        isPreferred={message.isPreferred}
+                        isSelectable={true}
+                        onSelect={() => handleMessageSelect(message.id, message.responseGroupId!)}
+                      />
                     </div>
                     <div className="flex-1 pl-4">
-                      <MessageComponent {...nextMessage} isLoading={status === "streaming"} />
+                      <MessageComponent
+                        {...nextMessage}
+                        isLoading={status === "streaming"}
+                        isPreferred={nextMessage.isPreferred}
+                        isSelectable={true}
+                        onSelect={() => handleMessageSelect(nextMessage.id, nextMessage.responseGroupId!)}
+                      />
                     </div>
                   </div>
                 );
@@ -347,7 +408,14 @@ export default function ChatApp({
               return acc;
             }
 
-            acc.push(<MessageComponent key={message.id} {...message} isLoading={status === "streaming"} />);
+            acc.push(
+              <MessageComponent
+                key={message.id}
+                {...message}
+                isLoading={status === "streaming"}
+                // responseType={message.responseType}
+              />
+            );
             return acc;
           }, [])}
 

@@ -5,12 +5,43 @@ import { Message as MessageType } from "@/types/chat";
 
 export type MessageProps = Omit<MessageType, "chat_session_id" | "user_id" | "metadata"> & {
   isLoading?: boolean;
+  isPreferred?: boolean;
+  onSelect?: () => void;
+  isSelectable?: boolean;
+  responseType?: string;
 };
 
-export function Message({ created_at, content, id, is_user, model, isLoading }: MessageProps) {
+export function Message({
+  created_at,
+  content,
+  id,
+  is_user,
+  model,
+  isLoading,
+  isPreferred,
+  onSelect,
+  isSelectable,
+  responseType,
+}: MessageProps) {
+  // Only show selection UI for A/B messages
+  const isABMessage = responseType === "A" || responseType === "B";
+  const showSelectionUI = isABMessage && !is_user;
+
+  console.log({
+    isABMessage,
+    responseType,
+    content,
+  });
   return (
     <div className={cn("flex", is_user ? "justify-end" : "justify-start")}>
-      <div className="flex flex-col relative group">
+      <div
+        className={cn(
+          "flex flex-col relative group",
+          showSelectionUI && isSelectable && "cursor-pointer hover:opacity-90",
+          showSelectionUI && isPreferred && isABMessage && "ring-2 ring-purple-500 ring-opacity-50 rounded-lg"
+        )}
+        onClick={isABMessage && showSelectionUI && isSelectable ? onSelect : undefined}
+      >
         <div className="absolute top-2 right-2">
           <MessageDropdown message={{ content, id }} />
         </div>
@@ -81,6 +112,7 @@ export function Message({ created_at, content, id, is_user, model, isLoading }: 
             <p className="text-xs text-gray-600 dark:text-gray-400 pt-2 pl-1">
               {new Date(created_at).toLocaleString()}
               {model && ` - ${model}`}
+              {showSelectionUI && isPreferred && isABMessage && " (Selected)"}
             </p>
           </div>
         )}

@@ -14,14 +14,10 @@ export const maxDuration = 30;
 export async function POST(req: Request) {
   const formData = await req.formData();
   const content = formData.get("content") as string;
-  const session_id = formData.get("session_id") as string;
   const model = formData.get("model") as string;
   const model_provider = formData.get("model_provider") as string;
   const chat_context = formData.get("chat_context") as string;
   const messageHistory = formData.get("messageHistory") as string;
-  const response_type = formData.get("response_type") as "A" | "B";
-  const response_group_id = formData.get("response_group_id") as string;
-  const parent_message_id = formData.get("parent_message_id") as string;
   const attachments = formData.getAll("attachments") as File[];
 
   const supabase = await createClient();
@@ -87,6 +83,19 @@ export async function POST(req: Request) {
         .join("\n");
   }
 
+  // Parse message history and filter out non-preferred A/B messages
+  const parsedHistory = messageHistory ? JSON.parse(messageHistory) : [];
+  const filteredHistory = parsedHistory.filter((msg: any) => {
+    // Keep user messages
+    if (msg.is_user) return true;
+    // Keep messages without response type (regular messages)
+    if (!msg.responseType) return true;
+    // Keep preferred A/B messages
+    if (msg.responseType && msg.isPreferred) return true;
+    // Filter out non-preferred A/B messages
+    return false;
+  });
+
   // Prepare the messages array with the current message and attachments
   const currentMessage = {
     role: "user" as const,
@@ -94,16 +103,14 @@ export async function POST(req: Request) {
     experimental_attachments,
   };
 
-  // Parse message history and add current message
-  const messages = messageHistory
-    ? [
-        ...JSON.parse(messageHistory).map((msg: { is_user: boolean; content: string }) => ({
-          role: msg.is_user ? ("user" as const) : ("assistant" as const),
-          content: msg.content,
-        })),
-        currentMessage,
-      ]
-    : [currentMessage];
+  // Create final messages array
+  const messages = [
+    ...filteredHistory.map((msg: { is_user: boolean; content: string }) => ({
+      role: msg.is_user ? ("user" as const) : ("assistant" as const),
+      content: msg.content,
+    })),
+    currentMessage,
+  ];
 
   try {
     // Select the appropriate provider based on model_provider
@@ -153,31 +160,8 @@ export async function POST(req: Request) {
               data: { publicUrl },
             } = supabase.storage.from("ChatBot_Images_Generated").getPublicUrl(imagePath);
 
-            const { error: messageError } = await supabase.from("ChatBot_Messages").insert([
-              {
-                id: crypto.randomUUID(),
-                chat_session_id: session_id,
-                content: "",
-                user_id: userId,
-                is_user: false,
-                created_at: new Date().toISOString(),
-                response_type,
-                response_group_id,
-                parent_message_id,
-                metadata: {
-                  type: "image",
-                  imageUrl: publicUrl,
-                  prompt: prompt,
-                  storagePath: imagePath,
-                },
-              },
-            ]);
-
-            if (messageError) {
-              console.error("Error storing image message", messageError);
-              throw new Error("Failed to store image message");
-            }
-
+            // Return the image URL and prompt without storing the message
+            // The message will be stored by the client
             return { image: publicUrl, prompt };
           },
         }),

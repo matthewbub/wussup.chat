@@ -17,6 +17,7 @@ export interface Message {
     prompt: string;
     storagePath: string;
   };
+  isPreferred?: boolean;
 }
 
 export interface ChatSession {

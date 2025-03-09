@@ -861,4 +861,6 @@ export const geminiModels: AiModel[] = [
   },
 ];
 
-export const AVAILABLE_MODELS: AiModel[] = [...openAiModels, ...anthropicModels, ...xaiModels, ...geminiModels];
+export const AVAILABLE_MODELS: AiModel[] = [...openAiModels, ...anthropicModels, ...xaiModels, ...geminiModels].filter(
+  (model) => model.forchatuse
+);
