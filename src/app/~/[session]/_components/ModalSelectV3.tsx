@@ -25,13 +25,25 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import useDebounce from "@/hooks/use-debounce";
-import { AVAILABLE_MODELS, type AiModel, providers, type InputType } from "@/constants/models";
+import { AVAILABLE_MODELS, type AiModel, providers } from "@/constants/models";
 import { ModelRequestForm } from "./ModalRequestForm";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/Tooltip";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { useForm, Controller } from "react-hook-form";
+
+interface ModelSelectionFormData {
+  searchQuery: string;
+  activeProvider: string;
+  showFreeOnly: boolean;
+  showImageCapable: boolean;
+  showReasoningOnly: boolean;
+  showStructuredOnly: boolean;
+  showToolsOnly: boolean;
+  sortBy: string;
+}
 
 interface ModelSelectionModalProps {
   open: boolean;
@@ -54,52 +66,58 @@ export function ModelSelectionModal({
   onRemoveSecondaryModel,
   disabled,
 }: ModelSelectionModalProps) {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [activeProvider, setActiveProvider] = useState<string>("all");
-  const [showFreeOnly, setShowFreeOnly] = useState(false);
-  const [showImageCapable, setShowImageCapable] = useState(false);
-  const [showReasoningOnly, setShowReasoningOnly] = useState(false);
-  const [showStructuredOnly, setShowStructuredOnly] = useState(false);
-  const [showToolsOnly, setShowToolsOnly] = useState(false);
-  const [sortBy, setSortBy] = useState<string>("default");
+  const { register, watch, setValue, control } = useForm<ModelSelectionFormData>({
+    defaultValues: {
+      searchQuery: "",
+      activeProvider: "all",
+      showFreeOnly: false,
+      showImageCapable: false,
+      showReasoningOnly: false,
+      showStructuredOnly: false,
+      showToolsOnly: false,
+      sortBy: "default",
+    },
+  });
+
   const [showFilters, setShowFilters] = useState(false);
   const [selectionMode, setSelectionMode] = useState<"primary" | "secondary">("primary");
-
-  const debouncedQuery = useDebounce(searchQuery, 300);
-  const [filteredModels, setFilteredModels] = useState<AiModel[]>(AVAILABLE_MODELS);
   const [showRequestForm, setShowRequestForm] = useState(false);
+  const [filteredModels, setFilteredModels] = useState<AiModel[]>(AVAILABLE_MODELS);
+
+  const formValues = watch();
+  const debouncedQuery = useDebounce(formValues.searchQuery, 300);
 
   // Filter models based on all criteria
   useEffect(() => {
     let models = AVAILABLE_MODELS;
 
     // Filter by provider if not "all"
-    if (activeProvider !== "all") {
-      models = models.filter((model) => model.provider === activeProvider);
+    if (formValues.activeProvider !== "all") {
+      models = models.filter((model) => model.provider === formValues.activeProvider);
     }
 
     // Filter by free only
-    if (showFreeOnly) {
+    if (formValues.showFreeOnly) {
       models = models.filter((model) => model.free);
     }
 
     // Filter by image capability
-    if (showImageCapable) {
+    if (formValues.showImageCapable) {
       models = models.filter((model) => model.inputs?.includes("image"));
     }
 
     // Filter by reasoning capability
-    if (showReasoningOnly) {
+    if (formValues.showReasoningOnly) {
       models = models.filter((model) => model.reasoning);
     }
 
     // Filter by structured output capability
-    if (showStructuredOnly) {
+    if (formValues.showStructuredOnly) {
       models = models.filter((model) => model.meta?.capabilities?.structured_outputs);
     }
 
     // Filter by tools capability
-    if (showToolsOnly) {
+    if (formValues.showToolsOnly) {
       models = models.filter((model) => model.meta?.capabilities?.native_tool_use);
     }
 
@@ -116,13 +134,13 @@ export function ModelSelectionModal({
     }
 
     // Sort models
-    if (sortBy === "token_limit") {
+    if (formValues.sortBy === "token_limit") {
       models = [...models].sort((a, b) => {
         const aLimit = a.meta?.token_limits?.input || 0;
         const bLimit = b.meta?.token_limits?.input || 0;
         return bLimit - aLimit;
       });
-    } else if (sortBy === "newest") {
+    } else if (formValues.sortBy === "newest") {
       models = [...models].sort((a, b) => {
         const aDate = a.meta?.latest_update || "";
         const bDate = b.meta?.latest_update || "";
@@ -131,16 +149,7 @@ export function ModelSelectionModal({
     }
 
     setFilteredModels(models);
-  }, [
-    debouncedQuery,
-    activeProvider,
-    showFreeOnly,
-    showImageCapable,
-    showReasoningOnly,
-    showStructuredOnly,
-    showToolsOnly,
-    sortBy,
-  ]);
+  }, [debouncedQuery, formValues]);
 
   // Get provider display name
   const getProviderName = (provider: string) => {
@@ -159,7 +168,7 @@ export function ModelSelectionModal({
   };
 
   // Get input type icon
-  const getInputTypeIcon = (type: InputType) => {
+  const getInputTypeIcon = (type: string) => {
     switch (type) {
       case "text":
         return <FileText className="h-6 w-6" />;
@@ -197,24 +206,24 @@ export function ModelSelectionModal({
 
   // Reset all filters
   const resetFilters = () => {
-    setActiveProvider("all");
-    setShowFreeOnly(false);
-    setShowImageCapable(false);
-    setShowReasoningOnly(false);
-    setShowStructuredOnly(false);
-    setShowToolsOnly(false);
-    setSortBy("default");
+    setValue("activeProvider", "all");
+    setValue("showFreeOnly", false);
+    setValue("showImageCapable", false);
+    setValue("showReasoningOnly", false);
+    setValue("showStructuredOnly", false);
+    setValue("showToolsOnly", false);
+    setValue("sortBy", "default");
   };
 
   // Count active filters
   const activeFilterCount = [
-    showFreeOnly,
-    showImageCapable,
-    showReasoningOnly,
-    showStructuredOnly,
-    showToolsOnly,
-    activeProvider !== "all",
-    sortBy !== "default",
+    formValues.showFreeOnly,
+    formValues.showImageCapable,
+    formValues.showReasoningOnly,
+    formValues.showStructuredOnly,
+    formValues.showToolsOnly,
+    formValues.activeProvider !== "all",
+    formValues.sortBy !== "default",
   ].filter(Boolean).length;
 
   // Handle model selection
@@ -250,29 +259,30 @@ export function ModelSelectionModal({
           <>
             <div className="relative mb-4">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search models..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9 pr-4"
-              />
+              <Input placeholder="Search models..." {...register("searchQuery")} className="pl-9 pr-4" />
             </div>
 
             <div className="flex items-center justify-between mb-4">
               <div className="flex-1 mr-2">
-                <Select value={activeProvider} onValueChange={setActiveProvider}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="All Providers" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Providers</SelectItem>
-                    {providers.map((provider) => (
-                      <SelectItem key={provider} value={provider}>
-                        {getProviderName(provider)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Controller
+                  name="activeProvider"
+                  control={control}
+                  render={({ field }) => (
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="All Providers" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Providers</SelectItem>
+                        {providers.map((provider) => (
+                          <SelectItem key={provider} value={provider}>
+                            {getProviderName(provider)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
               </div>
 
               <div className="flex items-center gap-2">
@@ -299,46 +309,56 @@ export function ModelSelectionModal({
 
                       <div className="space-y-2">
                         <div className="flex items-center space-x-2">
-                          <Checkbox
-                            id="free-only"
-                            checked={showFreeOnly}
-                            onCheckedChange={(checked) => setShowFreeOnly(checked === true)}
+                          <Controller
+                            name="showFreeOnly"
+                            control={control}
+                            render={({ field }) => (
+                              <Checkbox id="free-only" checked={field.value} onCheckedChange={field.onChange} />
+                            )}
                           />
                           <Label htmlFor="free-only">Free models only</Label>
                         </div>
 
                         <div className="flex items-center space-x-2">
-                          <Checkbox
-                            id="image-capable"
-                            checked={showImageCapable}
-                            onCheckedChange={(checked) => setShowImageCapable(checked === true)}
+                          <Controller
+                            name="showImageCapable"
+                            control={control}
+                            render={({ field }) => (
+                              <Checkbox id="image-capable" checked={field.value} onCheckedChange={field.onChange} />
+                            )}
                           />
                           <Label htmlFor="image-capable">Image input capable</Label>
                         </div>
 
                         <div className="flex items-center space-x-2">
-                          <Checkbox
-                            id="reasoning-only"
-                            checked={showReasoningOnly}
-                            onCheckedChange={(checked) => setShowReasoningOnly(checked === true)}
+                          <Controller
+                            name="showReasoningOnly"
+                            control={control}
+                            render={({ field }) => (
+                              <Checkbox id="reasoning-only" checked={field.value} onCheckedChange={field.onChange} />
+                            )}
                           />
                           <Label htmlFor="reasoning-only">Reasoning capable</Label>
                         </div>
 
                         <div className="flex items-center space-x-2">
-                          <Checkbox
-                            id="structured-only"
-                            checked={showStructuredOnly}
-                            onCheckedChange={(checked) => setShowStructuredOnly(checked === true)}
+                          <Controller
+                            name="showStructuredOnly"
+                            control={control}
+                            render={({ field }) => (
+                              <Checkbox id="structured-only" checked={field.value} onCheckedChange={field.onChange} />
+                            )}
                           />
                           <Label htmlFor="structured-only">Structured outputs</Label>
                         </div>
 
                         <div className="flex items-center space-x-2">
-                          <Checkbox
-                            id="tools-only"
-                            checked={showToolsOnly}
-                            onCheckedChange={(checked) => setShowToolsOnly(checked === true)}
+                          <Controller
+                            name="showToolsOnly"
+                            control={control}
+                            render={({ field }) => (
+                              <Checkbox id="tools-only" checked={field.value} onCheckedChange={field.onChange} />
+                            )}
                           />
                           <Label htmlFor="tools-only">Tool use capable</Label>
                         </div>
@@ -346,16 +366,22 @@ export function ModelSelectionModal({
 
                       <div className="space-y-2">
                         <Label htmlFor="sort-by">Sort by</Label>
-                        <Select value={sortBy} onValueChange={setSortBy}>
-                          <SelectTrigger id="sort-by">
-                            <SelectValue placeholder="Default" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="default">Default</SelectItem>
-                            <SelectItem value="token_limit">Highest token limit</SelectItem>
-                            <SelectItem value="newest">Newest first</SelectItem>
-                          </SelectContent>
-                        </Select>
+                        <Controller
+                          name="sortBy"
+                          control={control}
+                          render={({ field }) => (
+                            <Select onValueChange={field.onChange} value={field.value}>
+                              <SelectTrigger id="sort-by">
+                                <SelectValue placeholder="Default" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="default">Default</SelectItem>
+                                <SelectItem value="token_limit">Highest token limit</SelectItem>
+                                <SelectItem value="newest">Newest first</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          )}
+                        />
                       </div>
                     </div>
                   </PopoverContent>
@@ -399,14 +425,14 @@ export function ModelSelectionModal({
               <AnimatePresence mode="wait">
                 <motion.div
                   key={
-                    activeProvider +
-                    debouncedQuery +
-                    showFreeOnly +
-                    showImageCapable +
-                    showReasoningOnly +
-                    showStructuredOnly +
-                    showToolsOnly +
-                    sortBy +
+                    formValues.activeProvider +
+                    formValues.searchQuery +
+                    formValues.showFreeOnly +
+                    formValues.showImageCapable +
+                    formValues.showReasoningOnly +
+                    formValues.showStructuredOnly +
+                    formValues.showToolsOnly +
+                    formValues.sortBy +
                     selectionMode
                   }
                   variants={container}
