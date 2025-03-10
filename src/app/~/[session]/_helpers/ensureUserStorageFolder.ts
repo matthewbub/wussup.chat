@@ -1,20 +1,40 @@
 import { SupabaseClient } from "@supabase/supabase-js";
 
-// ensures user folder exists in storage bucket, creates if not present
+// ensures user folders exist in storage buckets, creates if not present
 export async function ensureUserStorageFolder(supabase: SupabaseClient<any, "public", any>, userId: string) {
-  const { data: folderList, error: listError } = await supabase.storage.from("ChatBot_Images_Generated").list(userId);
+  // Ensure images folder exists
+  const { data: imageFolderList, error: imageListError } = await supabase.storage
+    .from("ChatBot_Images_Generated")
+    .list(userId);
 
-  if (listError) {
-    throw new Error(`Failed to check user folder: ${listError.message}`);
+  if (imageListError) {
+    throw new Error(`Failed to check user images folder: ${imageListError.message}`);
   }
 
-  if (!folderList || folderList.length === 0) {
+  if (!imageFolderList || imageFolderList.length === 0) {
     const { error: createError } = await supabase.storage
       .from("ChatBot_Images_Generated")
       .upload(`${userId}/.keep`, new Blob([""]));
 
     if (createError) {
-      throw new Error(`Failed to create user folder: ${createError.message}`);
+      throw new Error(`Failed to create user images folder: ${createError.message}`);
+    }
+  }
+
+  // Ensure audio folder exists
+  const { data: audioFolderList, error: audioListError } = await supabase.storage.from("ChatBot_Audio").list(userId);
+
+  if (audioListError) {
+    throw new Error(`Failed to check user audio folder: ${audioListError.message}`);
+  }
+
+  if (!audioFolderList || audioFolderList.length === 0) {
+    const { error: createError } = await supabase.storage
+      .from("ChatBot_Audio")
+      .upload(`${userId}/.keep`, new Blob([""]));
+
+    if (createError) {
+      throw new Error(`Failed to create user audio folder: ${createError.message}`);
     }
   }
 }

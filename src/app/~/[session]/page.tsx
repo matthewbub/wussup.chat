@@ -20,6 +20,11 @@ type DBMessage = {
   response_type: "A" | "B" | null;
   model: string;
   created_at: string;
+  metadata: {
+    audio: {
+      url: string;
+    };
+  };
 };
 
 export default async function Page({ params }: { params: Promise<{ session: string }> }) {
@@ -55,6 +60,7 @@ export default async function Page({ params }: { params: Promise<{ session: stri
       responseType: message.response_type,
       responseGroupId: message.response_group_id,
       parentMessageId: message.parent_message_id,
+      metadata: message.metadata,
     })) || [];
 
   return (

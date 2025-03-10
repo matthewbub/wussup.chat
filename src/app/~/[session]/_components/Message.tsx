@@ -3,9 +3,9 @@ import MessageDropdown from "./MessageDropdown";
 import { cn } from "@/lib/utils";
 import { Message as MessageType } from "@/types/chat";
 import { Clock, Award, Bot } from "lucide-react";
-import { useRef, useEffect } from "react";
+import { useRef } from "react";
 
-export type MessageProps = Omit<MessageType, "chat_session_id" | "user_id" | "metadata"> & {
+export type MessageProps = Omit<MessageType, "chat_session_id" | "user_id"> & {
   isLoading?: boolean;
   isPreferred?: boolean;
   onSelect?: () => void;
@@ -29,14 +29,6 @@ export function Message({
   const isABMessage = responseType === "A" || responseType === "B";
   const showSelectionUI = isABMessage && !is_user;
   const messageRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (showSelectionUI && isPreferred && messageRef.current) {
-      // Add consistent spacing for preferred messages
-      messageRef.current.style.transform = "scale(1.05)";
-      messageRef.current.style.margin = "1.5rem 0";
-    }
-  }, [showSelectionUI, isPreferred]);
 
   return (
     <div className={cn("flex", is_user ? "justify-end" : "justify-start")}>
@@ -66,56 +58,6 @@ export function Message({
               <MarkdownComponent>{content}</MarkdownComponent>
             </div>
           )}
-          {/* 
-        {message.content.length === 0 && !fullMessage?.metadata ? (
-          message.parts.map((ti) =>
-            ti.type === "tool-invocation" ? (
-              ti.toolInvocation.state === "result" ? (
-                <div key={ti.toolInvocation.toolCallId}>
-                  <img
-                    src={ti.toolInvocation.result.image}
-                    alt={ti.toolInvocation.result.prompt}
-                    height={400}
-                    width={400}
-                  />
-                  <p className="text-sm text-gray-500 mt-2">
-                    {ti.toolInvocation.result.prompt}
-                  </p>
-                </div>
-              ) : (
-                <div
-                  key={ti.toolInvocation.toolCallId}
-                  className="animate-pulse"
-                >
-                  Generating image...
-                </div>
-              )
-            ) : null
-          )
-        ) : !fullMessage?.metadata ? (
-          <div>
-            <img
-              src={fullMessage?.metadata?.imageUrl}
-              alt={fullMessage?.metadata?.prompt}
-              height={400}
-              width={400}
-            />
-            <p className="text-sm text-gray-500 mt-2">
-              {fullMessage?.metadata?.prompt}
-            </p>
-          </div>
-        ) : (
-          <div
-            className={`max-w-xs md:max-w-md lg:max-w-lg xl:max-w-xl rounded-lg p-2 pr-10 ${
-              message.role === "user"
-                ? "bg-blue-500 dark:bg-blue-800 text-white dark:text-white"
-                : "bg-gray-200 dark:bg-gray-800 text-black dark:text-gray-200"
-            }`}
-          >
-            <MarkdownComponent>{message?.content}</MarkdownComponent>
-          </div>
-        )}
-          */}
         </div>
         {created_at && (
           <MessageFooter
