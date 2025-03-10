@@ -60,7 +60,14 @@ export default async function Page({ params }: { params: Promise<{ session: stri
       responseType: message.response_type,
       responseGroupId: message.response_group_id,
       parentMessageId: message.parent_message_id,
-      metadata: message.metadata,
+      metadata: message.metadata?.audio
+        ? {
+            type: "audio",
+            imageUrl: "",
+            prompt: "",
+            storagePath: message.metadata.audio.url,
+          }
+        : undefined,
     })) || [];
 
   return (

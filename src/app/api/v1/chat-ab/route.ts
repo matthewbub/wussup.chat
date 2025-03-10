@@ -177,7 +177,7 @@ export async function POST(req: Request) {
   }
 }
 
-export function errorHandler(error: unknown) {
+function errorHandler(error: unknown) {
   if (error == null) {
     return "[Chat API] unknown error";
   }

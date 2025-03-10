@@ -511,54 +511,6 @@ export function ModelSelectionModal({
 
                         <div className="mt-4 space-y-3">
                           <div className="space-y-2">
-                            <div className="flex items-center justify-between">
-                              <h4 className="text-xs font-medium text-muted-foreground">Inputs</h4>
-                              {model.outputs && model.outputs.length > 0 && (
-                                <h4 className="text-xs font-medium text-muted-foreground">Outputs</h4>
-                              )}
-                            </div>
-
-                            <div className="flex justify-between">
-                              <div className="flex flex-wrap items-center gap-2">
-                                {model.inputs &&
-                                  model.inputs.map((input, idx) => (
-                                    <TooltipProvider key={`${model.id}-input-${idx}`}>
-                                      <Tooltip>
-                                        <TooltipTrigger asChild>
-                                          <span className="bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-400 p-1.5 rounded-md flex items-center justify-center">
-                                            {getInputTypeIcon(input)}
-                                          </span>
-                                        </TooltipTrigger>
-                                        <TooltipContent>
-                                          <p className="text-xs capitalize">{input} input</p>
-                                        </TooltipContent>
-                                      </Tooltip>
-                                    </TooltipProvider>
-                                  ))}
-                              </div>
-
-                              {model.outputs && model.outputs.length > 0 && (
-                                <div className="flex flex-wrap items-center gap-2">
-                                  {model.outputs.map((output, idx) => (
-                                    <TooltipProvider key={`${model.id}-output-${idx}`}>
-                                      <Tooltip>
-                                        <TooltipTrigger asChild>
-                                          <span className="bg-purple-50 text-purple-700 dark:bg-purple-950 dark:text-purple-400 p-1.5 rounded-md flex items-center justify-center">
-                                            {getInputTypeIcon(output)}
-                                          </span>
-                                        </TooltipTrigger>
-                                        <TooltipContent>
-                                          <p className="text-xs capitalize">{output} output</p>
-                                        </TooltipContent>
-                                      </Tooltip>
-                                    </TooltipProvider>
-                                  ))}
-                                </div>
-                              )}
-                            </div>
-                          </div>
-
-                          <div className="space-y-2">
                             <h4 className="text-xs font-medium text-muted-foreground">Capabilities</h4>
                             <div className="flex flex-wrap items-center gap-2">
                               {model.reasoning && (

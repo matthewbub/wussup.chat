@@ -1,5 +1,3 @@
-import { Message } from "@/types/chat";
-
 export type ChatStatus = "idle" | "streaming" | "error";
 
 export type Attachment = {

@@ -67,7 +67,7 @@ export function ModelRequestForm({ onCancel }: ModelRequestFormProps) {
       {submitStatus === "success" && (
         <Alert className="bg-green-50 text-green-800 border-green-200 dark:bg-green-950 dark:text-green-300 dark:border-green-800">
           <CheckCircle2 className="h-4 w-4" />
-          <AlertDescription>Thanks for your request! We'll consider it for future updates.</AlertDescription>
+          <AlertDescription>Thanks for your request! We&apos;ll consider it for future updates.</AlertDescription>
         </Alert>
       )}
 

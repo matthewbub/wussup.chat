@@ -437,7 +437,7 @@ export default function ChatApp({
           <Button type="button" onClick={() => setModalOpen(true)} className="gap-2" disabled={status === "streaming"}>
             <Sparkles className="h-4 w-4" />
             {primaryModel
-              ? `Selected: ${primaryModel.id} ${secondaryModel ? "and " + secondaryModel.id : ""}`
+              ? `${primaryModel.id} ${secondaryModel ? "and " + secondaryModel.id : ""}`
               : "Select AI Model"}
           </Button>
 
