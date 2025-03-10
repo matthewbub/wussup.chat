@@ -167,22 +167,6 @@ export function ModelSelectionModal({
     }
   };
 
-  // Get input type icon
-  const getInputTypeIcon = (type: string) => {
-    switch (type) {
-      case "text":
-        return <FileText className="h-6 w-6" />;
-      case "image":
-        return <ImageIcon className="h-6 w-6" />;
-      case "audio":
-        return <AudioLines className="h-6 w-6" />;
-      case "video":
-        return <Video className="h-6 w-6" />;
-      default:
-        return <FileText className="h-6 w-6" />;
-    }
-  };
-
   // Animation variants
   const container = {
     hidden: { opacity: 0 },
