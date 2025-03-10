@@ -35,7 +35,7 @@ export function ModelRequestForm({ onCancel }: ModelRequestFormProps) {
     setErrorMessage("");
 
     try {
-      const response = await fetch("/api/request-model", {
+      const response = await fetch("/api/v1/request-modal", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
