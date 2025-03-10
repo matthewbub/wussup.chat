@@ -7,6 +7,11 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/app/_store/auth";
 import { useRouter } from "next/navigation";
+import { SignInButton } from "@clerk/nextjs";
+import { SignUpButton } from "@clerk/nextjs";
+import { UserButton } from "@clerk/nextjs";
+import { SignedIn } from "@clerk/nextjs";
+import { SignedOut } from "@clerk/nextjs";
 
 export function HeaderHero({ setActiveModal }: { setActiveModal: (modal: string) => void }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -42,19 +47,13 @@ export function HeaderHero({ setActiveModal }: { setActiveModal: (modal: string)
             ))} */}
           </div>
           <div className="hidden lg:flex lg:flex-1 lg:justify-end">
-            {isLoggedIn ? (
-              <Button variant="outline" asChild onClick={() => router.push("/~")}>
-                <span>
-                  Dashboard <span aria-hidden="true">&rarr;</span>
-                </span>
-              </Button>
-            ) : (
-              <Button variant="outline" onClick={() => setActiveModal("auth")}>
-                <span>
-                  Log in <span aria-hidden="true">&rarr;</span>
-                </span>
-              </Button>
-            )}
+            <SignedOut>
+              <SignInButton />
+              <SignUpButton />
+            </SignedOut>
+            <SignedIn>
+              <UserButton />
+            </SignedIn>
           </div>
         </nav>
         <Dialog open={mobileMenuOpen} onClose={setMobileMenuOpen} className="lg:hidden">

@@ -1,3 +1,4 @@
+// returns button props based on the current status of the chat
 export const getButtonProps = (
   status: string,
   buttonOptions: {
@@ -31,6 +32,8 @@ export const getButtonProps = (
       return buttonOptions.send;
   }
 };
+
+// returns the appropriate button text based on the current status
 export const getButtonChildren = (status: string) => {
   switch (status) {
     case "submitted":

@@ -9,7 +9,7 @@ import { User } from "@/types/user";
 import { ChatSession, Message } from "@/types/chat";
 import { generateCurrentSessionPlaceholder } from "./_helpers/currentSessionPlaceholder";
 import { AppState } from "@/components/AppState";
-import { Background } from "@/components/ui/Background";
+import { auth } from "@clerk/nextjs/server";
 
 type DBMessage = {
   id: string;
@@ -29,8 +29,8 @@ type DBMessage = {
 
 export default async function Page({ params }: { params: Promise<{ session: string }> }) {
   const supabase = await createClient();
-  const { data: userData } = await supabase.auth.getUser();
-  const userId = userData?.user?.id;
+  const { userId } = await auth();
+
   if (!userId) {
     return redirect(`/`);
   }
@@ -71,12 +71,10 @@ export default async function Page({ params }: { params: Promise<{ session: stri
     })) || [];
 
   return (
-    <Background>
-      <AppState user={usersResult.data as unknown as User} currentSession={currentSession as ChatSession}>
-        <ChatLayout sessions={groupedSessions}>
-          <ChatApp sessionId={sessionId} initialMessages={initialMessages as Message[]} />
-        </ChatLayout>
-      </AppState>
-    </Background>
+    <AppState user={usersResult.data as unknown as User} currentSession={currentSession as ChatSession}>
+      <ChatLayout sessions={groupedSessions}>
+        <ChatApp sessionId={sessionId} initialMessages={initialMessages as Message[]} />
+      </ChatLayout>
+    </AppState>
   );
 }

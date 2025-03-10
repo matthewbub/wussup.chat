@@ -16,6 +16,7 @@
     "@ai-sdk/react": "^1.1.15",
     "@ai-sdk/xai": "^1.1.13",
     "@anthropic-ai/sdk": "^0.36.3",
+    "@clerk/nextjs": "^6.12.4",
     "@google/generative-ai": "^0.21.0",
     "@headlessui/react": "^2.2.0",
     "@heroicons/react": "^2.2.0",

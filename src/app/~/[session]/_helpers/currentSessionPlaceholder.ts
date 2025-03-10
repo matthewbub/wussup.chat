@@ -1,5 +1,6 @@
 import { ChatSession } from "@/types/chat";
 
+// generates a placeholder chat session for new conversations
 export function generateCurrentSessionPlaceholder(
   sessionId: string,
   numberOfChats: number,

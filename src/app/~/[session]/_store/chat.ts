@@ -12,11 +12,6 @@ interface ChatStore {
   user: User | null;
   setUser: (user: User) => void;
   updateUserChatContext: (context: string) => void;
-  currentPlayingAudio: {
-    messageId: string | null;
-    audioUrl: string | null;
-  };
-  setCurrentPlayingAudio: (messageId: string | null, audioUrl: string | null) => void;
 }
 
 export const useChatStore = create<ChatStore>((set) => ({
@@ -57,15 +52,4 @@ export const useChatStore = create<ChatStore>((set) => ({
       return { user: state.user };
     });
   },
-  currentPlayingAudio: {
-    messageId: null,
-    audioUrl: null,
-  },
-  setCurrentPlayingAudio: (messageId, audioUrl) =>
-    set({
-      currentPlayingAudio: {
-        messageId,
-        audioUrl,
-      },
-    }),
 }));
