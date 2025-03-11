@@ -37,10 +37,8 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <html lang="en" className="h-full dark">
-        <head>
-          <script src="https://unpkg.com/react-scan/dist/auto.global.js" />
-        </head>
-        <ReactScan />
+        <head>{/* <script src="https://unpkg.com/react-scan/dist/auto.global.js" /> */}</head>
+        {/* <ReactScan /> */}
         <body className={`${geistSans.variable} ${geistMono.variable} ${title.variable} antialiased h-full`}>
           <PostHogProvider>
             {children}
