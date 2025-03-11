@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase-server";
 import { Resend } from "resend";
 import { EmailTemplate, ConfirmationEmail } from "@/components/email/SupportRequestRecieved";
 import { revalidatePath } from "next/cache";
+import { auth } from "@clerk/nextjs/server";
 
 const MAX_MESSAGE_LENGTH = 2000; // Reasonable limit for support messages
 const MAX_SUBJECT_LENGTH = 200;
@@ -26,14 +27,12 @@ export async function submitSupportForm(formData: FormData): Promise<void> {
   const supabase = await createClient();
 
   // Get current user if logged in
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const { userId } = await auth();
 
   try {
     const { error } = await supabase.from("ChatBot_SupportForm").insert({
       email: formData.get("email"),
-      user_id: user?.id || null,
+      user_id: userId || null,
       category: formData.get("category"),
       subject: subject,
       message: message,
@@ -51,7 +50,7 @@ export async function submitSupportForm(formData: FormData): Promise<void> {
         category: formData.get("category") as string,
         subject: subject,
         message: message,
-        userId: user?.id,
+        userId: userId || undefined,
       }),
     });
 

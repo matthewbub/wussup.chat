@@ -7,11 +7,18 @@ import { createClient } from "@/lib/supabase-server";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { AVAILABLE_MODELS } from "@/constants/models";
+import { auth } from "@clerk/nextjs/server";
 
 // Allow streaming responses up to 30 seconds
 export const maxDuration = 30;
 
 export async function POST(req: Request) {
+  // Get userId from Clerk instead of Supabase
+  const { userId } = await auth();
+  if (!userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const formData = await req.formData();
   const content = formData.get("content") as string;
   const model = formData.get("model") as string;
@@ -20,12 +27,8 @@ export async function POST(req: Request) {
   const messageHistory = formData.get("messageHistory") as string;
   const attachments = formData.getAll("attachments") as File[];
 
+  // Initialize Supabase client (only used for database, not auth)
   const supabase = await createClient();
-  const { data } = await supabase.auth.getUser();
-  const userId = data?.user?.id;
-  if (!userId) {
-    return NextResponse.json({ error: "user id is required" }, { status: 400 });
-  }
 
   // Validate model and provider
   const selectedModel = AVAILABLE_MODELS.find((m) => m.id === model && m.provider === model_provider);

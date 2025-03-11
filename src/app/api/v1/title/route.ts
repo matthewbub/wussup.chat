@@ -3,19 +3,22 @@ import { openai } from "@ai-sdk/openai";
 import { generateText } from "ai";
 import clsx from "clsx";
 import { NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
 
 // Allow streaming responses up to 30 seconds
 export const maxDuration = 30;
 
 export async function POST(req: Request) {
-  const { messages, session_id } = await req.json();
+  // Get the userId from Clerk auth
+  const { userId } = await auth();
 
-  const supabase = await createClient();
-  const { data: userData } = await supabase.auth.getUser();
-
-  if (!userData.user) {
+  // Check if user is authenticated
+  if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  const { messages, session_id } = await req.json();
+  const supabase = await createClient();
 
   // Take only first two messages for title generation
   const titleMessages = messages.slice(0, 2);
@@ -32,7 +35,7 @@ export async function POST(req: Request) {
   const { error } = await supabase.from("ChatBot_Sessions").upsert(
     {
       name: text,
-      user_id: userData.user.id,
+      user_id: userId,
       updated_at: new Date(),
       id: session_id,
     },

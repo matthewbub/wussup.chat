@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase-server";
 import { NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
 
 type StoreChatMessage = {
   id: string;
@@ -21,9 +22,8 @@ export async function POST(req: Request) {
   try {
     const { messages } = (await req.json()) as { messages: StoreChatMessage[] };
 
+    const { userId } = await auth();
     const supabase = await createClient();
-    const { data: userData } = await supabase.auth.getUser();
-    const userId = userData?.user?.id;
 
     if (!userId) {
       return NextResponse.json({ error: "User ID is required" }, { status: 400 });

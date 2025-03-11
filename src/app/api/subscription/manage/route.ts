@@ -1,17 +1,17 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { createClient } from "@/lib/supabase-server";
+import { auth } from "@clerk/nextjs/server";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
 export async function GET() {
   try {
     const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    // Get the userId from Clerk auth
+    const { userId } = await auth();
 
-    if (!user) {
+    if (!userId) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
@@ -19,7 +19,7 @@ export async function GET() {
     const { data: userData, error: userError } = await supabase
       .from("ChatBot_Users")
       .select("stripeCustomerId")
-      .eq("user_id", user.id)
+      .eq("user_id", userId)
       .single();
 
     if (userError || !userData?.stripeCustomerId) {

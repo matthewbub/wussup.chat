@@ -1,3 +1,4 @@
+import { auth } from "@clerk/nextjs/server";
 import { createClient } from "@/lib/supabase-server";
 import { NextResponse } from "next/server";
 
@@ -5,13 +6,14 @@ export async function POST(req: Request) {
   try {
     const { sessionId, responseGroupId, messageId } = await req.json();
 
-    const supabase = await createClient();
-    const { data: userData } = await supabase.auth.getUser();
-    const userId = userData?.user?.id;
+    // Get userId from Clerk instead of Supabase
+    const { userId } = await auth();
 
     if (!userId) {
       return NextResponse.json({ error: "User ID is required" }, { status: 400 });
     }
+
+    const supabase = await createClient();
 
     // Update all messages in the response group to not preferred
     const { error: resetError } = await supabase
