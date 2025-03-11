@@ -46,13 +46,17 @@ export function HeaderHero({ setActiveModal }: { setActiveModal: (modal: string)
               </a>
             ))} */}
           </div>
-          <div className="hidden lg:flex lg:flex-1 lg:justify-end">
+          <div className="hidden lg:flex lg:flex-1 lg:justify-end gap-4">
             <SignedOut>
-              <SignInButton />
-              <SignUpButton />
+              <SignInButton>
+                <Button variant="ghost">Sign In</Button>
+              </SignInButton>
+              <SignUpButton>
+                <Button variant="default">Sign Up</Button>
+              </SignUpButton>
             </SignedOut>
             <SignedIn>
-              <UserButton />
+              <UserButton afterSignOutUrl="/" />
             </SignedIn>
           </div>
         </nav>
