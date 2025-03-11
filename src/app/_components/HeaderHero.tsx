@@ -12,6 +12,7 @@ import { SignUpButton } from "@clerk/nextjs";
 import { UserButton } from "@clerk/nextjs";
 import { SignedIn } from "@clerk/nextjs";
 import { SignedOut } from "@clerk/nextjs";
+import Link from "next/link";
 
 export function HeaderHero({ setActiveModal }: { setActiveModal: (modal: string) => void }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -46,13 +47,20 @@ export function HeaderHero({ setActiveModal }: { setActiveModal: (modal: string)
               </a>
             ))} */}
           </div>
-          <div className="hidden lg:flex lg:flex-1 lg:justify-end">
+          <div className="hidden lg:flex lg:flex-1 lg:justify-end gap-4">
             <SignedOut>
-              <SignInButton />
-              <SignUpButton />
+              <SignInButton>
+                <Button variant="ghost">Sign In</Button>
+              </SignInButton>
+              <SignUpButton>
+                <Button variant="default">Sign Up</Button>
+              </SignUpButton>
             </SignedOut>
             <SignedIn>
-              <UserButton />
+              <Button variant="ghost" asChild>
+                <Link href="/~">Chat</Link>
+              </Button>
+              <UserButton afterSignOutUrl="/" />
             </SignedIn>
           </div>
         </nav>
