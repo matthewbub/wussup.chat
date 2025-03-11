@@ -22,7 +22,7 @@ export function AppSidebar({
   sessions,
   ...props
 }: {
-  sessions: Record<string, ChatSession[]>;
+  sessions: ChatSession[];
 } & React.ComponentProps<typeof Sidebar>) {
   const { currentSession } = useChatStore();
 
@@ -52,7 +52,7 @@ export function AppSidebar({
           <SidebarGroupContent>
             <SidebarMenu>
               {/* If there are no sessions, show the create chat button */}
-              {Object.keys(sessions).length == 0 && (
+              {sessions.length == 0 && (
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild disabled>
                     <div className="flex items-center gap-2">
@@ -63,26 +63,19 @@ export function AppSidebar({
                 </SidebarMenuItem>
               )}
 
-              {/* Display sessions grouped by date */}
-              {Object.keys(sessions).length > 0 &&
-                Object.keys(sessions).map((dateKey: string) => (
-                  <React.Fragment key={dateKey}>
-                    <SidebarMenuItem>
-                      <div className="px-2 py-1 text-xs text-muted-foreground">{dateKey}</div>
-                    </SidebarMenuItem>
-                    {sessions[dateKey].map((session: ChatSession) => (
-                      <SidebarMenuItem key={session?.id}>
-                        <SidebarMenuButton asChild isActive={session?.id === currentSession?.id}>
-                          <Link href={`/~/${session?.id}`}>
-                            <span>
-                              {currentSession?.id === session?.id ? getCurrentSessionName(session) : session?.name}
-                            </span>
-                          </Link>
-                        </SidebarMenuButton>
-                      </SidebarMenuItem>
-                    ))}
-                  </React.Fragment>
-                ))}
+              {sessions.map((session: ChatSession) => (
+                <React.Fragment key={session?.id}>
+                  <SidebarMenuItem key={session?.id}>
+                    <SidebarMenuButton asChild isActive={session?.id === currentSession?.id}>
+                      <Link href={`/~/${session?.id}`}>
+                        <span>
+                          {currentSession?.id === session?.id ? getCurrentSessionName(session) : session?.name}
+                        </span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                </React.Fragment>
+              ))}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

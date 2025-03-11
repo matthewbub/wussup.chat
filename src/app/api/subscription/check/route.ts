@@ -1,17 +1,17 @@
 import { createClient } from "@/lib/supabase-server";
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
+import { auth } from "@clerk/nextjs/server";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
 export async function GET() {
   const supabase = await createClient();
   try {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+    // Get the userId from Clerk auth
+    const { userId } = await auth();
 
-    if (!user) {
+    if (!userId) {
       return NextResponse.json({ active: false }, { status: 400 });
     }
 
@@ -19,7 +19,7 @@ export async function GET() {
     const { data: userData, error } = await supabase
       .from("ChatBot_Users")
       .select("stripeCustomerId, stripeSubscriptionId, subscriptionStatus")
-      .eq("user_id", user.id)
+      .eq("clerk_user_id", userId)
       .single();
 
     if (error || !userData?.stripeCustomerId || !userData?.stripeSubscriptionId) {
@@ -41,7 +41,7 @@ export async function GET() {
           subscriptionPeriodEnd: new Date(subscription.current_period_end * 1000),
           updatedAt: new Date().toISOString(),
         })
-        .eq("user_id", user.id);
+        .eq("clerk_user_id", userId);
     }
 
     return NextResponse.json({

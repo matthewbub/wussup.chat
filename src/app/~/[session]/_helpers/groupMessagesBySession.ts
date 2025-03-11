@@ -1,6 +1,8 @@
-import { TimeframeGroupingStrategy } from "@/lib/session-grouping";
+// import { TimeframeGroupingStrategy } from "@/lib/session-grouping";
 import { ChatSession, Message as MessageType } from "@/types/chat";
 
+// groups messages by their associated chat sessions and applies timeframe grouping
+// returns a map of grouped sessions with their associated messages
 export function groupMessagesBySession(messages: MessageType[], sessions: ChatSession[]) {
   // create map of messages by session id
   const messagesBySessionId = new Map();
@@ -16,9 +18,10 @@ export function groupMessagesBySession(messages: MessageType[], sessions: ChatSe
     messages: messagesBySessionId.get(session.id) || [],
   }));
 
-  // group sessions by timeframe
-  const strategy = new TimeframeGroupingStrategy();
-  const groupedSessions = strategy.group(Object.values(sessionsWithMessages).flat());
+  // // group sessions by timeframe
+  // const strategy = new TimeframeGroupingStrategy();
+  // const groupedSessions = strategy.group(Object.values(sessionsWithMessages).flat());
 
-  return groupedSessions;
+  // return groupedSessions;
+  return sessionsWithMessages;
 }

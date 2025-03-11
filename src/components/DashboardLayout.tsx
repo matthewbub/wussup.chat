@@ -5,7 +5,7 @@ import { AppShell } from "@/components/AppShell";
 
 interface ChatLayoutProps {
   children: React.ReactNode;
-  sessions: Record<string, ChatSession[]>;
+  sessions: ChatSession[];
 }
 
 export function ChatLayout({ sessions, children }: ChatLayoutProps) {

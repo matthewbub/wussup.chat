@@ -1,0 +1,14 @@
+---
+description: 
+globs: *.tsx, *.ts
+alwaysApply: false
+---
+
+# GENERAL RULES
+
+- Always use the most minimal approach possible to solve a task.
+- Use Object Oriented Design Patterns in your approaches whenever it makes sense too.
+- Use JSDoc Style Code Comments to add context to functions.
+
+
+

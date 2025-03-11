@@ -5,6 +5,8 @@ import "../styles/globals.css";
 import "katex/dist/katex.min.css";
 import { Toaster } from "@/components/ui/toaster";
 import { PostHogProvider } from "./providers";
+import { ReactScan } from "@/components/ReactScan";
+import { ClerkProvider } from "@clerk/nextjs";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,23 +34,20 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const content = (
-    <div className="h-full">
-      {children}
-      {/* <Background>{children}</Background> */}
-      <Toaster />
-    </div>
-  );
-
   return (
-    <html lang="en" className="h-full dark">
-      {/* <head>
-        <script src="https://unpkg.com/react-scan/dist/auto.global.js" />
-      </head> */}
-      {/* <ReactScan /> */}
-      <body className={`${geistSans.variable} ${geistMono.variable} ${title.variable} antialiased h-full`}>
-        {process.env.NODE_ENV === "production" ? <PostHogProvider>{content}</PostHogProvider> : content}
-      </body>
-    </html>
+    <ClerkProvider>
+      <html lang="en" className="h-full dark">
+        <head>
+          <script src="https://unpkg.com/react-scan/dist/auto.global.js" />
+        </head>
+        <ReactScan />
+        <body className={`${geistSans.variable} ${geistMono.variable} ${title.variable} antialiased h-full`}>
+          <PostHogProvider>
+            {children}
+            <Toaster />
+          </PostHogProvider>
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }

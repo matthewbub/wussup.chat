@@ -46,3 +46,6 @@ next-env.d.ts
 # IDEs
 .idea/
 .vscode/
+
+# Integration Tests
+tests/integration/node_modules

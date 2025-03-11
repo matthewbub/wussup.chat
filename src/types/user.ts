@@ -8,7 +8,7 @@ type User = {
   subscriptionStatus?: string;
   subscriptionPeriodEnd?: string;
   subscriptionPlan?: string;
-  user_id?: string;
+  clerk_user_id?: string;
 };
 
 type SupabaseUser = {

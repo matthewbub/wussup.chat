@@ -1,28 +1,33 @@
-import { useState } from "react";
-import { createClient } from "@/lib/supabase-client";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { GithubIcon, Mail } from "lucide-react";
 import { Label } from "./ui/label";
 import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { useState } from "react";
+import { createClient } from "@/lib/supabase-client";
 
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
+type FormValues = {
+  email: string;
+  password: string;
+};
+
 export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [mode, setMode] = useState<"login" | "signup">("login");
   const router = useRouter();
   const supabase = createClient();
 
-  const handleEmailAuth = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const { register, handleSubmit } = useForm<FormValues>();
+
+  const onSubmit = async (data: FormValues) => {
     setIsLoading(true);
     setError(null);
 
@@ -32,7 +37,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email, password, mode }),
+        body: JSON.stringify({ ...data, mode }),
       });
 
       const result = await response.json();
@@ -84,26 +89,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleEmailAuth} className="space-y-4">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="space-y-1">
             <Label>Email</Label>
-            <Input
-              type="email"
-              placeholder="Enter your email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
+            <Input type="email" placeholder="Enter your email" {...register("email", { required: true })} />
           </div>
           <div className="space-y-1">
             <Label>Password</Label>
-            <Input
-              type="password"
-              placeholder="Enter your password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
+            <Input type="password" placeholder="Enter your password" {...register("password", { required: true })} />
           </div>
           {error && <p className="text-sm text-red-500">{error}</p>}
 

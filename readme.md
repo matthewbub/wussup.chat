@@ -94,11 +94,18 @@ v0.0.4
 
 - Improve application efficiency
 - Add landing page
-
 - Fix bugs
 
 v0.0.5
 
-- Futurama titles on empty chat
+Features
+
+- A/B Modal testing
+- Chat with attachments
+- New Modal Selector with search, filters, and modal requests
+
+Fixes
+
+- Replace Supabase Auth with Clerk Auth
+- Use more providers than just OpenAI
 - UX enhancements
-- [ ] Change Models

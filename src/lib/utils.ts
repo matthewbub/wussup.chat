@@ -6,7 +6,7 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 /**
- * formatContextMessages
+ * formatContextMessages - Converts database message format to AI chat format
  */
 export function formatContextMessages(
   messages: Array<{ is_user: boolean; content: string }>
