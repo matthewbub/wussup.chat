@@ -106,5 +106,6 @@ Features
 
 Fixes
 
+- Replace Supabase Auth with Clerk Auth
 - Use more providers than just OpenAI
 - UX enhancements
