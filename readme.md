@@ -106,6 +106,16 @@ Features
 
 Fixes
 
-- Replace Supabase Auth with Clerk Auth
 - Use more providers than just OpenAI
 - UX enhancements
+
+More
+
+- Replace Supabase Auth with Clerk Auth
+
+v0.0.6
+
+- [ ] Introduce WYSIWYG Editor
+- [ ] Bulk Chat history deletion
+- [ ] Fork Chats
+- [ ] Free tier (Limit chats by IP)
