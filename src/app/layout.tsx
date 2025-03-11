@@ -5,7 +5,7 @@ import "../styles/globals.css";
 import "katex/dist/katex.min.css";
 import { Toaster } from "@/components/ui/toaster";
 import { PostHogProvider } from "./providers";
-import { ReactScan } from "@/components/ReactScan";
+// import { ReactScan } from "@/components/ReactScan";
 import { ClerkProvider } from "@clerk/nextjs";
 
 const geistSans = Geist({
