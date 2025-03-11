@@ -30,12 +30,6 @@ export async function ensureUserActuallyExists(supabase: SupabaseClient<any, "pu
         message_count: 0,
         chat_context: "You are a helpful assistant",
         clerk_user_id: clerkUserId,
-
-        // this is needed for legacy behavior. (i think; idk why it was there to begin with)
-        // we migrated from supabase auth to clerk auth; clerk auth uses a string for id's
-        // can u just pretend this isn't here....? no? me either... fuck
-        // NOTE: we use the `clerk_user_id` field for other tables; e.g. ChatBot_Messages.clerk_user_id and ChatBot_Sessions.clerk_user_id
-        clerk_user_id: crypto.randomUUID(),
       });
 
       if (createError) {

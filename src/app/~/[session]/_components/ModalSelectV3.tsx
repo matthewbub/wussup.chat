@@ -7,8 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   Search,
-  Image as ImageIcon,
-  FileText,
   Sparkles,
   Zap,
   Check,
@@ -16,8 +14,6 @@ import {
   Code,
   ActivityIcon,
   Brain,
-  Video,
-  AudioLines,
   Info,
   SlidersHorizontal,
   X,
