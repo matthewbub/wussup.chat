@@ -34,7 +34,7 @@ export async function POST(req: Request) {
       .from("ChatBot_Sessions")
       .select("id")
       .eq("id", messages[0].session_id)
-      .eq("user_id", userId)
+      .eq("clerk_user_id", userId)
       .single();
 
     if (sessionError || !sessionData) {
@@ -49,7 +49,7 @@ export async function POST(req: Request) {
           id: message.id,
           chat_session_id: message.session_id,
           content: message.content,
-          user_id: userId,
+          clerk_user_id: userId,
           is_user: message.is_user,
           created_at: message.created_at,
           response_type: message.response_type,

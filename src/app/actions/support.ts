@@ -32,7 +32,7 @@ export async function submitSupportForm(formData: FormData): Promise<void> {
   try {
     const { error } = await supabase.from("ChatBot_SupportForm").insert({
       email: formData.get("email"),
-      user_id: userId || null,
+      clerk_user_id: userId || null,
       category: formData.get("category"),
       subject: subject,
       message: message,

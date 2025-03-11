@@ -5,7 +5,7 @@ export interface Message {
   created_at: string;
   model: string;
   chat_session_id?: string;
-  user_id?: string;
+  clerk_user_id?: string;
   responseType?: "A" | "B";
   responseGroupId?: string;
   parentMessageId?: string;
@@ -26,7 +26,7 @@ export interface ChatSession {
   messages: Message[];
   created_at: string;
   updated_at: string;
-  user_id: string;
+  clerk_user_id: string;
 }
 
 type ChatSessionGroup = "Older" | "This Month" | "This Week" | "Today";

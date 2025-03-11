@@ -5,7 +5,7 @@ import { Message as MessageType } from "@/types/chat";
 import { Clock, Award, Bot } from "lucide-react";
 import { useRef } from "react";
 
-export type MessageProps = Omit<MessageType, "chat_session_id" | "user_id"> & {
+export type MessageProps = Omit<MessageType, "chat_session_id" | "clerk_user_id"> & {
   isLoading?: boolean;
   isPreferred?: boolean;
   onSelect?: () => void;

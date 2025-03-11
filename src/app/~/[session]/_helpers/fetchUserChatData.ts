@@ -6,14 +6,18 @@ import { SupabaseClient } from "@supabase/supabase-js";
 export async function fetchUserChatData(supabase: SupabaseClient<any, "public", any>, userId: string) {
   try {
     const [sessionsResult, messagesResult, usersResult] = await Promise.all([
-      supabase.from("ChatBot_Sessions").select("*").eq("user_id", userId),
-      supabase.from("ChatBot_Messages").select("*").eq("user_id", userId).order("created_at", { ascending: true }),
+      supabase.from("ChatBot_Sessions").select("*").eq("clerk_user_id", userId),
+      supabase
+        .from("ChatBot_Messages")
+        .select("*")
+        .eq("clerk_user_id", userId)
+        .order("created_at", { ascending: true }),
       supabase
         .from("ChatBot_Users")
         .select(
-          "email, message_count, stripeSubscriptionId, subscriptionStatus, user_id, subscriptionPeriodEnd, chat_context"
+          "email, message_count, stripeSubscriptionId, subscriptionStatus, clerk_user_id, subscriptionPeriodEnd, chat_context"
         )
-        .eq("user_id", userId)
+        .eq("clerk_user_id", userId)
         .single(),
     ]);
 

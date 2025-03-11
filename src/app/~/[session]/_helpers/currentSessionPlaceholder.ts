@@ -8,10 +8,10 @@ export function generateCurrentSessionPlaceholder(
 ): ChatSession {
   return {
     id: sessionId,
-    name: `Untitled Chat ${numberOfChats}`,
+    name: `Untitled Chat ${numberOfChats + 1}`,
     messages: [],
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
-    user_id: userId,
+    clerk_user_id: userId,
   };
 }

@@ -15,7 +15,7 @@ export async function POST(req: Request) {
     const { error: contextError } = await supabase
       .from("ChatBot_Users")
       .update({ chat_context: context })
-      .eq("user_id", userId);
+      .eq("clerk_user_id", userId);
 
     if (contextError) {
       return NextResponse.json({ error: contextError.message }, { status: 500 });

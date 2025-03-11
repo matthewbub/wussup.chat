@@ -2,7 +2,6 @@ import { ChatLayout } from "@/components/DashboardLayout";
 import { createClient } from "@/lib/supabase-server";
 import ChatApp from "./_components/ChatApp";
 import { groupMessagesBySession } from "./_helpers/groupMessagesBySession";
-import { ensureUserStorageFolder } from "./_helpers/ensureUserStorageFolder";
 import { fetchUserChatData } from "./_helpers/fetchUserChatData";
 import { redirect } from "next/navigation";
 import { User } from "@/types/user";
@@ -10,6 +9,7 @@ import { ChatSession, Message } from "@/types/chat";
 import { generateCurrentSessionPlaceholder } from "./_helpers/currentSessionPlaceholder";
 import { AppState } from "@/components/AppState";
 import { auth } from "@clerk/nextjs/server";
+import { ensureUserActuallyExists } from "./_helpers/ensureUserActuallyExists";
 
 type DBMessage = {
   id: string;
@@ -41,7 +41,7 @@ export default async function Page({ params }: { params: Promise<{ session: stri
     return redirect(`/~/${crypto.randomUUID()}`);
   }
 
-  await ensureUserStorageFolder(supabase, userId); // ensure user storage folder exists & create if it doesn't
+  await ensureUserActuallyExists(supabase, userId); // ensure user storage folder exists & create if it doesn't
   const { sessionsResult, messagesResult, usersResult } = await fetchUserChatData(supabase, userId); // fetch user chat data
   const sessionExists = sessionsResult.data?.find((session) => session.id === sessionId);
   const sessions = [

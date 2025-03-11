@@ -35,7 +35,7 @@ export async function POST(req: Request) {
   const { error } = await supabase.from("ChatBot_Sessions").upsert(
     {
       name: text,
-      user_id: userId,
+      clerk_user_id: userId,
       updated_at: new Date(),
       id: session_id,
     },

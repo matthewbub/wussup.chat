@@ -22,9 +22,13 @@ export async function DELETE(request: Request) {
     const supabase = await createClient();
 
     // Verify the chat session belongs to the authenticated user
-    const { data: session } = await supabase.from("ChatBot_Sessions").select("user_id").eq("id", sessionId).single();
+    const { data: session } = await supabase
+      .from("ChatBot_Sessions")
+      .select("clerk_user_id")
+      .eq("id", sessionId)
+      .single();
 
-    if (!session || session.user_id !== userId) {
+    if (!session || session.clerk_user_id !== userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 

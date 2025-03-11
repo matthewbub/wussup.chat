@@ -19,7 +19,7 @@ export async function GET() {
     const { data: userData, error: userError } = await supabase
       .from("ChatBot_Users")
       .select("stripeCustomerId")
-      .eq("user_id", userId)
+      .eq("clerk_user_id", userId)
       .single();
 
     if (userError || !userData?.stripeCustomerId) {

@@ -85,7 +85,7 @@ export function NavUser() {
               align="start"
               sideOffset={4}
             >
-              {user?.user_id ? (
+              {user?.clerk_user_id ? (
                 <>
                   <DropdownMenuLabel className="p-0 font-normal">
                     <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">

@@ -19,7 +19,7 @@ export async function GET() {
     const { data: userData, error } = await supabase
       .from("ChatBot_Users")
       .select("stripeCustomerId, stripeSubscriptionId, subscriptionStatus")
-      .eq("user_id", userId)
+      .eq("clerk_user_id", userId)
       .single();
 
     if (error || !userData?.stripeCustomerId || !userData?.stripeSubscriptionId) {
@@ -41,7 +41,7 @@ export async function GET() {
           subscriptionPeriodEnd: new Date(subscription.current_period_end * 1000),
           updatedAt: new Date().toISOString(),
         })
-        .eq("user_id", userId);
+        .eq("clerk_user_id", userId);
     }
 
     return NextResponse.json({

@@ -24,7 +24,7 @@ export async function POST(request: Request) {
     const { error } = await supabase.from("ChatBot_ModalRequestSubmissions").insert({
       modal_name: data.modelName,
       use_case: data.useCase || null,
-      user_id: userId,
+      clerk_user_id: userId,
     });
 
     if (error) {

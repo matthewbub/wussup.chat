@@ -21,7 +21,7 @@ export async function POST(req: Request) {
       .update({ is_preferred: false })
       .eq("response_group_id", responseGroupId)
       .eq("chat_session_id", sessionId)
-      .eq("user_id", userId);
+      .eq("clerk_user_id", userId);
 
     if (resetError) {
       console.error("[Chat Store] Error resetting preferred messages:", resetError);
@@ -34,7 +34,7 @@ export async function POST(req: Request) {
       .update({ is_preferred: true })
       .eq("id", messageId)
       .eq("chat_session_id", sessionId)
-      .eq("user_id", userId);
+      .eq("clerk_user_id", userId);
 
     if (updateError) {
       console.error("[Chat Store] Error updating preferred message:", updateError);
