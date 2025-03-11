@@ -12,6 +12,7 @@ import { SignUpButton } from "@clerk/nextjs";
 import { UserButton } from "@clerk/nextjs";
 import { SignedIn } from "@clerk/nextjs";
 import { SignedOut } from "@clerk/nextjs";
+import Link from "next/link";
 
 export function HeaderHero({ setActiveModal }: { setActiveModal: (modal: string) => void }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -56,6 +57,9 @@ export function HeaderHero({ setActiveModal }: { setActiveModal: (modal: string)
               </SignUpButton>
             </SignedOut>
             <SignedIn>
+              <Button variant="ghost" asChild>
+                <Link href="/~">Chat</Link>
+              </Button>
               <UserButton afterSignOutUrl="/" />
             </SignedIn>
           </div>
