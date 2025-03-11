@@ -43,6 +43,30 @@ The easiest way to deploy your Next.js app is to use the [Vercel Platform](https
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
 
+## Release notes (developer)
+
+The current production release can be viewed at https://wussup.chat/version
+
+**Production** is currently v0.0.5, and can be accessed via https://github.com/matthewbub/wussup.chat/tree/release/v0.0.5. Changes to this branch go straight to production.
+
+**Beta** is in `main` and is where new changes are going in. It's okay to break the build here, the end user won't be effected. This branch can be accessed via https://next.wussup.chat
+
+If you make a change to the production branch, you'll need to bring beta up-to-date so the both branches remain in sync. Here's an example:
+
+```shell
+git branch # release/v0.0.5
+git pull # pull the latest changes
+git checkout main # beta
+
+git merge release/v0.0.5 # merge prod changes into beta so beta is up-to-date
+
+# resolve any merge conflicts that may arise (you may need to exit vim :wq)
+
+git push origin main # or just git push
+```
+
+Please note: You'll never need to merge beta into production. When beta is ready to bump to production, we create a new branch (e.g. release/v0.0.6) and assign the domain to that branch in Vercel.
+
 ## Versions
 
 v0.0.1
