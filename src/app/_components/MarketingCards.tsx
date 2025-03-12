@@ -1,25 +1,50 @@
-import { ArrowsRightLeftIcon, CircleStackIcon, KeyIcon } from "@heroicons/react/24/outline";
+import {
+  ArrowsRightLeftIcon,
+  CircleStackIcon,
+  CreditCardIcon,
+  DocumentTextIcon,
+  KeyIcon,
+  PencilIcon,
+} from "@heroicons/react/24/outline";
 
 const features = [
   {
     name: "A/B Model Testing",
     description: "Find the best model for your use-case by testing multiple AI models at once.",
-    href: "#",
+    // href: "#",
     icon: ArrowsRightLeftIcon,
   },
   {
     name: "You Choose the Model",
     description: "Choose from a range of the latest and greatest AI models to find the best fit for your use-case.",
-    href: "#",
+    // href: "#",
     icon: CircleStackIcon,
   },
   {
     name: "BYO API Keys (Coming Soon)",
-    description: "Use your own API keys to power your AI models.",
-    href: "#",
+    description: "Use your own API keys to power your AI models and we'll keep them safe via End-to-End Encryption.",
+    // href: "#",
     icon: KeyIcon,
   },
-];
+  {
+    name: "Customizable (Coming Soon)",
+    description: "Customize your AI assistant and user interface to your liking.",
+    // href: "#",
+    icon: PencilIcon,
+  },
+  {
+    name: "Chat with PDFs and Images",
+    description: "Chat with PDFs and images using the latest and greatest AI models.",
+    // href: "#",
+    icon: DocumentTextIcon,
+  },
+  {
+    name: "Free Forever Plan",
+    description: "We're a bootstrapped startup and we're committed to providing a free forever plan.",
+    // href: "#",
+    icon: CreditCardIcon,
+  },
+] as const;
 
 export default function MarketingCards() {
   return (
@@ -38,18 +63,13 @@ export default function MarketingCards() {
             {features.map((feature) => (
               <div key={feature.name} className="flex flex-col">
                 <dt className="text-base/7 font-semibold text-white">
-                  <div className="mb-6 flex size-10 items-center justify-center rounded-lg bg-indigo-600">
+                  <div className="mb-6 flex size-10 items-center justify-center rounded-lg bg-teal-600">
                     <feature.icon aria-hidden="true" className="size-6 text-white" />
                   </div>
                   {feature.name}
                 </dt>
                 <dd className="mt-1 flex flex-auto flex-col text-base/7 text-gray-400">
                   <p className="flex-auto">{feature.description}</p>
-                  <p className="mt-6">
-                    <a href={feature.href} className="text-sm/6 font-semibold text-indigo-400 hover:text-indigo-300">
-                      Learn more <span aria-hidden="true">→</span>
-                    </a>
-                  </p>
                 </dd>
               </div>
             ))}
