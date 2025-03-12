@@ -28,18 +28,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { useForm, Controller } from "react-hook-form";
-
-interface ModelSelectionFormData {
-  searchQuery: string;
-  activeProvider: string;
-  showFreeOnly: boolean;
-  showImageCapable: boolean;
-  showReasoningOnly: boolean;
-  showStructuredOnly: boolean;
-  showToolsOnly: boolean;
-  sortBy: string;
-}
 
 interface ModelSelectionModalProps {
   open: boolean;
@@ -62,58 +50,52 @@ export function ModelSelectionModal({
   onRemoveSecondaryModel,
   disabled,
 }: ModelSelectionModalProps) {
-  const { register, watch, setValue, control } = useForm<ModelSelectionFormData>({
-    defaultValues: {
-      searchQuery: "",
-      activeProvider: "all",
-      showFreeOnly: false,
-      showImageCapable: false,
-      showReasoningOnly: false,
-      showStructuredOnly: false,
-      showToolsOnly: false,
-      sortBy: "default",
-    },
-  });
-
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeProvider, setActiveProvider] = useState("all");
+  const [showFreeOnly, setShowFreeOnly] = useState(false);
+  const [showImageCapable, setShowImageCapable] = useState(false);
+  const [showReasoningOnly, setShowReasoningOnly] = useState(false);
+  const [showStructuredOnly, setShowStructuredOnly] = useState(false);
+  const [showToolsOnly, setShowToolsOnly] = useState(false);
+  const [sortBy, setSortBy] = useState("default");
   const [showFilters, setShowFilters] = useState(false);
   const [selectionMode, setSelectionMode] = useState<"primary" | "secondary">("primary");
   const [showRequestForm, setShowRequestForm] = useState(false);
   const [filteredModels, setFilteredModels] = useState<AiModel[]>(AVAILABLE_MODELS);
 
-  const formValues = watch();
-  const debouncedQuery = useDebounce(formValues.searchQuery, 300);
+  const debouncedQuery = useDebounce(searchQuery, 300);
 
   // Filter models based on all criteria
   useEffect(() => {
     let models = AVAILABLE_MODELS;
 
     // Filter by provider if not "all"
-    if (formValues.activeProvider !== "all") {
-      models = models.filter((model) => model.provider === formValues.activeProvider);
+    if (activeProvider !== "all") {
+      models = models.filter((model) => model.provider === activeProvider);
     }
 
     // Filter by free only
-    if (formValues.showFreeOnly) {
+    if (showFreeOnly) {
       models = models.filter((model) => model.free);
     }
 
     // Filter by image capability
-    if (formValues.showImageCapable) {
+    if (showImageCapable) {
       models = models.filter((model) => model.inputs?.includes("image"));
     }
 
     // Filter by reasoning capability
-    if (formValues.showReasoningOnly) {
+    if (showReasoningOnly) {
       models = models.filter((model) => model.reasoning);
     }
 
     // Filter by structured output capability
-    if (formValues.showStructuredOnly) {
+    if (showStructuredOnly) {
       models = models.filter((model) => model.meta?.capabilities?.structured_outputs);
     }
 
     // Filter by tools capability
-    if (formValues.showToolsOnly) {
+    if (showToolsOnly) {
       models = models.filter((model) => model.meta?.capabilities?.native_tool_use);
     }
 
@@ -130,13 +112,13 @@ export function ModelSelectionModal({
     }
 
     // Sort models
-    if (formValues.sortBy === "token_limit") {
+    if (sortBy === "token_limit") {
       models = [...models].sort((a, b) => {
         const aLimit = a.meta?.token_limits?.input || 0;
         const bLimit = b.meta?.token_limits?.input || 0;
         return bLimit - aLimit;
       });
-    } else if (formValues.sortBy === "newest") {
+    } else if (sortBy === "newest") {
       models = [...models].sort((a, b) => {
         const aDate = a.meta?.latest_update || "";
         const bDate = b.meta?.latest_update || "";
@@ -145,7 +127,16 @@ export function ModelSelectionModal({
     }
 
     setFilteredModels(models);
-  }, [debouncedQuery, formValues]);
+  }, [
+    debouncedQuery,
+    activeProvider,
+    showFreeOnly,
+    showImageCapable,
+    showReasoningOnly,
+    showStructuredOnly,
+    showToolsOnly,
+    sortBy,
+  ]);
 
   // Get provider display name
   const getProviderName = (provider: string) => {
@@ -186,24 +177,24 @@ export function ModelSelectionModal({
 
   // Reset all filters
   const resetFilters = () => {
-    setValue("activeProvider", "all");
-    setValue("showFreeOnly", false);
-    setValue("showImageCapable", false);
-    setValue("showReasoningOnly", false);
-    setValue("showStructuredOnly", false);
-    setValue("showToolsOnly", false);
-    setValue("sortBy", "default");
+    setActiveProvider("all");
+    setShowFreeOnly(false);
+    setShowImageCapable(false);
+    setShowReasoningOnly(false);
+    setShowStructuredOnly(false);
+    setShowToolsOnly(false);
+    setSortBy("default");
   };
 
   // Count active filters
   const activeFilterCount = [
-    formValues.showFreeOnly,
-    formValues.showImageCapable,
-    formValues.showReasoningOnly,
-    formValues.showStructuredOnly,
-    formValues.showToolsOnly,
-    formValues.activeProvider !== "all",
-    formValues.sortBy !== "default",
+    showFreeOnly,
+    showImageCapable,
+    showReasoningOnly,
+    showStructuredOnly,
+    showToolsOnly,
+    activeProvider !== "all",
+    sortBy !== "default",
   ].filter(Boolean).length;
 
   // Handle model selection
@@ -239,30 +230,29 @@ export function ModelSelectionModal({
           <>
             <div className="relative mb-4">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input placeholder="Search models..." {...register("searchQuery")} className="pl-9 pr-4" />
+              <Input
+                placeholder="Search models..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9 pr-4"
+              />
             </div>
 
             <div className="flex items-center justify-between mb-4">
               <div className="flex-1 mr-2">
-                <Controller
-                  name="activeProvider"
-                  control={control}
-                  render={({ field }) => (
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="All Providers" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Providers</SelectItem>
-                        {providers.map((provider) => (
-                          <SelectItem key={provider} value={provider}>
-                            {getProviderName(provider)}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  )}
-                />
+                <Select onValueChange={setActiveProvider} value={activeProvider}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="All Providers" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Providers</SelectItem>
+                    {providers.map((provider) => (
+                      <SelectItem key={provider} value={provider}>
+                        {getProviderName(provider)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               <div className="flex items-center gap-2">
@@ -289,56 +279,46 @@ export function ModelSelectionModal({
 
                       <div className="space-y-2">
                         <div className="flex items-center space-x-2">
-                          <Controller
-                            name="showFreeOnly"
-                            control={control}
-                            render={({ field }) => (
-                              <Checkbox id="free-only" checked={field.value} onCheckedChange={field.onChange} />
-                            )}
+                          <Checkbox
+                            id="free-only"
+                            checked={showFreeOnly}
+                            onCheckedChange={(checked) => setShowFreeOnly(checked as boolean)}
                           />
                           <Label htmlFor="free-only">Free models only</Label>
                         </div>
 
                         <div className="flex items-center space-x-2">
-                          <Controller
-                            name="showImageCapable"
-                            control={control}
-                            render={({ field }) => (
-                              <Checkbox id="image-capable" checked={field.value} onCheckedChange={field.onChange} />
-                            )}
+                          <Checkbox
+                            id="image-capable"
+                            checked={showImageCapable}
+                            onCheckedChange={(checked) => setShowImageCapable(checked as boolean)}
                           />
                           <Label htmlFor="image-capable">Image input capable</Label>
                         </div>
 
                         <div className="flex items-center space-x-2">
-                          <Controller
-                            name="showReasoningOnly"
-                            control={control}
-                            render={({ field }) => (
-                              <Checkbox id="reasoning-only" checked={field.value} onCheckedChange={field.onChange} />
-                            )}
+                          <Checkbox
+                            id="reasoning-only"
+                            checked={showReasoningOnly}
+                            onCheckedChange={(checked) => setShowReasoningOnly(checked as boolean)}
                           />
                           <Label htmlFor="reasoning-only">Reasoning capable</Label>
                         </div>
 
                         <div className="flex items-center space-x-2">
-                          <Controller
-                            name="showStructuredOnly"
-                            control={control}
-                            render={({ field }) => (
-                              <Checkbox id="structured-only" checked={field.value} onCheckedChange={field.onChange} />
-                            )}
+                          <Checkbox
+                            id="structured-only"
+                            checked={showStructuredOnly}
+                            onCheckedChange={(checked) => setShowStructuredOnly(checked as boolean)}
                           />
                           <Label htmlFor="structured-only">Structured outputs</Label>
                         </div>
 
                         <div className="flex items-center space-x-2">
-                          <Controller
-                            name="showToolsOnly"
-                            control={control}
-                            render={({ field }) => (
-                              <Checkbox id="tools-only" checked={field.value} onCheckedChange={field.onChange} />
-                            )}
+                          <Checkbox
+                            id="tools-only"
+                            checked={showToolsOnly}
+                            onCheckedChange={(checked) => setShowToolsOnly(checked as boolean)}
                           />
                           <Label htmlFor="tools-only">Tool use capable</Label>
                         </div>
@@ -346,22 +326,16 @@ export function ModelSelectionModal({
 
                       <div className="space-y-2">
                         <Label htmlFor="sort-by">Sort by</Label>
-                        <Controller
-                          name="sortBy"
-                          control={control}
-                          render={({ field }) => (
-                            <Select onValueChange={field.onChange} value={field.value}>
-                              <SelectTrigger id="sort-by">
-                                <SelectValue placeholder="Default" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="default">Default</SelectItem>
-                                <SelectItem value="token_limit">Highest token limit</SelectItem>
-                                <SelectItem value="newest">Newest first</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          )}
-                        />
+                        <Select onValueChange={setSortBy} value={sortBy}>
+                          <SelectTrigger id="sort-by">
+                            <SelectValue placeholder="Default" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="default">Default</SelectItem>
+                            <SelectItem value="token_limit">Highest token limit</SelectItem>
+                            <SelectItem value="newest">Newest first</SelectItem>
+                          </SelectContent>
+                        </Select>
                       </div>
                     </div>
                   </PopoverContent>
@@ -405,14 +379,14 @@ export function ModelSelectionModal({
               <AnimatePresence mode="wait">
                 <motion.div
                   key={
-                    formValues.activeProvider +
-                    formValues.searchQuery +
-                    formValues.showFreeOnly +
-                    formValues.showImageCapable +
-                    formValues.showReasoningOnly +
-                    formValues.showStructuredOnly +
-                    formValues.showToolsOnly +
-                    formValues.sortBy +
+                    activeProvider +
+                    searchQuery +
+                    showFreeOnly +
+                    showImageCapable +
+                    showReasoningOnly +
+                    showStructuredOnly +
+                    showToolsOnly +
+                    sortBy +
                     selectionMode
                   }
                   variants={container}
@@ -438,8 +412,8 @@ export function ModelSelectionModal({
                         }`}
                         onClick={() => handleModelSelect(model)}
                       >
-                        <div className="flex items-center justify-between">
-                          <div className="flex flex-col">
+                        <div className="grid grid-cols-12 gap-2">
+                          <div className="col-span-6 flex flex-col">
                             <div className="flex items-center gap-2">
                               <span className="font-medium">{model.id}</span>
                               {model.free && (
@@ -480,94 +454,89 @@ export function ModelSelectionModal({
                             </div>
                           </div>
 
-                          <div className="flex items-center gap-2">
+                          <div className="col-span-5 flex flex-wrap items-center gap-2">
+                            {model.reasoning && (
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <div className="p-1.5 rounded-md bg-purple-50 text-purple-700 dark:bg-purple-950 dark:text-purple-400 flex items-center justify-center">
+                                      <Brain className="h-6 w-6" />
+                                    </div>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p className="text-xs">Reasoning</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            )}
+
+                            {model.meta?.capabilities?.structured_outputs && (
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <div className="p-1.5 rounded-md bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-400 flex items-center justify-center">
+                                      <Code className="h-6 w-6" />
+                                    </div>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p className="text-xs">Structured Outputs</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            )}
+
+                            {model.meta?.capabilities?.function_calling && (
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <div className="p-1.5 rounded-md bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-400 flex items-center justify-center">
+                                      <ActivityIcon className="h-6 w-6" />
+                                    </div>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p className="text-xs">Function Calling</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            )}
+
+                            {model.meta?.capabilities?.native_tool_use && (
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <div className="p-1.5 rounded-md bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-400 flex items-center justify-center">
+                                      <Sparkles className="h-6 w-6" />
+                                    </div>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p className="text-xs">Tool Use</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            )}
+
+                            {model.meta?.capabilities?.caching && model.meta.capabilities.caching === "supported" && (
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <div className="p-1.5 rounded-md bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-400 flex items-center justify-center">
+                                      <Zap className="h-6 w-6" />
+                                    </div>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p className="text-xs">Caching Support</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            )}
+                          </div>
+
+                          <div className="col-span-1 flex items-center gap-2">
                             {((primaryModelId === model.id && selectionMode === "primary") ||
                               (secondaryModelId === model.id && selectionMode === "secondary") ||
                               (!primaryModelId && !secondaryModelId && model.id === defaultModelId)) && (
                               <Check className="h-6 w-6 text-primary" />
                             )}
-                          </div>
-                        </div>
-
-                        <div className="mt-4 space-y-3">
-                          <div className="space-y-2">
-                            <h4 className="text-xs font-medium text-muted-foreground">Capabilities</h4>
-                            <div className="flex flex-wrap items-center gap-2">
-                              {model.reasoning && (
-                                <TooltipProvider>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <div className="p-1.5 rounded-md bg-purple-50 text-purple-700 dark:bg-purple-950 dark:text-purple-400 flex items-center justify-center">
-                                        <Brain className="h-6 w-6" />
-                                      </div>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                      <p className="text-xs">Reasoning</p>
-                                    </TooltipContent>
-                                  </Tooltip>
-                                </TooltipProvider>
-                              )}
-
-                              {model.meta?.capabilities?.structured_outputs && (
-                                <TooltipProvider>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <div className="p-1.5 rounded-md bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-400 flex items-center justify-center">
-                                        <Code className="h-6 w-6" />
-                                      </div>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                      <p className="text-xs">Structured Outputs</p>
-                                    </TooltipContent>
-                                  </Tooltip>
-                                </TooltipProvider>
-                              )}
-
-                              {model.meta?.capabilities?.function_calling && (
-                                <TooltipProvider>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <div className="p-1.5 rounded-md bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-400 flex items-center justify-center">
-                                        <ActivityIcon className="h-6 w-6" />
-                                      </div>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                      <p className="text-xs">Function Calling</p>
-                                    </TooltipContent>
-                                  </Tooltip>
-                                </TooltipProvider>
-                              )}
-
-                              {model.meta?.capabilities?.native_tool_use && (
-                                <TooltipProvider>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <div className="p-1.5 rounded-md bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-400 flex items-center justify-center">
-                                        <Sparkles className="h-6 w-6" />
-                                      </div>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                      <p className="text-xs">Tool Use</p>
-                                    </TooltipContent>
-                                  </Tooltip>
-                                </TooltipProvider>
-                              )}
-
-                              {model.meta?.capabilities?.caching && model.meta.capabilities.caching === "supported" && (
-                                <TooltipProvider>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <div className="p-1.5 rounded-md bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-400 flex items-center justify-center">
-                                        <Zap className="h-6 w-6" />
-                                      </div>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                      <p className="text-xs">Caching Support</p>
-                                    </TooltipContent>
-                                  </Tooltip>
-                                </TooltipProvider>
-                              )}
-                            </div>
                           </div>
                         </div>
                       </motion.div>
