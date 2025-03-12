@@ -4,7 +4,6 @@ export const PROMPTS = {
     "Generate a blog post outlining the future of renewable energy.",
     "Create a dialogue between two characters from different centuries.",
     "Develop a character sketch for a hero with an unusual superpower.",
-    "Write an informative article on the benefits of meditation for mental health.",
     "Draft a poem inspired by the quiet of a snowy evening.",
     "Outline a feature article on the impact of social media on creativity.",
     "Write a first-person narrative from the perspective of an ancient artifact.",
