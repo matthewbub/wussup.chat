@@ -33,8 +33,8 @@ const features = [
     icon: PencilIcon,
   },
   {
-    name: "Chat with PDFs and Images",
-    description: "Chat with PDFs and images using the latest and greatest AI models.",
+    name: "Chat with PDFs, Images and more",
+    description: "Chat with PDFs, images and more using the latest and greatest AI models.",
     // href: "#",
     icon: DocumentTextIcon,
   },
