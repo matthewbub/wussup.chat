@@ -2,7 +2,7 @@
 
 A unified AI chatbot assistant
 
-<img src="./public/demo.png" height="500px" />
+<img src="./public/ABWussupDemo.gif" width="500px" />
 
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 

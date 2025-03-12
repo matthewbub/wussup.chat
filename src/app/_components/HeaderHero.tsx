@@ -125,7 +125,7 @@ export function HeaderHero({ setActiveModal }: { setActiveModal: (modal: string)
             </div>
             <Image
               alt="App screenshot"
-              src="/demo.png"
+              src="/ABWussupDemo.gif"
               width={2432}
               height={1442}
               className="mt-16 rounded-md bg-white/5 shadow-2xl ring-1 ring-white/10 sm:mt-24"
