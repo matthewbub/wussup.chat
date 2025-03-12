@@ -379,9 +379,10 @@ export default function ChatApp({
 
   return (
     <div className="h-full flex flex-col gap-4">
-      <div className="space-y-8 mb-6 flex-1 overflow-y-scroll p-4">
-        {messages &&
-          messages.reduce((acc: React.JSX.Element[], message, index) => {
+      {/* If there are no messages, don't render all this */}
+      {messages.length > 0 && (
+        <div className="space-y-8 mb-6 flex-1 overflow-y-scroll p-4">
+          {messages.reduce((acc: React.JSX.Element[], message, index) => {
             if (message.is_user) {
               acc.push(<MessageComponent key={message.id} {...message} />);
               return acc;
@@ -428,125 +429,140 @@ export default function ChatApp({
             );
             return acc;
           }, [])}
+        </div>
+      )}
 
-        {messages.length === 0 && <EmptyChatScreen setNewMessage={setLocalInput} />}
-      </div>
-
-      <div className="sticky bottom-0 bg-background">
-        <div className="flex items-center gap-2 mb-4">
-          <Button type="button" onClick={() => setModalOpen(true)} className="gap-2" disabled={status === "streaming"}>
-            <Sparkles className="h-4 w-4" />
-            {primaryModel
-              ? `${primaryModel.id} ${secondaryModel ? "and " + secondaryModel.id : ""}`
-              : "Select AI Model"}
-          </Button>
-
-          {secondaryModel && (
+      <div className={cn(messages.length === 0 && "flex-1 flex flex-col items-center justify-center")}>
+        <div className={cn("bg-background w-full", messages.length !== 0 && "sticky bottom-0")}>
+          <div className="flex items-center gap-2 mb-4">
             <Button
               type="button"
-              variant="outline"
-              onClick={removeSecondaryModel}
+              onClick={() => setModalOpen(true)}
               className="gap-2"
               disabled={status === "streaming"}
             >
-              <X className="h-4 w-4" />
-              Remove Model B
+              <Sparkles className="h-4 w-4" />
+              {primaryModel
+                ? `${primaryModel.id} ${secondaryModel ? "and " + secondaryModel.id : ""}`
+                : "Select AI Model"}
             </Button>
-          )}
-        </div>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-2 rounded-xl bg-secondary p-4 mb-4">
-          {attachments.length > 0 && (
-            <div className="flex flex-wrap gap-3 mb-4">
-              {attachments.map((attachment) => (
-                <div
-                  key={attachment.file.name}
-                  className="bg-muted text-muted-foreground border border-border rounded-lg px-3 py-2 flex items-center gap-2"
-                >
+            {secondaryModel && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={removeSecondaryModel}
+                className="gap-2"
+                disabled={status === "streaming"}
+              >
+                <X className="h-4 w-4" />
+                Remove Model B
+              </Button>
+            )}
+          </div>
+
+          <form onSubmit={handleSubmit} className="flex flex-col gap-2 rounded-xl bg-secondary p-4 mb-4">
+            {attachments.length > 0 && (
+              <div className="flex flex-wrap gap-3 mb-4">
+                {attachments.map((attachment) => (
                   <div
-                    className={cn(
-                      "flex items-center justify-center p-1 rounded",
-                      attachment.type === "pdf"
-                        ? "bg-red-600 dark:bg-red-500"
-                        : attachment.type === "image"
-                          ? "bg-green-600 dark:bg-green-500"
-                          : "bg-blue-600 dark:bg-blue-500"
-                    )}
+                    key={attachment.file.name}
+                    className="bg-muted text-muted-foreground border border-border rounded-lg px-3 py-2 flex items-center gap-2"
                   >
-                    {attachment.type === "pdf" ? (
-                      <FileText size={20} className="text-white" />
-                    ) : attachment.type === "image" ? (
-                      <ImageIcon size={20} className="text-white" />
-                    ) : (
-                      <FileUp size={20} className="text-white" />
+                    <div
+                      className={cn(
+                        "flex items-center justify-center p-1 rounded",
+                        attachment.type === "pdf"
+                          ? "bg-red-600 dark:bg-red-500"
+                          : attachment.type === "image"
+                            ? "bg-green-600 dark:bg-green-500"
+                            : "bg-blue-600 dark:bg-blue-500"
+                      )}
+                    >
+                      {attachment.type === "pdf" ? (
+                        <FileText size={20} className="text-white" />
+                      ) : attachment.type === "image" ? (
+                        <ImageIcon size={20} className="text-white" />
+                      ) : (
+                        <FileUp size={20} className="text-white" />
+                      )}
+                    </div>
+                    <span className="text-sm">
+                      {attachment.file.name} ({(attachment.file.size / 1024).toFixed(2)} KB)
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => removeAttachment(attachment.file)}
+                      className="text-muted-foreground hover:text-foreground transition-colors ml-2"
+                    >
+                      <X size={20} />
+                    </button>
+                    {attachment.type === "image" && (
+                      <div className="mt-2">
+                        <img
+                          src={URL.createObjectURL(attachment.file)}
+                          alt="Preview"
+                          className="max-h-32 rounded-lg"
+                          onLoad={() => URL.revokeObjectURL(URL.createObjectURL(attachment.file))}
+                        />
+                      </div>
                     )}
                   </div>
-                  <span className="text-sm">
-                    {attachment.file.name} ({(attachment.file.size / 1024).toFixed(2)} KB)
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => removeAttachment(attachment.file)}
-                    className="text-muted-foreground hover:text-foreground transition-colors ml-2"
-                  >
-                    <X size={20} />
-                  </button>
-                  {attachment.type === "image" && (
-                    <div className="mt-2">
-                      <img
-                        src={URL.createObjectURL(attachment.file)}
-                        alt="Preview"
-                        className="max-h-32 rounded-lg"
-                        onLoad={() => URL.revokeObjectURL(URL.createObjectURL(attachment.file))}
-                      />
-                    </div>
+                ))}
+              </div>
+            )}
+
+            <div className="relative">
+              <Textarea ref={textareaRef} placeholder="Type your message..." disabled={status === "streaming"} />
+            </div>
+
+            <div className="flex justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <label
+                  htmlFor="file-upload"
+                  className={cn(
+                    "bg-secondary text-secondary-foreground px-3 py-2 rounded-lg flex items-center gap-2 cursor-pointer transition-colors",
+                    "hover:bg-secondary/80",
+                    status === "streaming" && "opacity-50 cursor-not-allowed"
                   )}
-                </div>
-              ))}
+                >
+                  <FileUp className="h-4 w-4" />
+                  <span className="text-sm">Attach File</span>
+                  <input
+                    id="file-upload"
+                    type="file"
+                    className="hidden"
+                    onChange={handleFileChange}
+                    ref={fileInputRef}
+                    accept=".pdf,.png,.jpg,.jpeg,.gif"
+                    disabled={status === "streaming"}
+                  />
+                </label>
+              </div>
+              <div className="flex gap-2">
+                <Button type="submit" disabled={status === "streaming"}>
+                  {status === "streaming" ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Sending...
+                    </>
+                  ) : (
+                    "Send"
+                  )}
+                </Button>
+              </div>
+            </div>
+          </form>
+
+          {messages.length === 0 && (
+            <div className="flex space-x-4 items-center justify-center">
+              <p className="text-center text-sm text-muted-foreground">
+                You&apos;re connected and ready to go; ask anything!
+              </p>
+              <span className="h-2 w-2 bg-green-500 rounded-full animate-pulse"></span>
             </div>
           )}
-
-          <div className="relative">
-            <Textarea ref={textareaRef} placeholder="Type your message..." disabled={status === "streaming"} />
-          </div>
-
-          <div className="flex justify-between gap-2">
-            <div className="flex items-center gap-2">
-              <label
-                htmlFor="file-upload"
-                className={cn(
-                  "bg-secondary text-secondary-foreground px-3 py-2 rounded-lg flex items-center gap-2 cursor-pointer transition-colors",
-                  "hover:bg-secondary/80",
-                  status === "streaming" && "opacity-50 cursor-not-allowed"
-                )}
-              >
-                <FileUp className="h-4 w-4" />
-                <span className="text-sm">Attach File</span>
-                <input
-                  id="file-upload"
-                  type="file"
-                  className="hidden"
-                  onChange={handleFileChange}
-                  ref={fileInputRef}
-                  accept=".pdf,.png,.jpg,.jpeg,.gif"
-                  disabled={status === "streaming"}
-                />
-              </label>
-            </div>
-            <div className="flex gap-2">
-              <Button type="submit" disabled={status === "streaming"}>
-                {status === "streaming" ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Sending...
-                  </>
-                ) : (
-                  "Send"
-                )}
-              </Button>
-            </div>
-          </div>
-        </form>
+        </div>
       </div>
 
       <ModelSelectionModal
