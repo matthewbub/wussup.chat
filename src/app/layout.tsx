@@ -37,7 +37,10 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <html lang="en" className="h-full dark">
-        <head>{/* <script src="https://unpkg.com/react-scan/dist/auto.global.js" /> */}</head>
+        <head>
+          {/* <script src="https://unpkg.com/react-scan/dist/auto.global.js" /> */}
+          <script defer data-domain="wussup.chat" src="https://plausible.io/js/script.js"></script>
+        </head>
         {/* <ReactScan /> */}
         <body className={`${geistSans.variable} ${geistMono.variable} ${title.variable} antialiased h-full`}>
           <PostHogProvider>
