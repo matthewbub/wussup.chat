@@ -525,7 +525,7 @@ export const xaiModels: AiModel[] = [
     inputs: ["text"],
     outputs: ["text"],
     id: "grok-2",
-    free: false,
+    free: true,
     forchatuse: true,
     meta: {
       optimized_for: "Advanced text processing and generation",
@@ -637,7 +637,7 @@ export const xaiModels: AiModel[] = [
     inputs: ["text"],
     outputs: ["text"],
     id: "grok-beta",
-    free: false,
+    free: true,
     forchatuse: true,
     meta: {
       optimized_for: "Beta version of the Grok language model",
