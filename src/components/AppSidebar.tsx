@@ -7,6 +7,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarSeparator,
 } from "@/components/ui/sidebar";
 import Link from "next/link";
 import { SkullIcon } from "lucide-react";
@@ -47,9 +48,9 @@ export function AppSidebar({
         </div>
 
         {/* CHAT HISTORY */}
-        <SidebarGroup>
+        <SidebarGroup className="h-full">
           <SidebarGroupLabel className="sticky top-12 z-10 bg-sidebar font-bold">Chat History</SidebarGroupLabel>
-          <SidebarGroupContent>
+          <SidebarGroupContent className="flex-1">
             <SidebarMenu>
               {/* If there are no sessions, show the create chat button */}
               {sessions.length == 0 && (
@@ -77,6 +78,36 @@ export function AppSidebar({
                 </React.Fragment>
               ))}
             </SidebarMenu>
+          </SidebarGroupContent>
+
+          <SidebarGroupContent className="flex flex-col gap-2 sticky bottom-0">
+            <SidebarSeparator />
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <Link href="/dashboard">Go to Dashboard</Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <Link href="/documents">Documents</Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <Link href="/chat">Chat</Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <Link href="/settings">Settings</Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+            <SidebarSeparator />
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>

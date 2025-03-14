@@ -4,7 +4,6 @@ import { Textarea } from "@/components/ui/textarea";
 import React, { useState, useRef, useEffect } from "react";
 import { AVAILABLE_MODELS } from "@/constants/models";
 import { Message as MessageComponent } from "./Message";
-import { EmptyChatScreen } from "@/components/EmptyChatScreen";
 import { useChatStore } from "../_store/chat";
 import { ModelSelectionModal } from "./ModalSelectV3";
 import type { AiModel } from "@/constants/models";
