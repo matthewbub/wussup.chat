@@ -18,7 +18,7 @@ import crypto from "crypto";
 import { useRouter } from "next/navigation";
 import { ContextDialog } from "@/components/ContextModal";
 import { useState } from "react";
-import { useChatStore } from "@/app/~/[session]/_store/chat";
+import { useChatStore } from "@/app/chat/_store/chat";
 
 const getGravatarUrl = (email: string) => {
   const hash = crypto.createHash("md5").update(email.toLowerCase().trim()).digest("hex");

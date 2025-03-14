@@ -42,7 +42,7 @@ export function ChatTitleWidget() {
   };
 
   const handleOpenInNewTab = () => {
-    window.open(`/~/${currentSession?.id}`, "_blank");
+    window.open(`/chat?session=${currentSession?.id}`, "_blank");
   };
 
   const handleDeleteChat = async () => {

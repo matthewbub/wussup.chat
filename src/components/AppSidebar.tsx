@@ -15,8 +15,8 @@ import { Sidebar, SidebarContent, SidebarHeader } from "@/components/ui/sidebar"
 import clsx from "clsx";
 import { SidebarGroup, SidebarGroupContent } from "@/components/ui/sidebar";
 import { ChatSession } from "@/types/chat";
-import { CreateChatButton } from "@/app/~/[session]/_components/CreateChatButton";
-import { useChatStore } from "@/app/~/[session]/_store/chat";
+import { CreateChatButton } from "@/app/chat/_components/CreateChatButton";
+import { useChatStore } from "@/app/chat/_store/chat";
 import { version } from "@/constants/version";
 
 export function AppSidebar({
@@ -68,7 +68,7 @@ export function AppSidebar({
                 <React.Fragment key={session?.id}>
                   <SidebarMenuItem key={session?.id}>
                     <SidebarMenuButton asChild isActive={session?.id === currentSession?.id}>
-                      <Link href={`/~/${session?.id}`}>
+                      <Link href={`/chat?session=${session?.id}`}>
                         <span>
                           {currentSession?.id === session?.id ? getCurrentSessionName(session) : session?.name}
                         </span>

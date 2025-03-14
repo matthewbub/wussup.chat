@@ -10,8 +10,8 @@ import { Separator } from "@/components/ui/separator";
 import { SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
 import Link from "next/link";
 import { NavUser } from "@/components/NavUser";
-import { ChatTitleWidget } from "@/app/~/[session]/_components/ChatTitleWidget";
-import { useChatStore } from "@/app/~/[session]/_store/chat";
+import { ChatTitleWidget } from "@/app/chat/_components/ChatTitleWidget";
+import { useChatStore } from "@/app/chat/_store/chat";
 
 interface BreadcrumbItem {
   label: string;

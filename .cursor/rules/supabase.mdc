@@ -12,6 +12,16 @@ alwaysApply: false
 ## Supabase Schema
 
 ```sql
+create table public."Documents" (
+  id uuid not null default gen_random_uuid (),
+  created_at timestamp with time zone not null default now(),
+  last_updated timestamp with time zone null default now(),
+  title text null,
+  content text null,
+  clerk_user_id text null,
+  constraint Documents_pkey primary key (id),
+  constraint Documents_clerk_user_id_fkey foreign KEY (clerk_user_id) references "ChatBot_Users" (clerk_user_id)
+) TABLESPACE pg_default;
 create table public."ChatBot_Messages" (
   id uuid not null default gen_random_uuid (),
   created_at timestamp with time zone not null default now(),

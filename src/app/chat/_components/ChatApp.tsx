@@ -48,6 +48,16 @@ export default function ChatApp({
       isPreferred: message.responseType === "A" ? true : message.isPreferred,
     }));
     setMessages(messagesWithPreferred);
+
+    // Handle selected message from URL
+    const url = new URL(window.location.href);
+    const selectedMessageId = url.searchParams.get("selectedMessage");
+    if (selectedMessageId) {
+      const selectedMessage = messagesWithPreferred.find((m) => m.id === selectedMessageId);
+      if (selectedMessage?.responseGroupId) {
+        handleMessageSelect(selectedMessageId, selectedMessage.responseGroupId);
+      }
+    }
   }, [initialMessages, setMessages]);
 
   useEffect(() => {
@@ -132,6 +142,11 @@ export default function ChatApp({
 
         return newMessages;
       });
+
+      // Update URL with selected message
+      const url = new URL(window.location.href);
+      url.searchParams.set("selectedMessage", messageId);
+      window.history.pushState({}, "", url.toString());
     } catch (error) {
       console.error("Error updating preferred message:", error);
     }

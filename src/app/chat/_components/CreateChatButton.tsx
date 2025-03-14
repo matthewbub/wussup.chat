@@ -8,7 +8,7 @@ export function CreateChatButton() {
 
   const handleCreateChat = () => {
     const newId = crypto.randomUUID();
-    router.push(`/~/${newId}`);
+    router.push(`/chat?session=${newId}`);
   };
 
   return (

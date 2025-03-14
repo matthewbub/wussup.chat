@@ -1,0 +1,132 @@
+{
+  "threads": [
+    {
+      "title": "FAQ",
+      "id": "faq",
+      "created_at": "2025-01-11T21:24:13.599Z",
+      "updated_at": "2025-01-11T21:24:13.599Z",
+      "last_message_at": "2025-01-11T21:24:13.599Z",
+      "user_edited_title": false,
+      "status": "done",
+      "model": "unknown"
+    },
+    {
+      "title": "Welcome to T3 Chat",
+      "id": "welcome",
+      "created_at": "2025-01-11T21:24:13.619Z",
+      "updated_at": "2025-01-11T21:24:13.619Z",
+      "last_message_at": "2025-01-11T21:24:13.619Z",
+      "user_edited_title": false,
+      "status": "done",
+      "model": "unknown"
+    },
+    {
+      "title": "Why T3 Chat?",
+      "id": "why-t3-chat",
+      "created_at": "2025-01-11T21:24:13.609Z",
+      "updated_at": "2025-02-07T23:05:10.349Z",
+      "last_message_at": "2025-02-07T23:05:10.349Z",
+      "user_edited_title": false,
+      "status": "done",
+      "model": "gemini-2.0-flash-lite-preview-02-05"
+    }
+  ],
+  "messages": [
+    {
+      "threadId": "why-t3-chat",
+      "role": "assistant",
+      "content": "Howdy partner! How can I help you today?\n",
+      "status": "done",
+      "model": "gemini-2.0-flash-lite-preview-02-05",
+      "modelParams": { "reasoningEffort": "low" },
+      "id": "24b9017e-adfc-43f2-8304-5caa1962b443",
+      "created_at": "2025-02-07T23:05:09.660Z"
+    },
+    {
+      "threadId": "why-t3-chat",
+      "role": "user",
+      "content": "howdy",
+      "status": "done",
+      "model": "gemini-2.0-flash-lite-preview-02-05",
+      "modelParams": { "reasoningEffort": "low" },
+      "attachments": [],
+      "id": "45339d3d-eacd-496e-b6f1-bc6ea8de31d8",
+      "created_at": "2025-02-07T23:05:09.652Z"
+    },
+    {
+      "threadId": "why-t3-chat",
+      "role": "assistant",
+      "content": "I'm designed to provide quick and informative responses, so you could say I'm pretty fast! Whether it's answering questions, providing explanations, or engaging in conversation, I aim to be efficient and helpful. How can I assist you today?",
+      "status": "done",
+      "model": "gpt-4o-mini",
+      "modelParams": { "reasoningEffort": "low" },
+      "id": "8880b4a7-edb7-4a53-abc1-350303aedadf",
+      "created_at": "2025-02-07T18:13:05.261Z"
+    },
+    {
+      "threadId": "welcome",
+      "content": "What is T3 Chat?",
+      "role": "user",
+      "model": "system",
+      "id": "ONBOARDING_0",
+      "created_at": "2025-01-11T21:24:13.519Z",
+      "status": "done"
+    },
+    {
+      "threadId": "welcome",
+      "content": "## T3 Chat is the best AI Chat ever made.\n\n### LLMs have gotten great. Their apps have not.\n\nIt's hard to overstate how powerful large language models have become. Sadly, the apps we use to talk to them keep getting worse.\n\nThat's why we built T3 Chat.\n\n### Every AI chat app felt like Slack. This one feels like Linear.\n\nYou've never used a faster, more reliable chat app than T3 Chat. Want proof? Click that \"Why T3 Chat?\" thread on the left.",
+      "role": "assistant",
+      "model": "system",
+      "id": "ONBOARDING_1",
+      "created_at": "2025-01-11T21:24:13.520Z",
+      "status": "done"
+    },
+    {
+      "threadId": "why-t3-chat",
+      "content": "Okay, I clicked, now what?",
+      "role": "user",
+      "model": "system",
+      "id": "ONBOARDING_2",
+      "created_at": "2025-01-11T21:24:13.521Z",
+      "status": "done"
+    },
+    {
+      "threadId": "why-t3-chat",
+      "content": "## Did you notice how fast that was?\n\nSorry - had to brag for a second. We poured a lot of time into making T3 Chat as fast as possible.\n\nNo loading spinners. No weird delays. No waiting on a server. Everything you do should feel _instant_. If it doesn't, [annoy Theo about it](https://x.com/theo).\n\n**We wanted an AI chat app that keeps up with power users.** It wasn't easy. We ended up building a lot of bespoke tech to make this possible.\n\nThere's still more we want to do, like hotkeys, branching chats, model selection, and more. We're just getting started 😊\n\nIf you want to know more, click the \"FAQ\" thread on the left.",
+      "role": "assistant",
+      "model": "system",
+      "id": "ONBOARDING_3",
+      "created_at": "2025-01-11T21:24:13.522Z",
+      "status": "done"
+    },
+    {
+      "threadId": "faq",
+      "content": "What else should we know about T3 Chat?",
+      "role": "user",
+      "model": "system",
+      "id": "ONBOARDING_4",
+      "created_at": "2025-01-11T21:24:13.523Z",
+      "status": "done"
+    },
+    {
+      "threadId": "faq",
+      "content": "### Who made T3 Chat?\n\nT3 Chat is made by Ping Labs, a Y Combinator backed startup run by [Theo](https://x.com/theo) and [Mark](https://x.com/r_marked).\n\nWe're also the devs behind [UploadThing](https://uploadthing.com), [PicThing](https://pic.ping.gg), the [T3 Stack](https://t3.gg), and the best video call app ever, [Ping.gg](https://ping.gg).\n\n### What models does T3 Chat use?\n\nWe're experimenting between a few models, primarily **DeepSeek v3** and **GPT-4o Mini**. We plan to introduce model selection in the near future (we love Claude!).\n\n### How did you make T3 Chat so fast???\n\nWe built a lot of bespoke tech to make this possible. The big difference between T3 Chat and other AI chat apps is that we keep all of your data on your device.\n\n### What's next for T3 Chat?\n\nGreat question. Theo has a long list of wishes that he's hoping to get added soon, like...\n- Hotkey support\n- Local search\n- Branching chats\n- Desktop app",
+      "role": "assistant",
+      "model": "system",
+      "id": "ONBOARDING_5",
+      "created_at": "2025-01-11T21:24:13.524Z",
+      "status": "done"
+    },
+    {
+      "threadId": "why-t3-chat",
+      "role": "user",
+      "content": "how fast are you really big dawg",
+      "status": "done",
+      "model": "gpt-4o-mini",
+      "modelParams": { "reasoningEffort": "low" },
+      "attachments": [],
+      "id": "a7bf4016-5b8b-40dd-9b8e-27ddd07d79e2",
+      "created_at": "2025-02-07T18:13:05.247Z"
+    }
+  ]
+}

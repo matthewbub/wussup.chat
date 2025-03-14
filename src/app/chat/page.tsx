@@ -27,7 +27,11 @@ type DBMessage = {
   };
 };
 
-export default async function Page({ params }: { params: Promise<{ session: string }> }) {
+interface PageProps {
+  searchParams: { [key: string]: string | string[] | undefined };
+}
+
+export default async function Page({ searchParams }: PageProps) {
   const supabase = await createClient();
   const { userId } = await auth();
 
@@ -35,20 +39,19 @@ export default async function Page({ params }: { params: Promise<{ session: stri
     return redirect(`/`);
   }
 
-  const appParams = await params;
-  const sessionId = appParams.session;
+  const sessionId = searchParams.session as string;
   if (!sessionId) {
-    return redirect(`/~/${crypto.randomUUID()}`);
+    return redirect(`/chat?session=${crypto.randomUUID()}`);
   }
 
-  await ensureUserActuallyExists(supabase, userId); // ensure user storage folder exists & create if it doesn't
-  const { sessionsResult, messagesResult, usersResult } = await fetchUserChatData(supabase, userId); // fetch user chat data
+  await ensureUserActuallyExists(supabase, userId);
+  const { sessionsResult, messagesResult, usersResult } = await fetchUserChatData(supabase, userId);
   const sessionExists = sessionsResult.data?.find((session) => session.id === sessionId);
   const sessions = [
     ...sessionsResult.data,
     !sessionExists && generateCurrentSessionPlaceholder(sessionId, sessionsResult.data.length, userId),
   ];
-  const groupedSessions = groupMessagesBySession(messagesResult.data, sessions); // group messages by session
+  const groupedSessions = groupMessagesBySession(messagesResult.data, sessions);
   const currentSession = [...Object.values(groupedSessions).flat()].find((session) => session.id === sessionId);
   const initialMessages =
     (currentSession?.messages as unknown as DBMessage[])?.map((message) => ({

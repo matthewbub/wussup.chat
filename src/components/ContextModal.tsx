@@ -9,7 +9,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { useChatStore } from "@/app/~/[session]/_store/chat";
+import { useChatStore } from "@/app/chat/_store/chat";
 
 interface ContextDialogProps {
   open: boolean;

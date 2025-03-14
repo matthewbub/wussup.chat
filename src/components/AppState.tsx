@@ -1,7 +1,7 @@
 "use client";
 import { User } from "@/types/user";
 import { ChatSession } from "@/types/chat";
-import { useChatStore } from "@/app/~/[session]/_store/chat";
+import { useChatStore } from "@/app/chat/_store/chat";
 import { useEffect } from "react";
 
 export function AppState({
