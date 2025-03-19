@@ -294,7 +294,7 @@ export const openAiModels: AiModel[] = [
     inputs: ["text", "images"],
     outputs: ["text"],
     id: "gpt-4.5-preview",
-    forchatuse: true,
+    forchatuse: false,
     free: false,
     meta: {
       optimized_for:
