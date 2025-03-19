@@ -7,7 +7,7 @@ import { Message as MessageComponent } from "./Message";
 import { useChatStore } from "../_store/chat";
 import { ModelSelectionModal } from "./ModalSelectV3";
 import type { AiModel } from "@/constants/models";
-import { Sparkles, X, FileUp, FileText, Image as ImageIcon, Loader2 } from "lucide-react";
+import { Sparkles, FileUp, FileText, Image as ImageIcon, Loader2, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Message } from "@/types/chat";
 import {
@@ -20,7 +20,6 @@ import {
   createUserMessage,
   createAIMessage,
   createMessageUpdate,
-  updatePreferredMessage,
 } from "../_utils/chat";
 import { ChatStatus, Attachment } from "../_types/chat";
 
@@ -38,26 +37,10 @@ export default function ChatApp({
   const [status, setStatus] = useState<ChatStatus>("idle");
   const [localInput, setLocalInput] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
-  const [primaryModel, setPrimaryModel] = useState<AiModel | null>(AVAILABLE_MODELS[0]);
-  const [secondaryModel, setSecondaryModel] = useState<AiModel | null>(null);
+  const [selectedModel, setSelectedModel] = useState<AiModel>(AVAILABLE_MODELS[0]);
 
   useEffect(() => {
-    // Set initial preferred state for A/B messages
-    const messagesWithPreferred = initialMessages.map((message) => ({
-      ...message,
-      isPreferred: message.responseType === "A" ? true : message.isPreferred,
-    }));
-    setMessages(messagesWithPreferred);
-
-    // Handle selected message from URL
-    const url = new URL(window.location.href);
-    const selectedMessageId = url.searchParams.get("selectedMessage");
-    if (selectedMessageId) {
-      const selectedMessage = messagesWithPreferred.find((m) => m.id === selectedMessageId);
-      if (selectedMessage?.responseGroupId) {
-        handleMessageSelect(selectedMessageId, selectedMessage.responseGroupId);
-      }
-    }
+    setMessages(initialMessages);
   }, [initialMessages, setMessages]);
 
   useEffect(() => {
@@ -104,52 +87,9 @@ export default function ChatApp({
     }
   };
 
-  const handleModelSelect = (model: AiModel, isSecondary?: boolean) => {
-    if (isSecondary) {
-      setSecondaryModel(model);
-    } else {
-      setPrimaryModel(model);
-    }
+  const handleModelSelect = (model: AiModel) => {
+    setSelectedModel(model);
     setModalOpen(false);
-  };
-
-  const removeSecondaryModel = () => {
-    setSecondaryModel(null);
-  };
-
-  const handleMessageSelect = async (messageId: string, responseGroupId: string) => {
-    try {
-      await updatePreferredMessage({
-        sessionId,
-        responseGroupId,
-        messageId,
-      });
-
-      // Update local state
-      setMessages((prev) => {
-        const newMessages = [...prev];
-        const groupMessages = newMessages.filter((m) => m.responseGroupId === responseGroupId);
-
-        groupMessages.forEach((message) => {
-          const index = newMessages.findIndex((m) => m.id === message.id);
-          if (index !== -1) {
-            newMessages[index] = {
-              ...message,
-              isPreferred: message.id === messageId,
-            };
-          }
-        });
-
-        return newMessages;
-      });
-
-      // Update URL with selected message
-      const url = new URL(window.location.href);
-      url.searchParams.set("selectedMessage", messageId);
-      window.history.pushState({}, "", url.toString());
-    } catch (error) {
-      console.error("Error updating preferred message:", error);
-    }
   };
 
   const handleSubmit = async (ev: React.FormEvent<HTMLFormElement>) => {
@@ -193,83 +133,63 @@ export default function ChatApp({
         }),
       ]);
 
-      // Generate IDs for the response group
-      const responseGroupId = crypto.randomUUID();
-      const primaryMessageId = crypto.randomUUID();
-      const secondaryMessageId = secondaryModel ? crypto.randomUUID() : null;
-
-      // Create and add primary message
-      const primaryMessage = createAIMessage({
-        id: primaryMessageId,
-        model: primaryModel?.id || AVAILABLE_MODELS[0].id,
-        ...(secondaryModel
-          ? {
-              responseType: "A",
-              responseGroupId,
-              parentMessageId: userMessage.id,
-              isPreferred: true,
-            }
-          : {}),
+      // Create and add AI message
+      const aiMessage = createAIMessage({
+        id: crypto.randomUUID(),
+        model: selectedModel.id,
       });
-      addMessage(primaryMessage);
+      addMessage(aiMessage);
 
-      // Handle primary model request
-      const primaryFormData = createChatFormData({
+      // Handle model request
+      const formData = createChatFormData({
         content: input,
         sessionId,
-        model: primaryModel?.id || AVAILABLE_MODELS[0].id,
-        modelProvider: primaryModel?.provider || AVAILABLE_MODELS[0].provider,
+        model: selectedModel.id,
+        modelProvider: selectedModel.provider,
         chatContext: user?.chat_context || "You are a helpful assistant.",
         messageHistory: messages,
-        ...(secondaryModel
-          ? {
-              responseType: "A",
-              responseGroupId,
-              parentMessageId: userMessage.id,
-            }
-          : {}),
         attachments,
       });
 
-      const primaryResponse = await fetch("/api/v1/chat-ab", {
+      const response = await fetch("/api/v1/chat", {
         method: "POST",
-        body: primaryFormData,
+        body: formData,
       });
 
-      if (!primaryResponse.ok) {
-        throw new Error(`Primary model error: ${primaryResponse.statusText}`);
+      if (!response.ok) {
+        throw new Error(`Model error: ${response.statusText}`);
       }
 
-      const primaryReader = primaryResponse.body?.getReader();
-      if (primaryReader) {
+      const reader = response.body?.getReader();
+      if (reader) {
         await processStreamingResponse(
-          primaryReader,
+          reader,
           (content) => {
-            primaryMessage.content += content;
+            aiMessage.content += content;
             setMessages((prev) => {
               const newMessages = [...prev];
-              const existingMessageIndex = newMessages.findIndex((m) => m.id === primaryMessage.id);
+              const existingMessageIndex = newMessages.findIndex((m) => m.id === aiMessage.id);
               if (existingMessageIndex !== -1) {
-                newMessages[existingMessageIndex] = { ...primaryMessage };
+                newMessages[existingMessageIndex] = { ...aiMessage };
               }
               return newMessages;
             });
           },
           (usage) => {
-            primaryMessage.prompt_tokens = usage.promptTokens;
-            primaryMessage.completion_tokens = usage.completionTokens;
+            aiMessage.prompt_tokens = usage.promptTokens;
+            aiMessage.completion_tokens = usage.completionTokens;
             userMessage.prompt_tokens = usage.promptTokens;
 
             setMessages((prev) => {
               const newMessages = [...prev];
               const userMessageIndex = newMessages.findIndex((m) => m.id === userMessage.id);
-              const primaryMessageIndex = newMessages.findIndex((m) => m.id === primaryMessage.id);
+              const aiMessageIndex = newMessages.findIndex((m) => m.id === aiMessage.id);
 
               if (userMessageIndex !== -1) {
                 newMessages[userMessageIndex] = { ...userMessage };
               }
-              if (primaryMessageIndex !== -1) {
-                newMessages[primaryMessageIndex] = { ...primaryMessage };
+              if (aiMessageIndex !== -1) {
+                newMessages[aiMessageIndex] = { ...aiMessage };
               }
 
               return newMessages;
@@ -278,113 +198,30 @@ export default function ChatApp({
         );
       }
 
-      let secondaryMessage: Message | undefined;
-
-      // Handle secondary model if present
-      if (secondaryModel) {
-        secondaryMessage = createAIMessage({
-          id: secondaryMessageId!,
-          model: secondaryModel.id,
-          responseType: "B",
-          responseGroupId,
-          parentMessageId: userMessage.id,
-          isPreferred: false,
-        });
-        addMessage(secondaryMessage);
-
-        const secondaryFormData = createChatFormData({
-          content: input,
-          sessionId,
-          model: secondaryModel.id,
-          modelProvider: secondaryModel.provider,
-          chatContext: user?.chat_context || "You are a helpful assistant.",
-          messageHistory: messages,
-          responseType: "B",
-          responseGroupId,
-          parentMessageId: userMessage.id,
-          attachments,
-        });
-
-        const secondaryResponse = await fetch("/api/v1/chat-ab", {
-          method: "POST",
-          body: secondaryFormData,
-        });
-
-        if (!secondaryResponse.ok) {
-          throw new Error(`Secondary model error: ${secondaryResponse.statusText}`);
-        }
-
-        const secondaryReader = secondaryResponse.body?.getReader();
-        if (secondaryReader) {
-          await processStreamingResponse(secondaryReader, (content) => {
-            secondaryMessage!.content += content;
-            setMessages((prev) => {
-              const newMessages = [...prev];
-              const existingMessageIndex = newMessages.findIndex((m) => m.id === secondaryMessage!.id);
-              if (existingMessageIndex !== -1) {
-                newMessages[existingMessageIndex] = { ...secondaryMessage! };
-              }
-              return newMessages;
-            });
-          });
-        }
-      }
-
       // Store final messages
-      await storeChatMessages(
-        [
-          createMessageUpdate({
-            id: primaryMessage.id,
-            content: primaryMessage.content,
-            is_user: primaryMessage.is_user,
-            session_id: sessionId,
-            created_at: primaryMessage.created_at,
-            model: primaryMessage.model,
-            ...(secondaryModel
-              ? {
-                  response_type: primaryMessage.responseType,
-                  response_group_id: primaryMessage.responseGroupId,
-                  parent_message_id: primaryMessage.parentMessageId,
-                }
-              : {}),
-            prompt_tokens: primaryMessage.prompt_tokens,
-            completion_tokens: primaryMessage.completion_tokens,
-          }),
-          secondaryMessage &&
-            createMessageUpdate({
-              id: secondaryMessage.id,
-              content: secondaryMessage.content,
-              is_user: secondaryMessage.is_user,
-              session_id: sessionId,
-              created_at: secondaryMessage.created_at,
-              model: secondaryMessage.model,
-              response_type: secondaryMessage.responseType,
-              response_group_id: secondaryMessage.responseGroupId,
-              parent_message_id: secondaryMessage.parentMessageId,
-              prompt_tokens: secondaryMessage.prompt_tokens || 0,
-              completion_tokens: secondaryMessage.completion_tokens || 0,
-            }),
-          createMessageUpdate({
-            id: userMessage.id,
-            content: userMessage.content,
-            is_user: userMessage.is_user,
-            session_id: sessionId,
-            created_at: userMessage.created_at,
-            prompt_tokens: userMessage.prompt_tokens,
-            completion_tokens: 0,
-          }),
-        ].filter(Boolean)
-      );
+      await storeChatMessages([
+        createMessageUpdate({
+          id: aiMessage.id,
+          content: aiMessage.content,
+          is_user: aiMessage.is_user,
+          session_id: sessionId,
+          created_at: aiMessage.created_at,
+          model: aiMessage.model,
+          prompt_tokens: aiMessage.prompt_tokens,
+          completion_tokens: aiMessage.completion_tokens,
+        }),
+        createMessageUpdate({
+          id: userMessage.id,
+          content: userMessage.content,
+          is_user: userMessage.is_user,
+          session_id: sessionId,
+          created_at: userMessage.created_at,
+          prompt_tokens: userMessage.prompt_tokens,
+          completion_tokens: 0,
+        }),
+      ]);
 
       setStatus("idle");
-      if (textareaRef.current) {
-        textareaRef.current.value = "";
-      }
-      setLocalInput("");
-      setAttachments([]);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
     } catch (error) {
       console.error("Error:", error);
       setStatus("error");
@@ -393,56 +230,15 @@ export default function ChatApp({
 
   return (
     <div className="h-full flex flex-col gap-4">
-      {/* If there are no messages, don't render all this */}
       {messages.length > 0 && (
         <div className="space-y-8 mb-6 flex-1 overflow-y-scroll p-4">
-          {messages.reduce((acc: React.JSX.Element[], message, index) => {
-            if (message.is_user) {
-              acc.push(<MessageComponent key={message.id} {...message} />);
-              return acc;
-            }
-
-            // Only pass isLoading=true to the last AI message when streaming
-            const isLastAIMessage = index === messages.length - 1 && !message.is_user;
-
-            if (message.responseType === "A") {
-              const nextMessage = messages[index + 1];
-              if (nextMessage?.responseType === "B") {
-                acc.push(
-                  <div key={message.id} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="col-span-1 px-2">
-                      <MessageComponent
-                        {...message}
-                        isLoading={status === "streaming" && isLastAIMessage}
-                        isPreferred={message.isPreferred}
-                        isSelectable={true}
-                        onSelect={() => handleMessageSelect(message.id, message.responseGroupId!)}
-                      />
-                    </div>
-                    <div className="col-span-1 px-2">
-                      <MessageComponent
-                        {...nextMessage}
-                        isLoading={status === "streaming" && index === messages.length - 2}
-                        isPreferred={nextMessage.isPreferred}
-                        isSelectable={true}
-                        onSelect={() => handleMessageSelect(nextMessage.id, nextMessage.responseGroupId!)}
-                      />
-                    </div>
-                  </div>
-                );
-                return acc;
-              }
-            }
-
-            if (message.responseType === "B") {
-              return acc;
-            }
-
-            acc.push(
-              <MessageComponent key={message.id} {...message} isLoading={status === "streaming" && isLastAIMessage} />
-            );
-            return acc;
-          }, [])}
+          {messages.map((message) => (
+            <MessageComponent
+              key={message.id}
+              {...message}
+              isLoading={status === "streaming" && !message.is_user && message.id === messages[messages.length - 1].id}
+            />
+          ))}
         </div>
       )}
 
@@ -456,23 +252,8 @@ export default function ChatApp({
               disabled={status === "streaming"}
             >
               <Sparkles className="h-4 w-4" />
-              {primaryModel
-                ? `${primaryModel.id} ${secondaryModel ? "and " + secondaryModel.id : ""}`
-                : "Select AI Model"}
+              {selectedModel ? selectedModel.id : "Select AI Model"}
             </Button>
-
-            {secondaryModel && (
-              <Button
-                type="button"
-                variant="outline"
-                onClick={removeSecondaryModel}
-                className="gap-2"
-                disabled={status === "streaming"}
-              >
-                <X className="h-4 w-4" />
-                Remove Model B
-              </Button>
-            )}
           </div>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-2 rounded-xl bg-secondary p-4 mb-4">
@@ -583,9 +364,8 @@ export default function ChatApp({
         open={modalOpen}
         onOpenChange={setModalOpen}
         onSelectModel={handleModelSelect}
-        primaryModelId={primaryModel?.id}
+        selectedModelId={selectedModel.id}
         defaultModelId="o3-mini"
-        onRemoveSecondaryModel={removeSecondaryModel}
         disabled={status === "streaming"}
       />
     </div>

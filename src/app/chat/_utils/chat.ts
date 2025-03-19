@@ -31,7 +31,7 @@ export const validateFile = (file: File): FileValidationResult => {
 };
 
 /**
- * creates a new user message
+ * creates a new user message that gets fed to the LLM
  */
 export const createUserMessage = (content: string) => ({
   id: crypto.randomUUID(),
@@ -55,7 +55,6 @@ export const createAIMessage = (params: {
   responseType?: "A" | "B";
   responseGroupId?: string;
   parentMessageId?: string;
-  isPreferred?: boolean;
 }) => ({
   id: params.id,
   content: "",
@@ -67,7 +66,6 @@ export const createAIMessage = (params: {
   parentMessageId: params.parentMessageId,
   prompt_tokens: 0,
   completion_tokens: 0,
-  isPreferred: params.isPreferred ?? (params.responseType === "A" ? true : undefined),
 });
 
 /**
@@ -200,21 +198,4 @@ export const generateChatTitle = async (sessionId: string, content: string) => {
     }),
   });
   return response.json();
-};
-
-/**
- * updates the preferred message in a response group
- */
-export const updatePreferredMessage = async (params: {
-  sessionId: string;
-  responseGroupId: string;
-  messageId: string;
-}) => {
-  return fetch("/api/v1/chat-store/preferred", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(params),
-  });
 };

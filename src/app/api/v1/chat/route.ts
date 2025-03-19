@@ -153,7 +153,6 @@ export async function POST(req: Request) {
               data: { publicUrl },
             } = supabase.storage.from("ChatBot_Images_Generated").getPublicUrl(imagePath);
 
-            // Return the image URL and prompt
             return { image: publicUrl, prompt };
           },
         }),
