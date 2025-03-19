@@ -80,18 +80,12 @@ export function AppSidebar({
             </SidebarMenu>
           </SidebarGroupContent>
 
-          <SidebarGroupContent className="flex flex-col gap-2 sticky bottom-0">
+          <SidebarGroupContent className="flex flex-col gap-2 sticky bottom-0 bg-sidebar">
             <SidebarSeparator />
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
-                  <Link href="/dashboard">Go to Dashboard</Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  <Link href="/documents">Documents</Link>
+                  <Link href="/dashboard">Dashboard</Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
 

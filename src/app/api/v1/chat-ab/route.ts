@@ -86,18 +86,8 @@ export async function POST(req: Request) {
         .join("\n");
   }
 
-  // Parse message history and filter out non-preferred A/B messages
+  // Parse message history
   const parsedHistory = messageHistory ? JSON.parse(messageHistory) : [];
-  const filteredHistory = parsedHistory.filter((msg: any) => {
-    // Keep user messages
-    if (msg.is_user) return true;
-    // Keep messages without response type (regular messages)
-    if (!msg.responseType) return true;
-    // Keep preferred A/B messages
-    if (msg.responseType && msg.isPreferred) return true;
-    // Filter out non-preferred A/B messages
-    return false;
-  });
 
   // Prepare the messages array with the current message and attachments
   const currentMessage = {
@@ -108,7 +98,7 @@ export async function POST(req: Request) {
 
   // Create final messages array
   const messages = [
-    ...filteredHistory.map((msg: { is_user: boolean; content: string }) => ({
+    ...parsedHistory.map((msg: { is_user: boolean; content: string }) => ({
       role: msg.is_user ? ("user" as const) : ("assistant" as const),
       content: msg.content,
     })),
@@ -163,8 +153,7 @@ export async function POST(req: Request) {
               data: { publicUrl },
             } = supabase.storage.from("ChatBot_Images_Generated").getPublicUrl(imagePath);
 
-            // Return the image URL and prompt without storing the message
-            // The message will be stored by the client
+            // Return the image URL and prompt
             return { image: publicUrl, prompt };
           },
         }),
