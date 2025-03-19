@@ -38,7 +38,7 @@ export function HeaderHero() {
             </SignedOut>
             <SignedIn>
               <Button variant="ghost" asChild>
-                <Link href="/~">Chat</Link>
+                <Link href="/chat">Chat</Link>
               </Button>
               <UserButton />
             </SignedIn>
