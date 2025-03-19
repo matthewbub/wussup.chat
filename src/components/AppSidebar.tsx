@@ -18,6 +18,7 @@ import { ChatSession } from "@/types/chat";
 import { CreateChatButton } from "@/app/chat/_components/CreateChatButton";
 import { useChatStore } from "@/app/chat/_store/chat";
 import { version } from "@/constants/version";
+import { usePathname, useSearchParams } from "next/navigation";
 
 export function AppSidebar({
   sessions,
@@ -26,6 +27,9 @@ export function AppSidebar({
   sessions: ChatSession[];
 } & React.ComponentProps<typeof Sidebar>) {
   const { currentSession } = useChatStore();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const currentSessionId = searchParams.get("session");
 
   const getCurrentSessionName = (session: ChatSession) => {
     if (currentSession?.id === session.id && currentSession?.name) {
@@ -67,7 +71,7 @@ export function AppSidebar({
               {sessions.map((session: ChatSession) => (
                 <React.Fragment key={session?.id}>
                   <SidebarMenuItem key={session?.id}>
-                    <SidebarMenuButton asChild isActive={session?.id === currentSession?.id}>
+                    <SidebarMenuButton asChild isActive={session?.id === currentSessionId}>
                       <Link href={`/chat?session=${session?.id}`}>
                         <span>
                           {currentSession?.id === session?.id ? getCurrentSessionName(session) : session?.name}
@@ -84,19 +88,19 @@ export function AppSidebar({
             <SidebarSeparator />
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton asChild>
+                <SidebarMenuButton asChild isActive={pathname === "/dashboard"}>
                   <Link href="/dashboard">Dashboard</Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
 
               <SidebarMenuItem>
-                <SidebarMenuButton asChild>
+                <SidebarMenuButton asChild isActive={pathname.startsWith("/chat")}>
                   <Link href="/chat">Chat</Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
 
               <SidebarMenuItem>
-                <SidebarMenuButton asChild>
+                <SidebarMenuButton asChild isActive={pathname === "/settings"}>
                   <Link href="/settings">Settings</Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
