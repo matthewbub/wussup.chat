@@ -12,12 +12,8 @@ export type MessageUpdate = {
   session_id: string;
   created_at: string;
   model?: string;
-  response_type?: "A" | "B";
-  response_group_id?: string;
-  parent_message_id?: string;
   prompt_tokens?: number;
   completion_tokens?: number;
-  is_preferred?: boolean;
 };
 
 export type StreamingCallbacks = {

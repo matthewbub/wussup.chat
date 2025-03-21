@@ -8,9 +8,6 @@ type StoreChatMessage = {
   is_user: boolean;
   session_id: string;
   created_at: string;
-  response_type?: "A" | "B";
-  response_group_id?: string;
-  parent_message_id?: string;
   model?: string;
   model_provider?: string;
   metadata?: Record<string, any>;
@@ -42,68 +39,40 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid chat session" }, { status: 403 });
     }
 
-    // Use upsert to handle potential duplicates
-    const messageUpserts = messages.map((message) =>
-      supabase.from("ChatBot_Messages").upsert(
-        {
-          id: message.id,
-          chat_session_id: message.session_id,
-          content: message.content,
-          clerk_user_id: userId,
-          is_user: message.is_user,
-          created_at: message.created_at,
-          response_type: message.response_type,
-          response_group_id: message.response_group_id,
-          parent_message_id: message.parent_message_id,
-          model: message.model,
-          model_provider: message.model_provider,
-          metadata: message.metadata,
-          prompt_tokens: message.prompt_tokens,
-          completion_tokens: message.completion_tokens,
-        },
-        {
-          onConflict: "id",
-          ignoreDuplicates: false,
-        }
-      )
-    );
+    messages.map((message) => console.log("[Chat Store] Messages", message.model_provider));
 
-    // Increment message count based on number of messages
-    const incrementCount = supabase.rpc("increment_message_count", {
-      incoming_uid: userId,
-      increment_by: messages.length,
+    // Format all messages first
+    const formattedMessages = messages.map((message) => ({
+      id: message.id,
+      chat_session_id: message.session_id,
+      content: message.content,
+      clerk_user_id: userId,
+      is_user: message.is_user,
+      created_at: message.created_at,
+      model: message.model,
+      model_provider: message.model_provider,
+      metadata: message.metadata,
+      prompt_tokens: message.prompt_tokens,
+      completion_tokens: message.completion_tokens,
+    }));
+
+    // Perform a single bulk upsert
+    const { error: upsertError } = await supabase.from("ChatBot_Messages").upsert(formattedMessages, {
+      onConflict: "id",
+      ignoreDuplicates: false,
     });
 
-    // Execute all database operations
-    const results = await Promise.all([...messageUpserts, incrementCount]);
+    // // Increment message count based on number of messages
+    const { error: incrementError } = await supabase.rpc("increment_message_count_v2", {
+      incoming_clerk_user_id: userId,
+      increment_by: 1,
+    });
 
     // Check for errors
-    const errors = results.filter((result) => result.error);
-    if (errors.length > 0) {
-      console.error("[Chat Store] Errors:", errors);
+    if (upsertError || incrementError) {
+      console.error("[Chat Store] Errors:", { upsertError, incrementError });
 
-      // Check if it's an RLS error
-      const hasRLSError = errors.some(
-        (e) => e.error?.code === "42501" || e.error?.message?.includes("row-level security")
-      );
-
-      if (hasRLSError) {
-        return NextResponse.json(
-          {
-            error: "Permission denied. Please ensure you have access to this chat session.",
-            details: errors,
-          },
-          { status: 403 }
-        );
-      }
-
-      return NextResponse.json(
-        {
-          error: "Failed to store some messages",
-          details: errors,
-        },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: "Failed to store some messages" }, { status: 500 });
     }
 
     return NextResponse.json({ success: true });

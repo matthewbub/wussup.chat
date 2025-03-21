@@ -39,7 +39,8 @@ export default async function Page({ searchParams }: PageProps) {
     return redirect(`/`);
   }
 
-  const sessionId = searchParams.session as string;
+  const awaitedSearchParams = await searchParams;
+  const sessionId = awaitedSearchParams.session as string;
   if (!sessionId) {
     return redirect(`/chat?session=${crypto.randomUUID()}`);
   }

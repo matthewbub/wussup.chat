@@ -2,10 +2,8 @@ import { openai } from "@ai-sdk/openai";
 import { anthropic } from "@ai-sdk/anthropic";
 import { google } from "@ai-sdk/google";
 import { xai } from "@ai-sdk/xai";
-import { experimental_generateImage, LanguageModelV1, streamText, tool } from "ai";
-import { createClient } from "@/lib/supabase-server";
+import { LanguageModelV1, streamText } from "ai";
 import { NextResponse } from "next/server";
-import { z } from "zod";
 import { AVAILABLE_MODELS } from "@/constants/models";
 import { auth } from "@clerk/nextjs/server";
 
@@ -27,8 +25,7 @@ export async function POST(req: Request) {
   const messageHistory = formData.get("messageHistory") as string;
   const attachments = formData.getAll("attachments") as File[];
 
-  // Initialize Supabase client (only used for database, not auth)
-  const supabase = await createClient();
+  console.log("[Chat API] Model Provider:", model_provider);
 
   // Validate model and provider
   const selectedModel = AVAILABLE_MODELS.find((m) => m.id === model && m.provider === model_provider);
@@ -123,40 +120,40 @@ export async function POST(req: Request) {
       model: provider as LanguageModelV1,
       system: chat_context as string,
       messages,
-      tools: {
-        generateImage: tool({
-          description: "Generate an image",
-          parameters: z.object({
-            prompt: z.string().describe("The prompt to generate the image from"),
-          }),
-          execute: async ({ prompt }) => {
-            const { image } = await experimental_generateImage({
-              model: openai.image("dall-e-3"),
-              prompt,
-            });
+      // tools: {
+      //   generateImage: tool({
+      //     description: "Generate an image",
+      //     parameters: z.object({
+      //       prompt: z.string().describe("The prompt to generate the image from"),
+      //     }),
+      //     execute: async ({ prompt }) => {
+      //       const { image } = await experimental_generateImage({
+      //         model: openai.image("dall-e-3"),
+      //         prompt,
+      //       });
 
-            const imageBuffer = Buffer.from(image.base64, "base64");
-            const imagePath = `${userId}/generated/${new Date().getFullYear()}/${crypto.randomUUID()}.png`;
-            const { error: createError } = await supabase.storage
-              .from("ChatBot_Images_Generated")
-              .upload(imagePath, imageBuffer, {
-                contentType: "image/png",
-                cacheControl: "3600",
-              });
+      //       const imageBuffer = Buffer.from(image.base64, "base64");
+      //       const imagePath = `${userId}/generated/${new Date().getFullYear()}/${crypto.randomUUID()}.png`;
+      //       const { error: createError } = await supabase.storage
+      //         .from("ChatBot_Images_Generated")
+      //         .upload(imagePath, imageBuffer, {
+      //           contentType: "image/png",
+      //           cacheControl: "3600",
+      //         });
 
-            if (createError) {
-              console.error("Error uploading image to storage", createError);
-              throw new Error("Failed to upload generated image");
-            }
+      //       if (createError) {
+      //         console.error("Error uploading image to storage", createError);
+      //         throw new Error("Failed to upload generated image");
+      //       }
 
-            const {
-              data: { publicUrl },
-            } = supabase.storage.from("ChatBot_Images_Generated").getPublicUrl(imagePath);
+      //       const {
+      //         data: { publicUrl },
+      //       } = supabase.storage.from("ChatBot_Images_Generated").getPublicUrl(imagePath);
 
-            return { image: publicUrl, prompt };
-          },
-        }),
-      },
+      //       return { image: publicUrl, prompt };
+      //     },
+      //   }),
+      // },
     });
     return result.toDataStreamResponse({
       getErrorMessage: errorHandler,
@@ -169,17 +166,6 @@ export async function POST(req: Request) {
 }
 
 function errorHandler(error: unknown) {
-  if (error == null) {
-    return "[Chat API] unknown error";
-  }
-
-  if (typeof error === "string") {
-    return error;
-  }
-
-  if (error instanceof Error) {
-    return error.message;
-  }
-
+  console.error("[Chat API] Error streaming response:", error);
   return JSON.stringify(error);
 }

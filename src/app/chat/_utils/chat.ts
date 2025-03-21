@@ -38,10 +38,8 @@ export const createUserMessage = (content: string) => ({
   content,
   is_user: true,
   created_at: new Date().toISOString(),
-  model: "",
-  responseType: undefined,
-  responseGroupId: undefined,
-  parentMessageId: undefined,
+  model: null,
+  model_provider: null,
   prompt_tokens: 0,
   completion_tokens: 0,
 });
@@ -49,21 +47,12 @@ export const createUserMessage = (content: string) => ({
 /**
  * creates a new ai message
  */
-export const createAIMessage = (params: {
-  id: string;
-  model: string;
-  responseType?: "A" | "B";
-  responseGroupId?: string;
-  parentMessageId?: string;
-}) => ({
+export const createAIMessage = (params: { id: string; model: string }) => ({
   id: params.id,
   content: "",
   is_user: false,
   created_at: new Date().toISOString(),
   model: params.model,
-  responseType: params.responseType,
-  responseGroupId: params.responseGroupId,
-  parentMessageId: params.parentMessageId,
   prompt_tokens: 0,
   completion_tokens: 0,
 });
@@ -78,9 +67,7 @@ export const createMessageUpdate = (params: {
   session_id: string;
   created_at: string;
   model?: string;
-  response_type?: "A" | "B";
-  response_group_id?: string;
-  parent_message_id?: string;
+  model_provider?: string;
   prompt_tokens?: number;
   completion_tokens?: number;
   is_preferred?: boolean;
@@ -91,9 +78,7 @@ export const createMessageUpdate = (params: {
   session_id: params.session_id,
   created_at: params.created_at,
   model: params.model,
-  response_type: params.response_type,
-  response_group_id: params.response_group_id,
-  parent_message_id: params.parent_message_id,
+  model_provider: params.model_provider,
   prompt_tokens: params.prompt_tokens || 0,
   completion_tokens: params.completion_tokens || 0,
   is_preferred: params.is_preferred,
@@ -152,6 +137,7 @@ export const createChatFormData = (params: {
   parentMessageId?: string;
   attachments?: Array<{ file: File }>;
 }) => {
+  console.log("[Create Chat Form Data] Params.modelProvider:", params.modelProvider);
   const formData = new FormData();
   formData.append("content", params.content);
   formData.append("session_id", params.sessionId);
@@ -159,10 +145,6 @@ export const createChatFormData = (params: {
   formData.append("model_provider", params.modelProvider);
   formData.append("chat_context", params.chatContext);
   formData.append("messageHistory", JSON.stringify(params.messageHistory));
-
-  if (params.responseType) formData.append("response_type", params.responseType);
-  if (params.responseGroupId) formData.append("response_group_id", params.responseGroupId);
-  if (params.parentMessageId) formData.append("parent_message_id", params.parentMessageId);
 
   if (params.attachments) {
     params.attachments.forEach((attachment) => {

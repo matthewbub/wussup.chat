@@ -14,20 +14,18 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "@/components/ui/sidebar";
 import { BillingModal } from "@/components/BillingModal";
-import crypto from "crypto";
 import { useRouter } from "next/navigation";
 import { ContextDialog } from "@/components/ContextModal";
 import { useState } from "react";
 import { useChatStore } from "@/app/chat/_store/chat";
-
-const getGravatarUrl = (email: string) => {
-  const hash = crypto.createHash("md5").update(email.toLowerCase().trim()).digest("hex");
-  return `https://www.gravatar.com/avatar/${hash}?d=mp`;
-};
+import { useClerk, useUser } from "@clerk/nextjs";
 
 export function NavUser() {
   const router = useRouter();
-  const { user } = useChatStore();
+  const { user, clearStore } = useChatStore();
+  const { signOut } = useClerk();
+  // Only pull the clerkUser if the data isn't already available in the chat store
+  const { user: clerkUser, isLoaded: clerkUserIsLoaded } = useUser();
   const avatarFallback = user ? user.email?.slice(0, 2).toUpperCase() : "GU";
   const [showContextDialog, setShowContextDialog] = useState(false);
   const [activeModal, setActiveModal] = useState<"auth" | "billing" | null>(null);
@@ -38,18 +36,15 @@ export function NavUser() {
 
   const handleLogout = async () => {
     try {
-      // Call server-side logout endpoint
-      const response = await fetch("/api/auth/logout", {
-        method: "POST",
-        credentials: "include",
-      });
-
-      if (!response.ok) {
-        throw new Error("Logout failed");
-      }
+      // sign out of clerk
+      await signOut();
 
       // Clear the chat store state
-      // clearStore();
+      clearStore();
+
+      // TODO: Impl this with the guest feature
+      // redirect to the chat page with a new session
+      // router.push(`/chat?session=${crypto.randomUUID()}`);
 
       router.push("/");
     } catch (error) {
@@ -57,7 +52,9 @@ export function NavUser() {
     }
   };
 
-  const gravatarUrl = user?.email ? getGravatarUrl(user.email) : "";
+  if (!clerkUserIsLoaded) {
+    return null;
+  }
 
   return (
     <>
@@ -71,7 +68,7 @@ export function NavUser() {
               >
                 {user?.email ? (
                   <Avatar className="h-8 w-8 rounded-lg">
-                    <AvatarImage src={gravatarUrl} alt={user.email} />
+                    <AvatarImage src={clerkUser?.imageUrl} alt={user.email} />
                     <AvatarFallback className="rounded-lg">{avatarFallback}</AvatarFallback>
                   </Avatar>
                 ) : (
@@ -91,7 +88,7 @@ export function NavUser() {
                     <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                       {user.email && (
                         <Avatar className="h-8 w-8 rounded-lg">
-                          <AvatarImage src={gravatarUrl} alt={user.email} />
+                          <AvatarImage src={clerkUser?.imageUrl} alt={user.email} />
                           <AvatarFallback className="rounded-lg">{avatarFallback}</AvatarFallback>
                         </Avatar>
                       )}

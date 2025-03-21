@@ -20,14 +20,13 @@ export async function POST(req: Request) {
   const { messages, session_id } = await req.json();
   const supabase = await createClient();
 
-  // Take only first two messages for title generation
-  const titleMessages = messages.slice(0, 2);
-
   const { text } = await generateText({
-    model: openai("gpt-4-turbo"),
+    model: openai("gpt-4o-mini"),
     prompt: clsx([
-      "Summarize the chat in a concise title using up to 6 words. Text only, no special characters. If the chat is empty, use a funny Futurama quote. For example: 'Shut up and take my money!' or 'Good news everyone!'",
-      titleMessages.map((m: { role: string; content: string }) => `${m.role}: ${m.content}`),
+      "Summarize the chat thread in a concise title using up to 6 words.",
+      "Text only, no special characters.",
+      "If the chat is empty, use a fun fact about planet earth.",
+      messages.map((m: { role: string; content: string }) => `${m.role}: ${m.content}`),
     ]),
   });
 

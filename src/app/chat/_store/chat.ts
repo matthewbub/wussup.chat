@@ -12,6 +12,7 @@ interface ChatStore {
   user: User | null;
   setUser: (user: User) => void;
   updateUserChatContext: (context: string) => void;
+  clearStore: () => void;
 }
 
 export const useChatStore = create<ChatStore>((set) => ({
@@ -51,5 +52,8 @@ export const useChatStore = create<ChatStore>((set) => ({
       state.user.chat_context = context;
       return { user: state.user };
     });
+  },
+  clearStore: () => {
+    set({ currentSession: null, messages: [], user: null });
   },
 }));

@@ -92,10 +92,7 @@ export default function ChatApp({
     setModalOpen(false);
   };
 
-  const handleSubmit = async (ev: React.FormEvent<HTMLFormElement>) => {
-    ev.preventDefault();
-    const input = textareaRef.current?.value || "";
-
+  const clearChat = () => {
     // Clear input and attachments immediately
     if (textareaRef.current) {
       textareaRef.current.value = "";
@@ -105,127 +102,104 @@ export default function ChatApp({
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
+  };
+
+  const handleSubmit = async (ev: React.FormEvent<HTMLFormElement>) => {
+    ev.preventDefault();
+    const input = textareaRef.current?.value || "";
+
+    // Clear chat immediately
+    clearChat();
 
     // Add user message immediately
-    const userMessage = createUserMessage(input);
+    const userMessage = {
+      id: crypto.randomUUID(),
+      content: input,
+      is_user: true,
+      created_at: new Date().toISOString(),
+      model: selectedModel.id,
+      model_provider: selectedModel.provider,
+    };
+
     addMessage(userMessage);
 
     // Start processing
     setStatus("streaming");
 
-    try {
-      // Generate title if this is the first message
-      if (messages.length === 0) {
-        const titleData = await generateChatTitle(sessionId, input);
-        await updateSessionName(titleData.title);
-      }
-
-      // Store user message
-      await storeChatMessages([
-        createMessageUpdate({
-          id: userMessage.id,
-          content: userMessage.content,
-          is_user: userMessage.is_user,
-          session_id: sessionId,
-          created_at: userMessage.created_at,
-          prompt_tokens: 0,
-          completion_tokens: 0,
-        }),
-      ]);
-
-      // Create and add AI message
-      const aiMessage = createAIMessage({
-        id: crypto.randomUUID(),
-        model: selectedModel.id,
-      });
-      addMessage(aiMessage);
-
-      // Handle model request
-      const formData = createChatFormData({
-        content: input,
-        sessionId,
-        model: selectedModel.id,
-        modelProvider: selectedModel.provider,
-        chatContext: user?.chat_context || "You are a helpful assistant.",
-        messageHistory: messages,
-        attachments,
-      });
-
-      const response = await fetch("/api/v1/chat", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!response.ok) {
-        throw new Error(`Model error: ${response.statusText}`);
-      }
-
-      const reader = response.body?.getReader();
-      if (reader) {
-        await processStreamingResponse(
-          reader,
-          (content) => {
-            aiMessage.content += content;
-            setMessages((prev) => {
-              const newMessages = [...prev];
-              const existingMessageIndex = newMessages.findIndex((m) => m.id === aiMessage.id);
-              if (existingMessageIndex !== -1) {
-                newMessages[existingMessageIndex] = { ...aiMessage };
-              }
-              return newMessages;
-            });
-          },
-          (usage) => {
-            aiMessage.prompt_tokens = usage.promptTokens;
-            aiMessage.completion_tokens = usage.completionTokens;
-            userMessage.prompt_tokens = usage.promptTokens;
-
-            setMessages((prev) => {
-              const newMessages = [...prev];
-              const userMessageIndex = newMessages.findIndex((m) => m.id === userMessage.id);
-              const aiMessageIndex = newMessages.findIndex((m) => m.id === aiMessage.id);
-
-              if (userMessageIndex !== -1) {
-                newMessages[userMessageIndex] = { ...userMessage };
-              }
-              if (aiMessageIndex !== -1) {
-                newMessages[aiMessageIndex] = { ...aiMessage };
-              }
-
-              return newMessages;
-            });
-          }
-        );
-      }
-
-      // Store final messages
-      await storeChatMessages([
-        createMessageUpdate({
-          id: aiMessage.id,
-          content: aiMessage.content,
-          is_user: aiMessage.is_user,
-          session_id: sessionId,
-          created_at: aiMessage.created_at,
-          model: aiMessage.model,
-          prompt_tokens: aiMessage.prompt_tokens,
-          completion_tokens: aiMessage.completion_tokens,
-        }),
-        createMessageUpdate({
-          id: userMessage.id,
-          content: userMessage.content,
-          is_user: userMessage.is_user,
-          session_id: sessionId,
-          created_at: userMessage.created_at,
-          prompt_tokens: userMessage.prompt_tokens,
-          completion_tokens: 0,
-        }),
-      ]);
-
-      setStatus("idle");
-    } catch (error) {
-      console.error("Error:", error);
-      setStatus("error");
+    if (messages.length === 0) {
+      const titleData = await generateChatTitle(sessionId, input);
+      await updateSessionName(titleData.title);
     }
+
+    // try {
+    //   // Generate title if this is the first message
+
+    //   // Create and add AI message
+    const aiMessage = createAIMessage({
+      id: crypto.randomUUID(),
+      model: selectedModel.id,
+    });
+    addMessage(aiMessage);
+
+    //   // Handle model request
+    const formData = createChatFormData({
+      content: input,
+      sessionId,
+      model: selectedModel.id,
+      modelProvider: selectedModel.provider,
+      chatContext: user?.chat_context || "You are a helpful assistant.",
+      messageHistory: messages,
+      attachments,
+    });
+
+    const response = await fetch("/api/v1/chat", {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!response.ok) {
+      setStatus("error");
+      throw new Error(`Model error: ${response.statusText}`);
+    }
+
+    const reader = response.body?.getReader();
+    if (reader) {
+      await processStreamingResponse(
+        reader,
+        // run this on every chunk
+        (content) => {
+          aiMessage.content += content;
+          setMessages((prev) => {
+            const newMessages = [...prev];
+            const existingMessageIndex = newMessages.findIndex((m) => m.id === aiMessage.id);
+            if (existingMessageIndex !== -1) {
+              newMessages[existingMessageIndex] = { ...aiMessage };
+            }
+            return newMessages;
+          });
+        },
+        (usage) => {
+          console.log("usage", usage);
+          // aiMessage.prompt_tokens = usage.promptTokens;
+          // aiMessage.completion_tokens = usage.completionTokens;
+
+          fetch("/api/v1/chat/usage", {
+            method: "POST",
+            body: JSON.stringify({
+              sessionId,
+              usage,
+            }),
+          })
+            .then((res) => res.json())
+            .then((data) => {
+              console.log("data", data);
+            })
+            .catch((err) => console.error(err));
+        }
+      );
+    }
+
+    setStatus("idle");
   };
 
   return (
