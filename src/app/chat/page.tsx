@@ -15,9 +15,6 @@ type DBMessage = {
   id: string;
   content: string;
   is_user: boolean;
-  response_group_id: string | null;
-  parent_message_id: string | null;
-  response_type: "A" | "B" | null;
   model: string;
   created_at: string;
   metadata: {
@@ -61,9 +58,6 @@ export default async function Page({ searchParams }: PageProps) {
       is_user: message.is_user,
       created_at: message.created_at,
       model: message.model || "",
-      responseType: message.response_type,
-      responseGroupId: message.response_group_id,
-      parentMessageId: message.parent_message_id,
       metadata: message.metadata?.audio
         ? {
             type: "audio",

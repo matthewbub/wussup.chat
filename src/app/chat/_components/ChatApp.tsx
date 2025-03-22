@@ -15,11 +15,8 @@ import {
   CHARACTER_LIMIT,
   processStreamingResponse,
   createChatFormData,
-  storeChatMessages,
   generateChatTitle,
-  createUserMessage,
   createAIMessage,
-  createMessageUpdate,
 } from "../_utils/chat";
 import { ChatStatus, Attachment } from "../_types/chat";
 
@@ -131,17 +128,13 @@ export default function ChatApp({
       await updateSessionName(titleData.title);
     }
 
-    // try {
-    //   // Generate title if this is the first message
-
-    //   // Create and add AI message
     const aiMessage = createAIMessage({
       id: crypto.randomUUID(),
       model: selectedModel.id,
     });
+
     addMessage(aiMessage);
 
-    //   // Handle model request
     const formData = createChatFormData({
       content: input,
       sessionId,
@@ -179,15 +172,17 @@ export default function ChatApp({
           });
         },
         (usage) => {
-          console.log("usage", usage);
-          // aiMessage.prompt_tokens = usage.promptTokens;
-          // aiMessage.completion_tokens = usage.completionTokens;
-
           fetch("/api/v1/chat/usage", {
             method: "POST",
             body: JSON.stringify({
               sessionId,
-              usage,
+              aiMessage: {
+                ...aiMessage,
+                input: input,
+                output: aiMessage.content,
+                prompt_tokens: usage.promptTokens,
+                completion_tokens: usage.completionTokens,
+              },
             }),
           })
             .then((res) => res.json())

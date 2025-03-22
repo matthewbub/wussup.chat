@@ -36,7 +36,7 @@ export default function RootLayout({
 }>) {
   return (
     <ClerkProvider>
-      <html lang="en" className="h-full dark">
+      <html lang="en" className="h-full">
         <head>
           {/* <script src="https://unpkg.com/react-scan/dist/auto.global.js" /> */}
           <script defer data-domain="wussup.chat" src="https://plausible.io/js/script.js"></script>
