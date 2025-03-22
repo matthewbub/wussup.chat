@@ -137,7 +137,7 @@ export function ModelSelectionModal({
                       <motion.div
                         key={model.id}
                         variants={item}
-                        className={`p-4 border rounded-lg cursor-pointer transition-all hover:border-primary hover:shadow-sm ${
+                        className={`p-4 border rounded-lg cursor-pointer transition-all hover:border-primary hover:shadow-xs ${
                           selectedModelId === model.id || (!selectedModelId && model.id === defaultModelId)
                             ? "border-primary bg-primary/5"
                             : ""
