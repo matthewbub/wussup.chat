@@ -1,85 +1,122 @@
 ---
 description: Working with Supabase
-globs: route.ts, route.tsx
+globs: 
 alwaysApply: false
 ---
 
-# Your rule content
+# RULES
 
 - Always use Supabase on the Server. Never expose the Supabase SDK on the client. Use: [supabase-server.ts](mdc:src/lib/supabase-server.ts)
-- If you identify an area that could benifit from an Postges Database Function, always propose it.
+
+## GOOD TO KNOW
+
+- We are creating a new version of this app; you will see references to Supabase that are no longer valid. Stick to the "Supabase Schema" and "AI Chat Conversation Storage" sectino below for the current source of truth.
+
+## AI Chat Converstation Storage
+
+One of the primary ways we work with data in this application is via AI Chat converstaions. I've explored alot of different ways to store chat data, and I've ultimately landed on a very specific approach. 
+
+In the `processStreamingResponse` method located in [chat.ts](mdc:src/app/chat/_utils/chat.ts); we have the `onMetadata` callback argument, the data it recieves is the token useage info. This `onMetadata` callback is where we send the user message AND the AI message to the Supabase database for storage. 
+
+This starts the chat, but does not store anything:
+
+```ts
+const aiMessage = {
+  id: crypto.randomUUID(),
+  model: selectedModel.id,
+  content: ""
+}
+
+const formData = new FormData();
+formData.append("content", input);
+formData.append("session_id", sessionId);
+formData.append("model", selectedModel.id);
+formData.append("messageHistory", JSON.stringify(messages));
+
+if (attachments.length > 0) {
+  attachments.forEach((attachment) => {
+    formData.append("attachments", attachment.file);
+  });
+}
+
+const response = await fetch("/api/v1/chat", {
+  method: "POST",
+  body: formData,
+});
+```
+
+Then, we handle the stream, and when the stream completes is when we store the data
+
+```ts
+const reader = response.body?.getReader();
+if (reader) {
+  await processStreamingResponse(
+    reader,
+    // run this on every chunk
+    (content) => {
+      aiMessage.content += content;
+      setMessages((prev) => {
+        const newMessages = [...prev];
+        const existingMessageIndex = newMessages.findIndex((m) => m.id === aiMessage.id);
+        if (existingMessageIndex !== -1) {
+          newMessages[existingMessageIndex] = { ...aiMessage };
+        }
+        return newMessages;
+      });
+    },
+    (usage) => {
+      console.log("usage", usage);
+      fetch("/api/v1/chat/usage", {
+        method: "POST",
+        body: JSON.stringify({
+          sessionId,
+          aiMessage: {
+            ...aiMessage,
+            input: input,
+            output: aiMessage.content,
+            prompt_tokens: usage.promptTokens,
+            completion_tokens: usage.completionTokens,
+          },
+        }),
+      })      
+        .catch((err) => console.error(err));
+    }
+  );
+}
+```
 
 ## Supabase Schema
 
+
 ```sql
-CREATE TABLE IF NOT EXISTS "public"."Documents" (
-    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
-    "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
-    "last_updated" timestamp with time zone DEFAULT "now"(),
-    "title" "text",
-    "content" "text",
-    "clerk_user_id" "text"
-);
+create table public."Chats" (
+  id uuid not null default gen_random_uuid (),
+  created_at timestamp with time zone not null default now(),
+  chat_session_id uuid null,
+  model text null,
+  metadata jsonb null,
+  prompt_tokens integer null default 0,
+  completion_tokens integer null default 0,
+  clerk_user_id text null,
+  input text null,
+  output text null,
+  constraint Chats_pkey primary key (id),
+  constraint Chats_chat_session_id_fkey foreign KEY (chat_session_id) references "ChatBot_Sessions" (id),
+  constraint Chats_clerk_user_id_fkey foreign KEY (clerk_user_id) references "ChatBot_Users" (clerk_user_id)
+) TABLESPACE pg_default;
 
+create table public."ChatSessions" (
+  id uuid not null default gen_random_uuid (),
+  created_at timestamp with time zone not null default now(),
+  name text null,
+  constraint ChatSessions_pkey1 primary key (id)
+) TABLESPACE pg_default;
 
-CREATE TABLE IF NOT EXISTS "public"."ChatBot_Messages" (
-    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
-    "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
-    "chat_session_id" "uuid",
-    "content" "text",
-    "is_user" boolean,
-    "model" "text",
-    "user_id" "uuid",
-    "metadata" "jsonb",
-    "model_provider" "text",
-    "prompt_tokens" integer DEFAULT 0,
-    "completion_tokens" integer DEFAULT 0,
-    "clerk_user_id" "text"
-);
-
-CREATE TABLE IF NOT EXISTS "public"."ChatBot_Sessions" (
-    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
-    "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
-    "updated_at" timestamp with time zone DEFAULT "now"(),
-    "name" "text",
-    "clerk_user_id" "text"
-);
-
-CREATE TABLE IF NOT EXISTS "public"."ChatBot_Users" (
-    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
-    "createdAt" timestamp with time zone DEFAULT "now"() NOT NULL,
-    "updated_at" timestamp with time zone DEFAULT "now"(),
-    "stripeCustomerId" "text",
-    "stripeSubscriptionId" "text",
-    "subscriptionStatus" "text",
-    "checkoutSessionId" "text",
-    "subscriptionPeriodEnd" "date",
-    "email" "text",
-    "user_id" "uuid",
-    "username" "text",
-    "message_count" integer DEFAULT 0 NOT NULL,
-    "chat_context" "text" DEFAULT 'You are a helpful assistant'::"text",
-    "clerk_user_id" "text"
-);
-
-CREATE TABLE IF NOT EXISTS "public"."ChatBot_ModalRequestSubmissions" (
-    "id" bigint NOT NULL,
-    "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
-    "modal_name" "text",
-    "use_case" "text",
-    "clerk_user_id" "text"
-);
-
-CREATE TABLE IF NOT EXISTS "public"."ChatBot_SupportForm" (
-    "id" "uuid" DEFAULT "gen_random_uuid"() NOT NULL,
-    "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
-    "email" "text",
-    "user_id" "uuid",
-    "category" "text",
-    "subject" "text",
-    "message" "text",
-    "status" "text",
-    "clerk_user_id" "text"
-);
-
+create table public."UserMetaData" (
+  id uuid not null default gen_random_uuid (),
+  created_at timestamp with time zone not null default now(),
+  clerk_user_id text null,
+  user_ip text null,
+  constraint UserMetaData_pkey primary key (id)
+) TABLESPACE pg_default;
 ```

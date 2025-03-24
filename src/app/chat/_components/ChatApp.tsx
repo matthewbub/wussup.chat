@@ -135,15 +135,17 @@ export default function ChatApp({
 
     addMessage(aiMessage);
 
-    const formData = createChatFormData({
-      content: input,
-      sessionId,
-      model: selectedModel.id,
-      modelProvider: selectedModel.provider,
-      chatContext: user?.chat_context || "You are a helpful assistant.",
-      messageHistory: messages,
-      attachments,
-    });
+    const formData = new FormData();
+    formData.append("content", input);
+    formData.append("session_id", sessionId);
+    formData.append("model", selectedModel.id);
+    formData.append("messageHistory", JSON.stringify(messages));
+
+    if (attachments.length > 0) {
+      attachments.forEach((attachment) => {
+        formData.append("attachments", attachment.file);
+      });
+    }
 
     const response = await fetch("/api/v1/chat", {
       method: "POST",
@@ -172,6 +174,7 @@ export default function ChatApp({
           });
         },
         (usage) => {
+          console.log("usage", usage);
           fetch("/api/v1/chat/usage", {
             method: "POST",
             body: JSON.stringify({
