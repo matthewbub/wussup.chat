@@ -23,6 +23,7 @@ type ChatStore = {
   setModel: (model: { id: string; provider: string }) => void;
   chatTitle: string;
   setChatTitle: (title: string) => void;
+  setSessionId: (id: string) => void;
 };
 
 export const useChatStore = create<ChatStore>((set) => ({
@@ -34,6 +35,7 @@ export const useChatStore = create<ChatStore>((set) => ({
     provider: openAiModels[0].provider,
   },
   sessionId: crypto.randomUUID(),
+  setSessionId: (id) => set({ sessionId: id }),
   setInput: (input) => set({ currentInput: input }),
   addMessage: (message) =>
     set((state) => ({
