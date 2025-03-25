@@ -7,6 +7,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { PostHogProvider } from "./providers";
 // import { ReactScan } from "@/components/ReactScan";
 import { ClerkProvider } from "@clerk/nextjs";
+import { ThemeProvider } from "./theme-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -42,12 +43,14 @@ export default function RootLayout({
           <script defer data-domain="wussup.chat" src="https://plausible.io/js/script.js"></script>
         </head>
         {/* <ReactScan /> */}
-        <body className={`${geistSans.variable} ${geistMono.variable} ${title.variable} antialiased h-full`}>
-          <PostHogProvider>
-            {children}
-            <Toaster />
-          </PostHogProvider>
-        </body>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <body className={`${geistSans.variable} ${geistMono.variable} ${title.variable} antialiased h-full`}>
+            <PostHogProvider>
+              {children}
+              <Toaster />
+            </PostHogProvider>
+          </body>
+        </ThemeProvider>
       </html>
     </ClerkProvider>
   );

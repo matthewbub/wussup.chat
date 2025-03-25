@@ -2,6 +2,7 @@ import Link from "next/link";
 import { SignInButton, SignUpButton, SignedOut, UserButton, SignedIn } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import { useChatStore } from "@/store/chat-store";
+import { ThemeToggle } from "@/app/theme-toggle";
 
 export function ChatHeader() {
   const { chatTitle } = useChatStore();
@@ -17,6 +18,7 @@ export function ChatHeader() {
         </nav>
 
         <div className="flex flex-1 justify-end gap-4">
+          <ThemeToggle />
           <SignedOut>
             <SignInButton>
               <Button variant="ghost">Sign In</Button>
