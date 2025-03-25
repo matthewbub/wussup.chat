@@ -21,6 +21,8 @@ type ChatStore = {
   updateLastMessage: (content: string) => void;
   setLoading: (loading: boolean) => void;
   setModel: (model: { id: string; provider: string }) => void;
+  chatTitle: string;
+  setChatTitle: (title: string) => void;
 };
 
 export const useChatStore = create<ChatStore>((set) => ({
@@ -43,4 +45,6 @@ export const useChatStore = create<ChatStore>((set) => ({
     })),
   setLoading: (loading) => set({ isLoading: loading }),
   setModel: (model) => set({ selectedModel: model }),
+  chatTitle: "",
+  setChatTitle: (title) => set({ chatTitle: title }),
 }));

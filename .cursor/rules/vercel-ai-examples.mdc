@@ -1,0 +1,40 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+
+# Examples with Vercel AI
+
+Basic text generation in Next.js
+
+```ts
+import { openai } from "@ai-sdk/openai";
+import { generateText } from "ai";
+import { NextResponse } from "next/server";
+
+export async function POST(req: Request) {
+  const { prompt } = await req.json();
+
+  const { text } = await generateText({
+    model: openai("gpt-4o-mini"),
+    prompt: prompt,
+  });
+
+  return NextResponse.json({ text });
+}
+
+export const runtime = "edge";
+```
+
+
+## Providers we support
+
+The specific models are defined in the [models.ts](mdc:src/constants/models.ts) file. These are the specific imports that can be interchanged as the `model` value
+
+```ts
+import { openai } from "@ai-sdk/openai";
+import { anthropic } from "@ai-sdk/anthropic";
+import { google } from "@ai-sdk/google";
+import { xai } from "@ai-sdk/xai";
+```

@@ -1,3 +1,4 @@
+import { auth } from "@clerk/nextjs/server";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -55,4 +56,73 @@ export const processStreamingResponse = async (
       }
     }
   }
+};
+
+export const facade = {
+  humanMessage: function (input: string) {
+    return {
+      id: crypto.randomUUID(),
+      content: input,
+      role: "user" as const,
+    };
+  },
+  aiMessage: function (input: string) {
+    return {
+      id: crypto.randomUUID(),
+      content: input,
+      role: "assistant" as const,
+    };
+  },
+  fetchAiMessage: async function (input: string, model: string, provider: string, messages: any[], sessionId: string) {
+    const formData = new FormData();
+    formData.append("content", input);
+    formData.append("model", model);
+    formData.append("model_provider", provider);
+    formData.append("messageHistory", JSON.stringify(messages));
+    formData.append("session_id", sessionId);
+
+    const response = await fetch("/api/v3/ai", {
+      method: "POST",
+      body: formData,
+    });
+
+    return response;
+  },
+  postChatInfo: function (
+    sessionId: string,
+    aiMessage: {
+      id: string;
+      content: string;
+      role: string;
+    },
+    currentInput: string,
+    usage: {
+      promptTokens: number;
+      completionTokens: number;
+    }
+  ) {
+    fetch("/api/v3/info", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        sessionId,
+        aiMessage: {
+          ...aiMessage,
+          input: currentInput,
+          output: aiMessage.content,
+          prompt_tokens: usage.promptTokens,
+          completion_tokens: usage.completionTokens,
+        },
+      }),
+    }).catch(console.error);
+  },
+  updateSessionTitle: async function (sessionId: string, messages: { role: string; content: string }[]) {
+    const response = await fetch("/api/v3/title-gen", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ session_id: sessionId, messages }),
+    });
+
+    return response;
+  },
 };

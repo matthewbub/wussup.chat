@@ -1,58 +1,36 @@
 import { createClient } from "@/lib/supabase-server";
 import { NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
+import { getUser, supabaseFacade } from "@/lib/server-utils";
+import * as Sentry from "@sentry/nextjs";
+import { TableNames } from "@/constants/tables";
 
 export async function POST(req: Request) {
-  const { userId } = await auth();
-  const ip = getIpAddress(req.headers);
-
-  const user = {
-    userId: userId ?? ip,
-    type: userId ? "clerk_user_id" : "user_ip",
-  };
-
   const body = await req.json();
   const { sessionId, aiMessage } = body;
 
   // Initialize Supabase client
   const supabase = await createClient();
 
-  let { data: userData, error: userError } = await supabase
-    .from("UserMetaData")
-    .select("id")
-    .eq(user.type, user.userId)
-    .single();
+  const user = await getUser(req);
+  const userData = await supabaseFacade.getOrMakeUser(user);
 
-  console.log("[Info API] User:", userData, userError);
-  if (!userData) {
-    console.log("[Info API] User not found, creating user...");
-    console.log("[Info API] User:", user);
-    const { data: newUser, error: createError } = await supabase
-      .from("UserMetaData")
-      .insert([{ [user.type]: user.userId }])
-      .select()
-      .single();
-
-    if (createError) {
-      console.error("[Info API] Error creating user:", createError);
-      return NextResponse.json({ error: "Failed to create user" }, { status: 500 });
-    }
-
-    userData = newUser;
+  if ("error" in userData) {
+    Sentry.captureException(userData.error);
+    return NextResponse.json({ error: userData.error }, { status: 500 });
   }
 
-  const { error: sessionError } = await supabase.from("ChatSessions").upsert({
+  const { error: sessionError } = await supabase.from(TableNames.CHAT_SESSIONS).upsert({
     id: sessionId,
     user_id: userData?.id,
   });
 
   if (sessionError) {
-    console.error("[Info API] Error fetching session:", sessionError);
+    Sentry.captureException(sessionError);
     return NextResponse.json({ error: "Failed to fetch session" }, { status: 500 });
   }
 
   // Store chat usage data
-  const { error } = await supabase.from("Chats").insert({
+  const { error } = await supabase.from(TableNames.CHAT_MESSAGES).insert({
     chat_session_id: sessionId,
     user_id: userData?.id,
     model: aiMessage.model,
@@ -63,14 +41,9 @@ export async function POST(req: Request) {
   });
 
   if (error) {
-    console.error("[Info API] Error storing chat usage:", error);
+    Sentry.captureException(error);
     return NextResponse.json({ error: "Failed to store chat usage" }, { status: 500 });
   }
 
   return NextResponse.json({ success: true });
-}
-
-// Get IP address from X-Forwarded-For header or fall back to the direct connection IP
-function getIpAddress(headersList: Headers) {
-  return headersList.get("x-forwarded-for") ?? headersList.get("x-real-ip") ?? "Unknown";
 }

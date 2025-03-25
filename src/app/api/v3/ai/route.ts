@@ -6,7 +6,7 @@ import { LanguageModelV1, streamText } from "ai";
 import { NextResponse } from "next/server";
 import { AVAILABLE_MODELS } from "@/constants/models";
 import { auth } from "@clerk/nextjs/server";
-
+import * as Sentry from "@sentry/nextjs";
 export const maxDuration = 30;
 
 export async function POST(req: Request) {
@@ -65,12 +65,12 @@ export async function POST(req: Request) {
       sendUsage: true,
     });
   } catch (error) {
-    console.error("[Chat API] Error streaming response:", error);
+    Sentry.captureException(error);
     return NextResponse.json({ error: "Failed to generate response" }, { status: 500 });
   }
 }
 
 function errorHandler(error: unknown) {
-  console.error("[Chat API] Error streaming response:", error);
+  Sentry.captureException(error);
   return JSON.stringify(error);
 }

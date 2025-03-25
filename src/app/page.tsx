@@ -1,79 +1,61 @@
-import { auth } from "@clerk/nextjs/server";
 import { headers } from "next/headers";
-import ChatAppV3 from "./_components/ChatAppV3";
+import ChatAppV3 from "@/components/ChatAppV3";
+import { getUserFromHeaders, supabaseFacade } from "@/lib/server-utils";
 import { createClient } from "@/lib/supabase-server";
+import * as Sentry from "@sentry/nextjs";
 
 export default async function Page() {
   // if ur signed in we use ur user id
-  const { userId } = await auth();
-
-  // otherwise we snatch ur ip addy and make that the user id
   const headersList = await headers();
-  const ip = getIpAddress(headersList);
-
-  // thinking of the best way to do this...
-  const you = await whoAreYou(userId, ip);
-
-  return (
-    <div>
-      {/* Your IP address is: {ip} and your user id is: {userId}
-      <pre>{JSON.stringify(you, null, 2)}</pre> */}
-      <ChatAppV3 />
-    </div>
-  );
-}
-
-// Get IP address from X-Forwarded-For header or fall back to the direct connection IP
-function getIpAddress(headersList: Headers) {
-  return headersList.get("x-forwarded-for") ?? headersList.get("x-real-ip") ?? "Unknown";
-}
-
-async function whoAreYou(preferredId: string | null, ip: string) {
-  if (preferredId) {
-    return await userFromId(preferredId);
-  }
-
-  return await userFromIp(ip);
-}
-
-async function userFromId(id: string) {
+  // otherwise we snatch ur ip addy and make that the user id
+  const user = await getUserFromHeaders(headersList);
   const supabase = await createClient();
+  const userData = await supabaseFacade.getOrMakeUser(user);
 
-  // Try to get existing user
-  const { data } = await supabase.from("UserMetaData").select("*").eq("clerk_user_id", id).single();
-
-  // If user exists, return it
-  if (data) return data;
-
-  // If user doesn't exist, create new record
-  const { data: newUser, error: createError } = await supabase
-    .from("UserMetaData")
-    .insert([{ clerk_user_id: id }])
-    .select()
-    .single();
-
-  if (createError) {
-    throw new Error(createError?.message);
+  if ("error" in userData) {
+    // just return the app anyway .... it might fail idk but theres a chance it owrks on the nexxt round ?
+    Sentry.captureException(userData.error);
+    return (
+      <div>
+        <ChatAppV3 existingData={[]} />
+      </div>
+    );
   }
 
-  return newUser;
-}
+  const [{ data: sessionsData, error: sessionsError }, { data: chatsData, error: chatsError }] = await Promise.all([
+    supabase
+      .from("ChatSessions")
+      .select("*")
+      .eq("user_id", userData?.id as string),
+    supabase
+      .from("Chats")
+      .select("*")
+      .eq("user_id", userData?.id as string),
+  ]);
 
-async function userFromIp(ip: string) {
-  const supabase = await createClient();
-  const { data } = await supabase.from("UserMetaData").select("*").eq("user_ip", ip).single();
-
-  if (data) return data;
-
-  const { data: newUser, error: createError } = await supabase
-    .from("UserMetaData")
-    .insert([{ user_ip: ip }])
-    .select()
-    .single();
-
-  if (createError) {
-    throw new Error(createError?.message);
+  if (sessionsError || chatsError) {
+    // trigger sentry error
+    Sentry.captureException(sessionsError || chatsError);
   }
 
-  return newUser;
+  const formattedSessionsData = sessionsData?.map((session) => ({
+    ...session,
+    created_at: new Date(session.created_at).toISOString(),
+    updated_at: new Date(session.updated_at).toISOString(),
+    chat_history: chatsData
+      ?.filter((chat) => chat.chat_session_id === session.id)
+      .reduce((acc, chat) => {
+        const userMessage = {
+          role: "user",
+          content: chat.input,
+        };
+        const aiMessage = {
+          role: "assistant",
+          content: chat.output,
+        };
+        return [...acc, userMessage, aiMessage];
+      }, []),
+  }));
+
+  return <ChatAppV3 existingData={formattedSessionsData} />;
 }
