@@ -20,8 +20,8 @@ const ChatMessages = ({ messages }: { messages: { id: string; role: string; cont
         <div key={message.id} className={cn("flex", message.role === "user" ? "justify-end" : "justify-start")}>
           <div
             className={cn("rounded-lg p-3 max-w-[80%]", {
-              "bg-primary text-primary-foreground": message.role === "assistant",
-              "bg-stone-800 text-primary-foreground": message.role === "user",
+              "bg-primary text-primary": message.role === "assistant",
+              "bg-stone-800 text-primary": message.role === "user",
             })}
           >
             <Markdown className={cn("prose dark:prose-invert prose-p:leading-relaxed prose-pre:p-0")}>
@@ -89,11 +89,13 @@ const ChatAppV3 = ({
     updateLastMessage,
     setLoading,
     setChatTitle,
+    setSessionId,
   } = useChatStore();
 
   useEffect(() => {
     if (sessionIdFromUrl) {
       setChatTitle(existingData.find((session) => session.id === sessionIdFromUrl)?.name || "New Chat");
+      setSessionId(sessionIdFromUrl);
     }
   }, [sessionIdFromUrl]);
 
