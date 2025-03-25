@@ -3,6 +3,7 @@ import ChatAppV3 from "@/components/ChatAppV3";
 import { getUserFromHeaders, supabaseFacade } from "@/lib/server-utils";
 import { createClient } from "@/lib/supabase-server";
 import * as Sentry from "@sentry/nextjs";
+import { TableNames } from "@/constants/tables";
 
 export default async function Page() {
   // if ur signed in we use ur user id
@@ -24,11 +25,11 @@ export default async function Page() {
 
   const [{ data: sessionsData, error: sessionsError }, { data: chatsData, error: chatsError }] = await Promise.all([
     supabase
-      .from("ChatSessions")
+      .from(TableNames.CHAT_SESSIONS)
       .select("*")
       .eq("user_id", userData?.id as string),
     supabase
-      .from("Chats")
+      .from(TableNames.CHAT_MESSAGES)
       .select("*")
       .eq("user_id", userData?.id as string),
   ]);
@@ -57,5 +58,5 @@ export default async function Page() {
       }, []),
   }));
 
-  return <ChatAppV3 existingData={formattedSessionsData} />;
+  return <ChatAppV3 existingData={formattedSessionsData ?? []} />;
 }
