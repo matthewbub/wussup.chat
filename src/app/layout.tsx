@@ -36,22 +36,22 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider>
-      <html lang="en" className="h-full">
-        <head>
-          {/* <script src="https://unpkg.com/react-scan/dist/auto.global.js" /> */}
-          <script defer data-domain="wussup.chat" src="https://plausible.io/js/script.js"></script>
-        </head>
-        {/* <ReactScan /> */}
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <body className={`${geistSans.variable} ${geistMono.variable} ${title.variable} antialiased h-full`}>
+    <html lang="en" className="h-full">
+      <head>
+        {/* <script src="https://unpkg.com/react-scan/dist/auto.global.js" /> */}
+        <script defer data-domain="wussup.chat" src="https://plausible.io/js/script.js"></script>
+      </head>
+      {/* <ReactScan /> */}
+      <body className={`${geistSans.variable} ${geistMono.variable} ${title.variable} antialiased h-full`}>
+        <ClerkProvider>
+          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <PostHogProvider>
               {children}
               <Toaster />
             </PostHogProvider>
-          </body>
-        </ThemeProvider>
-      </html>
-    </ClerkProvider>
+          </ThemeProvider>
+        </ClerkProvider>
+      </body>
+    </html>
   );
 }
