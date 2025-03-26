@@ -184,7 +184,7 @@ const ChatAppV3 = ({
         <SidebarContent existingData={existingData} sessionId={sessionId} />
       </aside>
 
-      <main className="col-span-12 lg:col-span-9 flex flex-col h-screen">
+      <main className="col-span-12 lg:col-span-9 flex flex-col h-screen sticky top-0">
         <ChatHeader />
         <ChatMessages messages={messages} />
         <ChatInput currentInput={currentInput} setInput={setInput} isLoading={isLoading} onSubmit={handleSubmit} />
@@ -207,10 +207,8 @@ const SidebarContent = ({
   sessionId: string;
 }) => {
   const router = useRouter();
-  // Add store hooks
   const { setMessages, setSessionId, setChatTitle } = useChatStore();
 
-  // Handle new chat creation
   const handleNewChat = () => {
     const newSessionId = crypto.randomUUID();
     setMessages([]);
@@ -220,14 +218,14 @@ const SidebarContent = ({
   };
 
   return (
-    <div className="flex h-full w-full flex-col bg-gradient-to-b from-background to-background/95">
-      <div className="p-6 border-b border-primary/5">
+    <div className="flex flex-col h-full max-h-screen">
+      <div className="flex-none p-6 border-b border-primary/5">
         <Link href="/" className="font-title text-3xl font-bold text-primary hover:opacity-80 transition-opacity">
           Wussup
         </Link>
       </div>
 
-      <div className="p-4">
+      <div className="flex-none p-4">
         <Button
           variant="outline"
           className="w-full group transition-all hover:bg-primary hover:text-primary-foreground"
@@ -238,10 +236,12 @@ const SidebarContent = ({
         </Button>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4">
-        <h2 className="text-xs uppercase tracking-wider text-muted-foreground mb-3 font-medium">
-          Recent Conversations
-        </h2>
+      <div className="flex-1 overflow-y-auto px-4 pb-4">
+        <div className="sticky top-0 bg-background pt-4 pb-2">
+          <h2 className="text-xs uppercase tracking-wider text-muted-foreground mb-3 font-medium">
+            Recent Conversations
+          </h2>
+        </div>
         <div className="space-y-1">
           {existingData.map((session) => (
             <Link
