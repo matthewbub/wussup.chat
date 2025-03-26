@@ -12,6 +12,7 @@ import { useEffect } from "react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { facade } from "@/lib/utils";
 import { useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 const ChatMessages = ({ messages }: { messages: NewMessage[] }) => {
   return (
@@ -19,9 +20,9 @@ const ChatMessages = ({ messages }: { messages: NewMessage[] }) => {
       {messages.map((message, index) => (
         <div key={index} className={cn("flex", message.role === "user" ? "justify-end" : "justify-start")}>
           <div
-            className={cn("rounded-lg p-3 max-w-[80%]", {
-              "bg-primary text-primary": message.role === "assistant",
-              "bg-stone-800 text-primary": message.role === "user",
+            className={cn("rounded-lg p-3 ", {
+              "text-primary w-full": message.role === "assistant",
+              "bg-stone-800 text-primary max-w-[80%]": message.role === "user",
             })}
           >
             <Markdown className={cn("prose dark:prose-invert prose-p:leading-relaxed prose-pre:p-0")}>
@@ -108,6 +109,7 @@ const ChatAppV3 = ({
     // reject if no input or loading
     if (!currentInput.trim() || isLoading) return;
 
+    console.log("Messages", messages);
     const isFirstMessage = messages.length === 0;
 
     // Add user message
@@ -121,7 +123,7 @@ const ChatAppV3 = ({
 
     try {
       if (isFirstMessage) {
-        const rawTitleData = await facade.updateSessionTitle(sessionId, messages);
+        const rawTitleData = await facade.updateSessionTitle(sessionId, currentInput);
         const data = await rawTitleData.json();
         setChatTitle(data.text);
       }
@@ -204,6 +206,19 @@ const SidebarContent = ({
   }[];
   sessionId: string;
 }) => {
+  const router = useRouter();
+  // Add store hooks
+  const { setMessages, setSessionId, setChatTitle } = useChatStore();
+
+  // Handle new chat creation
+  const handleNewChat = () => {
+    const newSessionId = crypto.randomUUID();
+    setMessages([]);
+    setSessionId(newSessionId);
+    setChatTitle("New Chat");
+    router.push(`/?session=${newSessionId}`);
+  };
+
   return (
     <div className="flex h-full w-full flex-col bg-gradient-to-b from-background to-background/95">
       <div className="p-6 border-b border-primary/5">
@@ -216,6 +231,7 @@ const SidebarContent = ({
         <Button
           variant="outline"
           className="w-full group transition-all hover:bg-primary hover:text-primary-foreground"
+          onClick={handleNewChat}
         >
           <PlusIcon className="h-4 w-4 mr-2 group-hover:text-primary-foreground" />
           New Chat

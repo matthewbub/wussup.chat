@@ -130,11 +130,11 @@ export const facade = {
       }),
     }).catch(console.error);
   },
-  updateSessionTitle: async function (sessionId: string, messages: { role: string; content: string }[]) {
+  updateSessionTitle: async function (sessionId: string, currentInput: string) {
     const response = await fetch("/api/v3/title-gen", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ session_id: sessionId, messages }),
+      body: JSON.stringify({ session_id: sessionId, current_input: currentInput }),
     });
 
     return response;

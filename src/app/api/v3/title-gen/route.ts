@@ -10,7 +10,7 @@ import { TableNames } from "@/constants/tables";
 export async function POST(req: Request) {
   const user = await getUser(req);
 
-  const { messages, session_id } = await req.json();
+  const { current_input, session_id } = await req.json();
   const supabase = await createClient();
   const userData = await supabaseFacade.getOrMakeUser(user);
 
@@ -22,9 +22,12 @@ export async function POST(req: Request) {
   const { text } = await generateText({
     model: openai("gpt-4o-mini"),
     prompt: clsx([
-      "Summarize the chat thread in a concise title using up to 6 words.",
+      "You are a helpful assistant that generates a concise title for a chat session.",
+      "The only context you have at this point is the user's first message.",
+      "Please generate a concise title using up to 6 words.",
       "Text only, no special characters.",
-      messages.map((m: { role: string; content: string }) => `${m.role}: ${m.content}`),
+      "Here's the first message: ",
+      current_input,
     ]),
   });
 
