@@ -10,7 +10,7 @@ import { ThemeToggle } from "@/app/theme-toggle";
 import { useState, useRef, useEffect } from "react";
 import { Pencil } from "lucide-react";
 
-export function ChatHeader() {
+export function ChatAppHeader() {
   const { chatTitle, sessionId, updateSessionTitle } = useChatStore();
   const [isEditing, setIsEditing] = useState(false);
   const [editableTitle, setEditableTitle] = useState(chatTitle);
