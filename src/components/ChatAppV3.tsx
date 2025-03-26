@@ -13,6 +13,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { facade } from "@/lib/utils";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
+import { appName } from "@/constants/version";
 
 const ChatMessages = ({ messages }: { messages: NewMessage[] }) => {
   return (
@@ -246,7 +247,7 @@ const SidebarContent = ({ existingData, sessionId }: { existingData: ChatSession
     <div className="flex flex-col h-full max-h-screen">
       <div className="flex-none p-6 border-b border-primary/5">
         <Link href="/" className="font-mono text-xl font-bold text-primary hover:opacity-80 transition-opacity">
-          ZCauldron
+          {appName}
         </Link>
       </div>
 
