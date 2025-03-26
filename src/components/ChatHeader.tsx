@@ -77,7 +77,7 @@ export function ChatHeader() {
 
   return (
     <header className="w-full py-4">
-      <div className="container mx-auto px-4">
+      <div className="container mx-auto px-4 flex justify-between items-center border-b border-stone-200 dark:border-stone-800 pb-4 bg-background">
         <nav className="flex items-center gap-2">
           <Link href="/" className="">
             Chat

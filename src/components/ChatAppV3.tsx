@@ -14,6 +14,8 @@ import { facade } from "@/lib/utils";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
 import { appName } from "@/constants/version";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { AVAILABLE_MODELS, AiModel } from "@/constants/models";
 
 const ChatMessages = ({ messages }: { messages: NewMessage[] }) => {
   return (
@@ -41,25 +43,50 @@ const ChatInput = ({
   setInput,
   isLoading,
   onSubmit,
+  selectedModel,
+  onModelChange,
 }: {
   currentInput: string;
   setInput: (input: string) => void;
   isLoading: boolean;
   onSubmit: (e: React.FormEvent) => void;
+  selectedModel: { id: string; provider: string };
+  onModelChange: (model: { id: string; provider: string }) => void;
 }) => {
   return (
     <form onSubmit={onSubmit} className="p-4 border-t border-primary/10">
-      <div className="flex gap-2">
-        <Input
-          type="text"
-          placeholder="Message"
-          value={currentInput}
-          onChange={(e) => setInput(e.target.value)}
-          disabled={isLoading}
-        />
-        <Button type="submit" disabled={isLoading}>
-          <Send className="h-4 w-4" />
-        </Button>
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center gap-2">
+          <Select
+            value={`${selectedModel.provider}/${selectedModel.id}`}
+            onValueChange={(value) => {
+              const [provider, id] = value.split("/");
+              onModelChange({ provider, id });
+            }}
+          >
+            <SelectTrigger className="w-[200px]">
+              <SelectValue placeholder="Select a model" />
+            </SelectTrigger>
+            <SelectContent>
+              {AVAILABLE_MODELS.map((model: AiModel) => (
+                <SelectItem key={`${model.provider}/${model.id}`} value={`${model.provider}/${model.id}`}>
+                  {model.provider.toUpperCase()} - {model.id}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Input
+            type="text"
+            placeholder="Message"
+            value={currentInput}
+            onChange={(e) => setInput(e.target.value)}
+            disabled={isLoading}
+            className="flex-1"
+          />
+          <Button type="submit" disabled={isLoading}>
+            <Send className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
     </form>
   );
@@ -95,6 +122,7 @@ const ChatAppV3 = ({
     setMessages,
     setChatSessions,
     chatSessions,
+    setModel,
   } = useChatStore();
 
   // Initialize chat sessions in the store
@@ -225,7 +253,14 @@ const ChatAppV3 = ({
       <main className="col-span-12 lg:col-span-9 flex flex-col h-screen sticky top-0">
         <ChatHeader />
         <ChatMessages messages={messages} />
-        <ChatInput currentInput={currentInput} setInput={setInput} isLoading={isLoading} onSubmit={handleSubmit} />
+        <ChatInput
+          currentInput={currentInput}
+          setInput={setInput}
+          isLoading={isLoading}
+          onSubmit={handleSubmit}
+          selectedModel={selectedModel}
+          onModelChange={setModel}
+        />
       </main>
     </div>
   );
