@@ -11,7 +11,7 @@ import { useState, useRef, useEffect } from "react";
 import { Pencil } from "lucide-react";
 
 export function ChatHeader() {
-  const { chatTitle, setChatTitle, sessionId } = useChatStore();
+  const { chatTitle, sessionId, updateSessionTitle } = useChatStore();
   const [isEditing, setIsEditing] = useState(false);
   const [editableTitle, setEditableTitle] = useState(chatTitle);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -53,8 +53,8 @@ export function ChatHeader() {
       });
 
       if (response.ok) {
-        // Update the title in the store
-        setChatTitle(editableTitle);
+        // Update both the chat title and session title in the store
+        updateSessionTitle(sessionId, editableTitle);
       } else {
         // Revert to original title if update failed
         setEditableTitle(chatTitle);

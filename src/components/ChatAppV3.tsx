@@ -7,7 +7,7 @@ import { ChatHeader } from "@/components/ChatHeader";
 import { PlusIcon, Send, Menu } from "lucide-react";
 import Link from "next/link";
 import Markdown from "react-markdown";
-import { NewMessage, useChatStore } from "@/store/chat-store";
+import { ChatSession, NewMessage, useChatStore } from "@/store/chat-store";
 import { useEffect } from "react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { facade } from "@/lib/utils";
@@ -92,15 +92,23 @@ const ChatAppV3 = ({
     setChatTitle,
     setSessionId,
     setMessages,
+    setChatSessions,
+    chatSessions,
   } = useChatStore();
+
+  // Initialize chat sessions in the store
+  useEffect(() => {
+    setChatSessions(existingData);
+  }, [existingData]);
 
   useEffect(() => {
     if (sessionIdFromUrl) {
-      setChatTitle(existingData.find((session) => session.id === sessionIdFromUrl)?.name || "New Chat");
-      setSessionId(sessionIdFromUrl);
-
-      const chatHistory = existingData.find((session) => session.id === sessionIdFromUrl)?.chat_history || [];
-      setMessages(chatHistory as NewMessage[]);
+      const session = existingData.find((session) => session.id === sessionIdFromUrl);
+      if (session) {
+        setChatTitle(session.name || "New Chat");
+        setSessionId(sessionIdFromUrl);
+        setMessages(session.chat_history as NewMessage[]);
+      }
     }
   }, [sessionIdFromUrl]);
 
@@ -175,13 +183,13 @@ const ChatAppV3 = ({
           </Button>
         </SheetTrigger>
         <SheetContent side="left" className="w-[300px] p-0">
-          <SidebarContent existingData={existingData} sessionId={sessionId} />
+          <SidebarContent existingData={chatSessions} sessionId={sessionId} />
         </SheetContent>
       </Sheet>
 
       {/* Desktop Sidebar */}
       <aside className="hidden lg:flex col-span-3 border-r border-primary/10">
-        <SidebarContent existingData={existingData} sessionId={sessionId} />
+        <SidebarContent existingData={chatSessions} sessionId={sessionId} />
       </aside>
 
       <main className="col-span-12 lg:col-span-9 flex flex-col h-screen sticky top-0">
@@ -193,19 +201,7 @@ const ChatAppV3 = ({
   );
 };
 
-const SidebarContent = ({
-  existingData,
-  sessionId,
-}: {
-  existingData: {
-    id: string;
-    name: string;
-    created_at: string;
-    updated_at: string;
-    chat_history: { role: string; content: string }[];
-  }[];
-  sessionId: string;
-}) => {
+const SidebarContent = ({ existingData, sessionId }: { existingData: ChatSession[]; sessionId: string }) => {
   const router = useRouter();
   const { setMessages, setSessionId, setChatTitle } = useChatStore();
 
@@ -220,8 +216,8 @@ const SidebarContent = ({
   return (
     <div className="flex flex-col h-full max-h-screen">
       <div className="flex-none p-6 border-b border-primary/5">
-        <Link href="/" className="font-title text-3xl font-bold text-primary hover:opacity-80 transition-opacity">
-          Wussup
+        <Link href="/" className="font-mono text-xl font-bold text-primary hover:opacity-80 transition-opacity">
+          ZCauldron
         </Link>
       </div>
 
