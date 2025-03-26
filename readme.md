@@ -102,7 +102,22 @@ More
 
 v0.0.6
 
-- [ ] Introduce WYSIWYG Editor
-- [ ] Bulk Chat history deletion
-- [ ] Fork Chats
-- [ ] Free tier (Limit chats by IP)
+- App rewrite (no vibe coding)
+
+## FAQ
+
+### What counts as 1 message?
+
+We treat 1 message as you're input plus the AI's output. We also don't count messages that fail or that get stopped.
+
+### How many messages do i get in the pro plan?
+
+1,500 messages on the Pro plan.
+
+### Can I bring my own API keys?
+
+You can use your own API keys for unlimited messages, and test experimental functionality while on the Pro plan.
+
+### Are my API keys secure?
+
+Yes we use end to end encryption to securely manage your sensitive data.
