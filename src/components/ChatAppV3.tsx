@@ -22,7 +22,7 @@ const ChatMessages = ({ messages }: { messages: NewMessage[] }) => {
           <div
             className={cn("rounded-lg p-3 ", {
               "text-primary w-full": message.role === "assistant",
-              "bg-stone-800 text-primary max-w-[80%]": message.role === "user",
+              "dark:bg-stone-800 bg-stone-200 text-stone-200 dark:text-stone-800 max-w-[80%]": message.role === "user",
             })}
           >
             <Markdown className={cn("prose dark:prose-invert prose-p:leading-relaxed prose-pre:p-0")}>
