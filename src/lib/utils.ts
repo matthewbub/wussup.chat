@@ -1,3 +1,4 @@
+import { NewMessage } from "@/store/chat-store";
 import { auth } from "@clerk/nextjs/server";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
@@ -73,7 +74,19 @@ export const facade = {
       role: "assistant" as const,
     };
   },
-  fetchAiMessage: async function (input: string, model: string, provider: string, messages: any[], sessionId: string) {
+  fetchAiMessage: async function ({
+    input,
+    model,
+    provider,
+    messages,
+    sessionId,
+  }: {
+    input: string;
+    model: string;
+    provider: string;
+    messages: NewMessage[];
+    sessionId: string;
+  }) {
     const formData = new FormData();
     formData.append("content", input);
     formData.append("model", model);
@@ -88,19 +101,20 @@ export const facade = {
 
     return response;
   },
-  postChatInfo: function (
-    sessionId: string,
-    aiMessage: {
-      id: string;
-      content: string;
-      role: string;
-    },
-    currentInput: string,
+  postChatInfo: function ({
+    sessionId,
+    aiMessage,
+    currentInput,
+    usage,
+  }: {
+    sessionId: string;
+    aiMessage: NewMessage;
+    currentInput: string;
     usage: {
       promptTokens: number;
       completionTokens: number;
-    }
-  ) {
+    };
+  }) {
     fetch("/api/v3/info", {
       method: "POST",
       headers: { "Content-Type": "application/json" },

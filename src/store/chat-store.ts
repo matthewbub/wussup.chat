@@ -1,14 +1,13 @@
 import { openAiModels } from "@/constants/models";
 import { create } from "zustand";
 
-type Message = {
-  id: string;
+export type NewMessage = {
   content: string;
   role: "user" | "assistant";
 };
 
 type ChatStore = {
-  messages: Message[];
+  messages: NewMessage[];
   isLoading: boolean;
   currentInput: string;
   selectedModel: {
@@ -17,7 +16,8 @@ type ChatStore = {
   };
   sessionId: string;
   setInput: (input: string) => void;
-  addMessage: (message: Message) => void;
+  setMessages: (messages: NewMessage[]) => void;
+  addMessage: (message: NewMessage) => void;
   updateLastMessage: (content: string) => void;
   setLoading: (loading: boolean) => void;
   setModel: (model: { id: string; provider: string }) => void;
@@ -34,9 +34,11 @@ export const useChatStore = create<ChatStore>((set) => ({
     id: openAiModels[0].id,
     provider: openAiModels[0].provider,
   },
+  // idk how i feel about this
   sessionId: crypto.randomUUID(),
   setSessionId: (id) => set({ sessionId: id }),
   setInput: (input) => set({ currentInput: input }),
+  setMessages: (messages) => set({ messages }),
   addMessage: (message) =>
     set((state) => ({
       messages: [...state.messages, message],
