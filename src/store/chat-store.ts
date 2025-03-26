@@ -37,13 +37,14 @@ type ChatStore = {
   updateSessionTitle: (sessionId: string, newTitle: string) => void;
 };
 
+const firstFreeModel = openAiModels.find((model) => model.free);
 export const useChatStore = create<ChatStore>((set) => ({
   messages: [],
   isLoading: false,
   currentInput: "",
   selectedModel: {
-    id: openAiModels[0].id,
-    provider: openAiModels[0].provider,
+    id: firstFreeModel?.id || openAiModels[0].id,
+    provider: firstFreeModel?.provider || openAiModels[0].provider,
   },
   sessionId: crypto.randomUUID(),
   chatSessions: [],
