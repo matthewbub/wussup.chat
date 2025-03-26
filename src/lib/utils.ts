@@ -1,5 +1,4 @@
 import { NewMessage } from "@/store/chat-store";
-import { auth } from "@clerk/nextjs/server";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -80,12 +79,14 @@ export const facade = {
     provider,
     messages,
     sessionId,
+    checkOnly,
   }: {
     input: string;
     model: string;
     provider: string;
     messages: NewMessage[];
     sessionId: string;
+    checkOnly?: boolean;
   }) {
     const formData = new FormData();
     formData.append("content", input);
@@ -93,6 +94,9 @@ export const facade = {
     formData.append("model_provider", provider);
     formData.append("messageHistory", JSON.stringify(messages));
     formData.append("session_id", sessionId);
+    if (checkOnly) {
+      formData.append("checkOnly", "true");
+    }
 
     const response = await fetch("/api/v3/ai", {
       method: "POST",

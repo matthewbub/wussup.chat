@@ -6,43 +6,55 @@ import { LanguageModelV1, streamText } from "ai";
 import { NextResponse } from "next/server";
 import { AVAILABLE_MODELS } from "@/constants/models";
 import * as Sentry from "@sentry/nextjs";
-export const maxDuration = 30;
+import { getUser, supabaseFacade } from "@/lib/server-utils";
+import { quotaManager } from "@/lib/quota/init";
+import { checkQuotaMiddleware } from "@/lib/quota/middleware";
 
 export async function POST(req: Request) {
-  // const rawUser = await getUser(req);
-  // const user = await supabaseFacade.getOrMakeUser(rawUser);
-
-  // TODO: Implement quota system
-  // if (user.quota_remaining <= 0) {
-  //   return NextResponse.json({ error: "Quota exceeded" }, { status: 400 });
-  // }
-
-  const formData = await req.formData();
-  const content = formData.get("content") as string;
-  const model = formData.get("model") as string;
-  const model_provider = formData.get("model_provider") as string;
-  const chat_context = formData.get("chat_context") as string;
-  const messageHistory = formData.get("messageHistory") as string;
-
-  // Validate model and provider
-  const selectedModel = AVAILABLE_MODELS.find((m) => m.id === model && m.provider === model_provider);
-  if (!selectedModel) {
-    return NextResponse.json({ error: "Invalid model or provider combination" }, { status: 400 });
-  }
-
-  // Parse message history
-  const parsedHistory = messageHistory ? JSON.parse(messageHistory) : [];
-
-  // Create final messages array
-  const messages = [
-    ...parsedHistory.map((msg: { is_user: boolean; content: string }) => ({
-      role: msg.is_user ? ("user" as const) : ("assistant" as const),
-      content: msg.content,
-    })),
-    { role: "user" as const, content },
-  ];
-
   try {
+    const user = await getUser(req);
+    const userData = await supabaseFacade.getOrMakeUser(user);
+
+    if ("error" in userData) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Check quota before processing
+    const quotaError = await checkQuotaMiddleware(userData.id, quotaManager);
+
+    if (quotaError) return quotaError;
+
+    const formData = await req.formData();
+    const content = formData.get("content") as string;
+    const model = formData.get("model") as string;
+    const model_provider = formData.get("model_provider") as string;
+    const chat_context = formData.get("chat_context") as string;
+    const messageHistory = formData.get("messageHistory") as string;
+    const checkOnly = formData.get("checkOnly") === "true";
+
+    // If this is just a quota check, return success
+    if (checkOnly) {
+      return NextResponse.json({ success: true });
+    }
+
+    // Validate model and provider
+    const selectedModel = AVAILABLE_MODELS.find((m) => m.id === model && m.provider === model_provider);
+    if (!selectedModel) {
+      return NextResponse.json({ error: "Invalid model or provider combination" }, { status: 400 });
+    }
+
+    // Parse message history
+    const parsedHistory = messageHistory ? JSON.parse(messageHistory) : [];
+
+    // Create final messages array
+    const messages = [
+      ...parsedHistory.map((msg: { is_user: boolean; content: string }) => ({
+        role: msg.is_user ? ("user" as const) : ("assistant" as const),
+        content: msg.content,
+      })),
+      { role: "user" as const, content },
+    ];
+
     // Select the appropriate provider based on model_provider
     const modelOpts = {
       openai: openai(selectedModel.model),
@@ -61,6 +73,9 @@ export async function POST(req: Request) {
       system: chat_context as string,
       messages,
     });
+
+    // Increment usage after successful generation
+    await quotaManager.incrementUsage(userData.id);
 
     return result.toDataStreamResponse({
       getErrorMessage: errorHandler,

@@ -117,19 +117,45 @@ const ChatAppV3 = ({
     // reject if no input or loading
     if (!currentInput.trim() || isLoading) return;
 
-    console.log("Messages", messages);
-    const isFirstMessage = messages.length === 0;
-
-    // Add user message
-    addMessage(facade.humanMessage(currentInput));
-
-    // Add empty AI message that will be streamed
-    const aiMessage = facade.aiMessage("");
-    addMessage(aiMessage);
     setLoading(true);
-    setInput("");
 
     try {
+      // Check quota first before adding any messages
+      const quotaCheck = await facade.fetchAiMessage({
+        input: currentInput,
+        model: selectedModel.id,
+        provider: selectedModel.provider,
+        messages,
+        sessionId,
+        checkOnly: true,
+      });
+
+      if (!quotaCheck.ok) {
+        const errorData = await quotaCheck.json();
+        if (quotaCheck.status === 429) {
+          // Add user message and error message to chat
+          addMessage(facade.humanMessage(currentInput));
+          addMessage(
+            facade.aiMessage(
+              errorData.message || "You have reached your message limit. Please try again later or upgrade your plan."
+            )
+          );
+          throw new Error(errorData.message);
+        }
+        throw new Error("Failed to check message quota");
+      }
+
+      const isFirstMessage = messages.length === 0;
+
+      // Add user message
+      addMessage(facade.humanMessage(currentInput));
+
+      // Add empty AI message that will be streamed
+      const aiMessage = facade.aiMessage("");
+      addMessage(aiMessage);
+      setInput("");
+
+      // Only proceed with title and message generation if quota check passes
       if (isFirstMessage) {
         const rawTitleData = await facade.updateSessionTitle(sessionId, currentInput);
         const data = await rawTitleData.json();
@@ -165,9 +191,12 @@ const ChatAppV3 = ({
             usage,
           })
       );
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error:", error);
-      updateLastMessage("Sorry, there was an error generating the response.");
+      // Don't override quota error messages
+      if (!error.message?.includes("limit")) {
+        updateLastMessage("Sorry, there was an error generating the response.");
+      }
     } finally {
       setLoading(false);
     }
