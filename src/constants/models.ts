@@ -5,9 +5,8 @@ export interface AiModel {
   provider: (typeof providers)[number];
   model: string;
   forchatuse: boolean;
-
+  displayName?: string;
   reasoning?: boolean;
-
   id: string;
   free: boolean;
   inputs?: string[];
@@ -16,6 +15,7 @@ export interface AiModel {
 
 export const openAiModels: AiModel[] = [
   {
+    displayName: "GPT-4o",
     provider: "openai",
     model: "gpt-4o",
     forchatuse: true,
@@ -25,6 +25,7 @@ export const openAiModels: AiModel[] = [
     free: false,
   },
   {
+    displayName: "GPT-4o Mini",
     provider: "openai",
     model: "gpt-4o-mini",
     inputs: ["text", "images"],
@@ -34,6 +35,7 @@ export const openAiModels: AiModel[] = [
     free: true,
   },
   {
+    displayName: "o1",
     provider: "openai",
     model: "o1",
     inputs: ["text", "images"],
@@ -44,6 +46,7 @@ export const openAiModels: AiModel[] = [
     reasoning: true,
   },
   {
+    displayName: "o3-mini",
     provider: "openai",
     model: "o3-mini",
     inputs: ["text"],
@@ -54,6 +57,7 @@ export const openAiModels: AiModel[] = [
     reasoning: true,
   },
   {
+    displayName: "GPT-4.5",
     provider: "openai",
     model: "gpt-4.5-preview",
     inputs: ["text", "images"],
@@ -66,6 +70,7 @@ export const openAiModels: AiModel[] = [
 
 export const anthropicModels: AiModel[] = [
   {
+    displayName: "Claude 3.7 Sonnet",
     provider: "anthropic",
     model: "claude-3-7-sonnet-20250219",
     inputs: ["text", "images"],
@@ -75,6 +80,7 @@ export const anthropicModels: AiModel[] = [
     forchatuse: true,
   },
   {
+    displayName: "Claude 3.5 Sonnet",
     provider: "anthropic",
     model: "claude-3-5-sonnet-20241022",
     inputs: ["text", "images"],
@@ -84,6 +90,7 @@ export const anthropicModels: AiModel[] = [
     forchatuse: true,
   },
   {
+    displayName: "Claude 3.5 Haiku",
     provider: "anthropic",
     model: "claude-3-5-haiku-20241022",
     inputs: ["text", "images"],
@@ -96,6 +103,7 @@ export const anthropicModels: AiModel[] = [
 
 export const xaiModels: AiModel[] = [
   {
+    displayName: "Grok 2",
     provider: "xai",
     model: "grok-2-1212",
     inputs: ["text"],
@@ -105,6 +113,7 @@ export const xaiModels: AiModel[] = [
     forchatuse: true,
   },
   {
+    displayName: "Grok 2 Vision",
     provider: "xai",
     model: "grok-2-vision-1212",
     inputs: ["text", "images"],
@@ -114,6 +123,7 @@ export const xaiModels: AiModel[] = [
     forchatuse: false,
   },
   {
+    displayName: "Grok 2 Beta",
     provider: "xai",
     model: "grok-beta",
     inputs: ["text"],
@@ -123,6 +133,7 @@ export const xaiModels: AiModel[] = [
     forchatuse: true,
   },
   {
+    displayName: "Grok 2 Vision Beta",
     provider: "xai",
     model: "grok-vision-beta",
     inputs: ["text", "images"],
@@ -135,6 +146,7 @@ export const xaiModels: AiModel[] = [
 
 export const geminiModels: AiModel[] = [
   {
+    displayName: "Gemini 2.0 Flash",
     provider: "google",
     model: "gemini-2.0-flash",
     inputs: ["audio", "images", "videos", "text"],
@@ -145,6 +157,7 @@ export const geminiModels: AiModel[] = [
   },
 
   {
+    displayName: "Gemini 2.0 Flash Lite",
     provider: "google",
     model: "gemini-2.0-flash-lite",
     inputs: ["audio", "images", "videos", "text"],
