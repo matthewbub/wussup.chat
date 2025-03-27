@@ -132,6 +132,7 @@ async function fulfillOrder(session: Stripe.Checkout.Session) {
     const { error } = await supabase
       .from(TableNames.USERS)
       .update({
+        subscription_tier: "pro",
         stripe_customer_id: customerId,
         subscription_status: "active",
         checkout_session_id: session.id,
