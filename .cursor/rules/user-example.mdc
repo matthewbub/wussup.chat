@@ -1,0 +1,26 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+
+# HOW TO GET THE USER
+
+```ts
+import { NextResponse } from "next/server";
+import { getUser, supabaseFacade } from "@/lib/server-utils";
+import * as Sentry from "@sentry/nextjs";
+
+export async function POST(req: Request) {
+  const body = await req.json();
+
+  const user = await getUser(req);
+  const userData = await supabaseFacade.getOrMakeUser(user);
+
+  if ("error" in userData) {
+    Sentry.captureException(userData.error);
+    return NextResponse.json({ error: userData.error }, { status: 500 });
+  }
+
+// ...
+```

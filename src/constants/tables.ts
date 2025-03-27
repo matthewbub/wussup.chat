@@ -1,5 +1,5 @@
 export const TableNames = {
-  USERS: "UserMetadata",
+  USERS: "UserMetaData",
   CHAT_SESSIONS: "ChatSessions",
   CHAT_MESSAGES: "Chats",
 };

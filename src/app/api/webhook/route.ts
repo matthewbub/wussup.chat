@@ -1,7 +1,21 @@
+// TO ADD OR MODIFY THESE PERMISSIONS IN STRIPE, GO TO:
+// Go to your Stripe dashboard, then select the Developer tab in the left sidebar.
+// Then select the Webhooks section.
+// Then select/ create a Webhook.
+// Then modify the permissions for the webhook.
+
+// Add the following permissions:
+// - customer.subscription.updated
+// - customer.subscription.deleted
+// - checkout.session.completed
+// - checkout.session.async_payment_succeeded
+// - charge.updated
+
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { createClient } from "@/lib/supabase-server";
+import { TableNames } from "@/constants/tables";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
@@ -29,9 +43,12 @@ export async function POST(req: Request) {
   // Handle the event
   switch (event.type) {
     case "checkout.session.completed":
-    case "checkout.session.async_payment_succeeded":
       const session = event.data.object as Stripe.Checkout.Session;
-      await fulfillSubscription(session);
+      await fulfillOrder(session);
+      break;
+    case "checkout.session.async_payment_succeeded":
+      const sessionAsync = event.data.object as Stripe.Checkout.Session;
+      await fulfillSubscription(sessionAsync);
       break;
     case "customer.subscription.updated":
       const subscription = event.data.object as Stripe.Subscription;
@@ -48,14 +65,92 @@ export async function POST(req: Request) {
   return NextResponse.json({ received: true }, { status: 200 });
 }
 
+async function fulfillOrder(session: Stripe.Checkout.Session) {
+  const supabase = await createClient();
+  try {
+    // 1. Check if we've already processed this session
+    const { data: existingSession, error: existingSessionError } = await supabase
+      .from(TableNames.USERS)
+      .select()
+      .eq("checkout_session_id", session.id)
+      .single();
+
+    if (existingSessionError && !existingSessionError.message.includes("No rows found")) {
+      console.error("Error checking for existing session:", existingSessionError);
+      return NextResponse.json({ error: "Error checking for existing session" }, { status: 500 });
+    }
+
+    if (existingSession) {
+      return NextResponse.json({ message: "Session already processed" }, { status: 200 });
+    }
+
+    // 2. Get customer details and expanded session data
+    const checkoutSession = await stripe.checkout.sessions.retrieve(session.id, {
+      expand: ["subscription"],
+    });
+    const customerId = checkoutSession.customer as string;
+    const userId = checkoutSession.metadata?.userId;
+
+    if (!userId) {
+      return NextResponse.json({ error: "No user ID found in session metadata" }, { status: 400 });
+    }
+
+    // 3. Calculate subscription details
+    let subscriptionPeriodEnd;
+    if (checkoutSession.subscription) {
+      const subscription = checkoutSession.subscription as Stripe.Subscription;
+      subscriptionPeriodEnd = new Date(subscription.current_period_end * 1000);
+    } else {
+      // Fallback to duration-based calculation for one-time purchases
+      const priceId = session.line_items?.data[0]?.price?.id;
+      let durationInDays = 30; // default to 1 month
+
+      if (priceId === process.env.STRIPE_PRICE_ID_FOR__PRO_PLAN_ALPHA_THREE_MONTHS) {
+        durationInDays = 90;
+      } else if (priceId === process.env.STRIPE_PRICE_ID_FOR__PRO_PLAN_ALPHA_TWELVE_MONTHS) {
+        durationInDays = 365;
+      }
+
+      subscriptionPeriodEnd = new Date();
+      subscriptionPeriodEnd.setDate(subscriptionPeriodEnd.getDate() + durationInDays);
+    }
+
+    // 4. Update user's subscription status in Supabase
+    const { error } = await supabase
+      .from(TableNames.USERS)
+      .update({
+        stripe_customer_id: customerId,
+        subscription_status: "active",
+        checkout_session_id: session.id,
+        subscription_period_end: subscriptionPeriodEnd.toISOString(),
+        stripe_subscription_id:
+          typeof checkoutSession.subscription === "string"
+            ? checkoutSession.subscription
+            : checkoutSession.subscription?.id,
+      })
+      .eq("id", userId);
+
+    if (error) {
+      console.error("Error updating user:", error);
+      return NextResponse.json({ error: "Failed to update user subscription status" }, { status: 500 });
+    }
+
+    console.log(`Successfully fulfilled order for session ${session.id}`);
+    return NextResponse.json({ message: "Successfully processed checkout session" }, { status: 200 });
+  } catch (error) {
+    console.error("Fulfillment error:", error);
+    return NextResponse.json({ error: "Internal server error processing checkout" }, { status: 500 });
+  }
+}
+
 async function fulfillSubscription(session: Stripe.Checkout.Session) {
   const supabase = await createClient();
   try {
     // 1. Check if we've already processed this session
     const { data: existingSession, error: existingSessionError } = await supabase
-      .from("ChatBot_Users")
+      .from(TableNames.USERS)
       .select()
-      .eq("checkoutSessionId", session.id)
+      .eq("checkout_session_id", session.id)
       .single();
 
     if (
@@ -90,7 +185,7 @@ async function fulfillSubscription(session: Stripe.Checkout.Session) {
 
     // 5. Update user's subscription status in Supabase
     const { data: existingUser, error: userError } = await supabase
-      .from("ChatBot_Users")
+      .from(TableNames.USERS)
       .select()
       .eq("email", session.customer_email || session.customer_details?.email)
       .single();
@@ -102,15 +197,15 @@ async function fulfillSubscription(session: Stripe.Checkout.Session) {
     }
 
     const { error } = await supabase
-      .from("ChatBot_Users")
+      .from(TableNames.USERS)
       .upsert({
         clerk_user_id: userId,
         email: session.customer_email || session.customer_details?.email,
-        stripeCustomerId: customerId,
-        stripeSubscriptionId: subscriptionId,
-        subscriptionStatus: "active",
-        checkoutSessionId: session.id,
-        subscriptionPeriodEnd: new Date(subscription.current_period_end * 1000).toISOString(),
+        stripe_customer_id: customerId,
+        stripe_subscription_id: subscriptionId,
+        subscription_status: "active",
+        checkout_session_id: session.id,
+        subscription_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
       })
       .eq("email", session.customer_email || session.customer_details?.email);
 
@@ -139,12 +234,12 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
   const supabase = await createClient();
   try {
     const { error } = await supabase
-      .from("ChatBot_Users")
+      .from(TableNames.USERS)
       .update({
-        subscriptionStatus: subscription.status,
-        subscriptionPeriodEnd: new Date(subscription.current_period_end * 1000).toISOString(),
+        subscription_status: subscription.status,
+        subscription_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
       })
-      .eq("stripeSubscriptionId", subscription.id);
+      .eq("stripe_subscription_id", subscription.id);
 
     if (error) {
       console.error("Error updating subscription status:", error);
@@ -159,5 +254,24 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
 }
 
 async function handleSubscriptionCancellation(canceledSubscription: Stripe.Subscription) {
-  console.log("Subscription canceled:", canceledSubscription);
+  const supabase = await createClient();
+  try {
+    const { error } = await supabase
+      .from(TableNames.USERS)
+      .update({
+        subscription_status: "canceled",
+        subscription_period_end: new Date(canceledSubscription.current_period_end * 1000).toISOString(),
+      })
+      .eq("stripe_subscription_id", canceledSubscription.id);
+
+    if (error) {
+      console.error("Error updating subscription status:", error);
+      throw error;
+    }
+
+    console.log("Subscription canceled:", canceledSubscription);
+  } catch (error) {
+    console.error("Subscription cancellation error:", error);
+    throw error;
+  }
 }
