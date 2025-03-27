@@ -46,10 +46,6 @@ export async function POST(req: Request) {
       const session = event.data.object as Stripe.Checkout.Session;
       await fulfillOrder(session);
       break;
-    case "checkout.session.async_payment_succeeded":
-      const sessionAsync = event.data.object as Stripe.Checkout.Session;
-      await fulfillSubscription(sessionAsync);
-      break;
     case "customer.subscription.updated":
       const subscription = event.data.object as Stripe.Subscription;
       await handleSubscriptionUpdate(subscription);
@@ -75,47 +71,64 @@ async function fulfillOrder(session: Stripe.Checkout.Session) {
       .eq("checkout_session_id", session.id)
       .single();
 
-    if (existingSessionError && !existingSessionError.message.includes("No rows found")) {
-      console.error("Error checking for existing session:", existingSessionError);
+    if (existingSessionError && !existingSessionError.details.includes("0 rows")) {
+      console.error("[fulfillOrder] Error checking for existing session:", existingSessionError);
       return NextResponse.json({ error: "Error checking for existing session" }, { status: 500 });
     }
-
     if (existingSession) {
       return NextResponse.json({ message: "Session already processed" }, { status: 200 });
     }
 
-    // 2. Get customer details and expanded session data
+    // 2. Verify payment status
+    if (session.payment_status !== "paid") {
+      console.log(`Session ${session.id} payment status is ${session.payment_status}`);
+      return NextResponse.json({ message: `Payment status is ${session.payment_status}` }, { status: 200 });
+    }
+
+    // 3. Get full session details with line items
     const checkoutSession = await stripe.checkout.sessions.retrieve(session.id, {
-      expand: ["subscription"],
+      expand: ["line_items"],
     });
-    const customerId = checkoutSession.customer as string;
-    const userId = checkoutSession.metadata?.userId;
 
-    if (!userId) {
-      return NextResponse.json({ error: "No user ID found in session metadata" }, { status: 400 });
-    }
-
-    // 3. Calculate subscription details
-    let subscriptionPeriodEnd;
-    if (checkoutSession.subscription) {
-      const subscription = checkoutSession.subscription as Stripe.Subscription;
-      subscriptionPeriodEnd = new Date(subscription.current_period_end * 1000);
+    // 4. Get or create customer
+    let customerId: string;
+    if (session.customer) {
+      customerId = session.customer as string;
     } else {
-      // Fallback to duration-based calculation for one-time purchases
-      const priceId = session.line_items?.data[0]?.price?.id;
-      let durationInDays = 30; // default to 1 month
-
-      if (priceId === process.env.STRIPE_PRICE_ID_FOR__PRO_PLAN_ALPHA_THREE_MONTHS) {
-        durationInDays = 90;
-      } else if (priceId === process.env.STRIPE_PRICE_ID_FOR__PRO_PLAN_ALPHA_TWELVE_MONTHS) {
-        durationInDays = 365;
-      }
-
-      subscriptionPeriodEnd = new Date();
-      subscriptionPeriodEnd.setDate(subscriptionPeriodEnd.getDate() + durationInDays);
+      const customer = await stripe.customers.create({
+        email: session.customer_details?.email,
+        name: session.customer_details?.name,
+        metadata: {
+          userId: session.metadata?.userId,
+        },
+      } as Stripe.CustomerCreateParams);
+      customerId = customer.id;
     }
 
-    // 4. Update user's subscription status in Supabase
+    // 5. Calculate subscription details
+    const subscriptionPeriodEnd = new Date();
+    const priceId = checkoutSession.line_items?.data[0]?.price?.id;
+    if (!priceId) {
+      console.error("Session details:", checkoutSession);
+      throw new Error("No price ID found in expanded session");
+    }
+
+    let durationInDays = 30; // default to 1 month
+    switch (priceId) {
+      case process.env.STRIPE_PRICE_ID_FOR__PRO_PLAN_ALPHA_ONE_MONTH:
+        durationInDays = 30;
+        break;
+      case process.env.STRIPE_PRICE_ID_FOR__PRO_PLAN_ALPHA_THREE_MONTHS:
+        durationInDays = 90;
+        break;
+      case process.env.STRIPE_PRICE_ID_FOR__PRO_PLAN_ALPHA_TWELVE_MONTHS:
+        durationInDays = 365;
+        break;
+    }
+
+    subscriptionPeriodEnd.setDate(subscriptionPeriodEnd.getDate() + durationInDays);
+
+    // 6. Update user's subscription status in Supabase
     const { error } = await supabase
       .from(TableNames.USERS)
       .update({
@@ -123,12 +136,9 @@ async function fulfillOrder(session: Stripe.Checkout.Session) {
         subscription_status: "active",
         checkout_session_id: session.id,
         subscription_period_end: subscriptionPeriodEnd.toISOString(),
-        stripe_subscription_id:
-          typeof checkoutSession.subscription === "string"
-            ? checkoutSession.subscription
-            : checkoutSession.subscription?.id,
+        payment_status: session.payment_status,
       })
-      .eq("id", userId);
+      .eq("id", session.metadata?.userId);
 
     if (error) {
       console.error("Error updating user:", error);
@@ -140,84 +150,6 @@ async function fulfillOrder(session: Stripe.Checkout.Session) {
   } catch (error) {
     console.error("Fulfillment error:", error);
     return NextResponse.json({ error: "Internal server error processing checkout" }, { status: 500 });
-  }
-}
-
-async function fulfillSubscription(session: Stripe.Checkout.Session) {
-  const supabase = await createClient();
-  try {
-    // 1. Check if we've already processed this session
-    const { data: existingSession, error: existingSessionError } = await supabase
-      .from(TableNames.USERS)
-      .select()
-      .eq("checkout_session_id", session.id)
-      .single();
-
-    if (
-      existingSessionError &&
-      (!existingSessionError.message.includes("No rows found") ||
-        !existingSessionError.message.includes("The result contains 0 rows"))
-    ) {
-      console.error("Error checking for existing session:", existingSessionError);
-    }
-
-    if (existingSession) {
-      return NextResponse.json({ message: `Session ${session.id} already fulfilled` }, { status: 200 });
-    }
-
-    // 2. Retrieve the full session details
-    const checkoutSession = await stripe.checkout.sessions.retrieve(session.id, {
-      expand: ["subscription"],
-    });
-
-    // 3. Verify payment status
-    if (checkoutSession.payment_status === "unpaid") {
-      return NextResponse.json({ message: `Session ${session.id} is unpaid` }, { status: 200 });
-    }
-
-    // 4. Get customer and subscription details
-    const customerId = checkoutSession.customer as string;
-    const subscriptionId =
-      typeof checkoutSession.subscription === "string"
-        ? checkoutSession.subscription
-        : checkoutSession.subscription?.id;
-    const subscription = checkoutSession.subscription as Stripe.Subscription;
-
-    // 5. Update user's subscription status in Supabase
-    const { data: existingUser, error: userError } = await supabase
-      .from(TableNames.USERS)
-      .select()
-      .eq("email", session.customer_email || session.customer_details?.email)
-      .single();
-
-    const userId = existingUser?.id;
-    if (userError || !userId) {
-      console.error("Error getting user:", userError);
-      return NextResponse.json({ message: `Error getting user: ${userError?.message}` }, { status: 500 });
-    }
-
-    const { error } = await supabase
-      .from(TableNames.USERS)
-      .upsert({
-        clerk_user_id: userId,
-        email: session.customer_email || session.customer_details?.email,
-        stripe_customer_id: customerId,
-        stripe_subscription_id: subscriptionId,
-        subscription_status: "active",
-        checkout_session_id: session.id,
-        subscription_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
-      })
-      .eq("email", session.customer_email || session.customer_details?.email);
-
-    if (error) {
-      console.error("Error updating user:", error);
-      throw error;
-    }
-
-    console.log(`Successfully fulfilled session ${session.id}`);
-  } catch (error) {
-    console.error("Fulfillment error:", error);
-    throw error; // Re-throw to trigger webhook retry
   }
 }
 
