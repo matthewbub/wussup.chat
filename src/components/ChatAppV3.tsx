@@ -1,18 +1,16 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import { processStreamingResponse } from "@/lib/utils";
-import { Menu } from "lucide-react";
 import { NewMessage, useChatStore } from "@/store/chat-store";
 import { useEffect } from "react";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { facade } from "@/lib/utils";
 import { useSearchParams } from "next/navigation";
-import { ChatAppSidebar } from "./_ChatAppSidebar";
 import { ChatAppMessages } from "./_ChatAppMessages";
 import { ChatAppInput } from "./_ChatAppInput";
 import { ChatAppHeader } from "./_ChatAppHeader";
-
+import { ChatAppMobileSidebarV2 } from "./_ChatAppMobileSidebarV2";
+import * as Sentry from "@sentry/nextjs";
+import { ChatAppSidebarV2 } from "./_ChatAppSidebarV2";
 const ChatAppV3 = ({
   existingData,
 }: {
@@ -141,10 +139,11 @@ const ChatAppV3 = ({
             usage,
           })
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error:", error);
       // Don't override quota error messages
-      if (!error.message?.includes("limit")) {
+      if (error instanceof Error && !error.message.includes("limit")) {
+        Sentry.captureException(error);
         updateLastMessage("Sorry, there was an error generating the response.");
       }
     } finally {
@@ -152,26 +151,19 @@ const ChatAppV3 = ({
     }
   };
 
+  console.log("existingData", existingData);
+
   return (
-    <div className="grid grid-cols-12 bg-background h-screen">
-      {/* Mobile Sidebar */}
-      <Sheet>
-        <SheetTrigger asChild className="lg:hidden absolute left-4 top-4">
-          <Button variant="outline" size="icon">
-            <Menu className="h-4 w-4" />
-          </Button>
-        </SheetTrigger>
-        <SheetContent side="left" className="w-[300px] p-0">
-          <ChatAppSidebar existingData={chatSessions} sessionId={sessionId} />
-        </SheetContent>
-      </Sheet>
-
+    <div className="flex h-screen">
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:flex col-span-3 border-r border-primary/10">
-        <ChatAppSidebar existingData={chatSessions} sessionId={sessionId} />
-      </aside>
+      <div className="hidden md:block w-72 border-r border-border">
+        <ChatAppSidebarV2 existingData={chatSessions} sessionId={sessionId} />
+      </div>
 
-      <main className="col-span-12 lg:col-span-9 flex flex-col h-screen sticky top-0">
+      {/* Mobile Sidebar */}
+      <ChatAppMobileSidebarV2 sessionId={sessionId} />
+
+      <main className="flex flex-1 flex-col">
         <ChatAppHeader />
         <ChatAppMessages messages={messages} />
         <ChatAppInput

@@ -5,8 +5,10 @@ import { TableNames } from "@/constants/tables";
 /**
  * Get IP address from X-Forwarded-For header or fall back to the direct connection IP
  */
-export function getIpAddress(headersList: Headers) {
-  return headersList.get("x-forwarded-for") ?? headersList.get("x-real-ip") ?? "Unknown";
+export async function getIpAddress(headersList: Headers) {
+  const forwardedFor = await headersList.get("x-forwarded-for");
+  const realIp = await headersList.get("x-real-ip");
+  return forwardedFor ?? realIp ?? "Unknown";
 }
 
 /**
@@ -16,7 +18,7 @@ export async function getUser(
   req: Request
 ): Promise<{ userId: string; type: "clerk_user_id" | "user_ip"; email?: string }> {
   const { userId } = await auth();
-  const ip = getIpAddress(req.headers);
+  const ip = await getIpAddress(req.headers);
 
   if (userId) {
     const user = await currentUser();
@@ -38,7 +40,7 @@ export async function getUser(
  */
 export async function getUserFromHeaders(headersList: Headers) {
   const { userId } = await auth();
-  const ip = getIpAddress(headersList);
+  const ip = await getIpAddress(headersList);
 
   if (userId) {
     const user = await currentUser();

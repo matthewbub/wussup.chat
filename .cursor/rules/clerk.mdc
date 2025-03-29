@@ -1,12 +1,12 @@
 ---
-description: Clerk best practices 
+description: Clerk best practices
 globs: route.ts, *.tsx, *.ts
 alwaysApply: false
 ---
 
 # IMPORTANT
 
-We are migrating Auth providers from Supabase to Clerk. We are keeping Supabase as a database, just replacing the Supabase Auth. 
+We should use the `supabaseFaceade.getOrMakeUser` method in [server-utils.ts](mdc:src/lib/server-utils.ts) as the sole way to obtain the userId.
 
 # EXAMPLES
 
@@ -117,4 +117,26 @@ export default function Example() {
 
   return <div>Hello {user.firstName}!</div>
 }
+```
+
+
+# HOW TO GET THE USER IN THE APP
+
+```ts
+import { NextResponse } from "next/server";
+import { getUser, supabaseFacade } from "@/lib/server-utils";
+import * as Sentry from "@sentry/nextjs";
+
+export async function POST(req: Request) {
+  const body = await req.json();
+
+  const user = await getUser(req);
+  const userData = await supabaseFacade.getOrMakeUser(user);
+
+  if ("error" in userData) {
+    Sentry.captureException(userData.error);
+    return NextResponse.json({ error: userData.error }, { status: 500 });
+  }
+
+// ...
 ```

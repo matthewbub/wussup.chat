@@ -8,10 +8,6 @@ alwaysApply: false
 
 - Always use Supabase on the Server. Never expose the Supabase SDK on the client. Use: [supabase-server.ts](mdc:src/lib/supabase-server.ts)
 
-## GOOD TO KNOW
-
-- We are creating a new version of this app; you will see references to Supabase that are no longer valid. Stick to the "Supabase Schema" and "AI Chat Conversation Storage" sectino below for the current source of truth.
-
 ## AI Chat Converstation Storage
 
 One of the primary ways we work with data in this application is via AI Chat converstaions. I've explored alot of different ways to store chat data, and I've ultimately landed on a very specific approach. 
@@ -97,19 +93,23 @@ create table public."Chats" (
   metadata jsonb null,
   prompt_tokens integer null default 0,
   completion_tokens integer null default 0,
-  clerk_user_id text null,
   input text null,
   output text null,
+  user_id uuid not null,
   constraint Chats_pkey primary key (id),
-  constraint Chats_chat_session_id_fkey foreign KEY (chat_session_id) references "ChatBot_Sessions" (id),
-  constraint Chats_clerk_user_id_fkey foreign KEY (clerk_user_id) references "ChatBot_Users" (clerk_user_id)
+  constraint Chats_chat_session_id_fkey1 foreign KEY (chat_session_id) references "ChatSessions" (id),
+  constraint Chats_user_id_fkey foreign KEY (user_id) references "UserMetaData" (id)
 ) TABLESPACE pg_default;
 
 create table public."ChatSessions" (
   id uuid not null default gen_random_uuid (),
   created_at timestamp with time zone not null default now(),
   name text null,
-  constraint ChatSessions_pkey1 primary key (id)
+  user_id uuid not null,
+  updated_at timestamp with time zone null,
+  pinned boolean null default false,
+  constraint ChatSessions_pkey1 primary key (id),
+  constraint ChatSessions_user_id_fkey foreign KEY (user_id) references "UserMetaData" (id)
 ) TABLESPACE pg_default;
 
 create table public."UserMetaData" (
@@ -117,6 +117,40 @@ create table public."UserMetaData" (
   created_at timestamp with time zone not null default now(),
   clerk_user_id text null,
   user_ip text null,
-  constraint UserMetaData_pkey primary key (id)
+  current_month_usage integer not null default 0,
+  current_day_usage integer not null default 0,
+  last_day_reset timestamp with time zone not null default (now() AT TIME ZONE 'utc'::text),
+  last_month_reset timestamp with time zone not null default (now() AT TIME ZONE 'utc'::text),
+  stripe_customer_id text null,
+  stripe_subscription_id text null,
+  subscription_status text null,
+  subscription_period_end text null,
+  checkout_session_id text null,
+  email text null,
+  payment_status text null,
+  product_id text null,
+  constraint UserMetaData_pkey primary key (id),
+  constraint UserMetaData_clerk_user_id_key unique (clerk_user_id),
+  constraint UserMetaData_stripe_associated_email_key unique (email)
+) TABLESPACE pg_default;
+
+create table public."PurchaseHistory" (
+  id uuid not null default gen_random_uuid (),
+  created_at text not null,
+  user_id uuid not null,
+  stripe_customer_id text not null,
+  stripe_checkout_session_id text not null,
+  price_id text not null,
+  amount_paid integer not null,
+  currency text not null,
+  payment_status text not null,
+  purchase_date timestamp with time zone not null default (now() AT TIME ZONE 'utc'::text),
+  subscription_period_start timestamp with time zone null,
+  subscription_period_end timestamp with time zone null,
+  payment_type text null,
+  updated_at timestamp with time zone null,
+  constraint PurchaseHistory_pkey primary key (id),
+  constraint PurchaseHistory_stripe_checkout_session_id_key unique (stripe_checkout_session_id),
+  constraint PurchaseHistory_user_id_fkey foreign KEY (user_id) references "UserMetaData" (id)
 ) TABLESPACE pg_default;
 ```

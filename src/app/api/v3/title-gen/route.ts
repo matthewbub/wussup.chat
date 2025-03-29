@@ -1,23 +1,11 @@
-import { createClient } from "@/lib/supabase-server";
 import { openai } from "@ai-sdk/openai";
 import { generateText } from "ai";
 import clsx from "clsx";
-import { getUser, supabaseFacade } from "@/lib/server-utils";
 import { NextResponse } from "next/server";
-import * as Sentry from "@sentry/nextjs";
-import { TableNames } from "@/constants/tables";
+import { ChatFacade } from "@/lib/chat-facade";
 
 export async function POST(req: Request) {
-  const user = await getUser(req);
-
   const { current_input, session_id } = await req.json();
-  const supabase = await createClient();
-  const userData = await supabaseFacade.getOrMakeUser(user);
-
-  if ("error" in userData) {
-    Sentry.captureException(userData.error);
-    return NextResponse.json({ error: userData.error }, { status: 500 });
-  }
 
   const { text } = await generateText({
     model: openai("gpt-4o-mini"),
@@ -31,22 +19,10 @@ export async function POST(req: Request) {
     ]),
   });
 
-  // update session title
-  const { error } = await supabase.from(TableNames.CHAT_SESSIONS).upsert(
-    {
-      name: text,
-      user_id: userData.id,
-      updated_at: new Date(),
-      id: session_id,
-    },
-    {
-      onConflict: "id",
-    }
-  );
+  const result = await ChatFacade.updateChatTitle(session_id, text, req);
 
-  if (error) {
-    console.error("Error updating session title", error);
-    Sentry.captureException(error);
+  if ("error" in result) {
+    return NextResponse.json({ error: result.error }, { status: 500 });
   }
 
   return NextResponse.json({ success: true, text });
