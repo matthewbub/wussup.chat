@@ -11,6 +11,7 @@ import { ChatAppHeader } from "./_ChatAppHeader";
 import { ChatAppMobileSidebarV2 } from "./_ChatAppMobileSidebarV2";
 import * as Sentry from "@sentry/nextjs";
 import { ChatAppSidebarV2 } from "./_ChatAppSidebarV2";
+
 const ChatAppV3 = ({
   existingData,
 }: {
@@ -78,6 +79,8 @@ const ChatAppV3 = ({
         checkOnly: true,
       });
 
+      console.log("quotaCheck", quotaCheck);
+
       if (!quotaCheck.ok) {
         const errorData = await quotaCheck.json();
         if (quotaCheck.status === 429) {
@@ -94,6 +97,7 @@ const ChatAppV3 = ({
       }
 
       const isFirstMessage = messages.length === 0;
+      console.log("isFirstMessage", isFirstMessage);
 
       // Add user message
       addMessage(facade.humanMessage(currentInput));
@@ -105,9 +109,8 @@ const ChatAppV3 = ({
 
       // Only proceed with title and message generation if quota check passes
       if (isFirstMessage) {
-        const rawTitleData = await facade.updateSessionTitle(sessionId, currentInput);
-        const data = await rawTitleData.json();
-        setChatTitle(data.text);
+        const titleData = await facade.updateSessionTitle(sessionId, currentInput);
+        setChatTitle(titleData.title || "New Chat - Dev");
       }
 
       const response = await facade.fetchAiMessage({
@@ -144,6 +147,7 @@ const ChatAppV3 = ({
       // Don't override quota error messages
       if (error instanceof Error && !error.message.includes("limit")) {
         Sentry.captureException(error);
+        console.error("Error:", error);
         updateLastMessage("Sorry, there was an error generating the response.");
       }
     } finally {
@@ -151,10 +155,11 @@ const ChatAppV3 = ({
     }
   };
 
-  console.log("existingData", existingData);
-
   return (
     <div className="flex h-screen">
+      {/* App navigation */}
+      {/* <IconSidebar /> */}
+
       {/* Desktop Sidebar */}
       <div className="hidden md:block w-72 border-r border-border">
         <ChatAppSidebarV2 existingData={chatSessions} sessionId={sessionId} />

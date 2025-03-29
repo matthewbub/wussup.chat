@@ -213,7 +213,7 @@ export const ChatAppSidebarV2 = ({ existingData, sessionId }: { existingData: Ch
     <div className="flex flex-col h-full max-h-screen">
       <div className="flex-none p-6 border-b border-primary/5">
         <div className="flex items-center justify-between">
-          <Link href="/" className="font-mono text-xl font-bold text-primary hover:opacity-80 transition-opacity">
+          <Link href="/" className="font-title text-2xl font-bold dark:text-white hover:opacity-80 transition-opacity">
             {appName}
           </Link>
         </div>

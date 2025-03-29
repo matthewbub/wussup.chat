@@ -9,6 +9,7 @@ import { useChatStore } from "@/store/chat-store";
 import { ThemeToggle } from "@/app/theme-toggle";
 import { useState, useRef, useEffect } from "react";
 import { Pencil } from "lucide-react";
+import { updateChatTitle } from "@/app/actions/chat-actions";
 
 export function ChatAppHeader() {
   const { chatTitle, sessionId, updateSessionTitle } = useChatStore();
@@ -40,30 +41,7 @@ export function ChatAppHeader() {
       return;
     }
 
-    try {
-      const response = await fetch("/api/v3/manual-title-update", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          title: editableTitle,
-          session_id: sessionId,
-        }),
-      });
-
-      if (response.ok) {
-        // Update both the chat title and session title in the store
-        updateSessionTitle(sessionId, editableTitle);
-      } else {
-        // Revert to original title if update failed
-        setEditableTitle(chatTitle);
-        console.error("Failed to update title");
-      }
-    } catch (error) {
-      console.error("Error updating title:", error);
-      setEditableTitle(chatTitle);
-    }
+    updateSessionTitle(sessionId, editableTitle);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -79,10 +57,6 @@ export function ChatAppHeader() {
     <header className="w-full py-4">
       <div className="container mx-auto px-4 flex justify-between items-center border-b border-primary/10 pb-4 bg-background">
         <nav className="flex items-center gap-2">
-          <Link href="/" className="">
-            Chat
-          </Link>
-          <span>/</span>
           <SignedIn>
             {isEditing ? (
               <input

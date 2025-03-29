@@ -3,6 +3,9 @@ import { headers } from "next/headers";
 import { getUser, supabaseFacade } from "./server-utils";
 import { TableNames } from "@/constants/tables";
 import * as Sentry from "@sentry/nextjs";
+import { openai } from "@ai-sdk/openai";
+import { generateText } from "ai";
+import clsx from "clsx";
 
 /**
  * A facade for handling all chat-related database operations
@@ -290,6 +293,42 @@ export class ChatFacade {
     } catch (error) {
       Sentry.captureException(error);
       return { error: "Failed to toggle pin status" };
+    }
+  }
+
+  /**
+   * Generates a title for a chat session using AI and updates it
+   */
+  static async generateAndUpdateTitle(sessionId: string, currentInput: string, req?: Request) {
+    try {
+      const { text } = await generateText({
+        model: openai("gpt-4o-mini"),
+        prompt: clsx([
+          "You are a helpful assistant that generates a concise title for a chat session.",
+          "The only context you have at this point is the user's first message.",
+          "Please generate a concise title using up to 6 words.",
+          "Text only, no special characters.",
+          "Here's the first message: ",
+          currentInput,
+        ]),
+      });
+
+      console.log("text", text);
+
+      const result = await this.updateChatTitle(sessionId, text, req);
+
+      console.log("result", result);
+
+      if ("error" in result) {
+        console.error("error", result.error);
+        return { error: result.error };
+      }
+
+      console.log("success", result.success);
+      return { success: true, title: text };
+    } catch (error) {
+      Sentry.captureException(error);
+      return { error: "Failed to generate and update chat title" };
     }
   }
 }

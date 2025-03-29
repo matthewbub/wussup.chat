@@ -1,6 +1,7 @@
 import { NewMessage } from "@/store/chat-store";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { generateAndUpdateTitle } from "@/app/actions/chat-actions";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -135,12 +136,7 @@ export const facade = {
     }).catch(console.error);
   },
   updateSessionTitle: async function (sessionId: string, currentInput: string) {
-    const response = await fetch("/api/v3/title-gen", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ session_id: sessionId, current_input: currentInput }),
-    });
-
-    return response;
+    const result = await generateAndUpdateTitle(sessionId, currentInput);
+    return result;
   },
 };

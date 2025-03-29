@@ -49,3 +49,12 @@ export async function getChatSessions() {
 export async function togglePinSession(sessionId: string) {
   return ChatFacade.togglePinSession(sessionId);
 }
+
+/**
+ * Generates a title for a chat session using AI and updates it
+ * @param sessionId The ID of the chat session
+ * @param currentInput The current user input to base the title on
+ */
+export async function generateAndUpdateTitle(sessionId: string, currentInput: string) {
+  return ChatFacade.generateAndUpdateTitle(sessionId, currentInput);
+}
