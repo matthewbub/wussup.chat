@@ -1,5 +1,7 @@
 import { SupabaseClient } from "@supabase/supabase-js";
 import { SubscriptionTier, QuotaLimit, UserQuota } from "./types";
+import { TableNames } from "@/constants/tables";
+import * as Sentry from "@sentry/nextjs";
 
 export class QuotaManager {
   private static readonly QUOTA_LIMITS: Record<SubscriptionTier, QuotaLimit> = {
@@ -8,10 +10,20 @@ export class QuotaManager {
       dailyLimit: 20,
       name: "free",
     },
-    pro: {
+    "Pro (Alpha, 1 Month)": {
       monthlyLimit: 1500,
       dailyLimit: null, // No daily limit for pro
-      name: "pro",
+      name: "Pro (Alpha, 1 Month)",
+    },
+    "Pro (Alpha, 3 Months)": {
+      monthlyLimit: 1500,
+      dailyLimit: null, // No daily limit for pro
+      name: "Pro (Alpha, 3 Months)",
+    },
+    "Pro (Alpha, 12 Months)": {
+      monthlyLimit: 1500,
+      dailyLimit: null, // No daily limit for pro
+      name: "Pro (Alpha, 12 Months)",
     },
   };
 
@@ -36,21 +48,21 @@ export class QuotaManager {
   async getUserQuota(userId: string): Promise<UserQuota | null> {
     try {
       const { data, error } = await this.supabase
-        .from("UserMetaData")
+        .from(TableNames.USERS)
         .select(
           `
           current_month_usage,
           current_day_usage,
           last_day_reset,
           last_month_reset,
-          subscription_tier
+          product_id
         `
         )
         .eq("id", userId)
         .single();
 
       if (error) {
-        console.error("Error fetching user quota:", error);
+        Sentry.captureException(error);
         return null;
       }
 
@@ -58,18 +70,18 @@ export class QuotaManager {
       if (data.current_month_usage === null || data.current_day_usage === null) {
         const now = new Date().toISOString();
         const { error: updateError } = await this.supabase
-          .from("UserMetaData")
+          .from(TableNames.USERS)
           .update({
             current_month_usage: 0,
             current_day_usage: 0,
             last_day_reset: now,
             last_month_reset: now,
-            subscription_tier: "free",
+            product_id: null,
           })
           .eq("id", userId);
 
         if (updateError) {
-          console.error("Error initializing user quota:", updateError);
+          Sentry.captureException(updateError);
           return null;
         }
 
@@ -78,21 +90,41 @@ export class QuotaManager {
           currentDayUsage: 0,
           lastDayReset: new Date(now),
           lastMonthReset: new Date(now),
-          subscriptionTier: "free",
+          planName: "free",
         };
       }
+
+      const planName = this.getPlanFromPriceId(data.product_id);
 
       return {
         currentMonthUsage: data.current_month_usage || 0,
         currentDayUsage: data.current_day_usage || 0,
         lastDayReset: new Date(data.last_day_reset),
         lastMonthReset: new Date(data.last_month_reset),
-        subscriptionTier: data.subscription_tier || "free",
+        planName,
       };
     } catch (error) {
-      console.error("Unexpected error in getUserQuota:", error);
+      Sentry.captureException(error);
       return null;
     }
+  }
+
+  private getPlanFromPriceId(priceId: string | null): SubscriptionTier {
+    if (!priceId) return "free";
+
+    if (priceId === process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_FOR__PRO_PLAN_ALPHA_ONE_MONTH) {
+      return "Pro (Alpha, 1 Month)";
+    }
+
+    if (priceId === process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_FOR__PRO_PLAN_ALPHA_THREE_MONTHS) {
+      return "Pro (Alpha, 3 Months)";
+    }
+
+    if (priceId === process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_FOR__PRO_PLAN_ALPHA_TWELVE_MONTHS) {
+      return "Pro (Alpha, 12 Months)";
+    }
+
+    return "free";
   }
 
   async checkQuota(userId: string): Promise<{
@@ -101,6 +133,7 @@ export class QuotaManager {
     remainingMonthlyQuota: number;
     dailyLimitExceeded: boolean;
     monthlyLimitExceeded: boolean;
+    planName: SubscriptionTier;
     error?: string;
   }> {
     try {
@@ -112,6 +145,7 @@ export class QuotaManager {
           remainingMonthlyQuota: 0,
           dailyLimitExceeded: false,
           monthlyLimitExceeded: false,
+          planName: "free",
           error: "Could not fetch quota",
         };
       }
@@ -127,7 +161,7 @@ export class QuotaManager {
         quota.currentMonthUsage = 0;
       }
 
-      const limits = QuotaManager.QUOTA_LIMITS[quota.subscriptionTier];
+      const limits = QuotaManager.QUOTA_LIMITS[quota.planName];
       const remainingMonthly = limits.monthlyLimit - quota.currentMonthUsage;
       const remainingDaily = limits.dailyLimit ? limits.dailyLimit - quota.currentDayUsage : null;
 
@@ -140,15 +174,17 @@ export class QuotaManager {
         remainingMonthlyQuota: remainingMonthly,
         dailyLimitExceeded,
         monthlyLimitExceeded,
+        planName: quota.planName,
       };
     } catch (error) {
-      console.error("Unexpected error in checkQuota:", error);
+      Sentry.captureException(error);
       return {
         hasQuota: false,
         remainingDailyQuota: null,
         remainingMonthlyQuota: 0,
         dailyLimitExceeded: false,
         monthlyLimitExceeded: false,
+        planName: "free",
         error: "Unexpected error checking quota",
       };
     }
@@ -158,19 +194,19 @@ export class QuotaManager {
     try {
       // First get current values
       const { data: currentData, error: fetchError } = await this.supabase
-        .from("UserMetaData")
+        .from(TableNames.USERS)
         .select("current_month_usage, current_day_usage")
         .eq("id", userId)
         .single();
 
       if (fetchError) {
-        console.error("Error fetching current usage:", fetchError);
+        Sentry.captureException(fetchError);
         return false;
       }
 
       // Then update with incremented values
       const { error: updateError } = await this.supabase
-        .from("UserMetaData")
+        .from(TableNames.USERS)
         .update({
           current_month_usage: (currentData.current_month_usage || 0) + 1,
           current_day_usage: (currentData.current_day_usage || 0) + 1,
@@ -178,13 +214,13 @@ export class QuotaManager {
         .eq("id", userId);
 
       if (updateError) {
-        console.error("Error incrementing usage:", updateError);
+        Sentry.captureException(updateError);
         return false;
       }
 
       return true;
     } catch (error) {
-      console.error("Unexpected error in incrementUsage:", error);
+      Sentry.captureException(error);
       return false;
     }
   }
@@ -192,7 +228,7 @@ export class QuotaManager {
   private async resetDailyQuota(userId: string): Promise<boolean> {
     try {
       const { error } = await this.supabase
-        .from("UserMetaData")
+        .from(TableNames.USERS)
         .update({
           current_day_usage: 0,
           last_day_reset: new Date().toISOString(),
@@ -200,13 +236,13 @@ export class QuotaManager {
         .eq("id", userId);
 
       if (error) {
-        console.error("Error resetting daily quota:", error);
+        Sentry.captureException(error);
         return false;
       }
 
       return true;
     } catch (error) {
-      console.error("Unexpected error in resetDailyQuota:", error);
+      Sentry.captureException(error);
       return false;
     }
   }
@@ -214,7 +250,7 @@ export class QuotaManager {
   private async resetMonthlyQuota(userId: string): Promise<boolean> {
     try {
       const { error } = await this.supabase
-        .from("UserMetaData")
+        .from(TableNames.USERS)
         .update({
           current_month_usage: 0,
           last_month_reset: new Date().toISOString(),
@@ -222,34 +258,34 @@ export class QuotaManager {
         .eq("id", userId);
 
       if (error) {
-        console.error("Error resetting monthly quota:", error);
+        Sentry.captureException(error);
         return false;
       }
 
       return true;
     } catch (error) {
-      console.error("Unexpected error in resetMonthlyQuota:", error);
+      Sentry.captureException(error);
       return false;
     }
   }
 
-  async upgradeSubscription(userId: string, newTier: SubscriptionTier): Promise<boolean> {
+  async upgradeSubscription(userId: string, newPriceId: string): Promise<boolean> {
     try {
       const { error } = await this.supabase
-        .from("UserMetaData")
+        .from(TableNames.USERS)
         .update({
-          subscription_tier: newTier,
+          product_id: newPriceId,
         })
         .eq("id", userId);
 
       if (error) {
-        console.error("Error upgrading subscription:", error);
+        Sentry.captureException(error);
         return false;
       }
 
       return true;
     } catch (error) {
-      console.error("Unexpected error in upgradeSubscription:", error);
+      Sentry.captureException(error);
       return false;
     }
   }

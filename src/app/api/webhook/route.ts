@@ -8,7 +8,6 @@
 // - customer.subscription.updated
 // - customer.subscription.deleted
 // - checkout.session.completed
-// - checkout.session.async_payment_succeeded
 // - charge.updated
 
 import { headers } from "next/headers";
@@ -128,16 +127,38 @@ async function fulfillOrder(session: Stripe.Checkout.Session) {
 
     subscriptionPeriodEnd.setDate(subscriptionPeriodEnd.getDate() + durationInDays);
 
-    // 6. Update user's subscription status in Supabase
+    // 6. Record the purchase in purchase_history
+    const { error: purchaseError } = await supabase.from(TableNames.PURCHASE_HISTORY).insert({
+      user_id: session.metadata?.userId,
+      stripe_customer_id: customerId,
+      stripe_checkout_session_id: session.id,
+      price_id: priceId,
+      amount_paid: session.amount_total || 0,
+      currency: session.currency || "usd",
+      payment_status: session.payment_status,
+      purchase_date: new Date(session.created * 1000).toISOString(),
+      subscription_period_start: new Date().toISOString(),
+      subscription_period_end: subscriptionPeriodEnd.toISOString(),
+      payment_type: "one-time",
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    });
+
+    if (purchaseError) {
+      console.error("Error recording purchase:", purchaseError);
+      // Continue with the rest of the fulfillment even if purchase recording fails
+    }
+
+    // 7. Update user's subscription status in Supabase
     const { error } = await supabase
       .from(TableNames.USERS)
       .update({
-        subscription_tier: "pro",
         stripe_customer_id: customerId,
         subscription_status: "active",
         checkout_session_id: session.id,
         subscription_period_end: subscriptionPeriodEnd.toISOString(),
         payment_status: session.payment_status,
+        product_id: priceId,
       })
       .eq("id", session.metadata?.userId);
 
@@ -166,6 +187,26 @@ async function fulfillOrder(session: Stripe.Checkout.Session) {
 async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
   const supabase = await createClient();
   try {
+    // Record the subscription update in purchase history
+    const { error: purchaseError } = await supabase.from(TableNames.PURCHASE_HISTORY).insert({
+      user_id: subscription.metadata.userId, // Make sure this is set in your subscription metadata
+      stripe_customer_id: subscription.customer as string,
+      stripe_subscription_id: subscription.id,
+      price_id: subscription.items.data[0]?.price.id,
+      amount_paid: subscription.items.data[0]?.price.unit_amount || 0,
+      currency: subscription.currency,
+      payment_status: subscription.status,
+      purchase_date: new Date(subscription.current_period_start * 1000).toISOString(),
+      subscription_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
+      subscription_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+      payment_type: "subscription",
+      event_type: "subscription_updated",
+    });
+
+    if (purchaseError) {
+      console.error("Error recording subscription update:", purchaseError);
+    }
+
     const { error } = await supabase
       .from(TableNames.USERS)
       .update({
@@ -189,6 +230,26 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
 async function handleSubscriptionCancellation(canceledSubscription: Stripe.Subscription) {
   const supabase = await createClient();
   try {
+    // Record the cancellation in purchase history
+    const { error: purchaseError } = await supabase.from(TableNames.PURCHASE_HISTORY).insert({
+      user_id: canceledSubscription.metadata.userId,
+      stripe_customer_id: canceledSubscription.customer as string,
+      stripe_subscription_id: canceledSubscription.id,
+      price_id: canceledSubscription.items.data[0]?.price.id,
+      amount_paid: 0, // No charge for cancellation
+      currency: canceledSubscription.currency,
+      payment_status: "canceled",
+      purchase_date: new Date().toISOString(),
+      subscription_period_start: new Date(canceledSubscription.current_period_start * 1000).toISOString(),
+      subscription_period_end: new Date(canceledSubscription.current_period_end * 1000).toISOString(),
+      payment_type: "subscription",
+      event_type: "subscription_canceled",
+    });
+
+    if (purchaseError) {
+      console.error("Error recording subscription cancellation:", purchaseError);
+    }
+
     const { error } = await supabase
       .from(TableNames.USERS)
       .update({

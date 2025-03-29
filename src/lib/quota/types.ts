@@ -1,4 +1,4 @@
-export type SubscriptionTier = "free" | "pro";
+export type SubscriptionTier = "free" | "Pro (Alpha, 1 Month)" | "Pro (Alpha, 3 Months)" | "Pro (Alpha, 12 Months)";
 
 export interface QuotaLimit {
   monthlyLimit: number;
@@ -11,5 +11,5 @@ export interface UserQuota {
   currentDayUsage: number;
   lastDayReset: Date;
   lastMonthReset: Date;
-  subscriptionTier: SubscriptionTier;
+  planName: SubscriptionTier;
 }
