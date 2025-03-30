@@ -7,13 +7,15 @@ import { useChatStore } from "@/store/chat-store";
 import { ThemeToggle } from "@/app/theme-toggle";
 import { useState, useRef, useEffect } from "react";
 import { Pencil } from "lucide-react";
+import { dark } from "@clerk/themes";
+import { useTheme } from "next-themes";
 
 export function ChatAppHeader() {
   const { chatTitle, sessionId, updateSessionTitle } = useChatStore();
   const [isEditing, setIsEditing] = useState(false);
   const [editableTitle, setEditableTitle] = useState(chatTitle);
   const inputRef = useRef<HTMLInputElement>(null);
-
+  const { theme } = useTheme();
   // Focus the input when entering edit mode
   useEffect(() => {
     if (isEditing && inputRef.current) {
@@ -89,7 +91,16 @@ export function ChatAppHeader() {
             </SignUpButton>
           </SignedOut>
           <SignedIn>
-            <UserButton />
+            <UserButton 
+              appearance={{
+                baseTheme: theme === "dark" ? dark : undefined
+              }}
+              userProfileProps={{
+                appearance: {
+                  baseTheme: theme === "dark" ? dark : undefined
+                },
+              }}
+            />
           </SignedIn>
         </div>
       </div>

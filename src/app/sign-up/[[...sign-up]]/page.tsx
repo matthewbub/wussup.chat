@@ -3,8 +3,10 @@ import Footer from "@/components/Footer";
 import { SignUp } from "@clerk/nextjs";
 import { dark } from "@clerk/themes";
 import Link from "next/link";
+import { useTheme } from "next-themes";
 
 export default function Page() {
+  const { theme } = useTheme();
   return (
     <div className="flex flex-col h-screen">
       <div className="container mx-auto p-4">
@@ -13,7 +15,11 @@ export default function Page() {
         </Link>
       </div>
       <div className="flex-1 flex justify-center items-center">
-        <SignUp appearance={{ baseTheme: dark }} />
+        <SignUp
+          appearance={{
+            baseTheme: theme === "dark" ? dark : undefined,
+          }}
+        />
       </div>
       <Footer />
     </div>
