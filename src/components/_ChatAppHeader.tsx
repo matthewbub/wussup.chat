@@ -1,15 +1,12 @@
 "use client";
 
 import type React from "react";
-
-import Link from "next/link";
 import { SignInButton, SignUpButton, SignedOut, UserButton, SignedIn } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import { useChatStore } from "@/store/chat-store";
 import { ThemeToggle } from "@/app/theme-toggle";
 import { useState, useRef, useEffect } from "react";
 import { Pencil } from "lucide-react";
-import { updateChatTitle } from "@/app/actions/chat-actions";
 
 export function ChatAppHeader() {
   const { chatTitle, sessionId, updateSessionTitle } = useChatStore();
