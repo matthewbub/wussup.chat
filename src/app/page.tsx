@@ -1,6 +1,7 @@
 import ChatAppV3 from "@/components/ChatAppV3";
 import { ChatFacade } from "@/lib/chat-facade";
 import * as Sentry from "@sentry/nextjs";
+import { Suspense } from "react";
 
 export default async function Page() {
   const result = await ChatFacade.getChatSessions();
@@ -9,10 +10,16 @@ export default async function Page() {
     Sentry.captureException(result.error);
     return (
       <div>
-        <ChatAppV3 existingData={[]} />
+        <Suspense fallback={<div>Loading...</div>}>
+          <ChatAppV3 existingData={[]} />
+        </Suspense>
       </div>
     );
   }
 
-  return <ChatAppV3 existingData={result.data ?? []} />;
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ChatAppV3 existingData={result.data ?? []} />
+    </Suspense>
+  );
 }

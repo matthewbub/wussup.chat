@@ -49,7 +49,12 @@ export default function MarkdownComponent({ children, className }: { children: s
         },
         a({ children, href }) {
           return (
-            <a href={href} className="text-primary hover:underline" target="_blank" rel="noopener noreferrer">
+            <a
+              href={href}
+              className="text-indigo-500 dark:text-indigo-400 hover:underline"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               {children}
             </a>
           );

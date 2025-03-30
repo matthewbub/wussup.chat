@@ -5,7 +5,7 @@ import type React from "react";
 import { cn } from "@/lib/utils";
 import { Home, Newspaper, Rss, FileText, Settings, HelpCircle } from "lucide-react";
 import Link from "next/link";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/Tooltip";
 
 type NavItem = {
   name: string;
