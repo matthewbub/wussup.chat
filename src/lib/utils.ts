@@ -95,6 +95,7 @@ export const facade = {
     formData.append("model_provider", provider);
     formData.append("messageHistory", JSON.stringify(messages));
     formData.append("session_id", sessionId);
+
     if (checkOnly) {
       formData.append("checkOnly", "true");
     }

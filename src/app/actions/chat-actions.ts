@@ -58,3 +58,10 @@ export async function togglePinSession(sessionId: string) {
 export async function generateAndUpdateTitle(sessionId: string, currentInput: string) {
   return ChatFacade.generateAndUpdateTitle(sessionId, currentInput);
 }
+
+/**
+ * Checks if the user has exceeded their quota
+ */
+export async function checkQuota() {
+  return ChatFacade.checkQuota();
+}

@@ -1,3 +1,4 @@
+// server only
 import { createClient } from "./supabase-server";
 import { headers } from "next/headers";
 import { getUser, supabaseFacade } from "./server-utils";
@@ -6,6 +7,8 @@ import * as Sentry from "@sentry/nextjs";
 import { openai } from "@ai-sdk/openai";
 import { generateText } from "ai";
 import clsx from "clsx";
+import { quotaManager } from "@/lib/quota/init";
+import { checkQuotaMiddleware } from "@/lib/quota/middleware";
 
 /**
  * A facade for handling all chat-related database operations
@@ -329,6 +332,25 @@ export class ChatFacade {
     } catch (error) {
       Sentry.captureException(error);
       return { error: "Failed to generate and update chat title" };
+    }
+  }
+
+  /**
+   * Check if the user has exceeded their quota
+   */
+  static async checkQuota(req?: Request) {
+    try {
+      const userId = await this.getUserId(req);
+      const quotaError = await checkQuotaMiddleware(userId, quotaManager);
+
+      if (quotaError) {
+        return { error: "Quota exceeded" };
+      }
+
+      return { success: true };
+    } catch (error) {
+      Sentry.captureException(error);
+      return { error: "Failed to check quota" };
     }
   }
 }

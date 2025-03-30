@@ -1,3 +1,4 @@
+// server only
 import { SupabaseClient } from "@supabase/supabase-js";
 import { QuotaManager } from "../quota/quota-manager";
 import { SubscriptionTier } from "../quota/types";

@@ -48,8 +48,8 @@ export async function POST(req: Request) {
 
     // Create final messages array
     const messages = [
-      ...parsedHistory.map((msg: { is_user: boolean; content: string }) => ({
-        role: msg.is_user ? ("user" as const) : ("assistant" as const),
+      ...parsedHistory.map((msg: { role: string; content: string }) => ({
+        role: msg.role as "user" | "assistant",
         content: msg.content,
       })),
       { role: "user" as const, content },
@@ -70,7 +70,7 @@ export async function POST(req: Request) {
 
     const result = streamText({
       model: provider as LanguageModelV1,
-      system: chat_context as string,
+      system: chat_context,
       messages,
     });
 

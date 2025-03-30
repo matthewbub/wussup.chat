@@ -210,7 +210,7 @@ export const ChatAppSidebarV2 = ({ existingData, sessionId }: { existingData: Ch
   };
 
   return (
-    <div className="flex flex-col h-full max-h-screen">
+    <div className="flex flex-col max-h-screen">
       <div className="flex-none p-6 border-b border-primary/5">
         <div className="flex items-center justify-between">
           <Link href="/" className="font-title text-2xl font-bold dark:text-white hover:opacity-80 transition-opacity">

@@ -1,16 +1,16 @@
 "use client";
 
-import { processStreamingResponse } from "@/lib/utils";
-import { NewMessage, useChatStore } from "@/store/chat-store";
 import { useEffect } from "react";
-import { facade } from "@/lib/utils";
-import { useSearchParams } from "next/navigation";
-import { ChatAppMessages } from "./_ChatAppMessages";
-import { ChatAppInput } from "./_ChatAppInput";
-import { ChatAppHeader } from "./_ChatAppHeader";
-import { ChatAppMobileSidebarV2 } from "./_ChatAppMobileSidebarV2";
+import { ChatAppHeader } from "@/components/_ChatAppHeader";
+import { ChatAppInput } from "@/components/_ChatAppInput";
+import { ChatAppMessages } from "@/components/_ChatAppMessages";
+import { ChatAppSidebarV2 } from "@/components/_ChatAppSidebarV2";
+import { ChatAppMobileSidebarV2 } from "@/components/_ChatAppMobileSidebarV2";
+import { NewMessage, useChatStore } from "@/store/chat-store";
 import * as Sentry from "@sentry/nextjs";
-import { ChatAppSidebarV2 } from "./_ChatAppSidebarV2";
+import { checkQuota } from "@/app/actions/chat-actions";
+import { facade, processStreamingResponse } from "@/lib/utils";
+import { useSearchParams } from "next/navigation";
 
 const ChatAppV3 = ({
   existingData,
@@ -63,50 +63,34 @@ const ChatAppV3 = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     // reject if no input or loading
     if (!currentInput.trim() || isLoading) return;
+
+    addMessage(facade.humanMessage(currentInput));
+    setInput("");
 
     setLoading(true);
 
     try {
       // Check quota first before adding any messages
-      const quotaCheck = await facade.fetchAiMessage({
-        input: currentInput,
-        model: selectedModel.id,
-        provider: selectedModel.provider,
-        messages,
-        sessionId,
-        checkOnly: true,
-      });
+      const quotaCheck = await checkQuota();
 
-      console.log("quotaCheck", quotaCheck);
-
-      if (!quotaCheck.ok) {
-        const errorData = await quotaCheck.json();
-        if (quotaCheck.status === 429) {
-          // Add user message and error message to chat
-          addMessage(facade.humanMessage(currentInput));
-          addMessage(
-            facade.aiMessage(
-              errorData.message || "You have reached your message limit. Please try again later or upgrade your plan."
-            )
-          );
-          throw new Error(errorData.message);
-        }
-        throw new Error("Failed to check message quota");
+      if ("error" in quotaCheck) {
+        // Add user message and error message to chat
+        addMessage(
+          facade.aiMessage(
+            quotaCheck.error || "You have reached your message limit. Please try again later or upgrade your plan."
+          )
+        );
+        throw new Error(quotaCheck.error);
       }
-
-      const isFirstMessage = messages.length === 0;
-      console.log("isFirstMessage", isFirstMessage);
-
-      // Add user message
-      addMessage(facade.humanMessage(currentInput));
 
       // Add empty AI message that will be streamed
       const aiMessage = facade.aiMessage("");
       addMessage(aiMessage);
-      setInput("");
 
+      const isFirstMessage = messages.length === 0;
       // Only proceed with title and message generation if quota check passes
       if (isFirstMessage) {
         const titleData = await facade.updateSessionTitle(sessionId, currentInput);
@@ -122,19 +106,17 @@ const ChatAppV3 = ({
       });
 
       if (!response.ok) throw new Error("Failed to send message");
-
       const reader = response.body?.getReader();
       if (!reader) throw new Error("No reader available");
-
       await processStreamingResponse(
         reader,
         // Update content on each chunk
-        (content) => {
+        (content: string) => {
           aiMessage.content += content;
           updateLastMessage(aiMessage.content);
         },
         // Handle metadata (usage info) when stream completes
-        (usage) =>
+        (usage: { promptTokens: number; completionTokens: number }) =>
           facade.postChatInfo({
             sessionId,
             aiMessage,
