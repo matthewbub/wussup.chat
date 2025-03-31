@@ -1,3 +1,4 @@
+"use client";
 import { appName } from "@/constants/version";
 import Footer from "@/components/Footer";
 import { SignUp } from "@clerk/nextjs";
