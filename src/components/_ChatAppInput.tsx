@@ -65,6 +65,15 @@ export const ChatAppInput = ({
             })()}
           </SelectTrigger>
           <SelectContent>
+            {USER_SUBSCRIPTION_TIER === "free" && (
+              <div className="px-2 py-3 border-b">
+                <div className="flex items-center gap-2 text-sm">
+                  <Zap className="h-4 w-4 text-blue-500" />
+                  <span>Upgrade to Pro for all models</span>
+                </div>
+                <div className="mt-1 text-xs text-muted-foreground">Get access to all models for $5/month</div>
+              </div>
+            )}
             {AVAILABLE_MODELS.map((model: AiModel) => {
               // Get provider icon data, fallback to default if not found
               const providerData = PROVIDER_ICONS[model.provider] || PROVIDER_ICONS.default;
@@ -79,7 +88,9 @@ export const ChatAppInput = ({
                   disabled={!model.free && USER_SUBSCRIPTION_TIER === "free"}
                 >
                   <div
-                    className={`flex items-center gap-2 w-full ${!model.free && USER_SUBSCRIPTION_TIER === "free" ? "opacity-50" : ""}`}
+                    className={`flex items-center gap-2 w-full ${
+                      !model.free && USER_SUBSCRIPTION_TIER === "free" ? "opacity-50" : ""
+                    }`}
                   >
                     <div className={`rounded-md p-1 ${providerData.color}`}>
                       <ProviderIcon className="h-4 w-4" />

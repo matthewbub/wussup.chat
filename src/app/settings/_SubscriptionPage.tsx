@@ -17,8 +17,8 @@ export default function SubscriptionSettings({
   purchaseHistory: PurchaseHistory[];
 }) {
   return (
-    <div className="container max-w-4xl mx-auto py-6 space-y-8">
-      <div className="flex items-center justify-between">
+    <div className="container mx-auto py-6 space-y-8">
+      <div className="px-4 flex items-center justify-between">
         <h1 className="text-3xl font-bold">Subscription</h1>
       </div>
 
@@ -51,25 +51,23 @@ function SubscribedView({
   });
 
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
+    <div className="space-y-6 gap-20 flex flex-col">
+      <Card className="grid grid-cols-1 md:grid-cols-12 border-none divide-y md:divide-y-0 md:divide-x divide-border">
+        <CardHeader className="col-span-1 md:col-span-4">
           <div className="flex items-center justify-between">
             <div>
               <CardTitle>Current Plan</CardTitle>
               <CardDescription>Your subscription details and usage</CardDescription>
             </div>
-            <div className="flex items-center gap-2">
-              <Badge variant="default" className="uppercase">
-                {userSubscriptionInfo.planName}
-              </Badge>
-              {userSubscriptionInfo.recurringOrOneTimePayment === "one-time" && (
-                <Badge variant="outline">One-time</Badge>
-              )}
-            </div>
           </div>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="col-span-1 md:col-span-8 space-y-6 flex flex-col flex-1">
+          <div className="flex items-center gap-2">
+            <Badge variant="default" className="uppercase">
+              {userSubscriptionInfo.planName}
+            </Badge>
+            {userSubscriptionInfo.recurringOrOneTimePayment === "one-time" && <Badge variant="outline">One-time</Badge>}
+          </div>
           <div className="space-y-2">
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">Monthly Usage</span>
@@ -99,21 +97,19 @@ function SubscribedView({
               </div>
             </div>
           </div>
-        </CardContent>
-        <CardFooter className="flex flex-col space-y-4 sm:flex-row sm:justify-between sm:space-y-0">
           <Button variant="outline">Change Plan</Button>
           {userSubscriptionInfo.recurringOrOneTimePayment === "recurring" && (
             <Button variant="destructive">Cancel Subscription</Button>
           )}
-        </CardFooter>
+        </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
+      <Card className="grid grid-cols-1 md:grid-cols-12 border-none divide-y md:divide-y-0 md:divide-x divide-border">
+        <CardHeader className="col-span-1 md:col-span-4">
           <CardTitle>Payment History</CardTitle>
           <CardDescription>View your past invoices and payment history</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="col-span-1 md:col-span-8">
           <div className="rounded-md border overflow-x-auto">
             <table className="w-full">
               <thead>
@@ -146,18 +142,16 @@ function SubscribedView({
           </div>
         </CardContent>
       </Card>
-      <Card>
-        <CardHeader>
+      <Card className="grid grid-cols-1 md:grid-cols-12 border-none divide-y md:divide-y-0 md:divide-x divide-border">
+        <CardHeader className="col-span-1 md:col-span-4">
           <CardTitle>Need Help?</CardTitle>
           <CardDescription>If something doesn't seem right with your subscription or payments</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="col-span-1 md:col-span-8">
           <p className="text-sm text-muted-foreground mb-4">
             Our support team is here to help if you have any questions about your subscription, billing, or if you
             notice any discrepancies in your payment history.
           </p>
-        </CardContent>
-        <CardFooter>
           <Button
             variant="outline"
             className="w-full"
@@ -165,7 +159,7 @@ function SubscribedView({
           >
             Contact Support
           </Button>
-        </CardFooter>
+        </CardContent>
       </Card>
     </div>
   );
@@ -180,26 +174,26 @@ function UnsubscribedView() {
       period: "one-time payment",
       description: "Perfect for trying out our service",
       popular: false,
-      priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_FOR__PRO_PLAN_ALPHA_ONE_MONTH,
+      priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_FOR__PRO_PLAN_ALPHA_ONE_MONTH_RECURRING,
     },
-    {
-      name: "Pro (Alpha, 3 Month)",
-      price: "$12.00",
-      originalPrice: "$24.00",
-      period: "one-time payment",
-      description: "Our most popular plan",
-      popular: true,
-      priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_FOR__PRO_PLAN_ALPHA_THREE_MONTHS,
-    },
-    {
-      name: "Pro (Alpha, 12 Month)",
-      price: "$42.00",
-      originalPrice: "$84.00",
-      period: "one-time payment",
-      description: "Best value for committed users",
-      popular: false,
-      priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_FOR__PRO_PLAN_ALPHA_TWELVE_MONTHS,
-    },
+    // {
+    //   name: "Pro (Alpha, 3 Month)",
+    //   price: "$12.00",
+    //   originalPrice: "$24.00",
+    //   period: "one-time payment",
+    //   description: "Our most popular plan",
+    //   popular: true,
+    //   priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_FOR__PRO_PLAN_ALPHA_THREE_MONTHS,
+    // },
+    // {
+    //   name: "Pro (Alpha, 12 Month)",
+    //   price: "$42.00",
+    //   originalPrice: "$84.00",
+    //   period: "one-time payment",
+    //   description: "Best value for committed users",
+    //   popular: false,
+    //   priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_FOR__PRO_PLAN_ALPHA_TWELVE_MONTHS,
+    // },
   ];
 
   const features = [
@@ -211,13 +205,12 @@ function UnsubscribedView() {
 
   return (
     <div className="space-y-6">
-      {/* Free Plan Limitations Card - Now at the top */}
-      <Card>
-        <CardHeader>
+      <Card className="grid grid-cols-1 md:grid-cols-12 border-none divide-y md:divide-y-0 md:divide-x divide-border">
+        <CardHeader className="col-span-1 md:col-span-4">
           <CardTitle>Free Plan Limitations</CardTitle>
           <CardDescription>Your current usage on the free plan</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="col-span-1 md:col-span-8 space-y-4">
           <div className="space-y-2">
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">Monthly Chat Messages</span>
@@ -231,20 +224,20 @@ function UnsubscribedView() {
               Upgrade to get 1,500 messages per month or bring your own API key for unlimited usage
             </div>
           </div>
-        </CardContent>
-        <CardFooter>
           <Button
             className="w-full"
             onClick={() => document.getElementById("pricing-section")?.scrollIntoView({ behavior: "smooth" })}
           >
             View Upgrade Options
           </Button>
-        </CardFooter>
+        </CardContent>
       </Card>
 
-      {/* Pricing Section - Now below the limitations */}
-      <Card id="pricing-section">
-        <CardHeader>
+      <Card
+        className="grid grid-cols-1 md:grid-cols-12 border-none divide-y md:divide-y-0 md:divide-x divide-border"
+        id="pricing-section"
+      >
+        <CardHeader className="col-span-1 md:col-span-4">
           <CardTitle>Upgrade Your Experience</CardTitle>
           <CardDescription>
             <span className="flex items-center gap-1">
@@ -253,7 +246,7 @@ function UnsubscribedView() {
             </span>
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="col-span-1 md:col-span-8">
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {plans.map((plan, index) => (
               <PricingCard
@@ -271,7 +264,7 @@ function UnsubscribedView() {
             ))}
           </div>
         </CardContent>
-        <CardFooter>
+        <CardFooter className="col-span-1 md:col-span-12">
           <div className="text-sm text-muted-foreground">
             Need a custom plan?{" "}
             <Link href="/contact" className="font-medium underline">
@@ -281,18 +274,16 @@ function UnsubscribedView() {
           </div>
         </CardFooter>
       </Card>
-      <Card>
-        <CardHeader>
+      <Card className="grid grid-cols-1 md:grid-cols-12 border-none divide-y md:divide-y-0 md:divide-x divide-border">
+        <CardHeader className="col-span-1 md:col-span-4">
           <CardTitle>Need Help?</CardTitle>
           <CardDescription>Questions about our plans or having trouble upgrading?</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="col-span-1 md:col-span-8">
           <p className="text-sm text-muted-foreground mb-4">
             We're here to answer any questions about our plans, help you choose the right option, or assist with any
             technical issues.
           </p>
-        </CardContent>
-        <CardFooter>
           <Button
             variant="outline"
             className="w-full"
@@ -300,7 +291,7 @@ function UnsubscribedView() {
           >
             Contact Support
           </Button>
-        </CardFooter>
+        </CardContent>
       </Card>
     </div>
   );
@@ -354,12 +345,10 @@ function PricingCard({
             </li>
           ))}
         </ul>
-      </CardContent>
-      <CardFooter>
         <Button className="w-full" variant={popular ? "default" : "outline"}>
           {ctaText}
         </Button>
-      </CardFooter>
+      </CardContent>
     </Card>
   );
 }

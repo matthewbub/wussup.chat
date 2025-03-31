@@ -15,8 +15,8 @@ type NavItem = {
 
 const navItems: NavItem[] = [
   { name: "Home", href: "/", icon: Home },
-  { name: "News", href: "/news", icon: Newspaper },
-  { name: "My RSS", href: "/rss", icon: Rss },
+  // { name: "News", href: "/news", icon: Newspaper },
+  // { name: "My RSS", href: "/rss", icon: Rss },
   { name: "Documentation", href: "/docs", icon: FileText },
   { name: "Settings", href: "/settings", icon: Settings },
   { name: "Support", href: "/support", icon: HelpCircle },
@@ -24,7 +24,7 @@ const navItems: NavItem[] = [
 
 export function IconSidebar() {
   return (
-    <div className="hidden md:flex flex-col items-center w-16 h-full bg-background border-r border-border py-4">
+    <div className="hidden md:flex flex-col items-center w-16 h-full bg-background border-r border-border py-4 sticky top-0">
       <TooltipProvider delayDuration={300}>
         <nav className="flex flex-col items-center space-y-4 w-full">
           {navItems.map((item) => (

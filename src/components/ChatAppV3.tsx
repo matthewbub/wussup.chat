@@ -11,6 +11,7 @@ import * as Sentry from "@sentry/nextjs";
 import { checkQuota } from "@/app/actions/chat-actions";
 import { facade, processStreamingResponse } from "@/lib/utils";
 import { useSearchParams } from "next/navigation";
+import { IconSidebar } from "./IconSidebar";
 
 const ChatAppV3 = ({
   existingData,
@@ -140,7 +141,7 @@ const ChatAppV3 = ({
   return (
     <div className="flex h-screen">
       {/* App navigation */}
-      {/* <IconSidebar /> */}
+      <IconSidebar />
 
       {/* Desktop Sidebar */}
       <div className="hidden md:block w-72 border-r border-border">

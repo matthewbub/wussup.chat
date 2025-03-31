@@ -97,7 +97,7 @@ export const anthropicModels: AiModel[] = [
     outputs: ["text"],
     id: "claude-3-5-haiku",
     free: false,
-    forchatuse: true,
+    forchatuse: false,
   },
 ];
 
@@ -129,8 +129,8 @@ export const xaiModels: AiModel[] = [
     inputs: ["text"],
     outputs: ["text"],
     id: "grok-beta",
-    free: true,
-    forchatuse: true,
+    free: false,
+    forchatuse: false,
   },
   {
     displayName: "Grok 2 Vision Beta",
@@ -146,6 +146,14 @@ export const xaiModels: AiModel[] = [
 
 export const geminiModels: AiModel[] = [
   {
+    displayName: "Gemini 2.5 Pro",
+    provider: "google",
+    model: "gemini-2.5-pro-exp-03-25",
+    id: "gemini-2.5-pro-exp-03-25",
+    free: false,
+    forchatuse: false,
+  },
+  {
     displayName: "Gemini 2.0 Flash",
     provider: "google",
     model: "gemini-2.0-flash",
@@ -155,7 +163,6 @@ export const geminiModels: AiModel[] = [
     free: true,
     forchatuse: true,
   },
-
   {
     displayName: "Gemini 2.0 Flash Lite",
     provider: "google",
@@ -163,8 +170,8 @@ export const geminiModels: AiModel[] = [
     inputs: ["audio", "images", "videos", "text"],
     outputs: ["text"],
     id: "gemini-2.0-flash-lite",
-    free: true,
-    forchatuse: true,
+    free: false,
+    forchatuse: false,
   },
 ];
 

@@ -112,16 +112,19 @@ async function fulfillOrder(session: Stripe.Checkout.Session) {
       throw new Error("No price ID found in expanded session");
     }
 
-    let durationInDays = 30; // default to 1 month
+    let durationInDays = 30;
     switch (priceId) {
-      case process.env.STRIPE_PRICE_ID_FOR__PRO_PLAN_ALPHA_ONE_MONTH:
+      case process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_FOR__PRO_PLAN_ALPHA_ONE_MONTH:
         durationInDays = 30;
         break;
-      case process.env.STRIPE_PRICE_ID_FOR__PRO_PLAN_ALPHA_THREE_MONTHS:
+      case process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_FOR__PRO_PLAN_ALPHA_THREE_MONTHS:
         durationInDays = 90;
         break;
-      case process.env.STRIPE_PRICE_ID_FOR__PRO_PLAN_ALPHA_TWELVE_MONTHS:
+      case process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_FOR__PRO_PLAN_ALPHA_TWELVE_MONTHS:
         durationInDays = 365;
+        break;
+      case process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_FOR__PRO_PLAN_ALPHA_ONE_MONTH_RECURRING:
+        durationInDays = 30;
         break;
     }
 

@@ -20,13 +20,13 @@ export async function POST(req: Request) {
       process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_FOR__PRO_PLAN_ALPHA_ONE_MONTH,
       process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_FOR__PRO_PLAN_ALPHA_THREE_MONTHS,
       process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_FOR__PRO_PLAN_ALPHA_TWELVE_MONTHS,
+      process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_FOR__PRO_PLAN_ALPHA_ONE_MONTH_RECURRING,
     ];
 
-    console.log("HELLOOO", validPriceIds)
+    console.log("HELLOOO", validPriceIds);
     if (!priceId || !validPriceIds.includes(priceId)) {
       return NextResponse.json({ error: "Invalid price ID" }, { status: 400 });
     }
-
 
     // Create a stripe checkout session
     const session = await stripe.checkout.sessions.create({
