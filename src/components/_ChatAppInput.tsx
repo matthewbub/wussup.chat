@@ -1,14 +1,14 @@
 "use client";
 
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Send, Sparkles, Bot, Zap, Star, Cpu } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select";
 import { AVAILABLE_MODELS, AiModel } from "@/constants/models";
-import { useState } from "react";
 import { UpgradeToProModal } from "./UpgradeToProModal";
 import { SubscriptionStatus } from "@/lib/subscription/subscription-facade";
-// Placeholder subscription tier - would come from user data in a real implementation
+import { cn } from "@/lib/utils";
+import { Textarea } from "@/components/ui/textarea";
 
 // Provider icon mapping
 const PROVIDER_ICONS: Record<string, { icon: React.ElementType; color: string }> = {
@@ -128,8 +128,7 @@ export const ChatAppInput = ({
         </Select>
 
         <div className="flex-1 flex items-center gap-2">
-          <Input
-            type="text"
+          <AutoExpandingTextarea
             placeholder="Message"
             value={currentInput}
             onChange={(e) => setInput(e.target.value)}
@@ -145,3 +144,61 @@ export const ChatAppInput = ({
     </form>
   );
 };
+
+function AutoExpandingTextarea({
+  value: propValue = "",
+  onChange,
+  className = "",
+  ...props
+}: {
+  value: string;
+  onChange: (ev: React.ChangeEvent<HTMLTextAreaElement>) => void;
+  className: string;
+} & Omit<React.TextareaHTMLAttributes<HTMLTextAreaElement>, "value" | "onChange" | "className">) {
+  const ref = useRef<null | HTMLTextAreaElement>(null);
+  const [internalValue, setInternalValue] = useState<string>("");
+
+  const autoResize = useCallback(() => {
+    const textarea = ref.current;
+
+    if (textarea) {
+      // temporarily reset height to auto - necessary for shrinking
+      textarea.style.height = "auto";
+
+      // set height to scrollHeight https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollHeight
+      textarea.style.height = `${textarea.scrollHeight}px`;
+    }
+  }, []);
+
+  useEffect(() => {
+    // update internal value if prop value changes
+    setInternalValue(propValue);
+
+    // resize after state update
+    requestAnimationFrame(autoResize);
+  }, [propValue]);
+
+  const handleChange = (ev: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const newValue = ev.target.value;
+    setInternalValue(newValue);
+
+    // resize upon input
+    autoResize();
+
+    // send upstream
+    if (onChange) {
+      onChange(ev);
+    }
+  };
+
+  return (
+    <Textarea
+      ref={ref}
+      value={internalValue}
+      onChange={handleChange}
+      rows={2}
+      className={cn("overflow-y-hidden resize-none box-border min-h-[50px] max-h-[300px]", className)}
+      {...props}
+    />
+  );
+}
