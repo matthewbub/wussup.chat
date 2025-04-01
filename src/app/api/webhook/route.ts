@@ -192,9 +192,10 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
   try {
     // Record the subscription update in purchase history
     const { error: purchaseError } = await supabase.from(TableNames.PURCHASE_HISTORY).insert({
-      user_id: subscription.metadata.userId, // Make sure this is set in your subscription metadata
+      user_id: subscription.metadata.userId,
       stripe_customer_id: subscription.customer as string,
       stripe_subscription_id: subscription.id,
+      stripe_checkout_session_id: subscription.latest_invoice,
       price_id: subscription.items.data[0]?.price.id,
       amount_paid: subscription.items.data[0]?.price.unit_amount || 0,
       currency: subscription.currency,
@@ -204,21 +205,23 @@ async function handleSubscriptionUpdate(subscription: Stripe.Subscription) {
       subscription_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
       payment_type: "subscription",
       event_type: "subscription_updated",
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     });
-
-    if (purchaseError) {
-      console.error("Error recording subscription update:", purchaseError);
-    }
 
     const { error } = await supabase
       .from(TableNames.USERS)
       .update({
+        stripe_subscription_id: subscription.id,
         subscription_status: subscription.status,
         subscription_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+        payment_status: subscription.status,
+        stripe_customer_id: subscription.customer as string,
+        product_id: subscription.items.data[0]?.price.id,
       })
       .eq("stripe_subscription_id", subscription.id);
 
-    if (error) {
+    if (error || purchaseError) {
       console.error("Error updating subscription status:", error);
       throw error;
     }
@@ -247,6 +250,7 @@ async function handleSubscriptionCancellation(canceledSubscription: Stripe.Subsc
       subscription_period_end: new Date(canceledSubscription.current_period_end * 1000).toISOString(),
       payment_type: "subscription",
       event_type: "subscription_canceled",
+      updated_at: new Date().toISOString(),
     });
 
     if (purchaseError) {
@@ -258,6 +262,9 @@ async function handleSubscriptionCancellation(canceledSubscription: Stripe.Subsc
       .update({
         subscription_status: "canceled",
         subscription_period_end: new Date(canceledSubscription.current_period_end * 1000).toISOString(),
+        payment_status: "canceled",
+        stripe_customer_id: canceledSubscription.customer as string,
+        product_id: canceledSubscription.items.data[0]?.price.id,
       })
       .eq("stripe_subscription_id", canceledSubscription.id);
 

@@ -151,7 +151,7 @@ export const geminiModels: AiModel[] = [
     model: "gemini-2.5-pro-exp-03-25",
     id: "gemini-2.5-pro-exp-03-25",
     free: false,
-    forchatuse: false,
+    forchatuse: true,
   },
   {
     displayName: "Gemini 2.0 Flash",

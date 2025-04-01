@@ -50,10 +50,7 @@ export interface PurchaseHistory {
 export class SubscriptionFacade {
   private stripe: Stripe;
 
-  constructor(
-    private supabase: SupabaseClient,
-    private quotaManager: QuotaManager
-  ) {
+  constructor(private supabase: SupabaseClient, private quotaManager: QuotaManager) {
     this.stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
   }
 
@@ -154,6 +151,7 @@ export class SubscriptionFacade {
       process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_FOR__PRO_PLAN_ALPHA_ONE_MONTH,
       process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_FOR__PRO_PLAN_ALPHA_THREE_MONTHS,
       process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_FOR__PRO_PLAN_ALPHA_TWELVE_MONTHS,
+      process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_FOR__PRO_PLAN_ALPHA_ONE_MONTH_RECURRING,
     ];
 
     return validPriceIds.includes(priceId);
@@ -228,6 +226,10 @@ export class SubscriptionFacade {
       return "Pro (Alpha, 12 Months)";
     }
 
+    if (priceId === process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_FOR__PRO_PLAN_ALPHA_ONE_MONTH_RECURRING) {
+      return "Pro (Alpha, 1 Month Recurring)";
+    }
+
     return "free"; // Default to free tier if price ID doesn't match
   }
 
@@ -242,6 +244,10 @@ export class SubscriptionFacade {
 
     if (priceId === process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_FOR__PRO_PLAN_ALPHA_TWELVE_MONTHS) {
       return "one-time";
+    }
+
+    if (priceId === process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_FOR__PRO_PLAN_ALPHA_ONE_MONTH_RECURRING) {
+      return "recurring";
     }
 
     return null;

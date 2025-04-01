@@ -121,22 +121,30 @@ function SubscribedView({
                 </tr>
               </thead>
               <tbody>
-                {purchaseHistory.map((purchase) => (
-                  <tr className="border-b" key={purchase.id}>
-                    <td className="p-4 text-sm">
-                      {new Date(purchase.purchase_date).toLocaleDateString("en-US", {
-                        month: "long",
-                        day: "numeric",
-                        year: "numeric",
-                      })}
+                {purchaseHistory.length === 0 ? (
+                  <tr>
+                    <td colSpan={4} className="p-4 text-sm text-center text-gray-500">
+                      No purchase history available
                     </td>
-                    <td className="p-4 text-sm">
-                      <Badge variant="outline">{purchase.plan_name}</Badge>
-                    </td>
-                    <td className="p-4 text-sm">${(purchase.amount_paid / 100).toFixed(2)}</td>
-                    <td className="p-4 text-sm text-green-600">Paid</td>
                   </tr>
-                ))}
+                ) : (
+                  purchaseHistory.map((purchase) => (
+                    <tr className="border-b" key={purchase.id}>
+                      <td className="p-4 text-sm">
+                        {new Date(purchase.purchase_date).toLocaleDateString("en-US", {
+                          month: "long",
+                          day: "numeric",
+                          year: "numeric",
+                        })}
+                      </td>
+                      <td className="p-4 text-sm">
+                        <Badge variant="outline">{purchase.plan_name}</Badge>
+                      </td>
+                      <td className="p-4 text-sm">${(purchase.amount_paid / 100).toFixed(2)}</td>
+                      <td className="p-4 text-sm text-green-600">Paid</td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>

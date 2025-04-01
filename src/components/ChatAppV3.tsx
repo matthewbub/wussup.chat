@@ -12,9 +12,11 @@ import { checkQuota } from "@/app/actions/chat-actions";
 import { facade, processStreamingResponse } from "@/lib/utils";
 import { useSearchParams } from "next/navigation";
 import { IconSidebar } from "./IconSidebar";
+import { SubscriptionStatus } from "@/lib/subscription/subscription-facade";
 
 const ChatAppV3 = ({
   existingData,
+  userSubscriptionInfo,
 }: {
   existingData: {
     id: string;
@@ -23,6 +25,7 @@ const ChatAppV3 = ({
     updated_at: string;
     chat_history: { role: string; content: string }[];
   }[];
+  userSubscriptionInfo: SubscriptionStatus;
 }) => {
   // get url query params
   const searchParams = useSearchParams();
@@ -161,6 +164,7 @@ const ChatAppV3 = ({
           onSubmit={handleSubmit}
           selectedModel={selectedModel}
           onModelChange={setModel}
+          userSubscriptionInfo={userSubscriptionInfo}
         />
       </main>
     </div>

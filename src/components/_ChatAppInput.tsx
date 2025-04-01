@@ -5,9 +5,11 @@ import { Input } from "@/components/ui/input";
 import { Send, Sparkles, Bot, Zap, Star, Cpu } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select";
 import { AVAILABLE_MODELS, AiModel } from "@/constants/models";
-
+import { useState } from "react";
+import { UpgradeToProModal } from "./UpgradeToProModal";
+import { SubscriptionStatus } from "@/lib/subscription/subscription-facade";
 // Placeholder subscription tier - would come from user data in a real implementation
-const USER_SUBSCRIPTION_TIER = "free";
+
 // Provider icon mapping
 const PROVIDER_ICONS: Record<string, { icon: React.ElementType; color: string }> = {
   openai: { icon: Sparkles, color: "bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400" },
@@ -24,6 +26,7 @@ export const ChatAppInput = ({
   onSubmit,
   selectedModel,
   onModelChange,
+  userSubscriptionInfo,
 }: {
   currentInput: string;
   setInput: (input: string) => void;
@@ -31,7 +34,10 @@ export const ChatAppInput = ({
   onSubmit: (e: React.FormEvent) => void;
   selectedModel: { id: string; provider: string };
   onModelChange: (model: { id: string; provider: string }) => void;
+  userSubscriptionInfo: SubscriptionStatus;
 }) => {
+  const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
+  const USER_SUBSCRIPTION_TIER = userSubscriptionInfo.planName;
   return (
     <form onSubmit={onSubmit} className="p-4 border-t border-primary/10">
       <div className="flex flex-col md:flex-row md:items-center gap-2">
@@ -66,9 +72,12 @@ export const ChatAppInput = ({
           </SelectTrigger>
           <SelectContent>
             {USER_SUBSCRIPTION_TIER === "free" && (
-              <div className="px-2 py-3 border-b">
+              <div
+                className="px-2 py-3 border-b cursor-pointer hover:bg-accent rounded group"
+                onClick={() => setIsUpgradeModalOpen(true)}
+              >
                 <div className="flex items-center gap-2 text-sm">
-                  <Zap className="h-4 w-4 text-blue-500" />
+                  <Zap className="h-4 w-4 text-blue-500 group-hover:text-yellow-500 transition-colors" />
                   <span>Upgrade to Pro for all models</span>
                 </div>
                 <div className="mt-1 text-xs text-muted-foreground">Get access to all models for $5/month</div>
@@ -132,6 +141,7 @@ export const ChatAppInput = ({
           </Button>
         </div>
       </div>
+      <UpgradeToProModal open={isUpgradeModalOpen} onOpenChange={setIsUpgradeModalOpen} />
     </form>
   );
 };

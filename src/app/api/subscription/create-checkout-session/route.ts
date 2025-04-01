@@ -23,7 +23,6 @@ export async function POST(req: Request) {
       process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_FOR__PRO_PLAN_ALPHA_ONE_MONTH_RECURRING,
     ];
 
-    console.log("HELLOOO", validPriceIds);
     if (!priceId || !validPriceIds.includes(priceId)) {
       return NextResponse.json({ error: "Invalid price ID" }, { status: 400 });
     }
@@ -37,11 +36,16 @@ export async function POST(req: Request) {
           quantity: 1,
         },
       ],
-      mode: "payment", // Changed to one-time payment
+      mode: "subscription",
       success_url: `${process.env.NEXT_PUBLIC_APP_URL}/settings?success=true&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/pricing?canceled=true`,
       metadata: {
-        userId: userData.id, // Store the user ID in metadata for webhook processing
+        userId: userData.id,
+      },
+      subscription_data: {
+        metadata: {
+          userId: userData.id,
+        },
       },
     });
 
