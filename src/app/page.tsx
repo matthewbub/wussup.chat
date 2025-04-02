@@ -1,4 +1,4 @@
-import ChatAppV3 from "@/components/ChatAppV3";
+import ChatAppV3 from "@/components/chat-app/chat-app";
 import { ChatFacade } from "@/lib/chat-facade";
 import * as Sentry from "@sentry/nextjs";
 import { headers } from "next/headers";

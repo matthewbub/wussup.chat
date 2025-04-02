@@ -1,17 +1,17 @@
 "use client";
 
 import { useEffect } from "react";
-import { ChatAppHeader } from "@/components/_ChatAppHeader";
-import { ChatAppInput } from "@/components/_ChatAppInput";
-import { ChatAppMessages } from "@/components/_ChatAppMessages";
-import { ChatAppSidebarV2 } from "@/components/_ChatAppSidebarV2";
-import { ChatAppMobileSidebarV2 } from "@/components/_ChatAppMobileSidebarV2";
+import { ChatAppHeader } from "@/components/chat-app/header";
+import { ChatAppInput } from "@/components/chat-app/input";
+import { ChatAppMessages } from "@/components/chat-app/messages";
+import { ChatAppSidebarV2 } from "@/components/chat-app/sidebar";
+import { ChatAppMobileSidebarV2 } from "@/components/chat-app/mobile-sidebar";
 import { NewMessage, useChatStore } from "@/store/chat-store";
 import * as Sentry from "@sentry/nextjs";
 import { checkQuota } from "@/app/actions/chat-actions";
 import { facade, processStreamingResponse } from "@/lib/utils";
 import { useSearchParams } from "next/navigation";
-import { IconSidebar } from "./IconSidebar";
+import { IconSidebar } from "@/components/IconSidebar";
 import { SubscriptionStatus } from "@/lib/subscription/subscription-facade";
 
 const ChatAppV3 = ({
