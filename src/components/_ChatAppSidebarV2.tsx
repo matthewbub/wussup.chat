@@ -9,7 +9,7 @@ import { Check, Copy, Edit, MoreHorizontal, Pin, PlusIcon, Trash, X } from "luci
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { appName } from "@/constants/version";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,6 +21,8 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 
 export const ChatAppSidebarV2 = ({ existingData, sessionId }: { existingData: ChatSession[]; sessionId: string }) => {
   const router = useRouter();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const scrollzoneRef = useRef<HTMLDivElement>(null);
   const {
     setMessages,
     setSessionId,
@@ -209,8 +211,26 @@ export const ChatAppSidebarV2 = ({ existingData, sessionId }: { existingData: Ch
     );
   };
 
+  useEffect(() => {
+    const calculateScrollHeight = () => {
+      if (containerRef.current && scrollzoneRef.current) {
+        const containerHeight = containerRef.current.clientHeight;
+        const scrollzoneTop = scrollzoneRef.current.offsetTop;
+        const footerHeight = 56; // Height of the footer (p-4 + content)
+
+        const availableHeight = containerHeight - scrollzoneTop - footerHeight;
+        scrollzoneRef.current.style.height = `${availableHeight}px`;
+      }
+    };
+
+    calculateScrollHeight();
+    window.addEventListener("resize", calculateScrollHeight);
+
+    return () => window.removeEventListener("resize", calculateScrollHeight);
+  }, [isSelectionMode]); // Recalculate when selection mode changes as it affects layout
+
   return (
-    <div className="flex flex-col max-h-screen">
+    <div className="flex flex-col absolute inset-0">
       <div className="flex-none p-6 border-b border-primary/5">
         <div className="flex items-center justify-between">
           <Link href="/" className="font-title text-2xl font-bold dark:text-white hover:opacity-80 transition-opacity">
@@ -252,9 +272,9 @@ export const ChatAppSidebarV2 = ({ existingData, sessionId }: { existingData: Ch
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-4 pb-4">
+      <div className="flex-1 overflow-hidden flex flex-col px-4">
         {isSelectionMode && (
-          <div className="sticky top-0 bg-background pt-2 pb-2 z-10 border-b border-primary/5 mb-3">
+          <div className="flex-none bg-background pt-2 pb-2 border-b border-primary/5 mb-3">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm font-medium">
                 {selectedChats.length > 0 ? `${selectedChats.length} selected` : "Select conversations"}
@@ -280,8 +300,10 @@ export const ChatAppSidebarV2 = ({ existingData, sessionId }: { existingData: Ch
           </div>
         )}
 
-        {renderSessionGroup("Pinned", pinnedSessions)}
-        {renderSessionGroup("Recent Conversations", otherSessions)}
+        <div className="flex-1 overflow-y-auto">
+          {renderSessionGroup("Pinned", pinnedSessions)}
+          {renderSessionGroup("Recent Conversations", otherSessions)}
+        </div>
       </div>
 
       <div className="flex-none p-4 border-t border-primary/5">
@@ -298,7 +320,9 @@ export const ChatAppSidebarV2 = ({ existingData, sessionId }: { existingData: Ch
           </DialogHeader>
           <p>
             {Array.isArray(confirmDelete)
-              ? `Are you sure you want to delete ${confirmDelete.length} conversation${confirmDelete.length !== 1 ? "s" : ""}?`
+              ? `Are you sure you want to delete ${confirmDelete.length} conversation${
+                  confirmDelete.length !== 1 ? "s" : ""
+                }?`
               : "Are you sure you want to delete this conversation?"}
           </p>
           <DialogFooter>

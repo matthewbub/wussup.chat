@@ -46,8 +46,10 @@ export default function RootLayout({
         <ClerkProvider>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <PostHogProvider>
-              {children}
-              <Toaster />
+              <div className="h-full">
+                {children}
+                <Toaster />
+              </div>
             </PostHogProvider>
           </ThemeProvider>
         </ClerkProvider>

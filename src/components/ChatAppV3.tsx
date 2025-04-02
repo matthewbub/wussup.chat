@@ -142,21 +142,25 @@ const ChatAppV3 = ({
   };
 
   return (
-    <div className="flex h-screen">
+    <div className="flex h-full overflow-hidden">
       {/* App navigation */}
       <IconSidebar />
 
       {/* Desktop Sidebar */}
-      <div className="hidden md:block w-72 border-r border-border">
-        <ChatAppSidebarV2 existingData={chatSessions} sessionId={sessionId} />
+      <div className="hidden md:block relative w-72">
+        <div className="absolute inset-0 border-r border-border">
+          <ChatAppSidebarV2 existingData={chatSessions} sessionId={sessionId} />
+        </div>
       </div>
 
       {/* Mobile Sidebar */}
       <ChatAppMobileSidebarV2 sessionId={sessionId} />
 
-      <main className="flex flex-1 flex-col">
+      <main className="flex-1 flex flex-col min-w-0">
         <ChatAppHeader />
-        <ChatAppMessages messages={messages} />
+        <div className="flex-1 overflow-y-auto">
+          <ChatAppMessages messages={messages} />
+        </div>
         <ChatAppInput
           currentInput={currentInput}
           setInput={setInput}
