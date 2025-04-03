@@ -5,6 +5,7 @@ import { headers } from "next/headers";
 import PublicHeader from "@/components/PublicHeader";
 import Footer from "@/components/Footer";
 import { IconSidebar } from "@/components/IconSidebar";
+import { StaticSidebar } from "@/components/sidebar";
 
 export default async function Page() {
   const headersList = await headers();
@@ -28,18 +29,21 @@ export default async function Page() {
   }));
 
   return (
-    <div className="h-full flex flex-col">
-      <div className="flex">
-        <IconSidebar />
-        <div className="flex-1">
-          <PublicHeader />
+    <div className="flex h-full">
+      <div className="hidden md:block relative w-72">
+        <div className="absolute inset-0 border-r border-border">
+          <StaticSidebar />
+        </div>
+      </div>
+      <div className="flex-1 w-full">
+        <div className="mx-auto p-6 w-full flex flex-col">
           <SubscriptionSettings
             userSubscriptionInfo={userSubscriptionInfo}
             purchaseHistory={formattedPurchaseHistory}
           />
         </div>
+        <Footer />
       </div>
-      <Footer />
     </div>
   );
 }

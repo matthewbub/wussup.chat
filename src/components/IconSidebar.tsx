@@ -13,7 +13,7 @@ type NavItem = {
   icon: React.ElementType;
 };
 
-const navItems: NavItem[] = [
+export const navItems: NavItem[] = [
   { name: "Home", href: "/", icon: Home },
   // { name: "News", href: "/news", icon: Newspaper },
   // { name: "My RSS", href: "/rss", icon: Rss },
