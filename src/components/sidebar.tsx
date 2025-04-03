@@ -7,10 +7,17 @@ import { usePathname, useRouter } from "next/navigation";
 import { appName } from "@/constants/version";
 import { navItems } from "@/components/IconSidebar";
 import { cn } from "@/lib/utils";
+import { ThemeToggle } from "@/app/theme-toggle";
+import { SignedIn, SignedOut, SignInButton, SignUpButton, UserButton, useUser } from "@clerk/nextjs";
+import { useTheme } from "next-themes";
+import { dark } from "@clerk/themes";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/Tooltip";
 
 export const StaticSidebar = () => {
   const router = useRouter();
   const pathName = usePathname();
+  const { theme } = useTheme();
+  const { user } = useUser();
   const handleNewChat = () => {
     const newSessionId = crypto.randomUUID();
     router.push(`/?session=${newSessionId}`);
@@ -66,7 +73,48 @@ export const StaticSidebar = () => {
         </div>
       </div>
 
-      <div className="flex-none p-4 border-t border-primary/5">{/* user */}</div>
+      <div className="flex-none p-4 border-t border-primary/5 flex flex-col gap-3">
+        <ThemeToggle withLabel />
+        <SignedOut>
+          <SignInButton>
+            <Button variant="ghost" className="w-full">
+              Sign In
+            </Button>
+          </SignInButton>
+          <SignUpButton>
+            <Button variant="default" className="w-full">
+              Sign Up
+            </Button>
+          </SignUpButton>
+        </SignedOut>
+        <SignedIn>
+          <div className="flex items-center rounded-md p-2 bg-muted/30">
+            <UserButton
+              appearance={{
+                baseTheme: theme === "dark" ? dark : undefined,
+                elements: {
+                  avatarBox: "h-8 w-8",
+                },
+              }}
+              userProfileProps={{
+                appearance: {
+                  baseTheme: theme === "dark" ? dark : undefined,
+                },
+              }}
+            />
+            <div className="flex-1 min-w-0 ml-2">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <p className="text-sm text-foreground/80 truncate">{user?.emailAddresses[0]?.emailAddress}</p>
+                  </TooltipTrigger>
+                  <TooltipContent side="top">{user?.emailAddresses[0]?.emailAddress}</TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+          </div>
+        </SignedIn>
+      </div>
     </div>
   );
 };

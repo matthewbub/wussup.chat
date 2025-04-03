@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect } from "react";
-import { ChatAppHeader } from "@/components/chat-app/header";
 import { ChatAppInput } from "@/components/chat-app/input";
 import { ChatAppMessages } from "@/components/chat-app/messages";
 import { ChatAppSidebarV2 } from "@/components/chat-app/sidebar";
@@ -157,7 +156,6 @@ const ChatAppV3 = ({
       <ChatAppMobileSidebarV2 sessionId={sessionId} />
 
       <main className="flex-1 flex flex-col min-w-0">
-        <ChatAppHeader />
         <div className="flex-1 overflow-y-auto">
           <ChatAppMessages messages={messages} />
         </div>

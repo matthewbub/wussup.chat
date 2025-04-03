@@ -30,12 +30,12 @@ export default async function Page() {
 
   return (
     <div className="flex h-full">
-      <div className="hidden md:block relative w-72">
-        <div className="absolute inset-0 border-r border-border">
+      <div className="hidden md:block w-72 sticky top-0">
+        <div className="inset-0 border-r border-border">
           <StaticSidebar />
         </div>
       </div>
-      <div className="flex-1 w-full">
+      <div className="flex-1 w-full overflow-auto">
         <div className="mx-auto p-6 w-full flex flex-col">
           <SubscriptionSettings
             userSubscriptionInfo={userSubscriptionInfo}

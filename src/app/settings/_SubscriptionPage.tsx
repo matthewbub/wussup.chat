@@ -38,6 +38,7 @@ function SubscribedView({
   userSubscriptionInfo: SubscriptionStatus;
   purchaseHistory: PurchaseHistory[];
 }) {
+  console.log("userSub", userSubscriptionInfo);
   // Calculate quota usage
   const totalMonthlyQuota = 1500;
   const usedQuota = totalMonthlyQuota - (userSubscriptionInfo.remainingMonthlyQuota ?? 0);
@@ -52,16 +53,12 @@ function SubscribedView({
 
   return (
     <div className="space-y-6 gap-20 flex flex-col">
-      <Card className="grid grid-cols-1 md:grid-cols-12 border-none divide-y md:divide-y-0 md:divide-x divide-border">
-        <CardHeader className="col-span-1 md:col-span-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>Current Plan</CardTitle>
-              <CardDescription>Your subscription details and usage</CardDescription>
-            </div>
-          </div>
+      <Card className="border-none">
+        <CardHeader>
+          <CardTitle>Current Plan</CardTitle>
+          <CardDescription>Your subscription details and usage</CardDescription>
         </CardHeader>
-        <CardContent className="col-span-1 md:col-span-8 space-y-6 flex flex-col flex-1">
+        <CardContent className="space-y-6">
           <div className="flex items-center gap-2">
             <Badge variant="default" className="uppercase">
               {userSubscriptionInfo.planName}
@@ -69,7 +66,7 @@ function SubscribedView({
             {userSubscriptionInfo.recurringOrOneTimePayment === "one-time" && <Badge variant="outline">One-time</Badge>}
           </div>
           <div className="space-y-2">
-            <div className="flex items-center justify-between text-sm">
+            <div className="flex items-center justify-between">
               <span className="text-muted-foreground">Monthly Usage</span>
               <span className="font-medium">
                 {usedQuota} / {totalMonthlyQuota}
@@ -84,14 +81,14 @@ function SubscribedView({
                 <p className="font-medium">
                   {userSubscriptionInfo.recurringOrOneTimePayment === "one-time" ? "Access Until" : "Renewal Date"}
                 </p>
-                <p className="text-sm text-muted-foreground">{formattedEndDate}</p>
+                <p className="text-muted-foreground">{formattedEndDate}</p>
               </div>
             </div>
             <div className="flex items-start gap-2">
               <CreditCardIcon className="mt-0.5 h-5 w-5 text-muted-foreground" />
               <div>
                 <p className="font-medium">Billing</p>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground">
                   Customer ID: {userSubscriptionInfo.customerId?.substring(0, 8)}...
                 </p>
               </div>
@@ -104,12 +101,12 @@ function SubscribedView({
         </CardContent>
       </Card>
 
-      <Card className="grid grid-cols-1 md:grid-cols-12 border-none divide-y md:divide-y-0 md:divide-x divide-border">
-        <CardHeader className="col-span-1 md:col-span-4">
+      <Card className="border-none">
+        <CardHeader>
           <CardTitle>Payment History</CardTitle>
           <CardDescription>View your past invoices and payment history</CardDescription>
         </CardHeader>
-        <CardContent className="col-span-1 md:col-span-8">
+        <CardContent>
           <div className="rounded-md border overflow-x-auto">
             <table className="w-full">
               <thead>
@@ -123,25 +120,25 @@ function SubscribedView({
               <tbody>
                 {purchaseHistory.length === 0 ? (
                   <tr>
-                    <td colSpan={4} className="p-4 text-sm text-center text-gray-500">
+                    <td colSpan={4} className="p-4 text-center text-gray-500">
                       No purchase history available
                     </td>
                   </tr>
                 ) : (
                   purchaseHistory.map((purchase) => (
                     <tr className="border-b" key={purchase.id}>
-                      <td className="p-4 text-sm">
+                      <td className="p-4">
                         {new Date(purchase.purchase_date).toLocaleDateString("en-US", {
                           month: "long",
                           day: "numeric",
                           year: "numeric",
                         })}
                       </td>
-                      <td className="p-4 text-sm">
+                      <td className="p-4 ">
                         <Badge variant="outline">{purchase.plan_name}</Badge>
                       </td>
-                      <td className="p-4 text-sm">${(purchase.amount_paid / 100).toFixed(2)}</td>
-                      <td className="p-4 text-sm text-green-600">Paid</td>
+                      <td className="p-4">${(purchase.amount_paid / 100).toFixed(2)}</td>
+                      <td className="p-4 text-green-600">Paid</td>
                     </tr>
                   ))
                 )}
@@ -150,17 +147,18 @@ function SubscribedView({
           </div>
         </CardContent>
       </Card>
-      <Card className="grid grid-cols-1 md:grid-cols-12 border-none divide-y md:divide-y-0 md:divide-x divide-border">
-        <CardHeader className="col-span-1 md:col-span-4">
+      <Card className="border-none">
+        <CardHeader>
           <CardTitle>Need Help?</CardTitle>
           <CardDescription>If something doesn't seem right with your subscription or payments</CardDescription>
         </CardHeader>
-        <CardContent className="col-span-1 md:col-span-8">
-          <p className="text-sm text-muted-foreground mb-4">
+        <CardContent>
+          <p className="text-muted-foreground mb-4">
             Our support team is here to help if you have any questions about your subscription, billing, or if you
             notice any discrepancies in your payment history.
           </p>
           <Button
+            size="lg"
             variant="outline"
             className="w-full"
             onClick={() => (window.location.href = "mailto:matthew@wussup.chat")}
@@ -220,7 +218,7 @@ function UnsubscribedView() {
         </CardHeader>
         <CardContent className="col-span-1 md:col-span-8 space-y-4">
           <div className="space-y-2">
-            <div className="flex items-center justify-between text-sm">
+            <div className="flex items-center justify-between ">
               <span className="text-muted-foreground">Monthly Chat Messages</span>
               <span className="font-medium">50 / 100</span>
             </div>
@@ -228,7 +226,7 @@ function UnsubscribedView() {
           </div>
           <div className="flex items-start gap-2 pt-2">
             <GaugeIcon className="mt-0.5 h-5 w-5 text-muted-foreground" />
-            <div className="text-sm text-muted-foreground">
+            <div className=" text-muted-foreground">
               Upgrade to get 1,500 messages per month or bring your own API key for unlimited usage
             </div>
           </div>
@@ -273,7 +271,7 @@ function UnsubscribedView() {
           </div>
         </CardContent>
         <CardFooter className="col-span-1 md:col-span-12">
-          <div className="text-sm text-muted-foreground">
+          <div className=" text-muted-foreground">
             Need a custom plan?{" "}
             <Link href="/contact" className="font-medium underline">
               Contact us
@@ -288,7 +286,7 @@ function UnsubscribedView() {
           <CardDescription>Questions about our plans or having trouble upgrading?</CardDescription>
         </CardHeader>
         <CardContent className="col-span-1 md:col-span-8">
-          <p className="text-sm text-muted-foreground mb-4">
+          <p className=" text-muted-foreground mb-4">
             We're here to answer any questions about our plans, help you choose the right option, or assist with any
             technical issues.
           </p>
@@ -339,13 +337,13 @@ function PricingCard({
           <div className="flex items-baseline">
             <span className="text-3xl font-bold">{price}</span>
           </div>
-          <div className="text-sm text-muted-foreground line-through">{originalPrice}</div>
+          <div className=" text-muted-foreground line-through">{originalPrice}</div>
           <div className="text-xs text-muted-foreground">{period}</div>
           <div className="mt-1 inline-block px-2 py-1 text-xs font-medium text-green-700 bg-green-100 rounded-full">
             50% OFF
           </div>
         </div>
-        <ul className="space-y-2 text-sm">
+        <ul className="space-y-2 ">
           {features.map((feature, index) => (
             <li key={index} className="flex items-start">
               <CheckIcon className="mr-2 h-4 w-4 shrink-0 text-green-500" />
