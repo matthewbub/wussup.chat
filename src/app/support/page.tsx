@@ -7,7 +7,17 @@ const faq = [
   {
     question: "What counts as 1 message?",
     answer:
-      "We treat 1 message as you're input plus the AI's output. We also don't count messages that fail or that get stopped.",
+      "We treat 1 message as your input plus the AI's output. We also don't count messages that fail or that get stopped.",
+  },
+  {
+    question: "Where can I find my account settings?",
+    answer:
+      "You can access your account settings via the profile icon located in the bottom left corner of the sidebar.",
+  },
+  {
+    question: "What happens to my data if I delete my account?",
+    answer:
+      "Any data not manually deleted before account termination will be automatically removed from our systems within 90 days of account deletion.",
   },
   {
     question: "How many messages do i get in the pro plan?",
