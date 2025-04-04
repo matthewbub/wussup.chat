@@ -18,6 +18,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/Tooltip";
 
 export const ChatAppSidebarV2 = ({ existingData, sessionId }: { existingData: ChatSession[]; sessionId: string }) => {
   const router = useRouter();
@@ -26,7 +27,6 @@ export const ChatAppSidebarV2 = ({ existingData, sessionId }: { existingData: Ch
   const {
     setMessages,
     setSessionId,
-    setChatTitle,
     deleteSession,
     deleteMultipleSessions,
     togglePinSession,
@@ -37,6 +37,7 @@ export const ChatAppSidebarV2 = ({ existingData, sessionId }: { existingData: Ch
     clearChatSelection,
     selectedChats,
     setMobileSidebarOpen,
+    chatSessions,
   } = useChatStore();
 
   const [isSelectionMode, setIsSelectionMode] = useState(false);
@@ -44,14 +45,26 @@ export const ChatAppSidebarV2 = ({ existingData, sessionId }: { existingData: Ch
   const [newTitle, setNewTitle] = useState("");
   const [confirmDelete, setConfirmDelete] = useState<string | string[] | null>(null);
 
+  // Initialize chat sessions in the store on mount
+  useEffect(() => {
+    if (existingData.length > 0) {
+      const uniqueSessions = existingData.filter(
+        (session) => !chatSessions.some((existing) => existing.id === session.id)
+      );
+      if (uniqueSessions.length > 0) {
+        useChatStore.setState({ chatSessions: [...chatSessions, ...uniqueSessions] });
+      }
+    }
+  }, [existingData]);
+
   // Sort sessions: pinned first, then by updated_at
-  const sortedSessions = [...existingData].sort((a, b) => {
+  const sortedSessions = [...chatSessions].sort((a, b) => {
     if (a.pinned && !b.pinned) return -1;
     if (!a.pinned && b.pinned) return 1;
     return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
   });
 
-  // Group sessions by pinned, favorites, and others
+  // Group sessions by pinned and others
   const pinnedSessions = sortedSessions.filter((session) => session.pinned);
   const otherSessions = sortedSessions.filter((session) => !session.pinned);
 
@@ -59,7 +72,7 @@ export const ChatAppSidebarV2 = ({ existingData, sessionId }: { existingData: Ch
     const newSessionId = crypto.randomUUID();
     setMessages([]);
     setSessionId(newSessionId);
-    setChatTitle("New Chat");
+    updateSessionTitle(newSessionId, "New Chat");
     router.push(`/?session=${newSessionId}`);
     setMobileSidebarOpen(false);
   };
@@ -150,7 +163,14 @@ export const ChatAppSidebarV2 = ({ existingData, sessionId }: { existingData: Ch
         >
           <div className="flex items-center gap-2">
             {session.pinned && <Pin className="h-3 w-3 text-muted-foreground" />}
-            <span className="truncate">{session.name || session.id}</span>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="truncate">{session.name || session.id}</span>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{session.name || session.id}</p>
+              </TooltipContent>
+            </Tooltip>
           </div>
         </Link>
 
@@ -230,111 +250,116 @@ export const ChatAppSidebarV2 = ({ existingData, sessionId }: { existingData: Ch
   }, [isSelectionMode]); // Recalculate when selection mode changes as it affects layout
 
   return (
-    <div className="flex flex-col absolute inset-0">
-      <div className="flex-none p-6 border-b border-primary/5">
-        <div className="flex items-center justify-between">
-          <Link href="/" className="font-title text-2xl font-bold dark:text-white hover:opacity-80 transition-opacity">
-            {appName}
-          </Link>
-        </div>
-      </div>
-
-      <div className="flex-none p-4 space-y-2">
-        <Button
-          variant="outline"
-          className="w-full group transition-all hover:bg-primary hover:text-primary-foreground"
-          onClick={handleNewChat}
-        >
-          <PlusIcon className="h-4 w-4 mr-2 group-hover:text-primary-foreground" />
-          New Chat
-        </Button>
-
-        <div className="flex justify-end px-1">
-          {isSelectionMode ? (
-            <Button
-              variant="link"
-              size="sm"
-              onClick={toggleSelectionMode}
-              className="text-xs h-6 p-0 text-primary font-medium"
+    <TooltipProvider>
+      <div className="flex flex-col absolute inset-0">
+        <div className="flex-none p-6 border-b border-primary/5">
+          <div className="flex items-center justify-between">
+            <Link
+              href="/"
+              className="font-title text-2xl font-bold dark:text-white hover:opacity-80 transition-opacity"
             >
-              Exit selection
-            </Button>
-          ) : (
-            <Button
-              variant="link"
-              size="sm"
-              onClick={toggleSelectionMode}
-              className="text-xs h-6 p-0 text-muted-foreground hover:text-foreground"
-            >
-              Bulk select
-            </Button>
-          )}
+              {appName}
+            </Link>
+          </div>
         </div>
-      </div>
 
-      <div className="flex-1 overflow-hidden flex flex-col px-4">
-        {isSelectionMode && (
-          <div className="flex-none bg-background pt-2 pb-2 border-b border-primary/5 mb-3">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium">
-                {selectedChats.length > 0 ? `${selectedChats.length} selected` : "Select conversations"}
-              </span>
-              <div className="flex items-center gap-2">
-                <Button variant="ghost" size="sm" onClick={selectAllChats} className="text-xs h-7">
-                  Select All
-                </Button>
-                {selectedChats.length > 0 && (
-                  <Button variant="ghost" size="sm" onClick={clearChatSelection} className="text-xs h-7">
-                    Clear
-                  </Button>
-                )}
-              </div>
-            </div>
+        <div className="flex-none p-4 space-y-2">
+          <Button
+            variant="outline"
+            className="w-full group transition-all hover:bg-primary hover:text-primary-foreground"
+            onClick={handleNewChat}
+          >
+            <PlusIcon className="h-4 w-4 mr-2 group-hover:text-primary-foreground" />
+            New Chat
+          </Button>
 
-            {selectedChats.length > 0 && (
-              <Button variant="destructive" size="sm" onClick={() => handleDelete(selectedChats)} className="w-full">
-                <Trash className="h-4 w-4 mr-2" />
-                Delete {selectedChats.length} conversation{selectedChats.length !== 1 ? "s" : ""}
+          <div className="flex justify-end px-1">
+            {isSelectionMode ? (
+              <Button
+                variant="link"
+                size="sm"
+                onClick={toggleSelectionMode}
+                className="text-xs h-6 p-0 text-primary font-medium"
+              >
+                Exit selection
+              </Button>
+            ) : (
+              <Button
+                variant="link"
+                size="sm"
+                onClick={toggleSelectionMode}
+                className="text-xs h-6 p-0 text-muted-foreground hover:text-foreground"
+              >
+                Bulk select
               </Button>
             )}
           </div>
-        )}
-
-        <div className="flex-1 overflow-y-auto">
-          {renderSessionGroup("Pinned", pinnedSessions)}
-          {renderSessionGroup("Recent Conversations", otherSessions)}
         </div>
-      </div>
 
-      <div className="flex-none p-4 border-t border-primary/5">
-        <div className="text-xs text-muted-foreground">
-          {existingData.length} conversation{existingData.length !== 1 ? "s" : ""}
+        <div className="flex-1 overflow-hidden flex flex-col px-4">
+          {isSelectionMode && (
+            <div className="flex-none bg-background pt-2 pb-2 border-b border-primary/5 mb-3">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium">
+                  {selectedChats.length > 0 ? `${selectedChats.length} selected` : "Select conversations"}
+                </span>
+                <div className="flex items-center gap-2">
+                  <Button variant="ghost" size="sm" onClick={selectAllChats} className="text-xs h-7">
+                    Select All
+                  </Button>
+                  {selectedChats.length > 0 && (
+                    <Button variant="ghost" size="sm" onClick={clearChatSelection} className="text-xs h-7">
+                      Clear
+                    </Button>
+                  )}
+                </div>
+              </div>
+
+              {selectedChats.length > 0 && (
+                <Button variant="destructive" size="sm" onClick={() => handleDelete(selectedChats)} className="w-full">
+                  <Trash className="h-4 w-4 mr-2" />
+                  Delete {selectedChats.length} conversation{selectedChats.length !== 1 ? "s" : ""}
+                </Button>
+              )}
+            </div>
+          )}
+
+          <div className="flex-1 overflow-y-auto">
+            {renderSessionGroup("Pinned", pinnedSessions)}
+            {renderSessionGroup("Recent Conversations", otherSessions)}
+          </div>
         </div>
-      </div>
 
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={confirmDelete !== null} onOpenChange={(open) => !open && setConfirmDelete(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Confirm Deletion</DialogTitle>
-          </DialogHeader>
-          <p>
-            {Array.isArray(confirmDelete)
-              ? `Are you sure you want to delete ${confirmDelete.length} conversation${
-                  confirmDelete.length !== 1 ? "s" : ""
-                }?`
-              : "Are you sure you want to delete this conversation?"}
-          </p>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setConfirmDelete(null)}>
-              Cancel
-            </Button>
-            <Button variant="destructive" onClick={confirmDeleteAction}>
-              Delete
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </div>
+        <div className="flex-none p-4 border-t border-primary/5">
+          <div className="text-xs text-muted-foreground">
+            {existingData.length} conversation{existingData.length !== 1 ? "s" : ""}
+          </div>
+        </div>
+
+        {/* Delete Confirmation Dialog */}
+        <Dialog open={confirmDelete !== null} onOpenChange={(open) => !open && setConfirmDelete(null)}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Confirm Deletion</DialogTitle>
+            </DialogHeader>
+            <p>
+              {Array.isArray(confirmDelete)
+                ? `Are you sure you want to delete ${confirmDelete.length} conversation${
+                    confirmDelete.length !== 1 ? "s" : ""
+                  }?`
+                : "Are you sure you want to delete this conversation?"}
+            </p>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setConfirmDelete(null)}>
+                Cancel
+              </Button>
+              <Button variant="destructive" onClick={confirmDeleteAction}>
+                Delete
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
+    </TooltipProvider>
   );
 };

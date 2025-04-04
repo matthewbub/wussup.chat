@@ -1,7 +1,6 @@
 import { openAiModels } from "@/constants/models";
 import { create } from "zustand";
 import {
-  updateChatTitle,
   createChatSession,
   deleteChatSession,
   deleteMultipleSessions,
@@ -41,7 +40,6 @@ type ChatStore = {
   setLoading: (loading: boolean) => void;
   setModel: (model: { id: string; provider: string }) => void;
   chatTitle: string;
-  setChatTitle: (title: string) => void;
   setSessionId: (id: string) => void;
   setChatSessions: (sessions: ChatSession[]) => void;
   updateSessionTitle: (sessionId: string, newTitle: string) => void;
@@ -59,7 +57,7 @@ type ChatStore = {
 };
 
 const firstFreeModel = openAiModels.find((model) => model.free);
-export const useChatStore = create<ChatStore>((set, get) => ({
+export const useChatStore = create<ChatStore>((set) => ({
   messages: [],
   isLoading: false,
   currentInput: "",
@@ -90,41 +88,17 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     })),
   setLoading: (loading) => set({ isLoading: loading }),
   setModel: (model) => set({ selectedModel: model }),
-  chatTitle: "",
-  setChatTitle: async (title) => {
-    const sessionId = get().sessionId;
-    set((state) => {
-      const updatedSessions = state.chatSessions.map((session) =>
-        session.id === sessionId ? { ...session, name: title } : session
-      );
-      return {
-        chatTitle: title,
-        chatSessions: updatedSessions,
-      };
-    });
 
-    try {
-      await updateChatTitle(sessionId, title);
-    } catch (error) {
-      console.error("Failed to update chat title:", error);
-    }
-  },
+  chatTitle: "",
   setChatSessions: (sessions) => set({ chatSessions: sessions }),
   updateSessionTitle: async (sessionId, newTitle) => {
     set((state) => ({
       chatSessions: state.chatSessions.map((session) =>
-        session.id === sessionId ? { ...session, name: newTitle, updated_at: new Date().toISOString() } : session
+        session.id === sessionId ? { ...session, name: newTitle } : session
       ),
       ...(state.sessionId === sessionId ? { chatTitle: newTitle } : {}),
     }));
-
-    try {
-      await updateChatTitle(sessionId, newTitle);
-    } catch (error) {
-      console.error("Failed to update chat title on the server:", error);
-    }
   },
-
   // New function implementations
   deleteSession: async (sessionId) => {
     set((state) => {
@@ -162,9 +136,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
     // Optimistically update the UI
     set((state) => ({
       chatSessions: state.chatSessions.map((session) =>
-        session.id === sessionId
-          ? { ...session, pinned: !session.pinned, updated_at: new Date().toISOString() }
-          : session
+        session.id === sessionId ? { ...session, pinned: !session.pinned } : session
       ),
     }));
 
@@ -175,9 +147,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       if ("error" in result) {
         set((state) => ({
           chatSessions: state.chatSessions.map((session) =>
-            session.id === sessionId
-              ? { ...session, pinned: !session.pinned, updated_at: new Date().toISOString() }
-              : session
+            session.id === sessionId ? { ...session, pinned: !session.pinned } : session
           ),
         }));
         console.error("Failed to toggle pin status:", result.error);
@@ -186,9 +156,7 @@ export const useChatStore = create<ChatStore>((set, get) => ({
       // Revert the optimistic update on error
       set((state) => ({
         chatSessions: state.chatSessions.map((session) =>
-          session.id === sessionId
-            ? { ...session, pinned: !session.pinned, updated_at: new Date().toISOString() }
-            : session
+          session.id === sessionId ? { ...session, pinned: !session.pinned } : session
         ),
       }));
       console.error("Failed to toggle pin status:", error);

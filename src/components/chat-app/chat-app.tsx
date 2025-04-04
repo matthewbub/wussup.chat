@@ -40,7 +40,7 @@ const ChatAppV3 = ({
     addMessage,
     updateLastMessage,
     setLoading,
-    setChatTitle,
+    updateSessionTitle,
     setSessionId,
     setMessages,
     setChatSessions,
@@ -57,7 +57,7 @@ const ChatAppV3 = ({
     if (sessionIdFromUrl) {
       const session = existingData.find((session) => session.id === sessionIdFromUrl);
       if (session) {
-        setChatTitle(session.name || "New Chat");
+        updateSessionTitle(session.id, session.name || "New Chat");
         setSessionId(sessionIdFromUrl);
         setMessages(session.chat_history as NewMessage[]);
       }
@@ -84,7 +84,7 @@ const ChatAppV3 = ({
       // Only proceed with title and message generation if quota check passes
       if (isFirstMessage) {
         const titleData = await facade.updateSessionTitle(sessionId, currentInput);
-        setChatTitle(titleData.title || "New Chat - Dev");
+        updateSessionTitle(sessionId, titleData.title || "New Chat");
       }
 
       const response = await facade.fetchAiMessage({
@@ -142,7 +142,7 @@ const ChatAppV3 = ({
       {/* Mobile Sidebar */}
       <ChatAppMobileSidebarV2 sessionId={sessionId} />
 
-      <main className="flex-1 flex flex-col min-w-0">
+      <main className="flex-1 flex flex-col min-w-0 relative">
         <div className="flex-1 overflow-y-auto">
           <ChatAppMessages messages={messages} />
         </div>
