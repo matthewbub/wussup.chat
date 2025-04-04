@@ -3,8 +3,12 @@
 import { cn } from "@/lib/utils";
 import Markdown from "react-markdown";
 import { NewMessage } from "@/store/chat-store";
+import { useChatStore } from "@/store/chat-store";
+import { LoadingDots } from "@/components/loading-dots";
 
 export const ChatAppMessages = ({ messages }: { messages: NewMessage[] }) => {
+  const { isLoading } = useChatStore();
+
   return (
     <div className="p-4 w-full">
       <ul className="space-y-4">
@@ -17,9 +21,17 @@ export const ChatAppMessages = ({ messages }: { messages: NewMessage[] }) => {
                   message.role === "user",
               })}
             >
-              <Markdown className={cn("prose dark:prose-invert prose-p:leading-relaxed prose-pre:p-0")}>
-                {message.content}
-              </Markdown>
+              {message.content ? (
+                <Markdown className={cn("prose dark:prose-invert prose-p:leading-relaxed prose-pre:p-0")}>
+                  {message.content}
+                </Markdown>
+              ) : (
+                // if were loading
+                // and there is no message.content
+                // and on the last message
+                // and its not the user; its a new message
+                isLoading && index === messages.length - 1 && message.role === "assistant" && <LoadingDots />
+              )}
             </div>
           </li>
         ))}

@@ -7,8 +7,6 @@ import { NextResponse } from "next/server";
 import { AVAILABLE_MODELS } from "@/constants/models";
 import * as Sentry from "@sentry/nextjs";
 import { getUser, supabaseFacade } from "@/lib/server-utils";
-import { quotaManager } from "@/lib/quota/init";
-import { checkQuotaMiddleware } from "@/lib/quota/middleware";
 
 export async function POST(req: Request) {
   try {
@@ -18,11 +16,6 @@ export async function POST(req: Request) {
     if ("error" in userData) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
-    // Check quota before processing
-    const quotaError = await checkQuotaMiddleware(userData.id, quotaManager);
-
-    if (quotaError) return quotaError;
 
     const formData = await req.formData();
     const content = formData.get("content") as string;
@@ -73,9 +66,6 @@ export async function POST(req: Request) {
       system: chat_context,
       messages,
     });
-
-    // Increment usage after successful generation
-    await quotaManager.incrementUsage(userData.id);
 
     return result.toDataStreamResponse({
       getErrorMessage: errorHandler,

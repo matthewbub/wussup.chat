@@ -76,19 +76,6 @@ const ChatAppV3 = ({
     setLoading(true);
 
     try {
-      // Check quota first before adding any messages
-      const quotaCheck = await checkQuota();
-
-      if ("error" in quotaCheck) {
-        // Add user message and error message to chat
-        addMessage(
-          facade.aiMessage(
-            quotaCheck.error || "You have reached your message limit. Please try again later or upgrade your plan."
-          )
-        );
-        throw new Error(quotaCheck.error);
-      }
-
       // Add empty AI message that will be streamed
       const aiMessage = facade.aiMessage("");
       addMessage(aiMessage);
