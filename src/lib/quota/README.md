@@ -35,8 +35,12 @@ if (!("error" in userData)) {
     // Process message
     await quotaManager.incrementUsage(userData.id);
   } else {
-    console.log(`Quota exceeded. Remaining daily: ${quotaCheck.remainingDailyQuota}`);
-    console.log(`Remaining monthly: ${quotaCheck.remainingMonthlyQuota}`);
+    if (quotaCheck.dailyLimitExceeded) {
+      console.log("Daily limit exceeded. Try again tomorrow.");
+    }
+    if (quotaCheck.monthlyLimitExceeded) {
+      console.log("Monthly limit exceeded. Consider upgrading.");
+    }
   }
 }
 ```

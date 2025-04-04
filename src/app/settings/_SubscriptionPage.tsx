@@ -2,12 +2,14 @@
 
 import Link from "next/link";
 import { CalendarIcon, CheckIcon, CreditCardIcon, GaugeIcon, InfoIcon } from "lucide-react";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { PurchaseHistory, SubscriptionStatus } from "@/lib/subscription/subscription-facade";
+import { toast } from "@/hooks/use-toast";
 
 export default function SubscriptionSettings({
   userSubscriptionInfo,
@@ -16,6 +18,7 @@ export default function SubscriptionSettings({
   userSubscriptionInfo: SubscriptionStatus;
   purchaseHistory: PurchaseHistory[];
 }) {
+  console.log(userSubscriptionInfo);
   return (
     <div className="container mx-auto py-6 space-y-8">
       <div className="px-4 flex items-center justify-between">
@@ -38,11 +41,33 @@ function SubscribedView({
   userSubscriptionInfo: SubscriptionStatus;
   purchaseHistory: PurchaseHistory[];
 }) {
-  console.log("userSub", userSubscriptionInfo);
-  // Calculate quota usage
-  const totalMonthlyQuota = 1500;
-  const usedQuota = totalMonthlyQuota - (userSubscriptionInfo.remainingMonthlyQuota ?? 0);
-  const usagePercentage = (usedQuota / totalMonthlyQuota) * 100;
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
+
+  const handleCancelSubscription = async () => {
+    if (!confirm("Are you sure you want to cancel your subscription?")) {
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const response = await fetch("/api/subscription/cancel", {
+        method: "POST",
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Failed to cancel subscription");
+      }
+
+      toast.success("Subscription cancellation scheduled for the end of the billing period");
+      router.refresh();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Something went wrong");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // Format the subscription end date
   const formattedEndDate = userSubscriptionInfo.subscriptionEndDate?.toLocaleDateString("en-US", {
@@ -50,6 +75,9 @@ function SubscribedView({
     month: "long",
     day: "numeric",
   });
+
+  // Determine if subscription is cancellation pending
+  const isCancellationPending = userSubscriptionInfo.subscriptionStatus === "cancellation_pending";
 
   return (
     <div className="space-y-6 gap-20 flex flex-col">
@@ -64,15 +92,7 @@ function SubscribedView({
               {userSubscriptionInfo.planName}
             </Badge>
             {userSubscriptionInfo.recurringOrOneTimePayment === "one-time" && <Badge variant="outline">One-time</Badge>}
-          </div>
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">Monthly Usage</span>
-              <span className="font-medium">
-                {usedQuota} / {totalMonthlyQuota}
-              </span>
-            </div>
-            <Progress value={usagePercentage} className="h-2" />
+            {isCancellationPending && <Badge variant="destructive">Cancels on {formattedEndDate}</Badge>}
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="flex items-start gap-2">
@@ -94,9 +114,22 @@ function SubscribedView({
               </div>
             </div>
           </div>
-          <Button variant="outline">Change Plan</Button>
-          {userSubscriptionInfo.recurringOrOneTimePayment === "recurring" && (
-            <Button variant="destructive">Cancel Subscription</Button>
+          <Button
+            variant="outline"
+            onClick={() => document.getElementById("pricing-section")?.scrollIntoView({ behavior: "smooth" })}
+          >
+            Change Plan
+          </Button>
+          {userSubscriptionInfo.recurringOrOneTimePayment === "recurring" && !isCancellationPending && (
+            <Button variant="destructive" onClick={handleCancelSubscription} disabled={isLoading}>
+              {isLoading ? "Cancelling..." : "Cancel Subscription"}
+            </Button>
+          )}
+          {isCancellationPending && (
+            <div className="text-sm text-muted-foreground mt-2">
+              Your subscription will remain active until the end of the current billing period, after which it will be
+              automatically cancelled.
+            </div>
           )}
         </CardContent>
       </Card>
@@ -172,6 +205,8 @@ function SubscribedView({
 }
 
 function UnsubscribedView() {
+  const [isLoadingPlan, setIsLoadingPlan] = useState<string | null>(null);
+
   const plans = [
     {
       name: "Pro (Alpha, 1 Month)",
@@ -180,26 +215,35 @@ function UnsubscribedView() {
       period: "one-time payment",
       description: "Perfect for trying out our service",
       popular: false,
+      priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_FOR__PRO_PLAN_ALPHA_ONE_MONTH,
+    },
+    {
+      name: "Pro (Alpha, 1 Month Recurring)",
+      price: "$4.50",
+      originalPrice: "$9.00",
+      period: "monthly subscription",
+      description: "Our most popular plan",
+      popular: true,
       priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_FOR__PRO_PLAN_ALPHA_ONE_MONTH_RECURRING,
     },
-    // {
-    //   name: "Pro (Alpha, 3 Month)",
-    //   price: "$12.00",
-    //   originalPrice: "$24.00",
-    //   period: "one-time payment",
-    //   description: "Our most popular plan",
-    //   popular: true,
-    //   priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_FOR__PRO_PLAN_ALPHA_THREE_MONTHS,
-    // },
-    // {
-    //   name: "Pro (Alpha, 12 Month)",
-    //   price: "$42.00",
-    //   originalPrice: "$84.00",
-    //   period: "one-time payment",
-    //   description: "Best value for committed users",
-    //   popular: false,
-    //   priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_FOR__PRO_PLAN_ALPHA_TWELVE_MONTHS,
-    // },
+    {
+      name: "Pro (Alpha, 3 Month)",
+      price: "$12.00",
+      originalPrice: "$24.00",
+      period: "one-time payment",
+      description: "Great quarterly value",
+      popular: false,
+      priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_FOR__PRO_PLAN_ALPHA_THREE_MONTHS,
+    },
+    {
+      name: "Pro (Alpha, 12 Month)",
+      price: "$42.00",
+      originalPrice: "$84.00",
+      period: "one-time payment",
+      description: "Best value for committed users",
+      popular: false,
+      priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_FOR__PRO_PLAN_ALPHA_TWELVE_MONTHS,
+    },
   ];
 
   const features = [
@@ -209,21 +253,41 @@ function UnsubscribedView() {
     "Direct support line with the developers",
   ];
 
+  const handlePurchase = async (priceId: string) => {
+    setIsLoadingPlan(priceId);
+
+    try {
+      const response = await fetch("/api/subscription/create-checkout-session", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          priceId,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Failed to create checkout session");
+      }
+
+      const data = await response.json();
+      window.location.href = data.url;
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Something went wrong");
+      setIsLoadingPlan(null);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <Card className="grid grid-cols-1 md:grid-cols-12 border-none divide-y md:divide-y-0 md:divide-x divide-border">
         <CardHeader className="col-span-1 md:col-span-4">
-          <CardTitle>Free Plan Limitations</CardTitle>
-          <CardDescription>Your current usage on the free plan</CardDescription>
+          <CardTitle>Free Plan</CardTitle>
+          <CardDescription>Your current plan</CardDescription>
         </CardHeader>
         <CardContent className="col-span-1 md:col-span-8 space-y-4">
-          <div className="space-y-2">
-            <div className="flex items-center justify-between ">
-              <span className="text-muted-foreground">Monthly Chat Messages</span>
-              <span className="font-medium">50 / 100</span>
-            </div>
-            <Progress value={50} className="h-2" />
-          </div>
           <div className="flex items-start gap-2 pt-2">
             <GaugeIcon className="mt-0.5 h-5 w-5 text-muted-foreground" />
             <div className=" text-muted-foreground">
@@ -253,7 +317,7 @@ function UnsubscribedView() {
           </CardDescription>
         </CardHeader>
         <CardContent className="col-span-1 md:col-span-8">
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-2">
             {plans.map((plan, index) => (
               <PricingCard
                 key={index}
@@ -264,8 +328,9 @@ function UnsubscribedView() {
                 description={plan.description}
                 features={features}
                 popular={plan.popular}
-                ctaText="Choose Plan"
-                priceId={plan.priceId ?? ""}
+                ctaText={isLoadingPlan === plan.priceId ? "Loading..." : "Choose Plan"}
+                isLoading={isLoadingPlan === plan.priceId}
+                onPurchase={() => handlePurchase(plan.priceId ?? "")}
               />
             ))}
           </div>
@@ -312,6 +377,8 @@ function PricingCard({
   features,
   popular = false,
   ctaText = "Get Started",
+  isLoading = false,
+  onPurchase,
 }: {
   title: string;
   price: string;
@@ -321,7 +388,8 @@ function PricingCard({
   features: string[];
   popular: boolean;
   ctaText: string;
-  priceId: string;
+  isLoading?: boolean;
+  onPurchase: () => void;
 }) {
   return (
     <Card className={`flex flex-col ${popular ? "border-primary shadow-md" : ""}`}>
@@ -351,7 +419,7 @@ function PricingCard({
             </li>
           ))}
         </ul>
-        <Button className="w-full" variant={popular ? "default" : "outline"}>
+        <Button className="w-full" variant={popular ? "default" : "outline"} onClick={onPurchase} disabled={isLoading}>
           {ctaText}
         </Button>
       </CardContent>

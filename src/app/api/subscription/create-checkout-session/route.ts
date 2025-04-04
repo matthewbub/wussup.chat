@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
-import Stripe from "stripe";
 import { getUser, supabaseFacade } from "@/lib/server-utils";
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+import { StripeCheckoutService } from "@/lib/subscription/stripe-checkout-service";
 
 export async function POST(req: Request) {
   try {
@@ -15,41 +13,14 @@ export async function POST(req: Request) {
 
     const { priceId } = await req.json();
 
-    // Validate price ID matches one of our expected values
-    const validPriceIds = [
-      process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_FOR__PRO_PLAN_ALPHA_ONE_MONTH,
-      process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_FOR__PRO_PLAN_ALPHA_THREE_MONTHS,
-      process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_FOR__PRO_PLAN_ALPHA_TWELVE_MONTHS,
-      process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_FOR__PRO_PLAN_ALPHA_ONE_MONTH_RECURRING,
-    ];
+    // Create checkout session
+    const result = await StripeCheckoutService.createCheckoutSession(userData.id, priceId);
 
-    if (!priceId || !validPriceIds.includes(priceId)) {
-      return NextResponse.json({ error: "Invalid price ID" }, { status: 400 });
+    if (!result.success) {
+      return NextResponse.json({ error: result.error }, { status: 400 });
     }
 
-    // Create a stripe checkout session
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ["card"],
-      line_items: [
-        {
-          price: priceId,
-          quantity: 1,
-        },
-      ],
-      mode: "subscription",
-      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/settings?success=true&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/pricing?canceled=true`,
-      metadata: {
-        userId: userData.id,
-      },
-      subscription_data: {
-        metadata: {
-          userId: userData.id,
-        },
-      },
-    });
-
-    return NextResponse.json({ url: session.url });
+    return NextResponse.json({ url: result.url });
   } catch (error) {
     console.error("[stripe]", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

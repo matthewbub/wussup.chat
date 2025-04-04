@@ -12,8 +12,6 @@ export async function checkQuotaMiddleware(clerkUserId: string, quotaManager: Qu
     return NextResponse.json(
       {
         error: "Quota exceeded",
-        remainingDailyQuota: quotaCheck.remainingDailyQuota,
-        remainingMonthlyQuota: quotaCheck.remainingMonthlyQuota,
         dailyLimitExceeded: quotaCheck.dailyLimitExceeded,
         monthlyLimitExceeded: quotaCheck.monthlyLimitExceeded,
         message,

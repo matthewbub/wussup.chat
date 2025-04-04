@@ -25,6 +25,11 @@ export class QuotaManager {
       dailyLimit: null, // No daily limit for pro
       name: "Pro (Alpha, 12 Months)",
     },
+    "Pro (Alpha, 1 Month Recurring)": {
+      monthlyLimit: 1500,
+      dailyLimit: null, // No daily limit for pro
+      name: "Pro (Alpha, 1 Month Recurring)",
+    },
   };
 
   constructor(private supabase: SupabaseClient) {}
@@ -129,8 +134,6 @@ export class QuotaManager {
 
   async checkQuota(userId: string): Promise<{
     hasQuota: boolean;
-    remainingDailyQuota: number | null;
-    remainingMonthlyQuota: number;
     dailyLimitExceeded: boolean;
     monthlyLimitExceeded: boolean;
     planName: SubscriptionTier;
@@ -141,8 +144,6 @@ export class QuotaManager {
       if (!quota) {
         return {
           hasQuota: false,
-          remainingDailyQuota: null,
-          remainingMonthlyQuota: 0,
           dailyLimitExceeded: false,
           monthlyLimitExceeded: false,
           planName: "free",
@@ -170,8 +171,6 @@ export class QuotaManager {
 
       return {
         hasQuota: !dailyLimitExceeded && !monthlyLimitExceeded,
-        remainingDailyQuota: remainingDaily,
-        remainingMonthlyQuota: remainingMonthly,
         dailyLimitExceeded,
         monthlyLimitExceeded,
         planName: quota.planName,
@@ -180,8 +179,6 @@ export class QuotaManager {
       Sentry.captureException(error);
       return {
         hasQuota: false,
-        remainingDailyQuota: null,
-        remainingMonthlyQuota: 0,
         dailyLimitExceeded: false,
         monthlyLimitExceeded: false,
         planName: "free",

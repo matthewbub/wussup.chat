@@ -4,6 +4,7 @@ import { QuotaManager } from "../quota/quota-manager";
 import { SubscriptionTier } from "../quota/types";
 import { TableNames } from "@/constants/tables";
 import Stripe from "stripe";
+import { isPriceIdValid, getPaymentTypeFromPriceId, handleSubscriptionError } from "./subscription-helpers";
 import * as Sentry from "@sentry/nextjs";
 
 interface VerifyStripeCustomerResponse {
@@ -14,11 +15,6 @@ interface VerifyStripeCustomerResponse {
 }
 
 export interface SubscriptionStatus {
-  // Quota information
-  remainingDailyQuota: number | null;
-  remainingMonthlyQuota: number | null;
-  hasQuota: boolean;
-
   // Payment information
   customerId: string | null;
   subscriptionStatus: string | null;
@@ -55,9 +51,6 @@ export class SubscriptionFacade {
   }
 
   private getSubscriptionStatusFactory = function ({
-    remainingDailyQuota = 0,
-    remainingMonthlyQuota = 0,
-    hasQuota = false,
     customerId = null,
     subscriptionStatus = null,
     subscriptionEndDate = null,
@@ -66,9 +59,6 @@ export class SubscriptionFacade {
     planName = null,
     recurringOrOneTimePayment = null,
   }: {
-    remainingDailyQuota?: number | null;
-    remainingMonthlyQuota?: number | null;
-    hasQuota?: boolean;
     customerId?: string | null;
     subscriptionStatus?: string | null;
     subscriptionEndDate?: Date | null;
@@ -78,9 +68,6 @@ export class SubscriptionFacade {
     recurringOrOneTimePayment?: "recurring" | "one-time" | null;
   }): SubscriptionStatus {
     return {
-      remainingDailyQuota,
-      remainingMonthlyQuota,
-      hasQuota,
       customerId,
       subscriptionStatus,
       subscriptionEndDate,
@@ -93,9 +80,6 @@ export class SubscriptionFacade {
 
   async getSubscriptionStatus(userId: string): Promise<SubscriptionStatus> {
     try {
-      // Get quota information
-      const quotaCheck = await this.quotaManager.checkQuota(userId);
-
       const { data: paymentData, error: paymentError } = await this.supabase
         .from(TableNames.USERS)
         .select("stripe_customer_id, subscription_period_end, subscription_status, product_id")
@@ -104,9 +88,6 @@ export class SubscriptionFacade {
 
       if (paymentError) {
         return this.getSubscriptionStatusFactory({
-          remainingDailyQuota: quotaCheck.remainingDailyQuota,
-          remainingMonthlyQuota: quotaCheck.remainingMonthlyQuota,
-          hasQuota: quotaCheck.hasQuota,
           error: "Could not fetch payment information",
           planName: "free",
           subscriptionStatus: "inactive",
@@ -124,9 +105,6 @@ export class SubscriptionFacade {
       const planName = this.getPlanFromPriceId(paymentData?.product_id || null);
 
       return this.getSubscriptionStatusFactory({
-        remainingDailyQuota: quotaCheck.remainingDailyQuota,
-        remainingMonthlyQuota: quotaCheck.remainingMonthlyQuota,
-        hasQuota: quotaCheck.hasQuota,
         customerId: paymentData?.stripe_customer_id || null,
         subscriptionStatus: stripeVerification.exists ? "active" : paymentData?.subscription_status || null,
         subscriptionEndDate: paymentData?.subscription_period_end
@@ -134,7 +112,7 @@ export class SubscriptionFacade {
           : null,
         productId: paymentData?.product_id || null,
         planName,
-        recurringOrOneTimePayment: this.getPlanTypeFromPriceId(paymentData?.product_id || null),
+        recurringOrOneTimePayment: getPaymentTypeFromPriceId(paymentData?.product_id || null),
       });
     } catch (error) {
       Sentry.captureException(error);
@@ -147,14 +125,7 @@ export class SubscriptionFacade {
   }
 
   async isPriceIdActive(priceId: string): Promise<boolean> {
-    const validPriceIds = [
-      process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_FOR__PRO_PLAN_ALPHA_ONE_MONTH,
-      process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_FOR__PRO_PLAN_ALPHA_THREE_MONTHS,
-      process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_FOR__PRO_PLAN_ALPHA_TWELVE_MONTHS,
-      process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_FOR__PRO_PLAN_ALPHA_ONE_MONTH_RECURRING,
-    ];
-
-    return validPriceIds.includes(priceId);
+    return isPriceIdValid(priceId);
   }
 
   private stripeCustomerFactory = function ({
@@ -208,12 +179,14 @@ export class SubscriptionFacade {
 
       return this.stripeCustomerFactory({ exists: true, productId, priceId });
     } catch (error) {
-      Sentry.captureException(error);
+      handleSubscriptionError(error, "verifyStripeCustomer");
       return this.stripeCustomerFactory({ error: error instanceof Error ? error.message : "Unknown error occurred" });
     }
   }
 
-  getPlanFromPriceId(priceId: string): SubscriptionTier {
+  getPlanFromPriceId(priceId: string | null): SubscriptionTier {
+    if (!priceId) return "free";
+
     if (priceId === process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_FOR__PRO_PLAN_ALPHA_ONE_MONTH) {
       return "Pro (Alpha, 1 Month)";
     }
@@ -233,34 +206,27 @@ export class SubscriptionFacade {
     return "free"; // Default to free tier if price ID doesn't match
   }
 
-  getPlanTypeFromPriceId(priceId: string): "recurring" | "one-time" | null {
-    if (priceId === process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_FOR__PRO_PLAN_ALPHA_ONE_MONTH) {
-      return "one-time";
-    }
-
-    if (priceId === process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_FOR__PRO_PLAN_ALPHA_THREE_MONTHS) {
-      return "one-time";
-    }
-
-    if (priceId === process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_FOR__PRO_PLAN_ALPHA_TWELVE_MONTHS) {
-      return "one-time";
-    }
-
-    if (priceId === process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_FOR__PRO_PLAN_ALPHA_ONE_MONTH_RECURRING) {
-      return "recurring";
-    }
-
-    return null;
+  getPlanTypeFromPriceId(priceId: string | null): "recurring" | "one-time" | null {
+    if (!priceId) return null;
+    return getPaymentTypeFromPriceId(priceId);
   }
 
   async getPurchaseHistory(userId: string): Promise<PurchaseHistory[]> {
-    const { data, error } = await this.supabase.from(TableNames.PURCHASE_HISTORY).select("*").eq("user_id", userId);
+    try {
+      const { data, error } = await this.supabase.from(TableNames.PURCHASE_HISTORY).select("*").eq("user_id", userId);
 
-    if (error) {
-      Sentry.captureException(error);
+      if (error) {
+        handleSubscriptionError(error, "getPurchaseHistory");
+        return [];
+      }
+
+      return data.map((record) => ({
+        ...record,
+        plan_name: this.getPlanFromPriceId(record.price_id),
+      }));
+    } catch (error) {
+      handleSubscriptionError(error, "getPurchaseHistory");
       return [];
     }
-
-    return data;
   }
 }
