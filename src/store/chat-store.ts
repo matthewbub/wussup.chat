@@ -1,7 +1,6 @@
 import { openAiModels } from "@/constants/models";
 import { create } from "zustand";
 import {
-  createChatSession,
   deleteChatSession,
   deleteMultipleSessions,
   togglePinSession as togglePinSessionAction,
@@ -22,6 +21,7 @@ export type ChatSession = {
   chat_history: { role: string; content: string }[];
   pinned?: boolean;
   isFavorite?: boolean;
+  existsInDb?: boolean;
 };
 
 type ChatStore = {
@@ -76,10 +76,6 @@ export const useChatStore = create<ChatStore>((set) => ({
   isMobileSidebarOpen: false,
   setSessionId: (id) => {
     set({ sessionId: id });
-    // Create new session in database when setting a new ID
-    createChatSession(id).catch((error) => {
-      console.error("Failed to create chat session:", error);
-    });
   },
   setInput: (input) => set({ currentInput: input }),
   setMessages: (messages) => set({ messages }),

@@ -31,7 +31,6 @@ export const ChatAppSidebarV2 = ({ existingData, sessionId }: { existingData: Ch
     deleteMultipleSessions,
     togglePinSession,
     duplicateSession,
-    updateSessionTitle,
     toggleChatSelection,
     selectAllChats,
     clearChatSelection,
@@ -73,7 +72,17 @@ export const ChatAppSidebarV2 = ({ existingData, sessionId }: { existingData: Ch
     const newSessionId = crypto.randomUUID();
     setMessages([]);
     setSessionId(newSessionId);
-    updateSessionTitle(newSessionId, "New Chat");
+    const newSession = {
+      id: newSessionId,
+      name: "New Chat",
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+      chat_history: [],
+      existsInDb: false,
+    };
+    useChatStore.setState((state) => ({
+      chatSessions: [...state.chatSessions, newSession],
+    }));
     router.push(`/?session=${newSessionId}`);
     setMobileSidebarOpen(false);
   };
