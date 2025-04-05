@@ -10,7 +10,7 @@ alwaysApply: false
 - Use Object Oriented Design Patterns in your approaches whenever it makes sense too.
 - Use JSDoc Style Code Comments to add context to functions.
 - In-flight server events should use Server Actions.
-- Use the `supabaseFaceade.getOrMakeUser` method in [server-utils.ts](mdc:src/lib/server-utils.ts) as the sole way to obtain the userId.
+- Use the `upsertUserByIdentifier` method in [server-utils.ts](mdc:src/lib/server-utils.ts) as the sole way to obtain the userId.
 - The `tableNames` object is the only way we're allowed to reference the DB.
 
 ## ERROR HANDLING

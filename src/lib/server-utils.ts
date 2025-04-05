@@ -1,5 +1,5 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
-import { createClient } from "./supabase-server";
+import { supabase } from "@/lib/supabase";
 import { tableNames } from "@/constants/tables";
 import * as Sentry from "@sentry/nextjs";
 
@@ -91,8 +91,6 @@ export async function upsertUserByIdentifier(user: {
   userId: string;
   email?: string;
 }): Promise<{ id: string } | { error: string }> {
-  const supabase = await createClient();
-
   try {
     let { data: userData } = await supabase
       .from(tableNames.USERS)

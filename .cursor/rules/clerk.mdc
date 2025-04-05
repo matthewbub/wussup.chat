@@ -6,7 +6,7 @@ alwaysApply: false
 
 # IMPORTANT
 
-We should use the `supabaseFaceade.getOrMakeUser` method in [server-utils.ts](mdc:src/lib/server-utils.ts) as the sole way to obtain the userId.
+We should use the `upsertUserByIdentifier` method in [server-utils.ts](mdc:src/lib/server-utils.ts) as the sole way to obtain the userId.
 
 # EXAMPLES
 
@@ -124,14 +124,14 @@ export default function Example() {
 
 ```ts
 import { NextResponse } from "next/server";
-import { getUser, supabaseFacade } from "@/lib/server-utils";
+import { getUser, upsertUserByIdentifier } from "@/lib/server-utils";
 import * as Sentry from "@sentry/nextjs";
 
 export async function POST(req: Request) {
   const body = await req.json();
 
   const user = await getUser(req);
-  const userData = await supabaseFacade.getOrMakeUser(user);
+  const userData = await upsertUserByIdentifier(user);
 
   if ("error" in userData) {
     Sentry.captureException(userData.error);

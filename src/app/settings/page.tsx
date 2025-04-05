@@ -1,10 +1,8 @@
 import SubscriptionSettings from "./_SubscriptionPage";
-import { getUserFromHeaders, supabaseFacade } from "@/lib/server-utils";
+import { getUserFromHeaders } from "@/lib/server-utils";
 import { subscriptionFacade } from "@/lib/subscription/init";
 import { headers } from "next/headers";
-import PublicHeader from "@/components/PublicHeader";
 import Footer from "@/components/Footer";
-import { IconSidebar } from "@/components/IconSidebar";
 import { StaticSidebar } from "@/components/sidebar";
 import { upsertUserByIdentifier } from "@/lib/server-utils";
 

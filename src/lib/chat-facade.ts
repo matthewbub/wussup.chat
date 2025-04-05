@@ -1,5 +1,5 @@
 // server only
-import { createClient } from "./supabase-server";
+import { supabase } from "@/lib/supabase";
 import { headers } from "next/headers";
 import { getUser, upsertUserByIdentifier } from "./server-utils";
 import { tableNames } from "@/constants/tables";
@@ -32,7 +32,6 @@ export class ChatFacade {
   static async updateChatTitle(sessionId: string, title: string, req?: Request) {
     try {
       const userId = await this.getUserId(req);
-      const supabase = await createClient();
 
       const { error } = await supabase
         .from(tableNames.CHAT_SESSIONS)
@@ -58,7 +57,6 @@ export class ChatFacade {
   static async createChatSession(sessionId: string, req?: Request) {
     try {
       const userId = await this.getUserId(req);
-      const supabase = await createClient();
 
       const { error } = await supabase.from(tableNames.CHAT_SESSIONS).insert({
         id: sessionId,
@@ -84,7 +82,6 @@ export class ChatFacade {
   static async deleteChatSession(sessionId: string, req?: Request) {
     try {
       const userId = await this.getUserId(req);
-      const supabase = await createClient();
 
       console.log("userId", userId);
       // Delete all messages first due to foreign key constraint
@@ -124,7 +121,6 @@ export class ChatFacade {
   static async deleteMultipleSessions(sessionIds: string[], req?: Request) {
     try {
       const userId = await this.getUserId(req);
-      const supabase = await createClient();
 
       // Delete all messages first due to foreign key constraint
       const { error: messagesError } = await supabase
@@ -173,8 +169,6 @@ export class ChatFacade {
   ) {
     try {
       const userId = await this.getUserId(req);
-      const supabase = await createClient();
-
       // Ensure session exists
       const { error: sessionError } = await supabase.from(tableNames.CHAT_SESSIONS).upsert({
         id: sessionId,
@@ -215,7 +209,6 @@ export class ChatFacade {
   static async getChatSessions(req?: Request) {
     try {
       const userId = await this.getUserId(req);
-      const supabase = await createClient();
 
       const [{ data: sessionsData, error: sessionsError }, { data: chatsData, error: chatsError }] = await Promise.all([
         supabase
@@ -263,7 +256,6 @@ export class ChatFacade {
   static async togglePinSession(sessionId: string, req?: Request) {
     try {
       const userId = await this.getUserId(req);
-      const supabase = await createClient();
 
       // First get the current pinned status
       const { data: session, error: fetchError } = await supabase
