@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
-import { getUser, supabaseFacade } from "@/lib/server-utils";
+import { getUser, upsertUserByIdentifier } from "@/lib/server-utils";
 import { StripeCheckoutService } from "@/lib/subscription/stripe-checkout-service";
 
 export async function POST(req: Request) {
   try {
     const user = await getUser(req);
-    const userData = await supabaseFacade.getOrMakeUser(user);
+    const userData = await upsertUserByIdentifier(user);
 
     if ("error" in userData) {
       return NextResponse.json({ error: userData.error }, { status: 500 });

@@ -1,7 +1,7 @@
 // server only
 import { createClient } from "./supabase-server";
 import { headers } from "next/headers";
-import { getUser, supabaseFacade } from "./server-utils";
+import { getUser, upsertUserByIdentifier } from "./server-utils";
 import { tableNames } from "@/constants/tables";
 import * as Sentry from "@sentry/nextjs";
 import { openai } from "@ai-sdk/openai";
@@ -17,7 +17,7 @@ export class ChatFacade {
   private static async getUserId(req?: Request): Promise<string> {
     const headersList = req ? req.headers : await headers();
     const user = await getUser(req ?? ({ headers: headersList } as Request));
-    const userData = await supabaseFacade.getOrMakeUser(user);
+    const userData = await upsertUserByIdentifier(user);
 
     if ("error" in userData) {
       throw new Error(userData.error);

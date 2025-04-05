@@ -6,11 +6,12 @@ import PublicHeader from "@/components/PublicHeader";
 import Footer from "@/components/Footer";
 import { IconSidebar } from "@/components/IconSidebar";
 import { StaticSidebar } from "@/components/sidebar";
+import { upsertUserByIdentifier } from "@/lib/server-utils";
 
 export default async function Page() {
   const headersList = await headers();
   const userInfo = await getUserFromHeaders(headersList);
-  const user = await supabaseFacade.getOrMakeUser(userInfo);
+  const user = await upsertUserByIdentifier(userInfo);
 
   if ("error" in user) {
     return <div>Error: {user.error}</div>;

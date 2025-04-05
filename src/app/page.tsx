@@ -3,13 +3,13 @@ import { ChatFacade } from "@/lib/chat-facade";
 import * as Sentry from "@sentry/nextjs";
 import { headers } from "next/headers";
 import { Suspense } from "react";
-import { getUserFromHeaders, supabaseFacade } from "@/lib/server-utils";
+import { getUserFromHeaders, upsertUserByIdentifier } from "@/lib/server-utils";
 import { subscriptionFacade } from "@/lib/subscription/init";
 
 export default async function Page() {
   const headersList = await headers();
   const userInfo = await getUserFromHeaders(headersList);
-  const user = await supabaseFacade.getOrMakeUser(userInfo);
+  const user = await upsertUserByIdentifier(userInfo);
 
   if ("error" in user) {
     return <div>Error: {user.error}</div>;

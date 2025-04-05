@@ -1,6 +1,7 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { createClient } from "./supabase-server";
 import { tableNames } from "@/constants/tables";
+import * as Sentry from "@sentry/nextjs";
 
 /**
  * Get IP address from X-Forwarded-For header or fall back to the direct connection IP
@@ -57,14 +58,42 @@ export async function getUserFromHeaders(headersList: Headers) {
   };
 }
 
-export const supabaseFacade = {
-  getOrMakeUser: async function (user: {
-    type: string;
-    userId: string;
-    email?: string;
-  }): Promise<{ id: string } | { error: string }> {
-    const supabase = await createClient();
+/**
+ * Upserts a user record in the database based on their identifier (Clerk ID or IP address)
+ *
+ * This function performs the following:
+ * 1. Looks up a user by their identifier (Clerk ID or IP)
+ * 2. If found and email is missing for Clerk users, updates the email
+ * 3. If not found, creates a new user record
+ *
+ * @param {Object} user - The user information
+ * @param {string} user.type - The type of identifier ('clerk_user_id' or 'user_ip')
+ * @param {string} user.userId - The unique identifier (either Clerk ID or IP address)
+ * @param {string} [user.email] - Optional email address, required for Clerk users
+ * @returns {Promise<{id: string} | {error: string}>} Object containing either the user ID or an error message
+ *
+ * @example
+ * // For authenticated Clerk users
+ * const result = await upsertUserByIdentifier({
+ *   type: 'clerk_user_id',
+ *   userId: 'clerk_123',
+ *   email: 'user@example.com'
+ * });
+ *
+ * // For unauthenticated users (IP-based)
+ * const result = await upsertUserByIdentifier({
+ *   type: 'user_ip',
+ *   userId: '127.0.0.1'
+ * });
+ */
+export async function upsertUserByIdentifier(user: {
+  type: string;
+  userId: string;
+  email?: string;
+}): Promise<{ id: string } | { error: string }> {
+  const supabase = await createClient();
 
+  try {
     let { data: userData } = await supabase
       .from(tableNames.USERS)
       .select("id, email")
@@ -90,7 +119,13 @@ export const supabaseFacade = {
         .single();
 
       if (updateError) {
-        console.error("[Info API] Error updating user:", updateError);
+        Sentry.captureException(updateError, {
+          extra: {
+            action: "update_user_email",
+            userId: user.userId,
+            userType: user.type,
+          },
+        });
         return { error: "Failed to update user" };
       }
 
@@ -110,7 +145,13 @@ export const supabaseFacade = {
         .single();
 
       if (createError) {
-        console.error("[Info API] Error creating user:", createError);
+        Sentry.captureException(createError, {
+          extra: {
+            action: "create_user",
+            userId: user.userId,
+            userType: user.type,
+          },
+        });
         return { error: "Failed to create user" };
       }
 
@@ -118,9 +159,26 @@ export const supabaseFacade = {
     }
 
     if (!userData) {
+      const error = new Error("User data not found after successful operation");
+      Sentry.captureException(error, {
+        extra: {
+          action: "verify_user_data",
+          userId: user.userId,
+          userType: user.type,
+        },
+      });
       return { error: "User data not found" };
     }
 
     return { id: userData.id };
-  },
-};
+  } catch (error) {
+    Sentry.captureException(error, {
+      extra: {
+        action: "upsert_user",
+        userId: user.userId,
+        userType: user.type,
+      },
+    });
+    return { error: "Failed to process user data" };
+  }
+}

@@ -6,12 +6,12 @@ import { LanguageModelV1, streamText } from "ai";
 import { NextResponse } from "next/server";
 import { AVAILABLE_MODELS } from "@/constants/models";
 import * as Sentry from "@sentry/nextjs";
-import { getUser, supabaseFacade } from "@/lib/server-utils";
+import { getUser, upsertUserByIdentifier } from "@/lib/server-utils";
 
 export async function POST(req: Request) {
   try {
     const user = await getUser(req);
-    const userData = await supabaseFacade.getOrMakeUser(user);
+    const userData = await upsertUserByIdentifier(user);
 
     if ("error" in userData) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
