@@ -4,12 +4,12 @@ import Link from "next/link";
 import { CalendarIcon, CheckIcon, CreditCardIcon, GaugeIcon, InfoIcon } from "lucide-react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useToast } from "@/hooks/use-toast";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { PurchaseHistory, SubscriptionStatus } from "@/lib/subscription/subscription-facade";
-import { toast } from "@/hooks/use-toast";
 
 export default function SubscriptionSettings({
   userSubscriptionInfo,
@@ -43,6 +43,7 @@ function SubscribedView({
 }) {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const { toast } = useToast();
 
   const handleCancelSubscription = async () => {
     if (!confirm("Are you sure you want to cancel your subscription?")) {
@@ -60,10 +61,17 @@ function SubscribedView({
         throw new Error(error.error || "Failed to cancel subscription");
       }
 
-      toast.success("Subscription cancellation scheduled for the end of the billing period");
+      toast({
+        title: "Success",
+        description: "Subscription cancellation scheduled for the end of the billing period",
+      });
       router.refresh();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Something went wrong");
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error instanceof Error ? error.message : "Something went wrong",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -109,7 +117,9 @@ function SubscribedView({
               <div>
                 <p className="font-medium">Billing</p>
                 <p className="text-muted-foreground">
-                  Customer ID: {userSubscriptionInfo.customerId?.substring(0, 8)}...
+                  {userSubscriptionInfo.paymentMethodLast4
+                    ? `Card ending in ${userSubscriptionInfo.paymentMethodLast4}`
+                    : "Payment method not available"}
                 </p>
               </div>
             </div>
@@ -121,12 +131,12 @@ function SubscribedView({
             Change Plan
           </Button>
           {userSubscriptionInfo.recurringOrOneTimePayment === "recurring" && !isCancellationPending && (
-            <Button variant="destructive" onClick={handleCancelSubscription} disabled={isLoading}>
+            <Button variant="destructive" onClick={handleCancelSubscription} disabled={isLoading} className="ml-4">
               {isLoading ? "Cancelling..." : "Cancel Subscription"}
             </Button>
           )}
           {isCancellationPending && (
-            <div className="text-sm text-muted-foreground mt-2">
+            <div className="text-body text-muted-foreground mt-2">
               Your subscription will remain active until the end of the current billing period, after which it will be
               automatically cancelled.
             </div>
@@ -183,10 +193,12 @@ function SubscribedView({
       <Card className="border-none">
         <CardHeader>
           <CardTitle>Need Help?</CardTitle>
-          <CardDescription>If something doesn't seem right with your subscription or payments</CardDescription>
+          <CardDescription className="text-muted-foreground">
+            <p className="text-body">If something doesn't seem right with your subscription or payments</p>
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="text-muted-foreground mb-4">
+          <p className="text-body text-muted-foreground mb-4">
             Our support team is here to help if you have any questions about your subscription, billing, or if you
             notice any discrepancies in your payment history.
           </p>
@@ -206,6 +218,7 @@ function SubscribedView({
 
 function UnsubscribedView() {
   const [isLoadingPlan, setIsLoadingPlan] = useState<string | null>(null);
+  const { toast } = useToast();
 
   const plans = [
     {
@@ -275,7 +288,11 @@ function UnsubscribedView() {
       const data = await response.json();
       window.location.href = data.url;
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Something went wrong");
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error instanceof Error ? error.message : "Something went wrong",
+      });
       setIsLoadingPlan(null);
     }
   };

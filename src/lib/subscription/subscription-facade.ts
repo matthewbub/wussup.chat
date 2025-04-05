@@ -23,6 +23,7 @@ export interface SubscriptionStatus {
   productId?: string | null;
   planName?: SubscriptionTier | null;
   recurringOrOneTimePayment?: "recurring" | "one-time" | null;
+  paymentMethodLast4?: string | null;
 }
 
 export interface PurchaseHistory {
@@ -58,6 +59,7 @@ export class SubscriptionFacade {
     productId = null,
     planName = null,
     recurringOrOneTimePayment = null,
+    paymentMethodLast4 = null,
   }: {
     customerId?: string | null;
     subscriptionStatus?: string | null;
@@ -66,6 +68,7 @@ export class SubscriptionFacade {
     productId?: string | null;
     planName?: SubscriptionTier | null;
     recurringOrOneTimePayment?: "recurring" | "one-time" | null;
+    paymentMethodLast4?: string | null;
   }): SubscriptionStatus {
     return {
       customerId,
@@ -75,6 +78,7 @@ export class SubscriptionFacade {
       productId,
       planName,
       recurringOrOneTimePayment,
+      paymentMethodLast4,
     };
   };
 
@@ -102,6 +106,19 @@ export class SubscriptionFacade {
         console.warn("Stripe verification error:", stripeVerification.error);
       }
 
+      let paymentMethodLast4 = null;
+      if (paymentData?.stripe_customer_id) {
+        try {
+          const paymentMethods = await this.stripe.paymentMethods.list({
+            customer: paymentData.stripe_customer_id,
+            type: "card",
+          });
+          paymentMethodLast4 = paymentMethods.data[0]?.card?.last4 || null;
+        } catch (error) {
+          console.warn("Error fetching payment method:", error);
+        }
+      }
+
       const planName = this.getPlanFromPriceId(paymentData?.product_id || null);
 
       return this.getSubscriptionStatusFactory({
@@ -113,6 +130,7 @@ export class SubscriptionFacade {
         productId: paymentData?.product_id || null,
         planName,
         recurringOrOneTimePayment: getPaymentTypeFromPriceId(paymentData?.product_id || null),
+        paymentMethodLast4,
       });
     } catch (error) {
       Sentry.captureException(error);
