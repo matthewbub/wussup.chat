@@ -1,6 +1,6 @@
 export const TableNames = {
-  USERS: "UserMetaData",
+  USERS: "meta",
   CHAT_SESSIONS: "threads",
   CHAT_MESSAGES: "messages",
-  PURCHASE_HISTORY: "PurchaseHistory",
+  PURCHASE_HISTORY: "purchases",
 };
