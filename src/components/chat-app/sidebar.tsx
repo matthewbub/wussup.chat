@@ -38,6 +38,7 @@ export const ChatAppSidebarV2 = ({ existingData, sessionId }: { existingData: Ch
     selectedChats,
     setMobileSidebarOpen,
     chatSessions,
+    updateSessionTitleWithDb,
   } = useChatStore();
 
   const [isSelectionMode, setIsSelectionMode] = useState(false);
@@ -82,9 +83,13 @@ export const ChatAppSidebarV2 = ({ existingData, sessionId }: { existingData: Ch
     setNewTitle(currentName);
   };
 
-  const submitRename = (id: string) => {
+  const submitRename = async (id: string) => {
     if (newTitle.trim()) {
-      updateSessionTitle(id, newTitle.trim());
+      const result = await updateSessionTitleWithDb(id, newTitle.trim());
+      if (result.error) {
+        // You could add a toast notification here to show the error
+        console.error("Failed to update title:", result.error);
+      }
     }
     setIsRenaming(null);
   };
@@ -126,12 +131,12 @@ export const ChatAppSidebarV2 = ({ existingData, sessionId }: { existingData: Ch
             onChange={(e) => setNewTitle(e.target.value)}
             className="h-8 text-sm"
             autoFocus
-            onKeyDown={(e) => {
-              if (e.key === "Enter") submitRename(session.id);
+            onKeyDown={async (e) => {
+              if (e.key === "Enter") await submitRename(session.id);
               if (e.key === "Escape") setIsRenaming(null);
             }}
           />
-          <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => submitRename(session.id)}>
+          <Button size="icon" variant="ghost" className="h-8 w-8" onClick={async () => await submitRename(session.id)}>
             <Check className="h-4 w-4" />
           </Button>
           <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => setIsRenaming(null)}>

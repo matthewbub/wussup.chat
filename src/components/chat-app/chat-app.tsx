@@ -7,7 +7,6 @@ import { ChatAppSidebarV2 } from "@/components/chat-app/sidebar";
 import { ChatAppMobileSidebarV2 } from "@/components/chat-app/mobile-sidebar";
 import { NewMessage, useChatStore } from "@/store/chat-store";
 import * as Sentry from "@sentry/nextjs";
-import { checkQuota } from "@/app/actions/chat-actions";
 import { facade, processStreamingResponse } from "@/lib/utils";
 import { useSearchParams } from "next/navigation";
 import { IconSidebar } from "@/components/IconSidebar";

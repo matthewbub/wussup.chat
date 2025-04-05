@@ -5,6 +5,7 @@ import {
   deleteChatSession,
   deleteMultipleSessions,
   togglePinSession as togglePinSessionAction,
+  updateChatTitle,
 } from "@/app/actions/chat-actions";
 
 export type NewMessage = {
@@ -54,6 +55,9 @@ type ChatStore = {
   clearChatSelection: () => void;
   isMobileSidebarOpen: boolean;
   setMobileSidebarOpen: (isOpen: boolean) => void;
+
+  // New function to handle both state and database updates
+  updateSessionTitleWithDb: (sessionId: string, newTitle: string) => Promise<{ success: boolean; error?: string }>;
 };
 
 const firstFreeModel = openAiModels.find((model) => model.free);
@@ -99,6 +103,42 @@ export const useChatStore = create<ChatStore>((set) => ({
       ...(state.sessionId === sessionId ? { chatTitle: newTitle } : {}),
     }));
   },
+
+  // New function to handle both state and database updates
+  updateSessionTitleWithDb: async (sessionId, newTitle) => {
+    // First update the state optimistically
+    set((state) => ({
+      chatSessions: state.chatSessions.map((session) =>
+        session.id === sessionId ? { ...session, name: newTitle, updated_at: new Date().toISOString() } : session
+      ),
+      ...(state.sessionId === sessionId ? { chatTitle: newTitle } : {}),
+    }));
+
+    try {
+      const result = await updateChatTitle(sessionId, newTitle);
+      if ("error" in result) {
+        // Revert state on error
+        set((state) => ({
+          chatSessions: state.chatSessions.map((session) =>
+            session.id === sessionId ? { ...session, name: state.chatTitle } : session
+          ),
+        }));
+        console.error("Failed to update chat title:", result.error);
+        return { success: false, error: result.error };
+      }
+      return { success: true };
+    } catch (error) {
+      // Revert state on error
+      set((state) => ({
+        chatSessions: state.chatSessions.map((session) =>
+          session.id === sessionId ? { ...session, name: state.chatTitle } : session
+        ),
+      }));
+      console.error("Failed to update chat title:", error);
+      return { success: false, error: "Failed to update chat title" };
+    }
+  },
+
   // New function implementations
   deleteSession: async (sessionId) => {
     set((state) => {
