@@ -10,7 +10,7 @@ export const ChatAppMessages = ({ messages }: { messages: NewMessage[] }) => {
   const { isLoading } = useChatStore();
 
   return (
-    <div className="p-4 w-full">
+    <div className="p-4 w-full mb-30">
       <ul className="space-y-4">
         {messages.map((message, index) => (
           <li key={index} className={cn("flex", message.role === "user" ? "justify-end" : "justify-start")}>
