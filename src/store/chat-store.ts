@@ -6,6 +6,7 @@ import {
   deleteMultipleSessions,
   togglePinSession as togglePinSessionAction,
   updateChatTitle,
+  duplicateSession as duplicateSessionAction,
 } from "@/app/actions/chat-actions";
 
 export type NewMessage = {
@@ -203,14 +204,16 @@ export const useChatStore = create<ChatStore>((set) => ({
     }
   },
 
-  duplicateSession: (sessionId) =>
+  duplicateSession: async (sessionId) => {
+    // Optimistically update the UI
+    const newSessionId = crypto.randomUUID();
     set((state) => {
       const sessionToDuplicate = state.chatSessions.find((session) => session.id === sessionId);
       if (!sessionToDuplicate) return state;
 
       const newSession = {
         ...sessionToDuplicate,
-        id: crypto.randomUUID(),
+        id: newSessionId,
         name: `${sessionToDuplicate.name} (copy)`,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
@@ -220,7 +223,39 @@ export const useChatStore = create<ChatStore>((set) => ({
       return {
         chatSessions: [...state.chatSessions, newSession],
       };
-    }),
+    });
+
+    try {
+      const result = await duplicateSessionAction(sessionId);
+
+      if ("error" in result) {
+        // Revert the optimistic update on error
+        set((state) => ({
+          chatSessions: state.chatSessions.filter((session) => session.id !== newSessionId),
+        }));
+        console.error("Failed to duplicate session:", result.error);
+        return { success: false, error: result.error };
+      }
+
+      // Update the session ID in case the server generated a different one
+      if (result.sessionId !== newSessionId) {
+        set((state) => ({
+          chatSessions: state.chatSessions.map((session) =>
+            session.id === newSessionId ? { ...session, id: result.sessionId } : session
+          ),
+        }));
+      }
+
+      return { success: true };
+    } catch (error) {
+      // Revert the optimistic update on error
+      set((state) => ({
+        chatSessions: state.chatSessions.filter((session) => session.id !== newSessionId),
+      }));
+      console.error("Failed to duplicate session:", error);
+      return { success: false, error: "Failed to duplicate session" };
+    }
+  },
 
   toggleChatSelection: (sessionId) =>
     set((state) => {

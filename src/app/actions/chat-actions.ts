@@ -65,3 +65,11 @@ export async function generateAndUpdateTitle(sessionId: string, currentInput: st
 export async function checkQuota() {
   return ChatFacade.checkQuota();
 }
+
+/**
+ * Duplicates a chat session and all its messages
+ * @param sessionId The ID of the chat session to duplicate
+ */
+export async function duplicateSession(sessionId: string) {
+  return ChatFacade.duplicateSession(sessionId);
+}
