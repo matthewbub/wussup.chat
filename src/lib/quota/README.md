@@ -20,14 +20,14 @@ The QuotaManager is a utility class that handles user quota management for the c
 
 ```typescript
 import { QuotaManager } from "./quota-manager";
-import { getUser, supabaseFacade } from "@/lib/server-utils";
+import { getUser, upsertUserByIdentifier } from "@/lib/server-utils";
 
 // Initialize with Supabase client
 const quotaManager = new QuotaManager(supabaseClient);
 
 // Get user and check quota
 const user = await getUser(req);
-const userData = await supabaseFacade.getOrMakeUser(user);
+const userData = await upsertUserByIdentifier(user);
 
 if (!("error" in userData)) {
   const quotaCheck = await quotaManager.checkQuota(userData.id);
@@ -52,7 +52,7 @@ import { checkQuotaMiddleware } from "./middleware";
 
 export async function POST(req: Request) {
   const user = await getUser(req);
-  const userData = await supabaseFacade.getOrMakeUser(user);
+  const userData = await upsertUserByIdentifier(user);
 
   if ("error" in userData) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
