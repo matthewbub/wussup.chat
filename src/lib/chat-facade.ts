@@ -218,7 +218,11 @@ export class ChatFacade {
       const supabase = await createClient();
 
       const [{ data: sessionsData, error: sessionsError }, { data: chatsData, error: chatsError }] = await Promise.all([
-        supabase.from(tableNames.CHAT_SESSIONS).select("*").eq("user_id", userId),
+        supabase
+          .from(tableNames.CHAT_SESSIONS)
+          .select("*")
+          .eq("user_id", userId)
+          .order("updated_at", { ascending: false }),
         supabase.from(tableNames.CHAT_MESSAGES).select("*").eq("user_id", userId),
       ]);
 
