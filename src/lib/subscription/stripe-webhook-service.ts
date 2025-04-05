@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase-server";
-import { TableNames } from "@/constants/tables";
+import { tableNames } from "@/constants/tables";
 import Stripe from "stripe";
 import {
   isRecurringSubscription,
@@ -21,7 +21,7 @@ export class StripeWebhookService {
     try {
       // 1. Check if we've already processed this session
       const { data: existingSession, error: existingSessionError } = await supabase
-        .from(TableNames.USERS)
+        .from(tableNames.USERS)
         .select()
         .eq("checkout_session_id", session.id)
         .single();
@@ -213,7 +213,7 @@ export class StripeWebhookService {
     subscriptionPeriodEnd: Date,
     paymentType: "recurring" | "one-time"
   ) {
-    const { error } = await supabase.from(TableNames.PURCHASE_HISTORY).insert({
+    const { error } = await supabase.from(tableNames.PURCHASE_HISTORY).insert({
       user_id: session.metadata?.userId,
       stripe_customer_id: customerId,
       stripe_checkout_session_id: session.id,
@@ -248,7 +248,7 @@ export class StripeWebhookService {
     subscriptionPeriodEnd: Date
   ) {
     const { error } = await supabase
-      .from(TableNames.USERS)
+      .from(tableNames.USERS)
       .update({
         stripe_customer_id: customerId,
         subscription_status: "active",
@@ -279,7 +279,7 @@ export class StripeWebhookService {
     const amount = eventType === "subscription_canceled" ? 0 : subscription.items.data[0]?.price.unit_amount || 0;
     const paymentStatus = eventType === "subscription_canceled" ? "canceled" : subscription.status;
 
-    const { error } = await supabase.from(TableNames.PURCHASE_HISTORY).insert({
+    const { error } = await supabase.from(tableNames.PURCHASE_HISTORY).insert({
       user_id: userId,
       stripe_customer_id: subscription.customer as string,
       stripe_subscription_id: subscription.id,
@@ -311,7 +311,7 @@ export class StripeWebhookService {
     userId: string
   ): Promise<boolean> {
     const { error } = await supabase
-      .from(TableNames.USERS)
+      .from(tableNames.USERS)
       .update({
         stripe_subscription_id: subscription.id,
         subscription_status: subscription.status,
@@ -327,7 +327,7 @@ export class StripeWebhookService {
 
       // Fallback to searching by subscription ID if user ID fails
       const { error: fallbackError } = await supabase
-        .from(TableNames.USERS)
+        .from(tableNames.USERS)
         .update({
           stripe_subscription_id: subscription.id,
           subscription_status: subscription.status,
@@ -352,7 +352,7 @@ export class StripeWebhookService {
    */
   private static async updateUserCancellation(supabase: any, subscription: Stripe.Subscription, userId: string) {
     const { error } = await supabase
-      .from(TableNames.USERS)
+      .from(tableNames.USERS)
       .update({
         subscription_status: "canceled",
         subscription_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
@@ -373,7 +373,7 @@ export class StripeWebhookService {
    */
   private static async findUserIdBySubscriptionId(supabase: any, subscriptionId: string) {
     const { data, error } = await supabase
-      .from(TableNames.USERS)
+      .from(tableNames.USERS)
       .select("id")
       .eq("stripe_subscription_id", subscriptionId)
       .single();

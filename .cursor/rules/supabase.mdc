@@ -85,7 +85,7 @@ if (reader) {
 
 
 ```sql
-create table public."Chats" (
+create table public.messages (
   id uuid not null default gen_random_uuid (),
   created_at timestamp with time zone not null default now(),
   chat_session_id uuid null,
@@ -97,11 +97,11 @@ create table public."Chats" (
   output text null,
   user_id uuid not null,
   constraint Chats_pkey primary key (id),
-  constraint Chats_chat_session_id_fkey1 foreign KEY (chat_session_id) references "ChatSessions" (id),
-  constraint Chats_user_id_fkey foreign KEY (user_id) references "UserMetaData" (id)
+  constraint Chats_chat_session_id_fkey1 foreign KEY (chat_session_id) references threads (id),
+  constraint Chats_user_id_fkey foreign KEY (user_id) references meta (id)
 ) TABLESPACE pg_default;
 
-create table public."ChatSessions" (
+create table public.threads (
   id uuid not null default gen_random_uuid (),
   created_at timestamp with time zone not null default now(),
   name text null,
@@ -109,16 +109,14 @@ create table public."ChatSessions" (
   updated_at timestamp with time zone null,
   pinned boolean null default false,
   constraint ChatSessions_pkey1 primary key (id),
-  constraint ChatSessions_user_id_fkey foreign KEY (user_id) references "UserMetaData" (id)
+  constraint ChatSessions_user_id_fkey foreign KEY (user_id) references meta (id)
 ) TABLESPACE pg_default;
 
-create table public."UserMetaData" (
+create table public.meta (
   id uuid not null default gen_random_uuid (),
   created_at timestamp with time zone not null default now(),
   clerk_user_id text null,
   user_ip text null,
-  current_month_usage integer not null default 0,
-  current_day_usage integer not null default 0,
   last_day_reset timestamp with time zone not null default (now() AT TIME ZONE 'utc'::text),
   last_month_reset timestamp with time zone not null default (now() AT TIME ZONE 'utc'::text),
   stripe_customer_id text null,
@@ -134,7 +132,7 @@ create table public."UserMetaData" (
   constraint UserMetaData_stripe_associated_email_key unique (email)
 ) TABLESPACE pg_default;
 
-create table public."PurchaseHistory" (
+create table public.purchases (
   id uuid not null default gen_random_uuid (),
   created_at text not null,
   user_id uuid not null,
@@ -149,8 +147,10 @@ create table public."PurchaseHistory" (
   subscription_period_end timestamp with time zone null,
   payment_type text null,
   updated_at timestamp with time zone null,
+  event_type text null,
+  stripe_subscription_id text null,
   constraint PurchaseHistory_pkey primary key (id),
   constraint PurchaseHistory_stripe_checkout_session_id_key unique (stripe_checkout_session_id),
-  constraint PurchaseHistory_user_id_fkey foreign KEY (user_id) references "UserMetaData" (id)
+  constraint PurchaseHistory_user_id_fkey foreign KEY (user_id) references meta (id)
 ) TABLESPACE pg_default;
 ```

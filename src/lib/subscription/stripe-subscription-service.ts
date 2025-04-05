@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase-server";
-import { TableNames } from "@/constants/tables";
+import { tableNames } from "@/constants/tables";
 import Stripe from "stripe";
 import { handleSubscriptionError } from "./subscription-helpers";
 
@@ -23,7 +23,7 @@ export class StripeSubscriptionService {
     try {
       // 1. Get the user's subscription information
       const { data: userData, error: userError } = await supabase
-        .from(TableNames.USERS)
+        .from(tableNames.USERS)
         .select("stripe_subscription_id, stripe_customer_id")
         .eq("id", userId)
         .single();
@@ -46,7 +46,7 @@ export class StripeSubscriptionService {
       });
 
       // 3. Record the cancellation in purchase history
-      const { error: purchaseError } = await supabase.from(TableNames.PURCHASE_HISTORY).insert({
+      const { error: purchaseError } = await supabase.from(tableNames.PURCHASE_HISTORY).insert({
         user_id: userId,
         stripe_customer_id: userData.stripe_customer_id,
         stripe_subscription_id: userData.stripe_subscription_id,
@@ -70,7 +70,7 @@ export class StripeSubscriptionService {
 
       // 4. Update user record with cancellation pending status
       const { error: updateError } = await supabase
-        .from(TableNames.USERS)
+        .from(tableNames.USERS)
         .update({
           subscription_status: "cancellation_pending",
           updated_at: new Date().toISOString(),

@@ -1,6 +1,6 @@
 import { SupabaseClient } from "@supabase/supabase-js";
 import { SubscriptionTier, QuotaLimit, UserQuota } from "./types";
-import { TableNames } from "@/constants/tables";
+import { tableNames } from "@/constants/tables";
 import * as Sentry from "@sentry/nextjs";
 
 export class QuotaManager {
@@ -53,7 +53,7 @@ export class QuotaManager {
   async getUserQuota(userId: string): Promise<UserQuota | null> {
     try {
       const { data, error } = await this.supabase
-        .from(TableNames.USERS)
+        .from(tableNames.USERS)
         .select(
           `
           current_month_usage,
@@ -75,7 +75,7 @@ export class QuotaManager {
       if (data.current_month_usage === null || data.current_day_usage === null) {
         const now = new Date().toISOString();
         const { error: updateError } = await this.supabase
-          .from(TableNames.USERS)
+          .from(tableNames.USERS)
           .update({
             current_month_usage: 0,
             current_day_usage: 0,
@@ -191,7 +191,7 @@ export class QuotaManager {
     try {
       // First get current values
       const { data: currentData, error: fetchError } = await this.supabase
-        .from(TableNames.USERS)
+        .from(tableNames.USERS)
         .select("current_month_usage, current_day_usage")
         .eq("id", userId)
         .single();
@@ -203,7 +203,7 @@ export class QuotaManager {
 
       // Then update with incremented values
       const { error: updateError } = await this.supabase
-        .from(TableNames.USERS)
+        .from(tableNames.USERS)
         .update({
           current_month_usage: (currentData.current_month_usage || 0) + 1,
           current_day_usage: (currentData.current_day_usage || 0) + 1,
@@ -225,7 +225,7 @@ export class QuotaManager {
   private async resetDailyQuota(userId: string): Promise<boolean> {
     try {
       const { error } = await this.supabase
-        .from(TableNames.USERS)
+        .from(tableNames.USERS)
         .update({
           current_day_usage: 0,
           last_day_reset: new Date().toISOString(),
@@ -247,7 +247,7 @@ export class QuotaManager {
   private async resetMonthlyQuota(userId: string): Promise<boolean> {
     try {
       const { error } = await this.supabase
-        .from(TableNames.USERS)
+        .from(tableNames.USERS)
         .update({
           current_month_usage: 0,
           last_month_reset: new Date().toISOString(),
@@ -269,7 +269,7 @@ export class QuotaManager {
   async upgradeSubscription(userId: string, newPriceId: string): Promise<boolean> {
     try {
       const { error } = await this.supabase
-        .from(TableNames.USERS)
+        .from(tableNames.USERS)
         .update({
           product_id: newPriceId,
         })

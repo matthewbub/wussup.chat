@@ -2,7 +2,7 @@
 import { SupabaseClient } from "@supabase/supabase-js";
 import { QuotaManager } from "../quota/quota-manager";
 import { SubscriptionTier } from "../quota/types";
-import { TableNames } from "@/constants/tables";
+import { tableNames } from "@/constants/tables";
 import Stripe from "stripe";
 import { isPriceIdValid, getPaymentTypeFromPriceId, handleSubscriptionError } from "./subscription-helpers";
 import * as Sentry from "@sentry/nextjs";
@@ -85,7 +85,7 @@ export class SubscriptionFacade {
   async getSubscriptionStatus(userId: string): Promise<SubscriptionStatus> {
     try {
       const { data: paymentData, error: paymentError } = await this.supabase
-        .from(TableNames.USERS)
+        .from(tableNames.USERS)
         .select("stripe_customer_id, subscription_period_end, subscription_status, product_id")
         .eq("id", userId)
         .single();
@@ -231,7 +231,7 @@ export class SubscriptionFacade {
 
   async getPurchaseHistory(userId: string): Promise<PurchaseHistory[]> {
     try {
-      const { data, error } = await this.supabase.from(TableNames.PURCHASE_HISTORY).select("*").eq("user_id", userId);
+      const { data, error } = await this.supabase.from(tableNames.PURCHASE_HISTORY).select("*").eq("user_id", userId);
 
       if (error) {
         handleSubscriptionError(error, "getPurchaseHistory");

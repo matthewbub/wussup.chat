@@ -1,4 +1,4 @@
-export const TableNames = {
+export const tableNames = {
   USERS: "meta",
   CHAT_SESSIONS: "threads",
   CHAT_MESSAGES: "messages",

@@ -1,6 +1,6 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { createClient } from "./supabase-server";
-import { TableNames } from "@/constants/tables";
+import { tableNames } from "@/constants/tables";
 
 /**
  * Get IP address from X-Forwarded-For header or fall back to the direct connection IP
@@ -66,7 +66,7 @@ export const supabaseFacade = {
     const supabase = await createClient();
 
     let { data: userData } = await supabase
-      .from(TableNames.USERS)
+      .from(tableNames.USERS)
       .select("id, email")
       .eq(user.type, user.userId)
       .single();
@@ -83,7 +83,7 @@ export const supabaseFacade = {
         email: user.email as string,
       };
       const { data: updatedUser, error: updateError } = await supabase
-        .from(TableNames.USERS)
+        .from(tableNames.USERS)
         .update(withUpdates)
         .eq(user.type, user.userId)
         .select()
@@ -99,7 +99,7 @@ export const supabaseFacade = {
 
     if (!userData) {
       const { data: newUser, error: createError } = await supabase
-        .from(TableNames.USERS)
+        .from(tableNames.USERS)
         .insert([
           {
             ...initialUser,

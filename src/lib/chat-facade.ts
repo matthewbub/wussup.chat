@@ -2,7 +2,7 @@
 import { createClient } from "./supabase-server";
 import { headers } from "next/headers";
 import { getUser, supabaseFacade } from "./server-utils";
-import { TableNames } from "@/constants/tables";
+import { tableNames } from "@/constants/tables";
 import * as Sentry from "@sentry/nextjs";
 import { openai } from "@ai-sdk/openai";
 import { generateText } from "ai";
@@ -35,7 +35,7 @@ export class ChatFacade {
       const supabase = await createClient();
 
       const { error } = await supabase
-        .from(TableNames.CHAT_SESSIONS)
+        .from(tableNames.CHAT_SESSIONS)
         .update({ name: title, updated_at: new Date() })
         .eq("id", sessionId)
         .eq("user_id", userId);
@@ -60,7 +60,7 @@ export class ChatFacade {
       const userId = await this.getUserId(req);
       const supabase = await createClient();
 
-      const { error } = await supabase.from(TableNames.CHAT_SESSIONS).insert({
+      const { error } = await supabase.from(tableNames.CHAT_SESSIONS).insert({
         id: sessionId,
         user_id: userId,
         name: "New Chat",
@@ -89,7 +89,7 @@ export class ChatFacade {
       console.log("userId", userId);
       // Delete all messages first due to foreign key constraint
       const { error: messagesError } = await supabase
-        .from(TableNames.CHAT_MESSAGES)
+        .from(tableNames.CHAT_MESSAGES)
         .delete()
         .eq("chat_session_id", sessionId)
         .eq("user_id", userId);
@@ -101,7 +101,7 @@ export class ChatFacade {
 
       // Then delete the session
       const { error: sessionError } = await supabase
-        .from(TableNames.CHAT_SESSIONS)
+        .from(tableNames.CHAT_SESSIONS)
         .delete()
         .eq("id", sessionId)
         .eq("user_id", userId);
@@ -128,7 +128,7 @@ export class ChatFacade {
 
       // Delete all messages first due to foreign key constraint
       const { error: messagesError } = await supabase
-        .from(TableNames.CHAT_MESSAGES)
+        .from(tableNames.CHAT_MESSAGES)
         .delete()
         .in("chat_session_id", sessionIds)
         .eq("user_id", userId);
@@ -140,7 +140,7 @@ export class ChatFacade {
 
       // Then delete the sessions
       const { error: sessionError } = await supabase
-        .from(TableNames.CHAT_SESSIONS)
+        .from(tableNames.CHAT_SESSIONS)
         .delete()
         .in("id", sessionIds)
         .eq("user_id", userId);
@@ -176,7 +176,7 @@ export class ChatFacade {
       const supabase = await createClient();
 
       // Ensure session exists
-      const { error: sessionError } = await supabase.from(TableNames.CHAT_SESSIONS).upsert({
+      const { error: sessionError } = await supabase.from(tableNames.CHAT_SESSIONS).upsert({
         id: sessionId,
         user_id: userId,
       });
@@ -187,7 +187,7 @@ export class ChatFacade {
       }
 
       // Store the message
-      const { error: messageError } = await supabase.from(TableNames.CHAT_MESSAGES).insert({
+      const { error: messageError } = await supabase.from(tableNames.CHAT_MESSAGES).insert({
         chat_session_id: sessionId,
         user_id: userId,
         model: message.model,
@@ -218,8 +218,8 @@ export class ChatFacade {
       const supabase = await createClient();
 
       const [{ data: sessionsData, error: sessionsError }, { data: chatsData, error: chatsError }] = await Promise.all([
-        supabase.from(TableNames.CHAT_SESSIONS).select("*").eq("user_id", userId),
-        supabase.from(TableNames.CHAT_MESSAGES).select("*").eq("user_id", userId),
+        supabase.from(tableNames.CHAT_SESSIONS).select("*").eq("user_id", userId),
+        supabase.from(tableNames.CHAT_MESSAGES).select("*").eq("user_id", userId),
       ]);
 
       if (sessionsError || chatsError) {
@@ -233,20 +233,17 @@ export class ChatFacade {
         updated_at: new Date(session.updated_at).toISOString(),
         chat_history: chatsData
           ?.filter((chat) => chat.chat_session_id === session.id)
-          .reduce(
-            (acc, chat) => {
-              const userMessage = {
-                role: "user",
-                content: chat.input,
-              };
-              const aiMessage = {
-                role: "assistant",
-                content: chat.output,
-              };
-              return [...acc, userMessage, aiMessage];
-            },
-            [] as { role: string; content: string }[]
-          ),
+          .reduce((acc, chat) => {
+            const userMessage = {
+              role: "user",
+              content: chat.input,
+            };
+            const aiMessage = {
+              role: "assistant",
+              content: chat.output,
+            };
+            return [...acc, userMessage, aiMessage];
+          }, [] as { role: string; content: string }[]),
       }));
 
       return { data: formattedSessions };
@@ -266,7 +263,7 @@ export class ChatFacade {
 
       // First get the current pinned status
       const { data: session, error: fetchError } = await supabase
-        .from(TableNames.CHAT_SESSIONS)
+        .from(tableNames.CHAT_SESSIONS)
         .select("pinned")
         .eq("id", sessionId)
         .eq("user_id", userId)
@@ -279,7 +276,7 @@ export class ChatFacade {
 
       // Toggle the pinned status
       const { error: updateError } = await supabase
-        .from(TableNames.CHAT_SESSIONS)
+        .from(tableNames.CHAT_SESSIONS)
         .update({
           pinned: !session?.pinned,
           updated_at: new Date(),
