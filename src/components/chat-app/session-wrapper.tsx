@@ -47,6 +47,8 @@ export const SessionWrapper = ({
         updateSessionTitle(session.id, session.name);
         setSessionId(sessionIdFromUrl);
         setIsLoadingChatHistory(false);
+      } else {
+        setIsLoadingChatHistory(false);
       }
     }
   }, [sessionIdFromUrl]);

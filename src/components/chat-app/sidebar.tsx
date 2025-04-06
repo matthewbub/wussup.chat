@@ -59,7 +59,7 @@ export const ChatAppSidebarV2 = ({ existingData, sessionId }: { existingData: Ch
 
   const handleNewChat = () => {
     const newSessionId = crypto.randomUUID();
-    setMessages([]);
+    setMessages(null);
     setIsLoadingChatHistory(true);
     setSessionId(newSessionId);
     const newSession = {
@@ -166,6 +166,7 @@ export const ChatAppSidebarV2 = ({ existingData, sessionId }: { existingData: Ch
           onClick={() => {
             setIsLoadingChatHistory(true);
             setMobileSidebarOpen(false);
+            setMessages(null);
             router.push(`/?session=${session.id}`);
           }}
         >

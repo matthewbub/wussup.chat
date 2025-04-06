@@ -25,7 +25,7 @@ export type ChatSession = {
 };
 
 type ChatStore = {
-  messages: NewMessage[];
+  messages: NewMessage[] | null;
   isLoading: boolean;
   isLoadingChatHistory: boolean;
   currentInput: string;
@@ -37,7 +37,7 @@ type ChatStore = {
   chatSessions: ChatSession[];
   selectedChats: string[];
   setInput: (input: string) => void;
-  setMessages: (messages: NewMessage[]) => void;
+  setMessages: (messages: NewMessage[] | null) => void;
   addMessage: (message: NewMessage) => void;
   updateLastMessage: (content: string) => void;
   setLoading: (loading: boolean) => void;
