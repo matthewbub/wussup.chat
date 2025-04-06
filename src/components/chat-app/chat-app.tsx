@@ -1,11 +1,10 @@
 "use client";
 
-import { useEffect } from "react";
 import { ChatAppInput } from "@/components/chat-app/input";
 import { ChatAppMessages } from "@/components/chat-app/messages";
 import { ChatAppSidebarV2 } from "@/components/chat-app/sidebar";
 import { ChatAppMobileSidebarV2 } from "@/components/chat-app/mobile-sidebar";
-import { NewMessage, useChatStore } from "@/store/chat-store";
+import { useChatStore } from "@/store/chat-store";
 import * as Sentry from "@sentry/nextjs";
 import {
   createHumanMessage,
@@ -14,9 +13,9 @@ import {
   postChatInfo,
   processStreamingResponse,
 } from "@/lib/format/format-utils";
-import { useSearchParams } from "next/navigation";
 import { IconSidebar } from "@/components/IconSidebar";
 import { SubscriptionStatus } from "@/lib/subscription/subscription-facade";
+import { SessionWrapper } from "./session-wrapper";
 
 const ChatAppV3 = ({
   existingData,
@@ -31,10 +30,6 @@ const ChatAppV3 = ({
   }[];
   userSubscriptionInfo: SubscriptionStatus;
 }) => {
-  // get url query params
-  const searchParams = useSearchParams();
-  const sessionIdFromUrl = searchParams.get("session");
-
   const {
     messages,
     currentInput,
@@ -46,28 +41,9 @@ const ChatAppV3 = ({
     updateLastMessage,
     setLoading,
     updateSessionTitle,
-    setSessionId,
-    setMessages,
-    setChatSessions,
-    chatSessions,
     setModel,
+    chatSessions,
   } = useChatStore();
-
-  // Initialize chat sessions in the store
-  useEffect(() => {
-    setChatSessions(existingData);
-  }, [existingData]);
-
-  useEffect(() => {
-    if (sessionIdFromUrl) {
-      const session = existingData.find((session) => session.id === sessionIdFromUrl);
-      if (session) {
-        updateSessionTitle(session.id, session.name || "New Chat");
-        setSessionId(sessionIdFromUrl);
-        setMessages(session.chat_history as NewMessage[]);
-      }
-    }
-  }, [sessionIdFromUrl]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -96,7 +72,13 @@ const ChatAppV3 = ({
           body: JSON.stringify({ sessionId, currentInput }),
         });
         const titleData = await response.json();
-        updateSessionTitle(sessionId, titleData.title || "New Chat");
+
+        console.log("titleData", titleData);
+        if (titleData.title) {
+          updateSessionTitle(sessionId, titleData.title);
+        } else {
+          updateSessionTitle(sessionId, "New Chat");
+        }
       }
 
       const response = await fetchAiMessage({
@@ -144,35 +126,37 @@ const ChatAppV3 = ({
   };
 
   return (
-    <div className="flex h-full overflow-hidden">
-      {/* App navigation */}
-      <IconSidebar />
+    <SessionWrapper existingData={existingData}>
+      <div className="flex h-full overflow-hidden">
+        {/* App navigation */}
+        <IconSidebar />
 
-      {/* Desktop Sidebar */}
-      <div className="hidden md:block relative w-72">
-        <div className="absolute inset-0 border-r border-border">
-          <ChatAppSidebarV2 existingData={chatSessions} sessionId={sessionId} />
+        {/* Desktop Sidebar */}
+        <div className="hidden md:block relative w-72">
+          <div className="absolute inset-0 border-r border-border">
+            <ChatAppSidebarV2 existingData={chatSessions} sessionId={sessionId} />
+          </div>
         </div>
+
+        {/* Mobile Sidebar */}
+        <ChatAppMobileSidebarV2 sessionId={sessionId} />
+
+        <main className="flex-1 flex flex-col min-w-0 relative">
+          <div className="flex-1 overflow-y-auto">
+            <ChatAppMessages messages={messages} />
+          </div>
+          <ChatAppInput
+            currentInput={currentInput}
+            setInput={setInput}
+            isLoading={isLoading}
+            onSubmit={handleSubmit}
+            selectedModel={selectedModel}
+            onModelChange={setModel}
+            userSubscriptionInfo={userSubscriptionInfo}
+          />
+        </main>
       </div>
-
-      {/* Mobile Sidebar */}
-      <ChatAppMobileSidebarV2 sessionId={sessionId} />
-
-      <main className="flex-1 flex flex-col min-w-0 relative">
-        <div className="flex-1 overflow-y-auto">
-          <ChatAppMessages messages={messages} />
-        </div>
-        <ChatAppInput
-          currentInput={currentInput}
-          setInput={setInput}
-          isLoading={isLoading}
-          onSubmit={handleSubmit}
-          selectedModel={selectedModel}
-          onModelChange={setModel}
-          userSubscriptionInfo={userSubscriptionInfo}
-        />
-      </main>
-    </div>
+    </SessionWrapper>
   );
 };
 

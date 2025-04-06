@@ -133,9 +133,11 @@ export const ChatAppInput = ({
             <AutoExpandingTextarea
               placeholder="Message"
               value={currentInput}
-              onChange={(e) => setInput(e.target.value)}
               disabled={isLoading}
               className="flex-1"
+              onBlur={(e) => {
+                setInput(e.target.value);
+              }}
             />
             <Button type="submit" disabled={isLoading} className="w-fit space-x-1">
               <span>Send</span>
@@ -152,13 +154,15 @@ export const ChatAppInput = ({
 function AutoExpandingTextarea({
   value: propValue = "",
   onChange,
+  onBlur,
   className = "",
   ...props
 }: {
   value: string;
-  onChange: (ev: React.ChangeEvent<HTMLTextAreaElement>) => void;
+  onChange?: (ev: React.ChangeEvent<HTMLTextAreaElement>) => void;
+  onBlur?: (ev: React.FocusEvent<HTMLTextAreaElement>) => void;
   className: string;
-} & Omit<React.TextareaHTMLAttributes<HTMLTextAreaElement>, "value" | "onChange" | "className">) {
+} & Omit<React.TextareaHTMLAttributes<HTMLTextAreaElement>, "value" | "onChange" | "className" | "onBlur">) {
   const ref = useRef<null | HTMLTextAreaElement>(null);
   const [internalValue, setInternalValue] = useState<string>("");
 
@@ -185,13 +189,15 @@ function AutoExpandingTextarea({
   const handleChange = (ev: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newValue = ev.target.value;
     setInternalValue(newValue);
-
-    // resize upon input
     autoResize();
-
-    // send upstream
     if (onChange) {
       onChange(ev);
+    }
+  };
+
+  const handleBlur = (ev: React.FocusEvent<HTMLTextAreaElement>) => {
+    if (onBlur) {
+      onBlur(ev);
     }
   };
 
@@ -200,6 +206,7 @@ function AutoExpandingTextarea({
       ref={ref}
       value={internalValue}
       onChange={handleChange}
+      onBlur={handleBlur}
       rows={2}
       className={cn("overflow-y-hidden resize-none box-border min-h-[50px] max-h-[300px]", className)}
       {...props}
