@@ -134,3 +134,23 @@ export function postChatInfo({
     }),
   }).catch(console.error);
 }
+
+/**
+ * Formats chat history for the API
+ */
+export function formatChatHistory(chatHistory: Array<{ chat_session_id: string; input: string; output: string }>): {
+  role: string;
+  content: string;
+}[] {
+  return chatHistory.reduce((acc: { role: string; content: string }[], chat: { input: string; output: string }) => {
+    const userMessage = {
+      role: "user",
+      content: chat.input,
+    };
+    const aiMessage = {
+      role: "assistant",
+      content: chat.output,
+    };
+    return [...acc, userMessage, aiMessage];
+  }, [] as { role: string; content: string }[]);
+}

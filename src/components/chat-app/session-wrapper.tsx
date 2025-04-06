@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { NewMessage, useChatStore } from "@/store/chat-store";
 import { useSearchParams } from "next/navigation";
+import { formatChatHistory } from "@/lib/format/format-utils";
 
 export const SessionWrapper = ({
   existingData,
@@ -21,7 +22,8 @@ export const SessionWrapper = ({
   const searchParams = useSearchParams();
   const sessionIdFromUrl = searchParams.get("session");
 
-  const { updateSessionTitle, setSessionId, setMessages, setChatSessions, chatSessions } = useChatStore();
+  const { updateSessionTitle, setSessionId, setMessages, setChatSessions, chatSessions, setIsLoadingChatHistory } =
+    useChatStore();
 
   // Initialize chat sessions in the store
   useEffect(() => {
@@ -35,27 +37,16 @@ export const SessionWrapper = ({
         const fetchChatHistory = async () => {
           const response = await fetch(`/api/v3/chat/messages?session=${sessionIdFromUrl}`);
           const data = await response.json();
-
-          console.log("data", data);
-          const chatHistory = data.messages
-            ?.filter((chat: { chat_session_id: string }) => chat.chat_session_id === session.id)
-            .reduce((acc: { role: string; content: string }[], chat: { input: string; output: string }) => {
-              const userMessage = {
-                role: "user",
-                content: chat.input,
-              };
-              const aiMessage = {
-                role: "assistant",
-                content: chat.output,
-              };
-              return [...acc, userMessage, aiMessage];
-            }, [] as { role: string; content: string }[]);
+          const chatHistory = formatChatHistory(
+            data.messages?.filter((chat: { chat_session_id: string }) => chat.chat_session_id === session.id)
+          );
 
           setMessages(chatHistory as NewMessage[]);
         };
         fetchChatHistory();
         updateSessionTitle(session.id, session.name);
         setSessionId(sessionIdFromUrl);
+        setIsLoadingChatHistory(false);
       }
     }
   }, [sessionIdFromUrl]);

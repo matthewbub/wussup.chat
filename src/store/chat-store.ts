@@ -27,6 +27,7 @@ export type ChatSession = {
 type ChatStore = {
   messages: NewMessage[];
   isLoading: boolean;
+  isLoadingChatHistory: boolean;
   currentInput: string;
   selectedModel: {
     id: string;
@@ -45,8 +46,6 @@ type ChatStore = {
   setSessionId: (id: string) => void;
   setChatSessions: (sessions: ChatSession[]) => void;
   updateSessionTitle: (sessionId: string, newTitle: string) => void;
-
-  // New functions
   deleteSession: (sessionId: string) => void;
   deleteMultipleSessions: (sessionIds: string[]) => void;
   togglePinSession: (sessionId: string) => void;
@@ -56,15 +55,15 @@ type ChatStore = {
   clearChatSelection: () => void;
   isMobileSidebarOpen: boolean;
   setMobileSidebarOpen: (isOpen: boolean) => void;
-
-  // New function to handle both state and database updates
   updateSessionTitleWithDb: (sessionId: string, newTitle: string) => Promise<{ success: boolean; error?: string }>;
+  setIsLoadingChatHistory: (isLoading: boolean) => void;
 };
 
 const firstFreeModel = openAiModels.find((model) => model.free);
 export const useChatStore = create<ChatStore>((set) => ({
   messages: [],
   isLoading: false,
+  isLoadingChatHistory: false,
   currentInput: "",
   selectedModel: {
     id: firstFreeModel?.id || openAiModels[0].id,
@@ -100,7 +99,6 @@ export const useChatStore = create<ChatStore>((set) => ({
     }));
   },
 
-  // New function to handle both state and database updates
   updateSessionTitleWithDb: async (sessionId, newTitle) => {
     // First update the state optimistically
     set((state) => ({
@@ -135,7 +133,6 @@ export const useChatStore = create<ChatStore>((set) => ({
     }
   },
 
-  // New function implementations
   deleteSession: async (sessionId) => {
     set((state) => {
       const newSessions = state.chatSessions.filter((session) => session.id !== sessionId);
@@ -269,4 +266,5 @@ export const useChatStore = create<ChatStore>((set) => ({
   clearChatSelection: () => set({ selectedChats: [] }),
 
   setMobileSidebarOpen: (isOpen) => set({ isMobileSidebarOpen: isOpen }),
+  setIsLoadingChatHistory: (isLoading: boolean) => set({ isLoadingChatHistory: isLoading }),
 }));

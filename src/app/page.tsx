@@ -5,6 +5,7 @@ import { subscriptionFacade } from "@/lib/subscription/init";
 import { tableNames } from "@/constants/tables";
 import { supabase } from "@/lib/supabase";
 import Sentry from "@sentry/nextjs";
+import { formatChatHistory } from "@/lib/format/format-utils";
 
 export default async function Home({ searchParams }: { searchParams: { session?: string } }) {
   const session = searchParams.session;
@@ -33,19 +34,7 @@ export default async function Home({ searchParams }: { searchParams: { session?:
     ...session,
     created_at: new Date(session.created_at).toISOString(),
     updated_at: new Date(session.updated_at).toISOString(),
-    chat_history: chatsData
-      ?.filter((chat) => chat.chat_session_id === session.id)
-      .reduce((acc, chat) => {
-        const userMessage = {
-          role: "user",
-          content: chat.input,
-        };
-        const aiMessage = {
-          role: "assistant",
-          content: chat.output,
-        };
-        return [...acc, userMessage, aiMessage];
-      }, [] as { role: string; content: string }[]),
+    chat_history: formatChatHistory(chatsData?.filter((chat) => chat.chat_session_id === session.id) || []),
   }));
 
   const userSubscriptionInfo = await subscriptionFacade.getSubscriptionStatus(user.id);
