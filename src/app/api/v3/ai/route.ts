@@ -7,8 +7,6 @@ import { NextResponse } from "next/server";
 import { AVAILABLE_MODELS } from "@/constants/models";
 import * as Sentry from "@sentry/nextjs";
 import { getUser, upsertUserByIdentifier } from "@/lib/auth/auth-utils";
-import { quotaManager } from "@/lib/quota/init";
-import { checkQuotaMiddleware } from "@/lib/quota/middleware";
 
 export async function POST(req: Request) {
   try {
@@ -19,24 +17,12 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: userData.error }, { status: 500 });
     }
 
-    const quotaError = await checkQuotaMiddleware(userData.id, quotaManager);
-
-    if (quotaError) {
-      return NextResponse.json({ error: quotaError }, { status: 429 });
-    }
-
     const formData = await req.formData();
     const content = formData.get("content") as string;
     const model = formData.get("model") as string;
     const model_provider = formData.get("model_provider") as string;
     const chat_context = formData.get("chat_context") as string;
     const messageHistory = formData.get("messageHistory") as string;
-    const checkOnly = formData.get("checkOnly") === "true";
-
-    // If this is just a quota check, return success
-    if (checkOnly) {
-      return NextResponse.json({ success: true });
-    }
 
     // Validate model and provider
     const selectedModel = AVAILABLE_MODELS.find((m) => m.id === model && m.provider === model_provider);
@@ -64,7 +50,6 @@ export async function POST(req: Request) {
       xai: xai(selectedModel.model),
     };
     const provider = modelOpts[model_provider as keyof typeof modelOpts];
-
     if (!provider) {
       return NextResponse.json({ error: "Unsupported provider" }, { status: 400 });
     }

@@ -97,7 +97,6 @@ export const useChatStore = create<ChatStore>((set) => ({
       chatSessions: state.chatSessions.map((session) =>
         session.id === sessionId ? { ...session, name: newTitle } : session
       ),
-      ...(state.sessionId === sessionId ? { chatTitle: newTitle } : {}),
     }));
   },
 

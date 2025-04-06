@@ -88,7 +88,7 @@ const ChatAppV3 = ({
       const isFirstMessage = messages.length === 0;
       // Only proceed with title and message generation if quota check passes
       if (isFirstMessage) {
-        const response = await fetch("/api/chat/title", {
+        const response = await fetch("/api/v3/title", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -109,7 +109,6 @@ const ChatAppV3 = ({
           role: msg.role,
         })),
         sessionId,
-        checkOnly: false,
       });
 
       if (!response.ok) throw new Error("Failed to send message");

@@ -81,7 +81,6 @@ export async function fetchAiMessage({
   provider,
   messages,
   sessionId,
-  checkOnly,
 }: {
   input: string;
   model: string;
@@ -89,17 +88,13 @@ export async function fetchAiMessage({
   messages: Array<{ id: string; content: string; role: "user" | "assistant" }>;
   sessionId: string;
   checkOnly?: boolean;
-}) {
+}): Promise<Response> {
   const formData = new FormData();
   formData.append("content", input);
   formData.append("model", model);
   formData.append("model_provider", provider);
   formData.append("messageHistory", JSON.stringify(messages));
   formData.append("session_id", sessionId);
-
-  if (checkOnly) {
-    formData.append("checkOnly", "true");
-  }
 
   return fetch("/api/v3/ai", {
     method: "POST",
