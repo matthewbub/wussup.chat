@@ -104,6 +104,13 @@ v0.0.6
 
 - App rewrite (no vibe coding)
 
+TODO
+
+- [s] Update Sidebar Menu Options to actually work
+- [ ] Migrate Chat to Redis per spec + Fix Broken Sidebar
+- [ ] Update FAQ / Fix Light Mode
+- [ ] Launch again
+
 ## FAQ
 
 ### What counts as 1 message?

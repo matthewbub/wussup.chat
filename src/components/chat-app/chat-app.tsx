@@ -17,7 +17,6 @@ import {
 import { useSearchParams } from "next/navigation";
 import { IconSidebar } from "@/components/IconSidebar";
 import { SubscriptionStatus } from "@/lib/subscription/subscription-facade";
-import { generateAndUpdateTitle } from "@/lib/chat/chat-utils";
 
 const ChatAppV3 = ({
   existingData,
@@ -89,7 +88,14 @@ const ChatAppV3 = ({
       const isFirstMessage = messages.length === 0;
       // Only proceed with title and message generation if quota check passes
       if (isFirstMessage) {
-        const titleData = await generateAndUpdateTitle(sessionId, currentInput);
+        const response = await fetch("/api/chat/title", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ sessionId, currentInput }),
+        });
+        const titleData = await response.json();
         updateSessionTitle(sessionId, titleData.title || "New Chat");
       }
 

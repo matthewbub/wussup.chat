@@ -1,11 +1,11 @@
 import { openAiModels } from "@/constants/models";
 import { create } from "zustand";
 import {
-  deleteChatSession,
-  deleteMultipleSessions,
-  togglePinSession as togglePinSessionAction,
-  updateChatTitle,
-  duplicateSession as duplicateSessionAction,
+  deleteSession as deleteChatSession,
+  deleteSessions as deleteMultipleSessions,
+  togglePin as togglePinSessionAction,
+  updateTitle as updateChatTitle,
+  duplicateChat as duplicateSessionAction,
 } from "@/app/actions/chat-actions";
 
 export type NewMessage = {

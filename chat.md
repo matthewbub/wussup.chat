@@ -1,14 +1,15 @@
 # Chat
 
+1000 messages mo
+
 i guess this is v4
 
-- middleware
 - on page load (server component)
-  - Get / create a `UserMetadata` row if one does not exist (we need an ID to tie messages too; regardless of weather their signed in or not)
+  - Create a `meta` row if one does not exist (we need an ID to tie messages too; regardless of weather their signed in or not)
+    These values wont change mid-session; Store in Redis for fast grab
     RETURNS `user.id`, `user.subscription_status`, `user.subscription_period_start`, `user.last_day_reset`, `user.last_month_reset`
-    - These values wont change mid-session; Store in Redis for fast grab
   - Validate Subscription in Stripe
-  - With the `user.id`, Get the list of `threads` (`threads.user_id`) that are associated with the UserMetadata.id.
+  - With the `user.id`, Get the list of `threads` (`threads.user_id`) that are associated with the meta.id.
     - Include the `messages` (`messages.chat_session_id` `messages.user_id`) of the current session if the `session` URL param is present.
 - on page mount (client component)
   - Send HTTP request to check the quota available for user. (Redis)
