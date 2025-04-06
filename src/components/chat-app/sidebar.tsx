@@ -38,24 +38,13 @@ export const ChatAppSidebarV2 = ({ existingData, sessionId }: { existingData: Ch
     setMobileSidebarOpen,
     chatSessions,
     updateSessionTitleWithDb,
+    setIsLoadingChatHistory,
   } = useChatStore();
 
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [isRenaming, setIsRenaming] = useState<string | null>(null);
   const [newTitle, setNewTitle] = useState("");
   const [confirmDelete, setConfirmDelete] = useState<string | string[] | null>(null);
-
-  // Initialize chat sessions in the store on mount
-  useEffect(() => {
-    if (existingData.length > 0) {
-      const uniqueSessions = existingData.filter(
-        (session) => !chatSessions.some((existing) => existing.id === session.id)
-      );
-      if (uniqueSessions.length > 0) {
-        useChatStore.setState({ chatSessions: [...chatSessions, ...uniqueSessions] });
-      }
-    }
-  }, [existingData]);
 
   // Sort sessions: pinned first, then by updated_at
   const sortedSessions = [...chatSessions].sort((a, b) => {
@@ -71,10 +60,11 @@ export const ChatAppSidebarV2 = ({ existingData, sessionId }: { existingData: Ch
   const handleNewChat = () => {
     const newSessionId = crypto.randomUUID();
     setMessages([]);
+    setIsLoadingChatHistory(true);
     setSessionId(newSessionId);
     const newSession = {
       id: newSessionId,
-      name: "HELLOOOOOO",
+      name: "New Chat",
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
       chat_history: [],
@@ -165,15 +155,19 @@ export const ChatAppSidebarV2 = ({ existingData, sessionId }: { existingData: Ch
           />
         )}
 
-        <Link
-          href={`/?session=${session.id}`}
+        <Button
+          unstyled
           className={cn(
             "flex-1 py-2 px-3 rounded-md text-sm text-foreground/80 hover:bg-primary/5 hover:text-primary transition-colors truncate",
             {
               "bg-primary/10 text-primary font-medium": session.id === sessionId,
             }
           )}
-          onClick={() => setMobileSidebarOpen(false)}
+          onClick={() => {
+            setIsLoadingChatHistory(true);
+            setMobileSidebarOpen(false);
+            router.push(`/?session=${session.id}`);
+          }}
         >
           <div className="flex items-center gap-2">
             {session.pinned && <Pin className="h-3 w-3 text-muted-foreground" />}
@@ -186,7 +180,7 @@ export const ChatAppSidebarV2 = ({ existingData, sessionId }: { existingData: Ch
               </TooltipContent>
             </Tooltip>
           </div>
-        </Link>
+        </Button>
 
         {!isSelectionMode && (
           <DropdownMenu>

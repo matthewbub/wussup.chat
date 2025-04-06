@@ -35,28 +35,32 @@ export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof buttonVariants> {
   asChild?: boolean;
+  unstyled?: boolean;
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, ...props }, ref) => {
+  ({ className, variant, size, asChild = false, unstyled = false, ...props }, ref) => {
     const Comp = asChild ? Slot : "button";
-    return <Comp className={cn(buttonVariants({ variant, size, className }))} ref={ref} {...props} />;
+    return (
+      <Comp className={unstyled ? className : cn(buttonVariants({ variant, size, className }))} ref={ref} {...props} />
+    );
   }
 );
 Button.displayName = "Button";
 
 interface ButtonDivProps extends React.HTMLAttributes<HTMLDivElement>, VariantProps<typeof buttonVariants> {
   asChild?: boolean;
+  unstyled?: boolean;
 }
 
 const ButtonDiv = React.forwardRef<HTMLDivElement, ButtonDivProps>(
-  ({ className, variant, size, asChild = false, role = "button", ...props }, ref) => {
+  ({ className, variant, size, asChild = false, role = "button", unstyled = false, ...props }, ref) => {
     const Comp = asChild ? Slot : "div";
     return (
       <Comp
         role={role}
         tabIndex={0}
-        className={cn(buttonVariants({ variant, size, className }))}
+        className={unstyled ? className : cn(buttonVariants({ variant, size, className }))}
         ref={ref}
         {...props}
       />

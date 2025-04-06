@@ -16,6 +16,7 @@ import {
 import { IconSidebar } from "@/components/IconSidebar";
 import { SubscriptionStatus } from "@/lib/subscription/subscription-facade";
 import { SessionWrapper } from "./session-wrapper";
+import { Loader2 } from "lucide-react";
 
 const ChatAppV3 = ({
   existingData,
@@ -43,6 +44,7 @@ const ChatAppV3 = ({
     updateSessionTitle,
     setModel,
     chatSessions,
+    isLoadingChatHistory,
   } = useChatStore();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -145,6 +147,11 @@ const ChatAppV3 = ({
           <div className="flex-1 overflow-y-auto">
             <ChatAppMessages messages={messages} />
           </div>
+          {isLoadingChatHistory && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <Loader2 className="w-4 h-4 animate-spin" />
+            </div>
+          )}
           <ChatAppInput
             currentInput={currentInput}
             setInput={setInput}
