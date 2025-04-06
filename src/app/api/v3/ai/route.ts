@@ -6,7 +6,9 @@ import { LanguageModelV1, streamText } from "ai";
 import { NextResponse } from "next/server";
 import { AVAILABLE_MODELS } from "@/constants/models";
 import * as Sentry from "@sentry/nextjs";
-import { getUser, upsertUserByIdentifier } from "@/lib/server-utils";
+import { getUser, upsertUserByIdentifier } from "@/lib/auth/auth-utils";
+import { quotaManager } from "@/lib/quota/init";
+import { checkQuotaMiddleware } from "@/lib/quota/middleware";
 
 export async function POST(req: Request) {
   try {
@@ -14,7 +16,13 @@ export async function POST(req: Request) {
     const userData = await upsertUserByIdentifier(user);
 
     if ("error" in userData) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: userData.error }, { status: 500 });
+    }
+
+    const quotaError = await checkQuotaMiddleware(userData.id, quotaManager);
+
+    if (quotaError) {
+      return NextResponse.json({ error: quotaError }, { status: 429 });
     }
 
     const formData = await req.formData();

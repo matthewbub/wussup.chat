@@ -1,36 +1,19 @@
-import ChatAppV3 from "@/components/chat-app/chat-app";
-import { ChatFacade } from "@/lib/chat-facade";
-import * as Sentry from "@sentry/nextjs";
 import { headers } from "next/headers";
-import { Suspense } from "react";
-import { getUserFromHeaders, upsertUserByIdentifier } from "@/lib/server-utils";
+import ChatAppV3 from "@/components/chat-app/chat-app";
+import { getChatSessions } from "@/lib/chat/chat-utils";
+import { getUserFromHeaders, upsertUserByIdentifier } from "@/lib/auth/auth-utils";
 import { subscriptionFacade } from "@/lib/subscription/init";
 
-export default async function Page() {
-  const headersList = await headers();
-  const userInfo = await getUserFromHeaders(headersList);
+export default async function Home() {
+  const userInfo = await getUserFromHeaders(headers());
   const user = await upsertUserByIdentifier(userInfo);
 
   if ("error" in user) {
     return <div>Error: {user.error}</div>;
   }
-  const result = await ChatFacade.getChatSessions();
+
+  const result = await getChatSessions();
   const userSubscriptionInfo = await subscriptionFacade.getSubscriptionStatus(user.id);
 
-  if ("error" in result) {
-    Sentry.captureException(result.error);
-    return (
-      <div>
-        <Suspense fallback={<div>Loading...</div>}>
-          <ChatAppV3 existingData={[]} userSubscriptionInfo={userSubscriptionInfo} />
-        </Suspense>
-      </div>
-    );
-  }
-
-  return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <ChatAppV3 existingData={result.data ?? []} userSubscriptionInfo={userSubscriptionInfo} />
-    </Suspense>
-  );
+  return <ChatAppV3 existingData={result.data || []} userSubscriptionInfo={userSubscriptionInfo} />;
 }

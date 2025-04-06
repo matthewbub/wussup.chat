@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
-import { getUser, upsertUserByIdentifier } from "@/lib/server-utils";
+import { getUser, upsertUserByIdentifier } from "@/lib/auth/auth-utils";
 import { StripeCheckoutService } from "@/lib/subscription/stripe-checkout-service";
+import { handleSubscriptionError } from "@/lib/subscription/subscription-helpers";
 
 export async function POST(req: Request) {
   try {
@@ -12,17 +13,11 @@ export async function POST(req: Request) {
     }
 
     const { priceId } = await req.json();
-
-    // Create checkout session
     const result = await StripeCheckoutService.createCheckoutSession(userData.id, priceId);
-
-    if (!result.success) {
-      return NextResponse.json({ error: result.error }, { status: 400 });
-    }
 
     return NextResponse.json({ url: result.url });
   } catch (error) {
-    console.error("[stripe]", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    handleSubscriptionError(error, "api-create-checkout-session");
+    return NextResponse.json({ error: "Failed to create checkout session" }, { status: 500 });
   }
 }

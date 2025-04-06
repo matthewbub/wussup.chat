@@ -1,14 +1,12 @@
 import SubscriptionSettings from "./_SubscriptionPage";
-import { getUserFromHeaders } from "@/lib/server-utils";
-import { subscriptionFacade } from "@/lib/subscription/init";
 import { headers } from "next/headers";
+import { getUserFromHeaders, upsertUserByIdentifier } from "@/lib/auth/auth-utils";
+import { subscriptionFacade } from "@/lib/subscription/init";
 import Footer from "@/components/Footer";
 import { StaticSidebar } from "@/components/sidebar";
-import { upsertUserByIdentifier } from "@/lib/server-utils";
 
-export default async function Page() {
-  const headersList = await headers();
-  const userInfo = await getUserFromHeaders(headersList);
+export default async function SettingsPage() {
+  const userInfo = await getUserFromHeaders(headers());
   const user = await upsertUserByIdentifier(userInfo);
 
   if ("error" in user) {

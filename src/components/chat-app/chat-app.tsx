@@ -7,10 +7,17 @@ import { ChatAppSidebarV2 } from "@/components/chat-app/sidebar";
 import { ChatAppMobileSidebarV2 } from "@/components/chat-app/mobile-sidebar";
 import { NewMessage, useChatStore } from "@/store/chat-store";
 import * as Sentry from "@sentry/nextjs";
-import { facade, processStreamingResponse } from "@/lib/utils";
+import {
+  createHumanMessage,
+  createAiMessage,
+  fetchAiMessage,
+  postChatInfo,
+  processStreamingResponse,
+} from "@/lib/format/format-utils";
 import { useSearchParams } from "next/navigation";
 import { IconSidebar } from "@/components/IconSidebar";
 import { SubscriptionStatus } from "@/lib/subscription/subscription-facade";
+import { generateAndUpdateTitle } from "@/lib/chat/chat-utils";
 
 const ChatAppV3 = ({
   existingData,
@@ -69,29 +76,34 @@ const ChatAppV3 = ({
     // reject if no input or loading
     if (!currentInput.trim() || isLoading) return;
 
-    addMessage(facade.humanMessage(currentInput));
+    addMessage(createHumanMessage(currentInput));
     setInput("");
 
     setLoading(true);
 
     try {
       // Add empty AI message that will be streamed
-      const aiMessage = facade.aiMessage("");
+      const aiMessage = createAiMessage("");
       addMessage(aiMessage);
 
       const isFirstMessage = messages.length === 0;
       // Only proceed with title and message generation if quota check passes
       if (isFirstMessage) {
-        const titleData = await facade.updateSessionTitle(sessionId, currentInput);
+        const titleData = await generateAndUpdateTitle(sessionId, currentInput);
         updateSessionTitle(sessionId, titleData.title || "New Chat");
       }
 
-      const response = await facade.fetchAiMessage({
+      const response = await fetchAiMessage({
         input: currentInput,
         model: selectedModel.id,
         provider: selectedModel.provider,
-        messages,
+        messages: messages.map((msg) => ({
+          id: crypto.randomUUID(),
+          content: msg.content,
+          role: msg.role,
+        })),
         sessionId,
+        checkOnly: false,
       });
 
       if (!response.ok) throw new Error("Failed to send message");
@@ -106,7 +118,7 @@ const ChatAppV3 = ({
         },
         // Handle metadata (usage info) when stream completes
         (usage: { promptTokens: number; completionTokens: number }) =>
-          facade.postChatInfo({
+          postChatInfo({
             sessionId,
             aiMessage,
             currentInput,

@@ -2,13 +2,15 @@ import { auth, currentUser } from "@clerk/nextjs/server";
 import { supabase } from "@/lib/supabase";
 import { tableNames } from "@/constants/tables";
 import * as Sentry from "@sentry/nextjs";
+import { headers } from "next/headers";
 
 /**
  * Get IP address from X-Forwarded-For header or fall back to the direct connection IP
  */
-export async function getIpAddress(headersList: Headers) {
-  const forwardedFor = await headersList.get("x-forwarded-for");
-  const realIp = await headersList.get("x-real-ip");
+export async function getIpAddress(headersList: Headers | ReturnType<typeof headers>) {
+  const headers = headersList instanceof Headers ? headersList : await headersList;
+  const forwardedFor = headers.get("x-forwarded-for");
+  const realIp = headers.get("x-real-ip");
   return forwardedFor ?? realIp ?? "Unknown";
 }
 
@@ -32,14 +34,14 @@ export async function getUser(
 
   return {
     userId: ip,
-    type: "user_ip", // For non-authenticated users, we use IP as email as before
+    type: "user_ip",
   };
 }
 
 /**
  * Get user from clerk or request headers (server component)
  */
-export async function getUserFromHeaders(headersList: Headers) {
+export async function getUserFromHeaders(headersList: ReturnType<typeof headers>) {
   const { userId } = await auth();
   const ip = await getIpAddress(headersList);
 
@@ -60,31 +62,6 @@ export async function getUserFromHeaders(headersList: Headers) {
 
 /**
  * Upserts a user record in the database based on their identifier (Clerk ID or IP address)
- *
- * This function performs the following:
- * 1. Looks up a user by their identifier (Clerk ID or IP)
- * 2. If found and email is missing for Clerk users, updates the email
- * 3. If not found, creates a new user record
- *
- * @param {Object} user - The user information
- * @param {string} user.type - The type of identifier ('clerk_user_id' or 'user_ip')
- * @param {string} user.userId - The unique identifier (either Clerk ID or IP address)
- * @param {string} [user.email] - Optional email address, required for Clerk users
- * @returns {Promise<{id: string} | {error: string}>} Object containing either the user ID or an error message
- *
- * @example
- * // For authenticated Clerk users
- * const result = await upsertUserByIdentifier({
- *   type: 'clerk_user_id',
- *   userId: 'clerk_123',
- *   email: 'user@example.com'
- * });
- *
- * // For unauthenticated users (IP-based)
- * const result = await upsertUserByIdentifier({
- *   type: 'user_ip',
- *   userId: '127.0.0.1'
- * });
  */
 export async function upsertUserByIdentifier(user: {
   type: string;
