@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase-server";
+import { supabase } from "@/lib/supabase";
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { auth } from "@clerk/nextjs/server";
@@ -6,7 +6,6 @@ import { auth } from "@clerk/nextjs/server";
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
 export async function GET() {
-  const supabase = await createClient();
   try {
     // Get the userId from Clerk auth
     const { userId } = await auth();

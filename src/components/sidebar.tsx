@@ -11,15 +11,19 @@ import { SignedIn, SignedOut, SignInButton, SignUpButton, UserButton, useUser } 
 import { useTheme } from "next-themes";
 import { dark } from "@clerk/themes";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/Tooltip";
+import { useChatStore } from "@/store/chat-store";
 
 export const StaticSidebar = () => {
   const router = useRouter();
   const pathName = usePathname();
   const { theme } = useTheme();
   const { user } = useUser();
+  const { setSessionId, setMessages } = useChatStore();
 
   const handleNewChat = () => {
     const newSessionId = crypto.randomUUID();
+    setSessionId(newSessionId);
+    setMessages(null);
     router.push(`/?session=${newSessionId}`);
   };
 

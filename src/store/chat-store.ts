@@ -80,11 +80,13 @@ export const useChatStore = create<ChatStore>((set) => ({
   setMessages: (messages) => set({ messages }),
   addMessage: (message) =>
     set((state) => ({
-      messages: [...state.messages, message],
+      messages: [...(state.messages || []), message],
     })),
   updateLastMessage: (content) =>
     set((state) => ({
-      messages: state.messages.map((msg, idx) => (idx === state.messages.length - 1 ? { ...msg, content } : msg)),
+      messages: state.messages?.map((msg, idx) =>
+        idx === (state.messages?.length || 0) - 1 ? { ...msg, content } : msg
+      ),
     })),
   setLoading: (loading) => set({ isLoading: loading }),
   setModel: (model) => set({ selectedModel: model }),

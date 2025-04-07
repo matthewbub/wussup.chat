@@ -63,7 +63,7 @@ const ChatAppV3 = ({
       const aiMessage = createAiMessage("");
       addMessage(aiMessage);
 
-      const isFirstMessage = messages.length === 0;
+      const isFirstMessage = messages && messages.length === 0;
       // Only proceed with title and message generation if quota check passes
       if (isFirstMessage) {
         const response = await fetch("/api/v3/title", {
@@ -87,11 +87,12 @@ const ChatAppV3 = ({
         input: currentInput,
         model: selectedModel.id,
         provider: selectedModel.provider,
-        messages: messages.map((msg) => ({
-          id: crypto.randomUUID(),
-          content: msg.content,
-          role: msg.role,
-        })),
+        messages:
+          messages?.map((msg) => ({
+            id: crypto.randomUUID(),
+            content: msg.content,
+            role: msg.role,
+          })) || [],
         sessionId,
       });
 
@@ -145,7 +146,7 @@ const ChatAppV3 = ({
 
         <main className="flex-1 flex flex-col min-w-0 relative">
           <div className="flex-1 overflow-y-auto">
-            <ChatAppMessages messages={messages} />
+            <ChatAppMessages messages={messages || []} />
           </div>
           {isLoadingChatHistory && (
             <div className="absolute inset-0 flex items-center justify-center">

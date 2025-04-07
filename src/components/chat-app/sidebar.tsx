@@ -46,35 +46,19 @@ export const ChatAppSidebarV2 = ({ existingData, sessionId }: { existingData: Ch
   const [newTitle, setNewTitle] = useState("");
   const [confirmDelete, setConfirmDelete] = useState<string | string[] | null>(null);
 
-  // Sort sessions: pinned first, then by updated_at
-  const sortedSessions = [...chatSessions].sort((a, b) => {
-    if (a.pinned && !b.pinned) return -1;
-    if (!a.pinned && b.pinned) return 1;
-    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-  });
+  const sortedSessions = [...chatSessions].sort(
+    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  );
 
-  // Group sessions by pinned and others
   const pinnedSessions = sortedSessions.filter((session) => session.pinned);
   const otherSessions = sortedSessions.filter((session) => !session.pinned);
 
   const handleNewChat = () => {
     const newSessionId = crypto.randomUUID();
-    setMessages(null);
-    setIsLoadingChatHistory(true);
     setSessionId(newSessionId);
-    const newSession = {
-      id: newSessionId,
-      name: "New Chat",
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      chat_history: [],
-      existsInDb: false,
-    };
-    useChatStore.setState((state) => ({
-      chatSessions: [...state.chatSessions, newSession],
-    }));
-    router.push(`/?session=${newSessionId}`);
+    setMessages(null);
     setMobileSidebarOpen(false);
+    router.push(`/?session=${newSessionId}`);
   };
 
   const handleRename = (id: string, currentName: string) => {

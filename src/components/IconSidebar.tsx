@@ -26,7 +26,7 @@ export const navItemsSecondary: NavItem[] = [
 ];
 
 export function IconSidebar() {
-  const theme = useTheme();
+  const { theme } = useTheme();
 
   return (
     <div className="hidden md:flex flex-col items-center justify-between w-16 h-full bg-background border-r border-border py-4 sticky top-0">

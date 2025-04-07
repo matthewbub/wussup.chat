@@ -32,14 +32,16 @@ export async function updateChatTitle(sessionId: string, title: string, req?: Re
   try {
     const userId = await getUserId(req);
 
-    const { error } = await supabase
-      .from(tableNames.CHAT_SESSIONS)
-      .update({ name: title, updated_at: new Date() })
-      .eq("id", sessionId)
-      .eq("user_id", userId);
+    // First ensure the session exists
+    const { error: sessionError } = await supabase.from(tableNames.CHAT_SESSIONS).upsert({
+      id: sessionId,
+      user_id: userId,
+      name: title,
+      updated_at: new Date(),
+    });
 
-    if (error) {
-      Sentry.captureException(error);
+    if (sessionError) {
+      Sentry.captureException(sessionError);
       return { error: "Failed to update chat title" };
     }
 

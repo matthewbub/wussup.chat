@@ -7,8 +7,8 @@ import { supabase } from "@/lib/supabase";
 import Sentry from "@sentry/nextjs";
 import { formatChatHistory } from "@/lib/format/format-utils";
 
-export default async function Home({ searchParams }: { searchParams: { session?: string } }) {
-  const session = searchParams.session;
+export default async function Home({ searchParams }: { searchParams: Promise<{ session?: string }> }) {
+  const session = (await searchParams).session;
   const userInfo = await getUserFromHeaders(headers());
   const user = await upsertUserByIdentifier(userInfo);
 
@@ -16,17 +16,19 @@ export default async function Home({ searchParams }: { searchParams: { session?:
     return <div>Error: {user.error}</div>;
   }
 
-  const [{ data: sessionsData, error: sessionsError }, { data: chatsData, error: chatsError }] = await Promise.all([
+  const [{ data: sessionsData, error: sessionsError }, chatsData] = await Promise.all([
     supabase
       .from(tableNames.CHAT_SESSIONS)
       .select("*")
       .eq("user_id", user.id)
       .order("updated_at", { ascending: false }),
-    supabase.from(tableNames.CHAT_MESSAGES).select("*").eq("user_id", user.id).eq("chat_session_id", session),
+    session
+      ? supabase.from(tableNames.CHAT_MESSAGES).select("*").eq("user_id", user.id).eq("chat_session_id", session)
+      : null,
   ]);
 
-  if (sessionsError || chatsError) {
-    Sentry.captureException(sessionsError || chatsError);
+  if (sessionsError || chatsData?.error) {
+    Sentry.captureException(sessionsError || chatsData?.error);
     return { error: "Failed to fetch chat data" };
   }
 
@@ -34,7 +36,9 @@ export default async function Home({ searchParams }: { searchParams: { session?:
     ...session,
     created_at: new Date(session.created_at).toISOString(),
     updated_at: new Date(session.updated_at).toISOString(),
-    chat_history: formatChatHistory(chatsData?.filter((chat) => chat.chat_session_id === session.id) || []),
+    chat_history: session
+      ? formatChatHistory(chatsData?.data?.filter((chat) => chat.chat_session_id === session.id) || [])
+      : [],
   }));
 
   const userSubscriptionInfo = await subscriptionFacade.getSubscriptionStatus(user.id);

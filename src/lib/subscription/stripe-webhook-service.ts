@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase-server";
+import { supabase } from "@/lib/supabase";
 import { tableNames } from "@/constants/tables";
 import Stripe from "stripe";
 import {
@@ -16,8 +16,6 @@ export class StripeWebhookService {
    * Process a checkout session completion
    */
   static async handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) {
-    const supabase = await createClient();
-
     try {
       // 1. Check if we've already processed this session
       const { data: existingSession, error: existingSessionError } = await supabase
@@ -86,8 +84,6 @@ export class StripeWebhookService {
    * Process a subscription update
    */
   static async handleSubscriptionUpdated(subscription: Stripe.Subscription) {
-    const supabase = await createClient();
-
     try {
       // Verify the subscription has userId metadata
       if (!subscription.metadata.userId) {
@@ -119,8 +115,6 @@ export class StripeWebhookService {
    * Process a subscription cancellation
    */
   static async handleSubscriptionCancelled(subscription: Stripe.Subscription) {
-    const supabase = await createClient();
-
     try {
       // Verify the subscription has userId metadata or find it
       let userId = subscription.metadata.userId;

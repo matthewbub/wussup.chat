@@ -1,14 +1,12 @@
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
-import { createClient } from "@/lib/supabase-server";
+import { supabase } from "@/lib/supabase";
 import { auth } from "@clerk/nextjs/server";
-
+import { tableNames } from "@/constants/tables";
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
 export async function GET() {
   try {
-    const supabase = await createClient();
-    // Get the userId from Clerk auth
     const { userId } = await auth();
 
     if (!userId) {
@@ -17,7 +15,7 @@ export async function GET() {
 
     // Get the user's Stripe customer ID from your database
     const { data: userData, error: userError } = await supabase
-      .from("ChatBot_Users")
+      .from(tableNames.USERS)
       .select("stripeCustomerId")
       .eq("clerk_user_id", userId)
       .single();

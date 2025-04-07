@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase-server";
+import { supabase } from "@/lib/supabase";
 import { tableNames } from "@/constants/tables";
 import Stripe from "stripe";
 import { handleSubscriptionError } from "./subscription-helpers";
@@ -19,7 +19,6 @@ export class StripeSubscriptionService {
    * @returns Response with success/failure and message
    */
   static async cancelSubscription(userId: string): Promise<CancellationResponse> {
-    const supabase = await createClient();
     try {
       // 1. Get the user's subscription information
       const { data: userData, error: userError } = await supabase
