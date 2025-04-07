@@ -3,7 +3,7 @@
 import type React from "react";
 
 import { cn } from "@/lib/utils";
-import { Home, Settings, HelpCircle } from "lucide-react";
+import { Home, Settings, HelpCircle, UserIcon } from "lucide-react";
 import Link from "next/link";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/Tooltip";
 import { SignedIn, SignedOut, SignInButton, SignUpButton, UserButton } from "@clerk/nextjs";
@@ -84,16 +84,11 @@ export function IconSidebar() {
         <div className="flex flex-col items-center w-full space-y-4 mt-4">
           <ThemeToggle />
           <SignedOut>
-            <SignInButton>
-              <Button variant="ghost" className="w-full">
-                Sign In
+            <SignInButton mode="modal">
+              <Button variant="ghost" size="icon" className="w-10 h-10">
+                <UserIcon className="h-5 w-5" />
               </Button>
             </SignInButton>
-            <SignUpButton>
-              <Button variant="default" className="w-full">
-                Sign Up
-              </Button>
-            </SignUpButton>
           </SignedOut>
           <SignedIn>
             <UserButton
