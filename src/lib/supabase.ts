@@ -3,4 +3,4 @@ import { createClient } from "@supabase/supabase-js";
 /**
  * this is only going to work on the server
  */
-export const supabase = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_ANON!);
+export const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!);
