@@ -63,7 +63,7 @@ const ChatAppV3 = ({
       const aiMessage = createAiMessage("");
       addMessage(aiMessage);
 
-      const isFirstMessage = messages && messages.length === 0;
+      const isFirstMessage = (messages && messages.length === 0) || messages === null;
       // Only proceed with title and message generation if quota check passes
       if (isFirstMessage) {
         const response = await fetch("/api/v3/title", {
