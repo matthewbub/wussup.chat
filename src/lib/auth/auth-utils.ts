@@ -108,12 +108,16 @@ export async function upsertUserByIdentifier(user: {
     }
 
     if (!userData) {
+      // For user_ip type, generate a unique email by adding timestamp
+      const uniqueEmail =
+        user.type === "user_ip" ? `${user.userId}_${Date.now()}@anonymous.user` : user.email || user.userId;
+
       const { data: newUser, error: createError } = await supabase
         .from(tableNames.USERS)
         .insert([
           {
             ...initialUser,
-            email: user.email || user.userId,
+            email: uniqueEmail,
           },
         ])
         .select()

@@ -107,13 +107,27 @@ const ChatAppV3 = ({
           updateLastMessage(aiMessage.content);
         },
         // Handle metadata (usage info) when stream completes
-        (usage: { promptTokens: number; completionTokens: number }) =>
-          postChatInfo({
-            sessionId,
-            aiMessage,
-            currentInput,
-            usage,
-          })
+        (usage: { promptTokens: number; completionTokens: number }) => {
+          const fetchInfo = async () => {
+            const res = await fetch("/api/v3/info", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                sessionId,
+                aiMessage: {
+                  ...aiMessage,
+                  input: currentInput,
+                  output: aiMessage.content,
+                  prompt_tokens: usage.promptTokens,
+                  completion_tokens: usage.completionTokens,
+                },
+              }),
+            });
+            const data = await res.json();
+            console.log("data", data);
+          };
+          fetchInfo();
+        }
       );
     } catch (error: unknown) {
       console.error("Error:", error);

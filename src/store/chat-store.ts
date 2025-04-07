@@ -94,11 +94,44 @@ export const useChatStore = create<ChatStore>((set) => ({
   chatTitle: "",
   setChatSessions: (sessions) => set({ chatSessions: sessions }),
   updateSessionTitle: async (sessionId, newTitle) => {
-    set((state) => ({
-      chatSessions: state.chatSessions.map((session) =>
-        session.id === sessionId ? { ...session, name: newTitle } : session
-      ),
-    }));
+    // Get the current state
+    const state = useChatStore.getState();
+
+    // Find the session to update
+    const sessionIndex = state.chatSessions.findIndex((session) => session.id === sessionId);
+
+    if (sessionIndex === -1) {
+      // Create a new session if it doesn't exist
+      const newSession: ChatSession = {
+        id: sessionId,
+        name: newTitle,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        chat_history: [],
+        pinned: false,
+        existsInDb: false,
+      };
+
+      // Add the new session to the state
+      set((state) => ({
+        chatSessions: [...state.chatSessions, newSession],
+      }));
+      return;
+    }
+
+    // Create a new session object with updated values
+    const updatedSession = {
+      ...state.chatSessions[sessionIndex],
+      name: newTitle,
+      updated_at: new Date().toISOString(),
+    };
+
+    // Update the state immutably
+    set((state) => {
+      const newChatSessions = [...state.chatSessions];
+      newChatSessions[sessionIndex] = updatedSession; // Replace the old session with the updated one
+      return { chatSessions: newChatSessions };
+    });
   },
 
   updateSessionTitleWithDb: async (sessionId, newTitle) => {
