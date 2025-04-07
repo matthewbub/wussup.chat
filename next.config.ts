@@ -4,6 +4,13 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   /* config options here */
   devIndicators: false,
+  images: {
+    remotePatterns: [
+      {
+        hostname: "ywua85ya54.ufs.sh",
+      },
+    ],
+  },
 };
 
 export default withSentryConfig(nextConfig, {

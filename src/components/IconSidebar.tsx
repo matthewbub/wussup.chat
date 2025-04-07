@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import { Home, Settings, HelpCircle, UserIcon } from "lucide-react";
 import Link from "next/link";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/Tooltip";
-import { SignedIn, SignedOut, SignInButton, SignUpButton, UserButton } from "@clerk/nextjs";
+import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
 import { Button } from "./ui/button";
 import { ThemeToggle } from "@/app/theme-toggle";
 import { useTheme } from "next-themes";
