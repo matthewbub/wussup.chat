@@ -6,15 +6,14 @@ import { LanguageModelV1, streamText } from "ai";
 import { NextResponse } from "next/server";
 import { AVAILABLE_MODELS } from "@/constants/models";
 import * as Sentry from "@sentry/nextjs";
-import { getUser, upsertUserByIdentifier } from "@/lib/auth/auth-utils";
+import { getUserId } from "@/lib/chat/chat-utils";
 
 export async function POST(req: Request) {
   try {
-    const user = await getUser(req);
-    const userData = await upsertUserByIdentifier(user);
+    const userId = await getUserId(req);
 
-    if ("error" in userData) {
-      return NextResponse.json({ error: userData.error }, { status: 500 });
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const formData = await req.formData();

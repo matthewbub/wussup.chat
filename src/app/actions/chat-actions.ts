@@ -7,7 +7,6 @@ import {
   deleteMultipleSessions,
   getChatSessions,
   togglePinSession,
-  generateAndUpdateTitle,
   checkQuota,
   duplicateSession,
 } from "@/lib/chat/chat-utils";
@@ -58,15 +57,6 @@ export async function getSessions() {
  */
 export async function togglePin(sessionId: string) {
   return togglePinSession(sessionId);
-}
-
-/**
- * Generates a title for a chat session using AI and updates it
- * @param sessionId The ID of the chat session
- * @param currentInput The current user input to base the title on
- */
-export async function generateTitle(sessionId: string, currentInput: string) {
-  return generateAndUpdateTitle(sessionId, currentInput);
 }
 
 /**

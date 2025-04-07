@@ -4,16 +4,13 @@ import { headers } from "next/headers";
 import { getUser, upsertUserByIdentifier } from "@/lib/auth/auth-utils";
 import { tableNames } from "@/constants/tables";
 import * as Sentry from "@sentry/nextjs";
-import { openai } from "@ai-sdk/openai";
-import { generateText } from "ai";
-import clsx from "clsx";
 import { quotaManager } from "@/lib/quota/init";
 import { checkQuotaMiddleware } from "@/lib/quota/middleware";
 
 /**
  * Gets the user ID from the request or headers
  */
-async function getUserId(req?: Request): Promise<string> {
+export async function getUserId(req?: Request): Promise<string> {
   const headersList = req ? req.headers : await headers();
   const user = await getUser(req ?? ({ headers: headersList } as Request));
   const userData = await upsertUserByIdentifier(user);
@@ -33,13 +30,14 @@ export async function updateChatTitle(sessionId: string, title: string, req?: Re
     const userId = await getUserId(req);
 
     // First ensure the session exists
-    const { error: sessionError } = await supabase.from(tableNames.CHAT_SESSIONS).upsert({
-      id: sessionId,
-      user_id: userId,
-      name: title,
-      updated_at: new Date(),
-    });
-
+    const { error: sessionError } = await supabase
+      .from(tableNames.CHAT_SESSIONS)
+      .update({
+        name: title,
+        updated_at: new Date(),
+      })
+      .eq("id", sessionId)
+      .eq("user_id", userId);
     if (sessionError) {
       Sentry.captureException(sessionError);
       return { error: "Failed to update chat title" };
@@ -289,36 +287,6 @@ export async function togglePinSession(sessionId: string, req?: Request) {
   } catch (error) {
     Sentry.captureException(error);
     return { error: "Failed to toggle pin status" };
-  }
-}
-
-/**
- * Generates a title for a chat session using AI and updates it
- */
-export async function generateAndUpdateTitle(sessionId: string, currentInput: string, req?: Request) {
-  try {
-    const { text } = await generateText({
-      model: openai("gpt-4o-mini"),
-      prompt: clsx([
-        "You are a helpful assistant that generates a concise title for a chat session.",
-        "The only context you have at this point is the user's first message.",
-        "Please generate a concise title using up to 6 words.",
-        "Text only, no special characters.",
-        "Here's the first message: ",
-        currentInput,
-      ]),
-    });
-
-    const result = await updateChatTitle(sessionId, text, req);
-
-    if ("error" in result) {
-      return { error: result.error };
-    }
-
-    return { success: true, title: text };
-  } catch (error) {
-    Sentry.captureException(error);
-    return { error: "Failed to generate and update chat title" };
   }
 }
 
