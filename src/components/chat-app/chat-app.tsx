@@ -10,7 +10,6 @@ import {
   createHumanMessage,
   createAiMessage,
   fetchAiMessage,
-  postChatInfo,
   processStreamingResponse,
 } from "@/lib/format/format-utils";
 import { IconSidebar } from "@/components/IconSidebar";
