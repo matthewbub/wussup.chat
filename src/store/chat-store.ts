@@ -1,6 +1,5 @@
 import { openAiModels } from "@/constants/models";
 import { create } from "zustand";
-import { duplicateChat as duplicateSessionAction } from "@/app/actions/chat-actions";
 
 export type NewMessage = {
   content: string;
@@ -260,7 +259,16 @@ export const useChatStore = create<ChatStore>((set) => ({
     });
 
     try {
-      const result = await duplicateSessionAction(sessionId);
+      const data = await fetch("/api/v3/chat/duplicate", {
+        method: "POST",
+        body: JSON.stringify({ sessionId, newSessionId }),
+      });
+
+      if (!data.ok) {
+        throw new Error("Failed to duplicate session");
+      }
+
+      const result = await data.json();
 
       if ("error" in result) {
         // Revert the optimistic update on error
@@ -269,15 +277,6 @@ export const useChatStore = create<ChatStore>((set) => ({
         }));
         console.error("Failed to duplicate session:", result.error);
         return { success: false, error: result.error };
-      }
-
-      // Update the session ID in case the server generated a different one
-      if (result.sessionId !== newSessionId) {
-        set((state) => ({
-          chatSessions: state.chatSessions.map((session) =>
-            session.id === newSessionId ? { ...session, id: result.sessionId } : session
-          ),
-        }));
       }
 
       return { success: true };
