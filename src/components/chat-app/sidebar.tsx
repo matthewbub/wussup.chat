@@ -29,7 +29,7 @@ export const ChatAppSidebarV2 = ({ existingData, sessionId }: { existingData: Ch
     setSessionId,
     deleteSession,
     deleteMultipleSessions,
-    togglePinSession,
+    setPinStatus,
     duplicateSession,
     toggleChatSelection,
     selectAllChats,
@@ -188,7 +188,7 @@ export const ChatAppSidebarV2 = ({ existingData, sessionId }: { existingData: Ch
                 <Copy className="h-4 w-4 mr-2" />
                 Duplicate
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => togglePinSession(session.id)}>
+              <DropdownMenuItem onClick={() => setPinStatus(session.id, !session.pinned)}>
                 <Pin className="h-4 w-4 mr-2" />
                 {session.pinned ? "Unpin" : "Pin"}
               </DropdownMenuItem>

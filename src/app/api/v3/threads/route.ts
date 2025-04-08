@@ -5,7 +5,7 @@ import { tableNames } from "@/constants/tables";
 import { z } from "zod";
 
 /**
- * Update a thread's name
+ * Update a thread's name or pin status
  */
 export async function POST(req: Request) {
   const userId = await getUserId(req);
@@ -13,15 +13,40 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { threadId, name } = await req.json();
+  const { threadId, name, pin } = await req.json();
+  const updateSchema = z.object({
+    threadId: z.string().min(1),
+    name: z.string().min(1).optional(),
+    pin: z.boolean().optional(),
+  });
+  const result = updateSchema.safeParse({ threadId, name, pin });
+  if (!result.success) {
+    return NextResponse.json(
+      {
+        error: "Invalid request body",
+        details: result.error.issues,
+      },
+      { status: 400 }
+    );
+  }
 
-  if (!threadId || !name) {
-    return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+  let updateData: { name?: string; updated_at: Date; pinned?: boolean } = {
+    updated_at: new Date(),
+  };
+  if (name) {
+    updateData = { ...updateData, name };
+  }
+  if (typeof pin === "boolean") {
+    updateData = { ...updateData, pinned: pin };
+  }
+
+  if (!name && typeof pin !== "boolean") {
+    return NextResponse.json({ error: "No valid fields to update" }, { status: 400 });
   }
 
   const { data, error } = await supabase
     .from(tableNames.CHAT_SESSIONS)
-    .update({ name, updated_at: new Date() })
+    .update(updateData)
     .eq("id", threadId)
     .eq("user_id", userId)
     .select()

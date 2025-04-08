@@ -1,9 +1,6 @@
 import { openAiModels } from "@/constants/models";
 import { create } from "zustand";
-import {
-  togglePin as togglePinSessionAction,
-  duplicateChat as duplicateSessionAction,
-} from "@/app/actions/chat-actions";
+import { duplicateChat as duplicateSessionAction } from "@/app/actions/chat-actions";
 
 export type NewMessage = {
   content: string;
@@ -45,7 +42,6 @@ type ChatStore = {
   updateSessionTitle: (sessionId: string, newTitle: string) => void;
   deleteSession: (sessionId: string) => void;
   deleteMultipleSessions: (sessionIds: string[]) => void;
-  togglePinSession: (sessionId: string) => void;
   duplicateSession: (sessionId: string) => void;
   toggleChatSelection: (sessionId: string) => void;
   selectAllChats: () => void;
@@ -54,6 +50,7 @@ type ChatStore = {
   setMobileSidebarOpen: (isOpen: boolean) => void;
   updateSessionTitleWithDb: (sessionId: string, newTitle: string) => Promise<{ success: boolean; error?: string }>;
   setIsLoadingChatHistory: (isLoading: boolean) => void;
+  setPinStatus: (sessionId: string, pinStatus: boolean) => void;
 };
 
 const firstFreeModel = openAiModels.find((model) => model.free);
@@ -218,34 +215,26 @@ export const useChatStore = create<ChatStore>((set) => ({
     }
   },
 
-  togglePinSession: async (sessionId) => {
-    // Optimistically update the UI
+  setPinStatus: async (sessionId, pinStatus) => {
     set((state) => ({
       chatSessions: state.chatSessions.map((session) =>
-        session.id === sessionId ? { ...session, pinned: !session.pinned } : session
+        session.id === sessionId ? { ...session, pinned: pinStatus } : session
       ),
     }));
 
     try {
-      const result = await togglePinSessionAction(sessionId);
-
-      // If the server call failed, revert the optimistic update
-      if ("error" in result) {
-        set((state) => ({
-          chatSessions: state.chatSessions.map((session) =>
-            session.id === sessionId ? { ...session, pinned: !session.pinned } : session
-          ),
-        }));
-        console.error("Failed to toggle pin status:", result.error);
+      console.log("setting pin status", pinStatus);
+      const data = await fetch("/api/v3/threads", {
+        method: "POST",
+        body: JSON.stringify({ threadId: sessionId, pin: pinStatus }),
+      });
+      if (!data.ok) {
+        throw new Error("Failed to set pin status");
       }
+      const result = await data.json();
+      console.log("result", result);
     } catch (error) {
-      // Revert the optimistic update on error
-      set((state) => ({
-        chatSessions: state.chatSessions.map((session) =>
-          session.id === sessionId ? { ...session, pinned: !session.pinned } : session
-        ),
-      }));
-      console.error("Failed to toggle pin status:", error);
+      console.error("Failed to set pin status:", error);
     }
   },
 

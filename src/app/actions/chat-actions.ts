@@ -1,14 +1,6 @@
 "use server";
 
-import { togglePinSession, checkQuota, duplicateSession } from "@/lib/chat/chat-utils";
-
-/**
- * Toggles the pinned status of a chat session
- * @param sessionId The ID of the chat session to toggle pin status
- */
-export async function togglePin(sessionId: string) {
-  return togglePinSession(sessionId);
-}
+import { checkQuota, duplicateSession } from "@/lib/chat/chat-utils";
 
 /**
  * Checks if the user has exceeded their quota

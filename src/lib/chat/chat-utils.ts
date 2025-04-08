@@ -73,48 +73,6 @@ export async function storeChatMessage(
 }
 
 /**
- * Toggles the pinned status of a chat session
- */
-export async function togglePinSession(sessionId: string, req?: Request) {
-  try {
-    const userId = await getUserId(req);
-
-    // First get the current pinned status
-    const { data: session, error: fetchError } = await supabase
-      .from(tableNames.CHAT_SESSIONS)
-      .select("pinned")
-      .eq("id", sessionId)
-      .eq("user_id", userId)
-      .single();
-
-    if (fetchError) {
-      Sentry.captureException(fetchError);
-      return { error: "Failed to fetch chat session" };
-    }
-
-    // Toggle the pinned status
-    const { error: updateError } = await supabase
-      .from(tableNames.CHAT_SESSIONS)
-      .update({
-        pinned: !session?.pinned,
-        updated_at: new Date(),
-      })
-      .eq("id", sessionId)
-      .eq("user_id", userId);
-
-    if (updateError) {
-      Sentry.captureException(updateError);
-      return { error: "Failed to update pinned status" };
-    }
-
-    return { success: true, pinned: !session?.pinned };
-  } catch (error) {
-    Sentry.captureException(error);
-    return { error: "Failed to toggle pin status" };
-  }
-}
-
-/**
  * Check if the user has exceeded their quota
  */
 export async function checkQuota(req?: Request) {
