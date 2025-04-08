@@ -23,34 +23,6 @@ export async function getUserId(req?: Request): Promise<string> {
 }
 
 /**
- * Updates a chat session's title
- */
-export async function updateChatTitle(sessionId: string, title: string, req?: Request) {
-  try {
-    const userId = await getUserId(req);
-
-    // First ensure the session exists
-    const { error: sessionError } = await supabase
-      .from(tableNames.CHAT_SESSIONS)
-      .update({
-        name: title,
-        updated_at: new Date(),
-      })
-      .eq("id", sessionId)
-      .eq("user_id", userId);
-    if (sessionError) {
-      Sentry.captureException(sessionError);
-      return { error: "Failed to update chat title" };
-    }
-
-    return { success: true };
-  } catch (error) {
-    Sentry.captureException(error);
-    return { error: "Failed to update chat title" };
-  }
-}
-
-/**
  * Creates a new chat session
  */
 export async function createChatSession(sessionId: string, req?: Request) {

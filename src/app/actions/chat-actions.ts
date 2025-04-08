@@ -1,7 +1,6 @@
 "use server";
 
 import {
-  updateChatTitle,
   createChatSession,
   deleteChatSession,
   deleteMultipleSessions,
@@ -10,15 +9,6 @@ import {
   checkQuota,
   duplicateSession,
 } from "@/lib/chat/chat-utils";
-
-/**
- * Updates a chat session title on the server
- * @param sessionId The ID of the chat session to update
- * @param title The new title for the chat session
- */
-export async function updateTitle(sessionId: string, title: string) {
-  return updateChatTitle(sessionId, title);
-}
 
 /**
  * Creates a new chat session

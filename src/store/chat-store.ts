@@ -4,7 +4,6 @@ import {
   deleteSession as deleteChatSession,
   deleteSessions as deleteMultipleSessions,
   togglePin as togglePinSessionAction,
-  updateTitle as updateChatTitle,
   duplicateChat as duplicateSessionAction,
 } from "@/app/actions/chat-actions";
 
@@ -144,17 +143,18 @@ export const useChatStore = create<ChatStore>((set) => ({
     }));
 
     try {
-      const result = await updateChatTitle(sessionId, newTitle);
-      if ("error" in result) {
-        // Revert state on error
-        set((state) => ({
-          chatSessions: state.chatSessions.map((session) =>
-            session.id === sessionId ? { ...session, name: state.chatTitle } : session
-          ),
-        }));
-        console.error("Failed to update chat title:", result.error);
-        return { success: false, error: result.error };
+      const data = await fetch("/api/v3/threads", {
+        method: "POST",
+        body: JSON.stringify({ threadId: sessionId, name: newTitle }),
+      });
+
+      if (!data.ok) {
+        throw new Error("Failed to update chat title");
       }
+
+      const result = await data.json();
+      console.log("result", result);
+
       return { success: true };
     } catch (error) {
       // Revert state on error
