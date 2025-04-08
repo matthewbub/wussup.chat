@@ -23,82 +23,6 @@ export async function getUserId(req?: Request): Promise<string> {
 }
 
 /**
- * Deletes a chat session and all its messages
- */
-export async function deleteChatSession(sessionId: string, req?: Request) {
-  try {
-    const userId = await getUserId(req);
-
-    // Delete all messages first due to foreign key constraint
-    const { error: messagesError } = await supabase
-      .from(tableNames.CHAT_MESSAGES)
-      .delete()
-      .eq("chat_session_id", sessionId)
-      .eq("user_id", userId);
-
-    if (messagesError) {
-      Sentry.captureException(messagesError);
-      return { error: "Failed to delete chat messages" };
-    }
-
-    // Then delete the session
-    const { error: sessionError } = await supabase
-      .from(tableNames.CHAT_SESSIONS)
-      .delete()
-      .eq("id", sessionId)
-      .eq("user_id", userId);
-
-    if (sessionError) {
-      Sentry.captureException(sessionError);
-      return { error: "Failed to delete chat session" };
-    }
-
-    return { success: true };
-  } catch (error) {
-    Sentry.captureException(error);
-    return { error: "Failed to delete chat session" };
-  }
-}
-
-/**
- * Deletes multiple chat sessions and their messages
- */
-export async function deleteMultipleSessions(sessionIds: string[], req?: Request) {
-  try {
-    const userId = await getUserId(req);
-
-    // Delete all messages first due to foreign key constraint
-    const { error: messagesError } = await supabase
-      .from(tableNames.CHAT_MESSAGES)
-      .delete()
-      .in("chat_session_id", sessionIds)
-      .eq("user_id", userId);
-
-    if (messagesError) {
-      Sentry.captureException(messagesError);
-      return { error: "Failed to delete chat messages" };
-    }
-
-    // Then delete the sessions
-    const { error: sessionError } = await supabase
-      .from(tableNames.CHAT_SESSIONS)
-      .delete()
-      .in("id", sessionIds)
-      .eq("user_id", userId);
-
-    if (sessionError) {
-      Sentry.captureException(sessionError);
-      return { error: "Failed to delete chat sessions" };
-    }
-
-    return { success: true };
-  } catch (error) {
-    Sentry.captureException(error);
-    return { error: "Failed to delete chat sessions" };
-  }
-}
-
-/**
  * Stores a chat message
  */
 export async function storeChatMessage(
@@ -145,53 +69,6 @@ export async function storeChatMessage(
   } catch (error) {
     Sentry.captureException(error);
     return { error: "Failed to store chat message" };
-  }
-}
-
-/**
- * Gets all chat sessions for a user
- */
-export async function getChatSessions(req?: Request) {
-  try {
-    const userId = await getUserId(req);
-
-    const [{ data: sessionsData, error: sessionsError }, { data: chatsData, error: chatsError }] = await Promise.all([
-      supabase
-        .from(tableNames.CHAT_SESSIONS)
-        .select("*")
-        .eq("user_id", userId)
-        .order("updated_at", { ascending: false }),
-      supabase.from(tableNames.CHAT_MESSAGES).select("*").eq("user_id", userId),
-    ]);
-
-    if (sessionsError || chatsError) {
-      Sentry.captureException(sessionsError || chatsError);
-      return { error: "Failed to fetch chat data" };
-    }
-
-    const formattedSessions = sessionsData?.map((session) => ({
-      ...session,
-      created_at: new Date(session.created_at).toISOString(),
-      updated_at: new Date(session.updated_at).toISOString(),
-      chat_history: chatsData
-        ?.filter((chat) => chat.chat_session_id === session.id)
-        .reduce((acc, chat) => {
-          const userMessage = {
-            role: "user",
-            content: chat.input,
-          };
-          const aiMessage = {
-            role: "assistant",
-            content: chat.output,
-          };
-          return [...acc, userMessage, aiMessage];
-        }, [] as { role: string; content: string }[]),
-    }));
-
-    return { data: formattedSessions };
-  } catch (error) {
-    Sentry.captureException(error);
-    return { error: "Failed to fetch chat sessions" };
   }
 }
 

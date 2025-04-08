@@ -1,36 +1,6 @@
 "use server";
 
-import {
-  deleteChatSession,
-  deleteMultipleSessions,
-  getChatSessions,
-  togglePinSession,
-  checkQuota,
-  duplicateSession,
-} from "@/lib/chat/chat-utils";
-
-/**
- * Deletes a chat session
- * @param sessionId The ID of the chat session to delete
- */
-export async function deleteSession(sessionId: string) {
-  return deleteChatSession(sessionId);
-}
-
-/**
- * Deletes multiple chat sessions
- * @param sessionIds The IDs of the chat sessions to delete
- */
-export async function deleteSessions(sessionIds: string[]) {
-  return deleteMultipleSessions(sessionIds);
-}
-
-/**
- * Gets all chat sessions for the current user
- */
-export async function getSessions() {
-  return getChatSessions();
-}
+import { togglePinSession, checkQuota, duplicateSession } from "@/lib/chat/chat-utils";
 
 /**
  * Toggles the pinned status of a chat session

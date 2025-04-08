@@ -1,8 +1,6 @@
 import { openAiModels } from "@/constants/models";
 import { create } from "zustand";
 import {
-  deleteSession as deleteChatSession,
-  deleteSessions as deleteMultipleSessions,
   togglePin as togglePinSessionAction,
   duplicateChat as duplicateSessionAction,
 } from "@/app/actions/chat-actions";
@@ -178,7 +176,17 @@ export const useChatStore = create<ChatStore>((set) => ({
     });
 
     try {
-      await deleteChatSession(sessionId);
+      const data = await fetch("/api/v3/threads", {
+        method: "DELETE",
+        body: JSON.stringify({ threadIdArray: [sessionId] }),
+      });
+
+      if (!data.ok) {
+        throw new Error("Failed to delete chat session");
+      }
+
+      const result = await data.json();
+      console.log("result", result);
     } catch (error) {
       console.error("Failed to delete chat session:", error);
     }
@@ -194,7 +202,17 @@ export const useChatStore = create<ChatStore>((set) => ({
     });
 
     try {
-      await deleteMultipleSessions(sessionIds);
+      const data = await fetch("/api/v3/threads", {
+        method: "DELETE",
+        body: JSON.stringify({ threadIdArray: sessionIds }),
+      });
+
+      if (!data.ok) {
+        throw new Error("Failed to delete chat sessions");
+      }
+
+      const result = await data.json();
+      console.log("result", result);
     } catch (error) {
       console.error("Failed to delete chat sessions:", error);
     }
