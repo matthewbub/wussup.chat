@@ -23,31 +23,6 @@ export async function getUserId(req?: Request): Promise<string> {
 }
 
 /**
- * Creates a new chat session
- */
-export async function createChatSession(sessionId: string, req?: Request) {
-  try {
-    const userId = await getUserId(req);
-
-    const { error } = await supabase.from(tableNames.CHAT_SESSIONS).insert({
-      id: sessionId,
-      user_id: userId,
-      name: "New Chat",
-    });
-
-    if (error) {
-      Sentry.captureException(error);
-      return { error: "Failed to create chat session" };
-    }
-
-    return { success: true };
-  } catch (error) {
-    Sentry.captureException(error);
-    return { error: "Failed to create chat session" };
-  }
-}
-
-/**
  * Deletes a chat session and all its messages
  */
 export async function deleteChatSession(sessionId: string, req?: Request) {

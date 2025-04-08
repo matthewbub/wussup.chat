@@ -1,7 +1,6 @@
 "use server";
 
 import {
-  createChatSession,
   deleteChatSession,
   deleteMultipleSessions,
   getChatSessions,
@@ -9,14 +8,6 @@ import {
   checkQuota,
   duplicateSession,
 } from "@/lib/chat/chat-utils";
-
-/**
- * Creates a new chat session
- * @param sessionId The ID of the new chat session
- */
-export async function createSession(sessionId: string) {
-  return createChatSession(sessionId);
-}
 
 /**
  * Deletes a chat session
