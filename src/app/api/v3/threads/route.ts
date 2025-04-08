@@ -34,6 +34,9 @@ export async function POST(req: Request) {
   return NextResponse.json({ data });
 }
 
+/**
+ * Delete a thread and all its messages
+ */
 export async function DELETE(req: Request) {
   const userId = await getUserId(req);
   if (!userId) {
