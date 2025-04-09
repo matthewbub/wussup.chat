@@ -16,10 +16,15 @@ import { IconSidebar } from "@/components/IconSidebar";
 import { SubscriptionStatus } from "@/lib/subscription/subscription-facade";
 import { SessionWrapper } from "./session-wrapper";
 import { Loader2 } from "lucide-react";
+import { AlertTitle, AlertDescription } from "../ui/alert";
+import { Alert } from "../ui/alert";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 const ChatAppV3 = ({
   existingData,
   userSubscriptionInfo,
+  userError,
 }: {
   existingData: {
     id: string;
@@ -28,7 +33,8 @@ const ChatAppV3 = ({
     updated_at: string;
     chat_history: { role: string; content: string }[];
   }[];
-  userSubscriptionInfo: SubscriptionStatus;
+  userSubscriptionInfo: SubscriptionStatus | null;
+  userError?: string | null;
 }) => {
   const {
     messages,
@@ -45,8 +51,13 @@ const ChatAppV3 = ({
     chatSessions,
     isLoadingChatHistory,
   } = useChatStore();
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
+    if (userError) {
+      router.push("/login");
+      return;
+    }
     e.preventDefault();
 
     // reject if no input or loading
@@ -156,8 +167,22 @@ const ChatAppV3 = ({
         <ChatAppMobileSidebarV2 sessionId={sessionId} />
 
         <main className="flex-1 flex flex-col min-w-0 relative">
+          {userError && (
+            <div className="absolute top-10 left-0 right-0 flex items-center justify-center mx-4">
+              <Alert>
+                <AlertTitle>Error locating your account</AlertTitle>
+                <AlertDescription className="flex">
+                  Awww snap! We couldn't log you in, or had trouble signing you in as a guest. Please{" "}
+                  <Link href="/login" className="text-primary hover:underline">
+                    sign in
+                  </Link>{" "}
+                  to continue.
+                </AlertDescription>
+              </Alert>
+            </div>
+          )}
           <div className="flex-1 overflow-y-auto">
-            <ChatAppMessages messages={messages || []} />
+            <ChatAppMessages messages={messages || []} userError={userError} />
           </div>
           {isLoadingChatHistory && (
             <div className="absolute inset-0 flex items-center justify-center">

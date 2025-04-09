@@ -34,10 +34,10 @@ export const ChatAppInput = ({
   onSubmit: (e: React.FormEvent) => void;
   selectedModel: { id: string; provider: string };
   onModelChange: (model: { id: string; provider: string }) => void;
-  userSubscriptionInfo: SubscriptionStatus;
+  userSubscriptionInfo: SubscriptionStatus | null;
 }) => {
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
-  const USER_SUBSCRIPTION_TIER = userSubscriptionInfo.planName;
+  const USER_SUBSCRIPTION_TIER = userSubscriptionInfo?.planName || "free";
   return (
     <form onSubmit={onSubmit} className="px-4 pt-4 flex flex-col absolute bottom-0 w-full">
       <div className="self-end">

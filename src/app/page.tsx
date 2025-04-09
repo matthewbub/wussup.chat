@@ -23,15 +23,16 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
       user,
     },
   });
-
+  let userError = null;
   if ("error" in user) {
+    userError = user.error;
     Sentry.captureMessage("user error", {
       level: "error",
       extra: {
         user,
       },
     });
-    return <div>Error: {user.error}</div>;
+    return <ChatAppV3 existingData={[]} userSubscriptionInfo={null} userError={userError} />;
   }
 
   const [{ data: sessionsData, error: sessionsError }, chatsData] = await Promise.all([
