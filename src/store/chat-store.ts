@@ -13,8 +13,6 @@ export type ChatSession = {
   updated_at: string;
   chat_history: { role: string; content: string }[];
   pinned?: boolean;
-  isFavorite?: boolean;
-  existsInDb?: boolean;
 };
 
 type ChatStore = {
@@ -50,6 +48,10 @@ type ChatStore = {
   updateSessionTitleWithDb: (sessionId: string, newTitle: string) => Promise<{ success: boolean; error?: string }>;
   setIsLoadingChatHistory: (isLoading: boolean) => void;
   setPinStatus: (sessionId: string, pinStatus: boolean) => void;
+  createNewThread: (
+    sessionId: string,
+    data: { name: string; created_at: string; updated_at: string; pinned: boolean }
+  ) => void;
 };
 
 const firstFreeModel = openAiModels.find((model) => model.free);
@@ -86,45 +88,45 @@ export const useChatStore = create<ChatStore>((set) => ({
 
   chatTitle: "",
   setChatSessions: (sessions) => set({ chatSessions: sessions }),
-  updateSessionTitle: async (sessionId, newTitle) => {
-    // Get the current state
-    const state = useChatStore.getState();
+  updateSessionTitle: (sessionId, newTitle) => {
+    set((state) => ({
+      chatSessions: state.chatSessions.some((session) => session.id === sessionId)
+        ? state.chatSessions.map((session) =>
+            session.id === sessionId ? { ...session, name: newTitle, updated_at: new Date().toISOString() } : session
+          )
+        : [
+            ...state.chatSessions,
+            {
+              id: sessionId,
+              name: newTitle,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+              chat_history: [],
+              pinned: false,
+            },
+          ],
+    }));
+  },
+  createNewThread: (sessionId, data) => {
+    set((state) => ({
+      chatSessions: state.chatSessions.some((session) => session.id === sessionId)
+        ? state.chatSessions.map((session) =>
+            session.id === sessionId ? { ...session, name: newTitle, updated_at: new Date().toISOString() } : session
+          )
+        : [
+            ...state.chatSessions,
+            {
+              id: sessionId,
+              name: data.name,
+              created_at: data.created_at,
+              updated_at: data.updated_at,
 
-    // Find the session to update
-    const sessionIndex = state.chatSessions.findIndex((session) => session.id === sessionId);
-
-    if (sessionIndex === -1) {
-      // Create a new session if it doesn't exist
-      const newSession: ChatSession = {
-        id: sessionId,
-        name: newTitle,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        chat_history: [],
-        pinned: false,
-        existsInDb: false,
-      };
-
-      // Add the new session to the state
-      set((state) => ({
-        chatSessions: [...state.chatSessions, newSession],
-      }));
-      return;
-    }
-
-    // Create a new session object with updated values
-    const updatedSession = {
-      ...state.chatSessions[sessionIndex],
-      name: newTitle,
-      updated_at: new Date().toISOString(),
-    };
-
-    // Update the state immutably
-    set((state) => {
-      const newChatSessions = [...state.chatSessions];
-      newChatSessions[sessionIndex] = updatedSession; // Replace the old session with the updated one
-      return { chatSessions: newChatSessions };
-    });
+              // we need to get the chat history somehow, we're going to have to call this after the ai has responded ugh
+              chat_history: [],
+              pinned: data.pinned,
+            },
+          ],
+    }));
   },
 
   updateSessionTitleWithDb: async (sessionId, newTitle) => {

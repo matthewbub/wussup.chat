@@ -65,20 +65,18 @@ const ChatAppV3 = ({
       const isFirstMessage = (messages && messages.length === 0) || messages === null;
       // Only proceed with title and message generation if quota check passes
       if (isFirstMessage) {
-        const response = await fetch("/api/v3/title", {
+        const response = await fetch("/api/v3/threads", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ sessionId, currentInput }),
+          body: JSON.stringify({ threadId: sessionId, generateNameFromContent: currentInput }),
         });
-        const titleData = await response.json();
+        const newThread = await response.json();
 
-        console.log("titleData", titleData);
-        if (titleData.title) {
-          updateSessionTitle(sessionId, titleData.title);
-        } else {
-          updateSessionTitle(sessionId, "New Chat");
+        // console.log("titleData", titleData);
+        if (newThread.data.name) {
+          updateSessionTitle(sessionId, newThread.data.name);
         }
       }
 
