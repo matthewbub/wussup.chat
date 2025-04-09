@@ -173,7 +173,7 @@ const ChatAppV3 = ({
                 <AlertTitle>Error locating your account</AlertTitle>
                 <AlertDescription className="flex">
                   Awww snap! We couldn't log you in, or had trouble signing you in as a guest. Please{" "}
-                  <Link href="/login" className="text-primary hover:underline">
+                  <Link href="/sign-in" className="text-primary hover:underline">
                     sign in
                   </Link>{" "}
                   to continue.
