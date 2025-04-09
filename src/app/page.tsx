@@ -4,15 +4,33 @@ import { getUserFromHeaders, upsertUserByIdentifier } from "@/lib/auth/auth-util
 import { subscriptionFacade } from "@/lib/subscription/init";
 import { tableNames } from "@/constants/tables";
 import { supabase } from "@/lib/supabase";
-import Sentry from "@sentry/nextjs";
+import * as Sentry from "@sentry/nextjs";
 import { formatChatHistory } from "@/lib/format/format-utils";
 
 export default async function Home({ searchParams }: { searchParams: Promise<{ session?: string }> }) {
   const session = (await searchParams).session;
   const userInfo = await getUserFromHeaders(headers());
+  Sentry.captureMessage("userInfo", {
+    level: "info",
+    extra: {
+      userInfo,
+    },
+  });
   const user = await upsertUserByIdentifier(userInfo);
+  Sentry.captureMessage("user", {
+    level: "info",
+    extra: {
+      user,
+    },
+  });
 
   if ("error" in user) {
+    Sentry.captureMessage("user error", {
+      level: "error",
+      extra: {
+        user,
+      },
+    });
     return <div>Error: {user.error}</div>;
   }
 

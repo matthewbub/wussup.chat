@@ -111,7 +111,7 @@ export const useChatStore = create<ChatStore>((set) => ({
     set((state) => ({
       chatSessions: state.chatSessions.some((session) => session.id === sessionId)
         ? state.chatSessions.map((session) =>
-            session.id === sessionId ? { ...session, name: newTitle, updated_at: new Date().toISOString() } : session
+            session.id === sessionId ? { ...session, name: data.name, updated_at: data.updated_at } : session
           )
         : [
             ...state.chatSessions,
