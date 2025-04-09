@@ -15,13 +15,17 @@ const images = [
   "https://ywua85ya54.ufs.sh/f/5DbNgXh2h3Mz5OUzSR2h3Mzl2y40bOVgY9cLGHWfZ7DPN6ad",
 ];
 
+const shuffleArray = (array: string[]) => {
+  return array.sort(() => Math.random() - 0.5);
+};
+
 export default function GeneralFullScreenError({ message }: { message: string }) {
   const containerRef = React.useRef<HTMLDivElement>(null);
 
   return (
     <div className="w-dvw h-dvh overflow-hidden flex items-center justify-center relative" ref={containerRef}>
       <h1 className="z-30 text-3xl md:text-6xl font-overused-grotesk">{message}</h1>
-      {images.map((image, index) => (
+      {shuffleArray(images).map((image, index) => (
         <Screensaver
           key={index}
           speed={1}
