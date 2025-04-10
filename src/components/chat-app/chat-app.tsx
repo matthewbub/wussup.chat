@@ -55,7 +55,7 @@ const ChatAppV3 = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     if (userError) {
-      router.push("/login");
+      router.push("/sign-in");
       return;
     }
     e.preventDefault();
