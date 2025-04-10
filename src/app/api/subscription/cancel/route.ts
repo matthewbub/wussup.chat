@@ -1,18 +1,17 @@
 import { NextResponse } from "next/server";
-import { getUser, upsertUserByIdentifier } from "@/lib/auth/auth-utils";
 import { StripeSubscriptionService } from "@/lib/subscription/stripe-subscription-service";
 import { handleSubscriptionError } from "@/lib/subscription/subscription-helpers";
+import { auth } from "@clerk/nextjs/server";
 
-export async function POST(req: Request) {
+export async function POST() {
   try {
-    const user = await getUser(req);
-    const userData = await upsertUserByIdentifier(user);
+    const { userId } = await auth();
 
-    if ("error" in userData) {
-      return NextResponse.json({ error: userData.error }, { status: 500 });
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const result = await StripeSubscriptionService.cancelSubscription(userData.id);
+    const result = await StripeSubscriptionService.cancelSubscription(userId);
 
     return NextResponse.json({ message: result.message });
   } catch (error) {

@@ -1,15 +1,19 @@
-import { getUserId } from "@/lib/chat/chat-utils";
 import { supabase } from "@/lib/supabase";
 import { tableNames } from "@/constants/tables";
 import * as Sentry from "@sentry/nextjs";
 import { NextResponse } from "next/server";
-
+import { auth } from "@clerk/nextjs/server";
 /**
  * Duplicates a chat session and all its messages
  */
 export async function POST(req: Request) {
   try {
-    const userId = await getUserId(req);
+    const { userId } = await auth();
+
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { sessionId, newSessionId } = await req.json();
 
     // Get the session to duplicate

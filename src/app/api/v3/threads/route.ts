@@ -1,4 +1,3 @@
-import { getUserId } from "@/lib/chat/chat-utils";
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import { tableNames } from "@/constants/tables";
@@ -6,12 +5,14 @@ import { z } from "zod";
 import clsx from "clsx";
 import { google } from "@ai-sdk/google";
 import { generateText } from "ai";
+import { auth } from "@clerk/nextjs/server";
 
 /**
  * Update a thread's name or pin status
  */
 export async function POST(req: Request) {
-  const userId = await getUserId(req);
+  const { userId } = await auth();
+
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
@@ -96,7 +97,7 @@ export async function POST(req: Request) {
  * Delete a thread and all its messages
  */
 export async function DELETE(req: Request) {
-  const userId = await getUserId(req);
+  const { userId } = await auth();
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }

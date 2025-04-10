@@ -3,73 +3,6 @@ description: Clerk best practices
 globs: route.ts, *.tsx, *.ts
 alwaysApply: false
 ---
-
-# IMPORTANT
-
-We should use the `upsertUserByIdentifier` method in [server-utils.ts](mdc:src/lib/server-utils.ts) as the sole way to obtain the userId.
-
-# EXAMPLES
-
-## How to Read session and user data in the Next.js app with Clerk 
-
-RULES: 
-- Server side helpers for data retrevial and validation. 
-- Client helpers for UI/UX improvements.
-
-### Server side auth helpers
-
-The auth() helper will return the Auth object of the currently active user.
-
-The currentUser() helper will return the Backend User object of the currently active user. This is helpful if you want to render information, like their first and last name, directly from the server. Under the hood, currentUser() uses the clerkClient wrapper to make a call to the Backend API. This does count towards the Backend API request rate limit. This also uses fetch() so it is automatically deduped per request.
-
-
-Server Component and Actions
-
-```ts title='app/page.tsx'
-import { auth, currentUser } from '@clerk/nextjs/server'
-
-export default async function Page() {
-  // Get the userId from auth() -- if null, the user is not signed in
-  const { userId } = await auth()
-
-  // Protect the route by checking if the user is signed in
-  if (!userId) {
-    return <div>Sign in to view this page</div>
-  }
-
-  // Get the Backend API User object when you need access to the user's information
-  const user = await currentUser()
-
-  // Use `user` to render user details or create UI elements
-  return <div>Welcome, {user.firstName}!</div>
-}
-```
-
-Route Handler
-
-```ts title='api/route.ts'
-import { NextResponse } from 'next/server'
-import { currentUser, auth } from '@clerk/nextjs/server'
-
-export async function GET() {
-  // Use `auth()` to get the user's ID
-  const { userId } = await auth()
-
-  // Protect the route by checking if the user is signed in
-  if (!userId) {
-    return new NextResponse('Unauthorized', { status: 401 })
-  }
-
-  // Use `currentUser()` to get the Backend API User object
-  const user = await currentUser()
-
-  // Add your Route Handler's logic with the returned `user` object
-
-  return NextResponse.json({ user: user }, { status: 200 })
-}
-```
-
-
 ### Client-side Auth Helpers
 
 
@@ -119,24 +52,3 @@ export default function Example() {
 }
 ```
 
-
-# HOW TO GET THE USER IN THE APP
-
-```ts
-import { NextResponse } from "next/server";
-import { getUser, upsertUserByIdentifier } from "@/lib/server-utils";
-import * as Sentry from "@sentry/nextjs";
-
-export async function POST(req: Request) {
-  const body = await req.json();
-
-  const user = await getUser(req);
-  const userData = await upsertUserByIdentifier(user);
-
-  if ("error" in userData) {
-    Sentry.captureException(userData.error);
-    return NextResponse.json({ error: userData.error }, { status: 500 });
-  }
-
-// ...
-```

@@ -15,52 +15,6 @@ export async function getIpAddress(headersList: Headers | ReturnType<typeof head
 }
 
 /**
- * Get user from clerk or request headers
- */
-export async function getUser(
-  req: Request
-): Promise<{ userId: string; type: "clerk_user_id" | "user_ip"; email?: string }> {
-  const { userId } = await auth();
-  const ip = await getIpAddress(req.headers);
-
-  if (userId) {
-    const user = await currentUser();
-    return {
-      userId,
-      type: "clerk_user_id",
-      email: user?.emailAddresses[0]?.emailAddress,
-    };
-  }
-
-  return {
-    userId: ip,
-    type: "user_ip",
-  };
-}
-
-/**
- * Get user from clerk or request headers (server component)
- */
-export async function getUserFromHeaders(headersList: ReturnType<typeof headers>) {
-  const { userId } = await auth();
-  const ip = await getIpAddress(headersList);
-
-  if (userId) {
-    const user = await currentUser();
-
-    return {
-      userId,
-      type: "clerk_user_id",
-      email: user?.emailAddresses[0]?.emailAddress,
-    };
-  }
-  return {
-    userId: userId ?? ip,
-    type: userId ? ("clerk_user_id" as const) : ("user_ip" as const),
-  };
-}
-
-/**
  * Upserts a user record in the database based on their identifier (Clerk ID or IP address)
  */
 export async function upsertUserByIdentifier(user: {

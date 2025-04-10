@@ -1,26 +1,10 @@
 // server only
 import { supabase } from "@/lib/supabase";
-import { headers } from "next/headers";
-import { getUser, upsertUserByIdentifier } from "@/lib/auth/auth-utils";
 import { tableNames } from "@/constants/tables";
 import * as Sentry from "@sentry/nextjs";
 import { quotaManager } from "@/lib/quota/init";
 import { checkQuotaMiddleware } from "@/lib/quota/middleware";
-
-/**
- * Gets the user ID from the request or headers
- */
-export async function getUserId(req?: Request): Promise<string> {
-  const headersList = req ? req.headers : await headers();
-  const user = await getUser(req ?? ({ headers: headersList } as Request));
-  const userData = await upsertUserByIdentifier(user);
-
-  if ("error" in userData) {
-    throw new Error(userData.error);
-  }
-
-  return userData.id;
-}
+import { auth } from "@clerk/nextjs/server";
 
 /**
  * Stores a chat message
@@ -33,11 +17,15 @@ export async function storeChatMessage(
     output: string;
     prompt_tokens: number;
     completion_tokens: number;
-  },
-  req?: Request
+  }
 ) {
   try {
-    const userId = await getUserId(req);
+    const { userId } = await auth();
+
+    if (!userId) {
+      return { error: "Unauthorized" };
+    }
+
     // Ensure session exists
     const { error: sessionError } = await supabase.from(tableNames.CHAT_SESSIONS).upsert({
       id: sessionId,
@@ -75,9 +63,14 @@ export async function storeChatMessage(
 /**
  * Check if the user has exceeded their quota
  */
-export async function checkQuota(req?: Request) {
+export async function checkQuota() {
   try {
-    const userId = await getUserId(req);
+    const { userId } = await auth();
+
+    if (!userId) {
+      return { error: "Unauthorized" };
+    }
+
     const quotaError = await checkQuotaMiddleware(userId, quotaManager);
 
     if (quotaError) {

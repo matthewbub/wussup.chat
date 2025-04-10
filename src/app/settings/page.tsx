@@ -1,20 +1,14 @@
 import SubscriptionSettings from "./_SubscriptionPage";
-import { headers } from "next/headers";
-import { getUserFromHeaders, upsertUserByIdentifier } from "@/lib/auth/auth-utils";
 import { subscriptionFacade } from "@/lib/subscription/init";
 import Footer from "@/components/Footer";
 import { StaticSidebar } from "@/components/sidebar";
+import { auth } from "@clerk/nextjs/server";
 
 export default async function SettingsPage() {
-  const userInfo = await getUserFromHeaders(headers());
-  const user = await upsertUserByIdentifier(userInfo);
+  const { userId } = await auth();
 
-  if ("error" in user) {
-    return <div>Error: {user.error}</div>;
-  }
-
-  const userSubscriptionInfo = await subscriptionFacade.getSubscriptionStatus(user.id);
-  const purchaseHistory = await subscriptionFacade.getPurchaseHistory(user.id);
+  const userSubscriptionInfo = await subscriptionFacade.getSubscriptionStatus(userId);
+  const purchaseHistory = await subscriptionFacade.getPurchaseHistory(userId);
   const formattedPurchaseHistory = purchaseHistory.map((purchase) => ({
     ...purchase,
     purchase_date: new Date(purchase.purchase_date).toLocaleDateString("en-US", {

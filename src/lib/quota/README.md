@@ -20,20 +20,19 @@ The QuotaManager is a utility class that handles user quota management for the c
 
 ```typescript
 import { QuotaManager } from "./quota-manager";
-import { getUser, upsertUserByIdentifier } from "@/lib/server-utils";
+import { auth } from "@clerk/nextjs/server";
 
 // Initialize with Supabase client
 const quotaManager = new QuotaManager(supabaseClient);
 
 // Get user and check quota
-const user = await getUser(req);
-const userData = await upsertUserByIdentifier(user);
+const { userId } = await auth();
 
-if (!("error" in userData)) {
-  const quotaCheck = await quotaManager.checkQuota(userData.id);
+if (!("error" in userId)) {
+  const quotaCheck = await quotaManager.checkQuota(userId);
   if (quotaCheck.hasQuota) {
     // Process message
-    await quotaManager.incrementUsage(userData.id);
+    await quotaManager.incrementUsage(userId);
   } else {
     if (quotaCheck.dailyLimitExceeded) {
       console.log("Daily limit exceeded. Try again tomorrow.");
@@ -49,17 +48,17 @@ if (!("error" in userData)) {
 
 ```typescript
 import { checkQuotaMiddleware } from "./middleware";
+import { auth } from "@clerk/nextjs/server";
 
 export async function POST(req: Request) {
-  const user = await getUser(req);
-  const userData = await upsertUserByIdentifier(user);
+  const { userId } = await auth();
 
-  if ("error" in userData) {
+  if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   // Will return 429 if quota exceeded
-  const quotaError = await checkQuotaMiddleware(userData.id, quotaManager);
+  const quotaError = await checkQuotaMiddleware(userId, quotaManager);
   if (quotaError) return quotaError;
 
   // Continue with request processing...
@@ -69,11 +68,15 @@ export async function POST(req: Request) {
 ### Subscription Management
 
 ```typescript
+import { auth } from "@clerk/nextjs/server";
+
+const { userId } = await auth();
+
 // Upgrade user to pro tier
-await quotaManager.upgradeSubscription(userData.id, "pro");
+await quotaManager.upgradeSubscription(userId, "pro");
 
 // Get current quota status
-const status = await quotaManager.getUserQuota(userData.id);
+const status = await quotaManager.getUserQuota(userId);
 console.log(status);
 // {
 //   currentMonthUsage: 50,
@@ -82,35 +85,4 @@ console.log(status);
 //   lastMonthReset: "2024-03-01T00:00:00.000Z",
 //   subscriptionTier: "pro"
 // }
-```
-
-## Error Handling
-
-The QuotaManager provides detailed error information:
-
-```typescript
-const quotaCheck = await quotaManager.checkQuota(userData.id);
-if (!quotaCheck.hasQuota) {
-  if (quotaCheck.dailyLimitExceeded) {
-    console.log("Daily limit exceeded. Try again tomorrow.");
-  }
-  if (quotaCheck.monthlyLimitExceeded) {
-    console.log("Monthly limit exceeded. Consider upgrading.");
-  }
-}
-```
-
-## Database Schema
-
-The QuotaManager expects the following schema in Supabase:
-
-```sql
-CREATE TYPE subscription_tier AS ENUM ('free', 'pro');
-
-ALTER TABLE public."UserMetaData"
-ADD COLUMN subscription_tier subscription_tier NOT NULL DEFAULT 'free',
-ADD COLUMN current_month_usage integer NOT NULL DEFAULT 0,
-ADD COLUMN current_day_usage integer NOT NULL DEFAULT 0,
-ADD COLUMN last_day_reset timestamp with time zone NOT NULL DEFAULT now(),
-ADD COLUMN last_month_reset timestamp with time zone NOT NULL DEFAULT now();
 ```

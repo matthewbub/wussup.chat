@@ -2,10 +2,10 @@ import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
 import * as Sentry from "@sentry/nextjs";
 import { tableNames } from "@/constants/tables";
-import { getUserId } from "@/lib/chat/chat-utils";
+import { auth } from "@clerk/nextjs/server";
 
 export async function GET(req: Request) {
-  const userId = await getUserId(req);
+  const { userId } = await auth();
 
   if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
