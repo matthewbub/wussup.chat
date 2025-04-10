@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase";
+import { prisma } from "@/lib/prisma";
 import * as Sentry from "@sentry/nextjs";
-import { tableNames } from "@/constants/tables";
 import { auth } from "@clerk/nextjs/server";
 
 export async function GET(req: Request) {
@@ -17,14 +16,18 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "Missing session_id parameter" }, { status: 400 });
   }
 
-  const { data, error } = await supabase
-    .from(tableNames.CHAT_MESSAGES)
-    .select("*")
-    .eq("user_id", userId)
-    .eq("chat_session_id", session)
-    .order("created_at", { ascending: true });
+  const data = await prisma.Message.findMany({
+    where: {
+      userId: userId,
+      threadId: session,
+    },
+    orderBy: {
+      createdAt: "asc",
+    },
+  });
 
-  if (error) {
+  if (!data) {
+    const error = new Error("Failed to fetch messages");
     Sentry.captureException(error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

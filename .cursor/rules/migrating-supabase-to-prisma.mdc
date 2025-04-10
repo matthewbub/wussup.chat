@@ -1,0 +1,13 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+
+# Migrating Supabase to Prisma
+
+Hey we are migrating the Supabase SDK over to Prisma, we still use Postgres. This should be simple nearly 1:1 swap. There are just a few key changes to the data shape and its origins:
+
+- In Supabase, we had the `meta` object. We'll be using the Clerk Metadata object instead now.
+- In Supabase, the `meta.id` was the source of truth for each users shit. Now we just use the User ID from Clerk. 
+- The new Prisma Schema can be located here: [schema.prisma](mdc:schema.prisma) if a field no longer exists, let me know but dont add it. There's a strong chance I intenitally deprecated it.

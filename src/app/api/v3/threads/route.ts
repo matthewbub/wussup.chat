@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
-import { supabase } from "@/lib/supabase";
-import { tableNames } from "@/constants/tables";
 import { z } from "zod";
 import clsx from "clsx";
 import { google } from "@ai-sdk/google";
 import { generateText } from "ai";
 import { auth } from "@clerk/nextjs/server";
+import { prisma } from "@/lib/prisma";
+import * as Sentry from "@sentry/nextjs";
 
 /**
  * Update a thread's name or pin status
@@ -57,18 +57,19 @@ export async function POST(req: Request) {
       ]),
     });
     updateData = { ...updateData, name: text };
-    const { data, error } = await supabase
-      .from(tableNames.CHAT_SESSIONS)
-      .insert({
+    const data = await prisma.Thread.create({
+      data: {
         id: threadId,
-        user_id: userId,
+        userId: userId,
         name: text,
-        created_at: new Date(),
-        updated_at: new Date(),
-      })
-      .select()
-      .single();
-    if (error) {
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    });
+
+    if (!data) {
+      const error = new Error("Failed to insert thread");
+      Sentry.captureException(error);
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
     return NextResponse.json({ data });
@@ -78,15 +79,17 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "No valid fields to update" }, { status: 400 });
   }
 
-  const { data, error } = await supabase
-    .from(tableNames.CHAT_SESSIONS)
-    .update(updateData)
-    .eq("id", threadId)
-    .eq("user_id", userId)
-    .select()
-    .single();
+  const data = await prisma.Thread.update({
+    where: {
+      id: threadId,
+      userId: userId,
+    },
+    data: updateData,
+  });
 
-  if (error) {
+  if (!data) {
+    const error = new Error("Failed to update thread");
+    Sentry.captureException(error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
@@ -123,21 +126,23 @@ export async function DELETE(req: Request) {
   const { threadIdArray } = result.data;
 
   // Delete all messages first due to foreign key constraint
-  const { error: messagesError } = await supabase
-    .from(tableNames.CHAT_MESSAGES)
-    .delete()
-    .in("chat_session_id", threadIdArray)
-    .eq("user_id", userId);
+  const { error: messagesError } = await prisma.Message.deleteMany({
+    where: {
+      threadId: { in: threadIdArray },
+      userId: userId,
+    },
+  });
 
   if (messagesError) {
     return NextResponse.json({ error: messagesError.message }, { status: 500 });
   }
 
-  const { error } = await supabase
-    .from(tableNames.CHAT_SESSIONS)
-    .delete()
-    .in("id", threadIdArray)
-    .eq("user_id", userId);
+  const { error } = await prisma.Thread.deleteMany({
+    where: {
+      id: { in: threadIdArray },
+      userId: userId,
+    },
+  });
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });

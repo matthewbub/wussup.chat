@@ -1,8 +1,7 @@
-import { supabase } from "@/lib/supabase";
-import { tableNames } from "@/constants/tables";
 import * as Sentry from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
+import { prisma } from "@/lib/prisma";
 /**
  * Duplicates a chat session and all its messages
  */
@@ -17,12 +16,12 @@ export async function POST(req: Request) {
     const { sessionId, newSessionId } = await req.json();
 
     // Get the session to duplicate
-    const { data: session, error: sessionError } = await supabase
-      .from(tableNames.CHAT_SESSIONS)
-      .select("name")
-      .eq("id", sessionId)
-      .eq("user_id", userId)
-      .single();
+    const { data: session, error: sessionError } = await prisma.Thread.findUnique({
+      where: {
+        id: sessionId,
+        userId: userId,
+      },
+    });
 
     if (sessionError) {
       Sentry.captureException(sessionError);
@@ -30,11 +29,12 @@ export async function POST(req: Request) {
     }
 
     // Get all messages from the original session
-    const { data: messages, error: messagesError } = await supabase
-      .from(tableNames.CHAT_MESSAGES)
-      .select("*")
-      .eq("chat_session_id", sessionId)
-      .eq("user_id", userId);
+    const { data: messages, error: messagesError } = await prisma.Message.findMany({
+      where: {
+        threadId: sessionId,
+        userId: userId,
+      },
+    });
 
     if (messagesError) {
       Sentry.captureException(messagesError);
@@ -42,10 +42,12 @@ export async function POST(req: Request) {
     }
 
     const newSessionName = `${session?.name || "Chat"} (copy)`;
-    const { error: newSessionError } = await supabase.from(tableNames.CHAT_SESSIONS).insert({
-      id: newSessionId,
-      user_id: userId,
-      name: newSessionName,
+    const { error: newSessionError } = await prisma.Thread.create({
+      data: {
+        id: newSessionId,
+        userId: userId,
+        name: newSessionName,
+      },
     });
 
     if (newSessionError) {
@@ -55,18 +57,25 @@ export async function POST(req: Request) {
 
     // Duplicate all messages with the new session ID
     if (messages && messages.length > 0) {
-      const newMessages = messages.map((msg) => ({
+      const newMessages = messages.map((msg: { id: string; threadId: string; createdAt: Date }) => ({
         ...msg,
         id: crypto.randomUUID(),
-        chat_session_id: newSessionId,
-        created_at: new Date(),
+        threadId: newSessionId,
+        createdAt: new Date(),
       }));
 
-      const { error: newMessagesError } = await supabase.from(tableNames.CHAT_MESSAGES).insert(newMessages);
+      const { error: newMessagesError } = await prisma.Message.createMany({
+        data: newMessages,
+      });
 
       if (newMessagesError) {
         // If message copy fails, delete the new session to maintain consistency
-        await supabase.from(tableNames.CHAT_SESSIONS).delete().eq("id", newSessionId);
+        await prisma.Thread.delete({
+          where: {
+            id: newSessionId,
+            userId: userId,
+          },
+        });
         Sentry.captureException(newMessagesError);
         return NextResponse.json({ error: "Failed to copy chat messages" }, { status: 500 });
       }

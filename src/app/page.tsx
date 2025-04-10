@@ -5,6 +5,7 @@ import { supabase } from "@/lib/supabase";
 import * as Sentry from "@sentry/nextjs";
 import { formatChatHistory } from "@/lib/format/format-utils";
 import { auth, clerkClient } from "@clerk/nextjs/server";
+import { prisma } from "@/lib/prisma";
 
 export default async function Home({ searchParams }: { searchParams: Promise<{ session?: string }> }) {
   const session = (await searchParams).session;
@@ -16,9 +17,21 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
 
   // Query for threads and the current threads messages, if applicable
   const [{ data: sessionsData, error: sessionsError }, chatsData] = await Promise.all([
-    supabase.from(tableNames.CHAT_SESSIONS).select("*").eq("user_id", userId).order("updated_at", { ascending: false }),
+    prisma.Thread.findMany({
+      where: {
+        userId: userId,
+      },
+      orderBy: {
+        updatedAt: "desc",
+      },
+    }),
     session
-      ? supabase.from(tableNames.CHAT_MESSAGES).select("*").eq("user_id", userId).eq("chat_session_id", session)
+      ? prisma.Message.findMany({
+          where: {
+            userId: userId,
+            threadId: session,
+          },
+        })
       : null,
   ]);
 

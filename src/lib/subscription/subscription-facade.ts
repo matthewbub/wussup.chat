@@ -1,10 +1,9 @@
 // server only
 import { SubscriptionTier } from "../quota/types";
-import { tableNames } from "@/constants/tables";
 import Stripe from "stripe";
 import { isPriceIdValid, getPaymentTypeFromPriceId, handleSubscriptionError } from "./subscription-helpers";
 import * as Sentry from "@sentry/nextjs";
-import { supabase } from "@/lib/supabase";
+import { prisma } from "../prisma";
 
 interface VerifyStripeCustomerResponse {
   exists: boolean;
@@ -83,13 +82,19 @@ export class SubscriptionFacade {
 
   async getSubscriptionStatus(userId: string): Promise<SubscriptionStatus> {
     try {
-      const { data: paymentData, error: paymentError } = await supabase
-        .from(tableNames.USERS)
-        .select("stripe_customer_id, subscription_period_end, subscription_status, product_id")
-        .eq("id", userId)
-        .single();
+      const paymentData = await prisma.User.findUnique({
+        where: {
+          id: userId,
+        },
+        select: {
+          stripeCustomerId: true,
+          subscriptionPeriodEnd: true,
+          subscriptionStatus: true,
+          productId: true,
+        },
+      });
 
-      if (paymentError) {
+      if (!paymentData) {
         return this.getSubscriptionStatusFactory({
           error: "Could not fetch payment information",
           planName: "free",
@@ -98,7 +103,7 @@ export class SubscriptionFacade {
       }
 
       // Verify Stripe customer and get product information
-      const stripeVerification = await this.verifyStripeCustomer(paymentData?.stripe_customer_id);
+      const stripeVerification = await this.verifyStripeCustomer(paymentData?.stripeCustomerId);
 
       // If there's an error with Stripe verification, log it but continue with local data
       if (stripeVerification.error) {
@@ -106,10 +111,10 @@ export class SubscriptionFacade {
       }
 
       let paymentMethodLast4 = null;
-      if (paymentData?.stripe_customer_id) {
+      if (paymentData?.stripeCustomerId) {
         try {
           const paymentMethods = await this.stripe.paymentMethods.list({
-            customer: paymentData.stripe_customer_id,
+            customer: paymentData.stripeCustomerId,
             type: "card",
           });
           paymentMethodLast4 = paymentMethods.data[0]?.card?.last4 || null;
@@ -118,17 +123,15 @@ export class SubscriptionFacade {
         }
       }
 
-      const planName = this.getPlanFromPriceId(paymentData?.product_id || null);
+      const planName = this.getPlanFromPriceId(paymentData?.productId || null);
 
       return this.getSubscriptionStatusFactory({
-        customerId: paymentData?.stripe_customer_id || null,
-        subscriptionStatus: stripeVerification.exists ? "active" : paymentData?.subscription_status || null,
-        subscriptionEndDate: paymentData?.subscription_period_end
-          ? new Date(paymentData.subscription_period_end)
-          : null,
-        productId: paymentData?.product_id || null,
+        customerId: paymentData?.stripeCustomerId || null,
+        subscriptionStatus: stripeVerification.exists ? "active" : paymentData?.subscriptionStatus || null,
+        subscriptionEndDate: paymentData?.subscriptionPeriodEnd ? new Date(paymentData.subscriptionPeriodEnd) : null,
+        productId: paymentData?.productId || null,
         planName,
-        recurringOrOneTimePayment: getPaymentTypeFromPriceId(paymentData?.product_id || null),
+        recurringOrOneTimePayment: getPaymentTypeFromPriceId(paymentData?.productId || null),
         paymentMethodLast4,
       });
     } catch (error) {
@@ -230,14 +233,18 @@ export class SubscriptionFacade {
 
   async getPurchaseHistory(userId: string): Promise<PurchaseHistory[]> {
     try {
-      const { data, error } = await supabase.from(tableNames.PURCHASE_HISTORY).select("*").eq("user_id", userId);
+      const { data, error } = await prisma.Purchases.findMany({
+        where: {
+          userId: userId,
+        },
+      });
 
       if (error) {
         handleSubscriptionError(error, "getPurchaseHistory");
         return [];
       }
 
-      return data.map((record) => ({
+      return data.map((record: PurchaseHistory) => ({
         ...record,
         plan_name: this.getPlanFromPriceId(record.price_id),
       }));
