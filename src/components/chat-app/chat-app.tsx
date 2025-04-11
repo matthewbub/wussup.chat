@@ -6,12 +6,7 @@ import { ChatAppSidebarV2 } from "@/components/chat-app/sidebar";
 import { ChatAppMobileSidebarV2 } from "@/components/chat-app/mobile-sidebar";
 import { useChatStore } from "@/store/chat-store";
 import * as Sentry from "@sentry/nextjs";
-import {
-  createHumanMessage,
-  createAiMessage,
-  fetchAiMessage,
-  processStreamingResponse,
-} from "@/lib/format/format-utils";
+import { fetchAiMessage, processStreamingResponse } from "@/lib/format/format-utils";
 import { IconSidebar } from "@/components/IconSidebar";
 import { SubscriptionStatus } from "@/lib/subscription/subscription-facade";
 import { SessionWrapper } from "./session-wrapper";
@@ -21,7 +16,7 @@ import { Alert } from "../ui/alert";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
-const ChatAppV3 = ({
+const ChatApp = ({
   existingData,
   userSubscriptionInfo,
   userError,
@@ -63,14 +58,22 @@ const ChatAppV3 = ({
     // reject if no input or loading
     if (!currentInput.trim() || isLoading) return;
 
-    addMessage(createHumanMessage(currentInput));
+    addMessage({
+      id: crypto.randomUUID(),
+      content: currentInput,
+      role: "user" as const,
+    });
     setInput("");
 
     setLoading(true);
 
     try {
       // Add empty AI message that will be streamed
-      const aiMessage = createAiMessage("");
+      const aiMessage: { id: string; content: string; role: "assistant" } = {
+        id: crypto.randomUUID(),
+        content: "",
+        role: "assistant" as const,
+      };
       addMessage(aiMessage);
 
       const isFirstMessage = (messages && messages.length === 0) || messages === null;
@@ -104,9 +107,15 @@ const ChatAppV3 = ({
         sessionId,
       });
 
-      if (!response.ok) throw new Error("Failed to send message");
+      if (!response.ok) {
+        throw new Error("Failed to send message");
+      }
+
       const reader = response.body?.getReader();
-      if (!reader) throw new Error("No reader available");
+      if (!reader) {
+        throw new Error("No reader available");
+      }
+
       await processStreamingResponse(
         reader,
         // Update content on each chunk
@@ -128,6 +137,7 @@ const ChatAppV3 = ({
                   output: aiMessage.content,
                   prompt_tokens: usage.promptTokens,
                   completion_tokens: usage.completionTokens,
+                  model: selectedModel.id,
                 },
               }),
             });
@@ -204,4 +214,4 @@ const ChatAppV3 = ({
   );
 };
 
-export default ChatAppV3;
+export default ChatApp;

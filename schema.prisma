@@ -23,7 +23,6 @@ model Message {
   updatedAt        DateTime @updatedAt
   threadId         String
   userId           String
-  content          String
   model            String
   promptTokens     Int
   completionTokens Int

@@ -51,28 +51,6 @@ export async function processStreamingResponse(
 }
 
 /**
- * Creates a human message object
- */
-export function createHumanMessage(input: string) {
-  return {
-    id: crypto.randomUUID(),
-    content: input,
-    role: "user" as const,
-  };
-}
-
-/**
- * Creates an AI message object
- */
-export function createAiMessage(input: string) {
-  return {
-    id: crypto.randomUUID(),
-    content: input,
-    role: "assistant" as const,
-  };
-}
-
-/**
  * Fetches AI message from the API
  */
 export async function fetchAiMessage({
@@ -103,54 +81,27 @@ export async function fetchAiMessage({
 }
 
 /**
- * Posts chat info to the API
- */
-export function postChatInfo({
-  sessionId,
-  aiMessage,
-  currentInput,
-  usage,
-}: {
-  sessionId: string;
-  aiMessage: { id: string; content: string; role: "assistant" };
-  currentInput: string;
-  usage: {
-    promptTokens: number;
-    completionTokens: number;
-  };
-}) {
-  fetch("/api/v3/info", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      sessionId,
-      aiMessage: {
-        ...aiMessage,
-        input: currentInput,
-        output: aiMessage.content,
-        prompt_tokens: usage.promptTokens,
-        completion_tokens: usage.completionTokens,
-      },
-    }),
-  }).catch(console.error);
-}
-
-/**
  * Formats chat history for the API
  */
 export function formatChatHistory(chatHistory: Array<{ chat_session_id: string; input: string; output: string }>): {
   role: string;
-  content: string;
+  input: string;
+  output: string;
 }[] {
-  return chatHistory.reduce((acc: { role: string; content: string }[], chat: { input: string; output: string }) => {
-    const userMessage = {
-      role: "user",
-      content: chat.input,
-    };
-    const aiMessage = {
-      role: "assistant",
-      content: chat.output,
-    };
-    return [...acc, userMessage, aiMessage];
-  }, [] as { role: string; content: string }[]);
+  return chatHistory.reduce(
+    (acc: { role: string; input: string; output: string }[], chat: { input: string; output: string }) => {
+      const userMessage = {
+        role: "user",
+        input: chat.input,
+        output: "",
+      };
+      const aiMessage = {
+        role: "assistant",
+        input: "",
+        output: chat.output,
+      };
+      return [...acc, userMessage, aiMessage];
+    },
+    [] as { role: string; input: string; output: string }[]
+  );
 }

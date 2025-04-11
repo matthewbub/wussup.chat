@@ -11,7 +11,7 @@ export async function POST(req: Request) {
   }
 
   const { sessionId, aiMessage } = await req.json();
-  const data = await prisma.Message.create({
+  const data = await prisma.message.create({
     data: {
       threadId: sessionId,
       userId: userId,

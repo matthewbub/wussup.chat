@@ -16,7 +16,7 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "Missing session_id parameter" }, { status: 400 });
   }
 
-  const data = await prisma.Message.findMany({
+  const data = await prisma.message.findMany({
     where: {
       userId: userId,
       threadId: session,

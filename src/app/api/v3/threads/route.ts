@@ -57,7 +57,7 @@ export async function POST(req: Request) {
       ]),
     });
     updateData = { ...updateData, name: text };
-    const data = await prisma.Thread.create({
+    const data = await prisma.thread.create({
       data: {
         id: threadId,
         userId: userId,
@@ -79,7 +79,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "No valid fields to update" }, { status: 400 });
   }
 
-  const data = await prisma.Thread.update({
+  const data = await prisma.thread.update({
     where: {
       id: threadId,
       userId: userId,
@@ -126,7 +126,7 @@ export async function DELETE(req: Request) {
   const { threadIdArray } = result.data;
 
   // Delete all messages first due to foreign key constraint
-  const { error: messagesError } = await prisma.Message.deleteMany({
+  const { error: messagesError } = await prisma.message.deleteMany({
     where: {
       threadId: { in: threadIdArray },
       userId: userId,
@@ -137,7 +137,7 @@ export async function DELETE(req: Request) {
     return NextResponse.json({ error: messagesError.message }, { status: 500 });
   }
 
-  const { error } = await prisma.Thread.deleteMany({
+  const { error } = await prisma.thread.deleteMany({
     where: {
       id: { in: threadIdArray },
       userId: userId,

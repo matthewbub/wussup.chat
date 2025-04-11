@@ -1,7 +1,5 @@
 import ChatApp from "@/components/chat-app/chat-app";
 import { subscriptionFacade } from "@/lib/subscription/init";
-import { tableNames } from "@/constants/tables";
-import { supabase } from "@/lib/supabase";
 import * as Sentry from "@sentry/nextjs";
 import { formatChatHistory } from "@/lib/format/format-utils";
 import { auth, clerkClient } from "@clerk/nextjs/server";
@@ -16,8 +14,8 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
   }
 
   // Query for threads and the current threads messages, if applicable
-  const [{ data: sessionsData, error: sessionsError }, chatsData] = await Promise.all([
-    prisma.Thread.findMany({
+  const [threads, messages] = await Promise.all([
+    prisma.thread.findMany({
       where: {
         userId: userId,
       },
@@ -26,7 +24,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
       },
     }),
     session
-      ? prisma.Message.findMany({
+      ? prisma.message.findMany({
           where: {
             userId: userId,
             threadId: session,
@@ -35,25 +33,18 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
       : null,
   ]);
 
-  if (sessionsError || chatsData?.error) {
-    Sentry.captureException(sessionsError || chatsData?.error);
-    return { error: "Failed to fetch chat data" };
-  }
-
   void updateUserMetadataIfNeeded(userId);
 
-  const formattedSessions = sessionsData?.map((session) => ({
-    ...session,
-    created_at: new Date(session.created_at).toISOString(),
-    updated_at: new Date(session.updated_at).toISOString(),
-    chat_history: session
-      ? formatChatHistory(chatsData?.data?.filter((chat) => chat.chat_session_id === session.id) || [])
-      : [],
+  const formattedThreads = threads?.map((thread) => ({
+    ...thread,
+    created_at: new Date(thread.createdAt).toISOString(),
+    updated_at: new Date(thread.updatedAt).toISOString(),
+    chat_history: thread ? formatChatHistory(messages?.filter((message) => message.threadId === thread.id) || []) : [],
   }));
 
   const userSubscriptionInfo = await subscriptionFacade.getSubscriptionStatus(userId);
 
-  return <ChatApp existingData={formattedSessions || []} userSubscriptionInfo={userSubscriptionInfo} />;
+  return <ChatApp existingData={formattedThreads || []} userSubscriptionInfo={userSubscriptionInfo} />;
 }
 
 async function updateUserMetadataIfNeeded(userId: string) {

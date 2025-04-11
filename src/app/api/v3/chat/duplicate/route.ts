@@ -16,7 +16,7 @@ export async function POST(req: Request) {
     const { sessionId, newSessionId } = await req.json();
 
     // Get the session to duplicate
-    const { data: session, error: sessionError } = await prisma.Thread.findUnique({
+    const { data: session, error: sessionError } = await prisma.thread.findUnique({
       where: {
         id: sessionId,
         userId: userId,
@@ -29,7 +29,7 @@ export async function POST(req: Request) {
     }
 
     // Get all messages from the original session
-    const { data: messages, error: messagesError } = await prisma.Message.findMany({
+    const { data: messages, error: messagesError } = await prisma.message.findMany({
       where: {
         threadId: sessionId,
         userId: userId,
@@ -42,7 +42,7 @@ export async function POST(req: Request) {
     }
 
     const newSessionName = `${session?.name || "Chat"} (copy)`;
-    const { error: newSessionError } = await prisma.Thread.create({
+    const { error: newSessionError } = await prisma.thread.create({
       data: {
         id: newSessionId,
         userId: userId,
@@ -64,13 +64,13 @@ export async function POST(req: Request) {
         createdAt: new Date(),
       }));
 
-      const { error: newMessagesError } = await prisma.Message.createMany({
+      const { error: newMessagesError } = await prisma.message.createMany({
         data: newMessages,
       });
 
       if (newMessagesError) {
         // If message copy fails, delete the new session to maintain consistency
-        await prisma.Thread.delete({
+        await prisma.thread.delete({
           where: {
             id: newSessionId,
             userId: userId,
