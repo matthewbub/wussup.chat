@@ -23,7 +23,10 @@ export async function processStreamingResponse(
 
           const cleanedData = data.replace(/\\n/g, "\n");
           onChunk(cleanedData);
-        } else if (line.startsWith("e:") || line.startsWith("d:")) {
+          // this was fine for awhile but now we're getting both lines and
+          // as a result its fucking with the dataset so we're goonna remove one
+          // } else if (line.startsWith("e:") || line.startsWith("d:")) {
+        } else if (line.startsWith("d:")) {
           const eventData = JSON.parse(line.slice(2));
           if (eventData.usage && onMetadata) {
             onMetadata(eventData.usage);
