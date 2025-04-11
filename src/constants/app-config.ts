@@ -31,4 +31,11 @@ export const appConfig = {
     topNav: navItems,
     bottomNav: navItemsSecondary,
   },
+  urls: {
+    support: "/support",
+    settings: "/settings",
+    home: "/",
+    signIn: "/sign-in",
+    signUp: "/sign-up",
+  },
 };
