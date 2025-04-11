@@ -1,7 +1,5 @@
 import ChatApp from "@/components/chat-app/chat-app";
 import { subscriptionFacade } from "@/lib/subscription/init";
-import * as Sentry from "@sentry/nextjs";
-import { formatChatHistory } from "@/lib/format/format-utils";
 import { auth, clerkClient } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
 
@@ -33,13 +31,28 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
       : null,
   ]);
 
+  console.log("messages", messages);
   void updateUserMetadataIfNeeded(userId);
 
   const formattedThreads = threads?.map((thread) => ({
     ...thread,
     created_at: new Date(thread.createdAt).toISOString(),
     updated_at: new Date(thread.updatedAt).toISOString(),
-    chat_history: thread ? formatChatHistory(messages?.filter((message) => message.threadId === thread.id) || []) : [],
+    chat_history: thread
+      ? messages
+          ?.filter((message) => message.threadId === thread.id)
+          .reduce<{ role: string; content: string }[]>((acc, message) => {
+            acc.push({
+              role: "user",
+              content: message.input,
+            });
+            acc.push({
+              role: "assistant",
+              content: message.output,
+            });
+            return acc;
+          }, []) || []
+      : [],
   }));
 
   const userSubscriptionInfo = await subscriptionFacade.getSubscriptionStatus(userId);

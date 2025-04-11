@@ -1,18 +1,4 @@
 /**
- * Formats messages for AI chat format
- */
-export function formatContextMessages(
-  messages: Array<{ is_user: boolean; content: string }>
-): { role: "user" | "assistant"; content: string }[] {
-  return messages
-    .filter((msg) => msg.content.trim() !== "")
-    .map((msg) => ({
-      role: msg.is_user ? "user" : "assistant",
-      content: msg.content,
-    }));
-}
-
-/**
  * Processes streaming response from chat API
  */
 export async function processStreamingResponse(
@@ -78,30 +64,4 @@ export async function fetchAiMessage({
     method: "POST",
     body: formData,
   });
-}
-
-/**
- * Formats chat history for the API
- */
-export function formatChatHistory(chatHistory: Array<{ chat_session_id: string; input: string; output: string }>): {
-  role: string;
-  input: string;
-  output: string;
-}[] {
-  return chatHistory.reduce(
-    (acc: { role: string; input: string; output: string }[], chat: { input: string; output: string }) => {
-      const userMessage = {
-        role: "user",
-        input: chat.input,
-        output: "",
-      };
-      const aiMessage = {
-        role: "assistant",
-        input: "",
-        output: chat.output,
-      };
-      return [...acc, userMessage, aiMessage];
-    },
-    [] as { role: string; input: string; output: string }[]
-  );
 }
