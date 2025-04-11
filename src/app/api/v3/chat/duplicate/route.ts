@@ -16,33 +16,31 @@ export async function POST(req: Request) {
     const { sessionId, newSessionId } = await req.json();
 
     // Get the session to duplicate
-    const { data: session, error: sessionError } = await prisma.thread.findUnique({
+    const session = await prisma.thread.findUnique({
       where: {
         id: sessionId,
         userId: userId,
       },
     });
 
-    if (sessionError) {
-      Sentry.captureException(sessionError);
+    if (!session) {
       return NextResponse.json({ error: "Failed to fetch chat session" }, { status: 500 });
     }
 
     // Get all messages from the original session
-    const { data: messages, error: messagesError } = await prisma.message.findMany({
+    const messages = await prisma.message.findMany({
       where: {
         threadId: sessionId,
         userId: userId,
       },
     });
 
-    if (messagesError) {
-      Sentry.captureException(messagesError);
+    if (!messages) {
       return NextResponse.json({ error: "Failed to fetch chat messages" }, { status: 500 });
     }
 
     const newSessionName = `${session?.name || "Chat"} (copy)`;
-    const { error: newSessionError } = await prisma.thread.create({
+    const newSession = await prisma.thread.create({
       data: {
         id: newSessionId,
         userId: userId,
@@ -50,25 +48,30 @@ export async function POST(req: Request) {
       },
     });
 
-    if (newSessionError) {
-      Sentry.captureException(newSessionError);
+    if (!newSession) {
       return NextResponse.json({ error: "Failed to create new chat session" }, { status: 500 });
     }
 
     // Duplicate all messages with the new session ID
     if (messages && messages.length > 0) {
-      const newMessages = messages.map((msg: { id: string; threadId: string; createdAt: Date }) => ({
-        ...msg,
+      const newMessages = messages.map((msg) => ({
         id: crypto.randomUUID(),
         threadId: newSessionId,
         createdAt: new Date(),
+        userId: msg.userId,
+        model: msg.model,
+        // We don't need to copy the tokens when duplicating the chat
+        promptTokens: 0,
+        completionTokens: 0,
+        input: msg.input,
+        output: msg.output,
       }));
 
-      const { error: newMessagesError } = await prisma.message.createMany({
+      const newMessages2 = await prisma.message.createMany({
         data: newMessages,
       });
 
-      if (newMessagesError) {
+      if (!newMessages2) {
         // If message copy fails, delete the new session to maintain consistency
         await prisma.thread.delete({
           where: {
@@ -76,7 +79,6 @@ export async function POST(req: Request) {
             userId: userId,
           },
         });
-        Sentry.captureException(newMessagesError);
         return NextResponse.json({ error: "Failed to copy chat messages" }, { status: 500 });
       }
     }
