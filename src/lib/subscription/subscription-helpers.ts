@@ -8,12 +8,7 @@ import * as Sentry from "@sentry/nextjs";
  * Valid price IDs used throughout the application
  * This ensures we have a single source of truth for valid price IDs
  */
-export const validPriceIds = [
-  process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_FOR__PRO_PLAN_ALPHA_ONE_MONTH,
-  process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_FOR__PRO_PLAN_ALPHA_THREE_MONTHS,
-  process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_FOR__PRO_PLAN_ALPHA_TWELVE_MONTHS,
-  process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_FOR__PRO_PLAN_ALPHA_ONE_MONTH_RECURRING,
-];
+export const validPriceIds = [process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_FOR__PRO_PLAN_ALPHA_ONE_MONTH_RECURRING];
 
 /**
  * Check if a given price ID is valid

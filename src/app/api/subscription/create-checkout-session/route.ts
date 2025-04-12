@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { StripeCheckoutService } from "@/lib/subscription/stripe-checkout-service";
+import { createCheckoutSession } from "@/lib/subscription/stripe-checkout-service";
 import { handleSubscriptionError } from "@/lib/subscription/subscription-helpers";
 import { auth } from "@clerk/nextjs/server";
 
@@ -12,7 +12,7 @@ export async function POST(req: Request) {
     }
 
     const { priceId } = await req.json();
-    const result = await StripeCheckoutService.createCheckoutSession(userId, priceId);
+    const result = await createCheckoutSession(userId, priceId);
 
     return NextResponse.json({ url: result.url });
   } catch (error) {

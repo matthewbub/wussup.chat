@@ -15,7 +15,7 @@ import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import * as Sentry from "@sentry/nextjs";
 import { handleSubscriptionError } from "@/lib/subscription/subscription-helpers";
-import { StripeWebhookService } from "@/lib/subscription/stripe-webhook-service";
+import { clerkClient } from "@clerk/nextjs/server";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET!;
@@ -47,17 +47,18 @@ export async function POST(req: Request) {
     switch (event.type) {
       case "checkout.session.completed":
         const session = event.data.object as Stripe.Checkout.Session;
-        result = await StripeWebhookService.handleCheckoutSessionCompleted(session);
-        break;
 
-      case "customer.subscription.updated":
-        const subscription = event.data.object as Stripe.Subscription;
-        result = await StripeWebhookService.handleSubscriptionUpdated(subscription);
-        break;
+        // Use the userId from the Stripe session metadata
+        const userId = session.metadata?.userId;
+        if (userId) {
+          const clerkClientInstance = await clerkClient();
+          const user = await clerkClientInstance.users.getUser(userId);
+          const privateMetadata = user.privateMetadata || {};
+          await clerkClientInstance.users.updateUserMetadata(userId, {
+            privateMetadata: { ...privateMetadata, stripe_customer_id: session.customer },
+          });
+        }
 
-      case "customer.subscription.deleted":
-        const canceledSubscription = event.data.object as Stripe.Subscription;
-        result = await StripeWebhookService.handleSubscriptionCancelled(canceledSubscription);
         break;
 
       default:
@@ -65,8 +66,8 @@ export async function POST(req: Request) {
         result = { success: true, message: `Unhandled event type: ${event.type}` };
     }
 
-    console.log(`[${event.type}] ${result.message}`);
-    return NextResponse.json({ received: true, success: result.success }, { status: 200 });
+    console.log(`[${event.type}] ${result?.message}`);
+    return NextResponse.json({ received: true, success: result?.success }, { status: 200 });
   } catch (error) {
     handleSubscriptionError(error, `webhook-${event.type}`);
     return NextResponse.json({ error: "Error processing webhook event" }, { status: 500 });

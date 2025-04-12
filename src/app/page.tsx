@@ -2,6 +2,7 @@ import ChatApp from "@/components/chat-app/chat-app";
 import { subscriptionFacade } from "@/lib/subscription/init";
 import { auth, clerkClient } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 
 export default async function Home({ searchParams }: { searchParams: Promise<{ session?: string }> }) {
   const session = (await searchParams).session;
@@ -15,23 +16,22 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
   const [threads, messages] = await Promise.all([
     prisma.thread.findMany({
       where: {
-        userId: userId,
-      },
+        userId: userId as string,
+      } satisfies Prisma.ThreadWhereInput,
       orderBy: {
-        updatedAt: "desc",
+        updatedAt: Prisma.SortOrder.desc,
       },
     }),
     session
       ? prisma.message.findMany({
           where: {
-            userId: userId,
-            threadId: session,
+            userId: userId as string,
+            threadId: session as string,
           },
         })
       : null,
   ]);
 
-  console.log("messages", messages);
   void updateUserMetadataIfNeeded(userId);
 
   const formattedThreads = threads?.map((thread) => ({
