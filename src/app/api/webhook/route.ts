@@ -5,10 +5,7 @@
 // Then modify the permissions for the webhook.
 
 // Add the following permissions:
-// - customer.subscription.updated
-// - customer.subscription.deleted
 // - checkout.session.completed
-// - charge.updated
 
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
