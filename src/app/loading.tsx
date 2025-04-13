@@ -1,5 +1,5 @@
-import GeneralFullScreenError from "@/components/error";
+import { QuickScreensaver } from "@/components/screensaver";
 
 export default function Loading() {
-  return <GeneralFullScreenError message="loading..." />;
+  return <QuickScreensaver message="loading..." />;
 }

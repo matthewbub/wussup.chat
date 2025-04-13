@@ -1,6 +1,6 @@
 "use client";
 
-import GeneralFullScreenError from "@/components/error";
+import { QuickScreensaver } from "@/components/screensaver";
 import * as Sentry from "@sentry/nextjs";
 import { useEffect } from "react";
 
@@ -12,7 +12,7 @@ export default function GlobalError({ error }: { error: Error & { digest?: strin
   return (
     <html>
       <body>
-        <GeneralFullScreenError message={error.message} />
+        <QuickScreensaver message={error.message} />
       </body>
     </html>
   );

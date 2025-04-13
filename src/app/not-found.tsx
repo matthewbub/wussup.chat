@@ -1,5 +1,5 @@
-import GeneralFullScreenError from "@/components/error";
+import { QuickScreensaver } from "@/components/screensaver";
 
 export default function NotFound() {
-  return <GeneralFullScreenError message="page not found" />;
+  return <QuickScreensaver message="page not found" />;
 }
