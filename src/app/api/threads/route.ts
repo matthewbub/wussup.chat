@@ -126,27 +126,18 @@ export async function DELETE(req: Request) {
   const { threadIdArray } = result.data;
 
   // Delete all messages first due to foreign key constraint
-  const messagesError = await prisma.message.deleteMany({
+  await prisma.message.deleteMany({
     where: {
       threadId: { in: threadIdArray },
       userId: userId,
     },
   });
-
-  if (messagesError) {
-    return NextResponse.json({ error: messagesError }, { status: 500 });
-  }
-
-  const error = await prisma.thread.deleteMany({
+  await prisma.thread.deleteMany({
     where: {
       id: { in: threadIdArray },
       userId: userId,
     },
   });
-
-  if (error) {
-    return NextResponse.json({ error: error }, { status: 500 });
-  }
 
   return NextResponse.json({ success: true });
 }
