@@ -1,15 +1,15 @@
 import ChatApp from "@/components/chat-app/chat-app";
-import { subscriptionFacade } from "@/lib/subscription/init";
 import { auth, clerkClient } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
-import { Prisma } from "@prisma/client";
+import { isUserSubscribed } from "@/lib/server-utils";
+import { SessionWrapper } from "@/components/chat-app/session-wrapper";
 
 export default async function Home({ searchParams }: { searchParams: Promise<{ session?: string }> }) {
   const session = (await searchParams).session;
   const { userId } = await auth();
 
   if (!userId) {
-    return <ChatApp existingData={[]} userSubscriptionInfo={null} />;
+    return <ChatApp />;
   }
 
   // Query for threads and the current threads messages, if applicable
@@ -17,9 +17,9 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
     prisma.thread.findMany({
       where: {
         userId: userId as string,
-      } satisfies Prisma.ThreadWhereInput,
+      },
       orderBy: {
-        updatedAt: Prisma.SortOrder.desc,
+        updatedAt: "desc",
       },
     }),
     session
@@ -33,31 +33,36 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
   ]);
 
   void updateUserMetadataIfNeeded(userId);
+  const isSubscribed = await isUserSubscribed(userId);
 
-  const formattedThreads = threads?.map((thread) => ({
-    ...thread,
-    created_at: new Date(thread.createdAt).toISOString(),
-    updated_at: new Date(thread.updatedAt).toISOString(),
-    chat_history: thread
-      ? messages
-          ?.filter((message) => message.threadId === thread.id)
-          .reduce<{ role: string; content: string }[]>((acc, message) => {
-            acc.push({
-              role: "user",
-              content: message.input,
-            });
-            acc.push({
-              role: "assistant",
-              content: message.output,
-            });
-            return acc;
-          }, []) || []
-      : [],
-  }));
+  const formattedThreads = threads?.map(
+    (thread: { id: string; createdAt: Date; updatedAt: Date; userId: string; name: string }) => ({
+      ...thread,
+      created_at: new Date(thread.createdAt).toISOString(),
+      updated_at: new Date(thread.updatedAt).toISOString(),
+      chat_history: thread
+        ? messages
+            ?.filter((message: { threadId: string }) => message.threadId === thread.id)
+            .reduce((acc: { role: string; content: string }[], message: { input: string; output: string }) => {
+              acc.push({
+                role: "user",
+                content: message.input,
+              });
+              acc.push({
+                role: "assistant",
+                content: message.output,
+              });
+              return acc;
+            }, []) || []
+        : [],
+    })
+  );
 
-  const userSubscriptionInfo = await subscriptionFacade.getSubscriptionStatus(userId);
-
-  return <ChatApp existingData={formattedThreads || []} userSubscriptionInfo={userSubscriptionInfo} />;
+  return (
+    <SessionWrapper existingData={formattedThreads || []} isSubscribed={isSubscribed}>
+      <ChatApp />
+    </SessionWrapper>
+  );
 }
 
 async function updateUserMetadataIfNeeded(userId: string) {

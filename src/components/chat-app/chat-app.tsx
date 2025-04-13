@@ -6,31 +6,11 @@ import { ChatAppSidebarV2 } from "@/components/chat-app/sidebar";
 import { ChatAppMobileSidebarV2 } from "@/components/chat-app/mobile-sidebar";
 import { useChatStore } from "@/store/chat-store";
 import * as Sentry from "@sentry/nextjs";
-import { fetchAiMessage, processStreamingResponse } from "@/lib/format/format-utils";
+import { fetchAiMessage, processStreamingResponse } from "@/lib/utils";
 import { IconSidebar } from "@/components/IconSidebar";
-import { SubscriptionStatus } from "@/lib/subscription/subscription-facade";
-import { SessionWrapper } from "./session-wrapper";
 import { Loader2 } from "lucide-react";
-import { AlertTitle, AlertDescription } from "../ui/alert";
-import { Alert } from "../ui/alert";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
 
-const ChatApp = ({
-  existingData,
-  userSubscriptionInfo,
-  userError,
-}: {
-  existingData: {
-    id: string;
-    name: string;
-    created_at: string;
-    updated_at: string;
-    chat_history: { role: string; content: string }[];
-  }[];
-  userSubscriptionInfo: SubscriptionStatus | null;
-  userError?: string | null;
-}) => {
+const ChatApp = () => {
   const {
     messages,
     currentInput,
@@ -46,13 +26,8 @@ const ChatApp = ({
     chatSessions,
     isLoadingChatHistory,
   } = useChatStore();
-  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
-    if (userError) {
-      router.push("/sign-in");
-      return;
-    }
     e.preventDefault();
 
     // reject if no input or loading
@@ -161,56 +136,39 @@ const ChatApp = ({
   };
 
   return (
-    <SessionWrapper existingData={existingData}>
-      <div className="flex h-full overflow-hidden">
-        {/* App navigation */}
-        <IconSidebar />
+    <div className="flex h-full overflow-hidden">
+      {/* App navigation */}
+      <IconSidebar />
 
-        {/* Desktop Sidebar */}
-        <div className="hidden md:block relative w-72">
-          <div className="absolute inset-0 border-r border-border">
-            <ChatAppSidebarV2 existingData={chatSessions} sessionId={sessionId} />
-          </div>
+      {/* Desktop Sidebar */}
+      <div className="hidden md:block relative w-72">
+        <div className="absolute inset-0 border-r border-border">
+          <ChatAppSidebarV2 existingData={chatSessions} sessionId={sessionId} />
         </div>
-
-        {/* Mobile Sidebar */}
-        <ChatAppMobileSidebarV2 sessionId={sessionId} />
-
-        <main className="flex-1 flex flex-col min-w-0 relative">
-          {userError && (
-            <div className="absolute top-10 left-0 right-0 flex items-center justify-center mx-4">
-              <Alert>
-                <AlertTitle>Error locating your account</AlertTitle>
-                <AlertDescription className="flex">
-                  Awww snap! We couldn't log you in, or had trouble signing you in as a guest. Please{" "}
-                  <Link href="/sign-in" className="text-primary hover:underline">
-                    sign in
-                  </Link>{" "}
-                  to continue.
-                </AlertDescription>
-              </Alert>
-            </div>
-          )}
-          <div className="flex-1 overflow-y-auto">
-            <ChatAppMessages messages={messages || []} userError={userError} />
-          </div>
-          {isLoadingChatHistory && (
-            <div className="absolute inset-0 flex items-center justify-center">
-              <Loader2 className="w-4 h-4 animate-spin" />
-            </div>
-          )}
-          <ChatAppInput
-            currentInput={currentInput}
-            setInput={setInput}
-            isLoading={isLoading}
-            onSubmit={handleSubmit}
-            selectedModel={selectedModel}
-            onModelChange={setModel}
-            userSubscriptionInfo={userSubscriptionInfo}
-          />
-        </main>
       </div>
-    </SessionWrapper>
+
+      {/* Mobile Sidebar */}
+      <ChatAppMobileSidebarV2 sessionId={sessionId} />
+
+      <main className="flex-1 flex flex-col min-w-0 relative">
+        <div className="flex-1 overflow-y-auto">
+          <ChatAppMessages messages={messages || []} />
+        </div>
+        {isLoadingChatHistory && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <Loader2 className="w-4 h-4 animate-spin" />
+          </div>
+        )}
+        <ChatAppInput
+          currentInput={currentInput}
+          setInput={setInput}
+          isLoading={isLoading}
+          onSubmit={handleSubmit}
+          selectedModel={selectedModel}
+          onModelChange={setModel}
+        />
+      </main>
+    </div>
   );
 };
 

@@ -1,21 +1,38 @@
 import { NextResponse } from "next/server";
-import { StripeSubscriptionService } from "@/lib/subscription/stripe-subscription-service";
-import { handleSubscriptionError } from "@/lib/subscription/subscription-helpers";
-import { auth } from "@clerk/nextjs/server";
+import { currentUser } from "@clerk/nextjs/server";
+import Stripe from "stripe";
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
 export async function POST() {
-  try {
-    const { userId } = await auth();
+  const user = await currentUser();
+  const stripe_customer_id = user?.privateMetadata.stripe_customer_id as string;
 
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  console.log("stripe_customer_id", stripe_customer_id);
+  if (!stripe_customer_id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    // Get active subscriptions for the customer
+    const subscriptions = await stripe.subscriptions.list({
+      customer: stripe_customer_id,
+      status: "active",
+      limit: 1,
+    });
+
+    if (subscriptions.data.length === 0) {
+      return NextResponse.json({ error: "No active subscription found" }, { status: 404 });
     }
 
-    const result = await StripeSubscriptionService.cancelSubscription(userId);
+    // Cancel the subscription at period end
+    await stripe.subscriptions.update(subscriptions.data[0].id, {
+      cancel_at_period_end: true,
+    });
 
-    return NextResponse.json({ message: result.message });
+    return NextResponse.json({ message: "Subscription cancelled" });
   } catch (error) {
-    handleSubscriptionError(error, "api-cancel-subscription");
+    console.error("Failed to cancel subscription", error);
     return NextResponse.json({ error: "Failed to cancel subscription" }, { status: 500 });
   }
 }

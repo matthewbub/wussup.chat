@@ -6,12 +6,8 @@ import { NewMessage } from "@/store/chat-store";
 import { useChatStore } from "@/store/chat-store";
 import { LoadingDots } from "@/components/loading-dots";
 
-export const ChatAppMessages = ({ messages, userError }: { messages: NewMessage[]; userError?: string | null }) => {
+export const ChatAppMessages = ({ messages }: { messages: NewMessage[] }) => {
   const { isLoading, isLoadingChatHistory } = useChatStore();
-
-  if (userError) {
-    return null;
-  }
 
   return (
     <div className="p-4 w-full mb-30">

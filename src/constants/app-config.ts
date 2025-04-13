@@ -39,3 +39,18 @@ export const appConfig = {
     signUp: "/sign-up",
   },
 };
+
+export const features = [
+  "1,500 chat messages per month",
+  "Bring your own API key for unlimited chat messages",
+  "Early access to experimental features",
+];
+
+export const plan = {
+  name: "Pro (Alpha, 1 Month)",
+  price: "$5.00",
+  originalPrice: "$9.00",
+  period: "recurring",
+  description: "Get 1,500 chat messages per month",
+  priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_ID_FOR__PRO_PLAN_ALPHA_ONE_MONTH_RECURRING,
+};

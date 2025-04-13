@@ -2,6 +2,7 @@ import * as Sentry from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
+
 /**
  * Duplicates a chat session and all its messages
  */
@@ -54,18 +55,30 @@ export async function POST(req: Request) {
 
     // Duplicate all messages with the new session ID
     if (messages && messages.length > 0) {
-      const newMessages = messages.map((msg) => ({
-        id: crypto.randomUUID(),
-        threadId: newSessionId,
-        createdAt: new Date(),
-        userId: msg.userId,
-        model: msg.model,
-        // We don't need to copy the tokens when duplicating the chat
-        promptTokens: 0,
-        completionTokens: 0,
-        input: msg.input,
-        output: msg.output,
-      }));
+      const newMessages = messages.map(
+        (msg: {
+          id: string;
+          threadId: string;
+          createdAt: Date;
+          userId: string;
+          model: string;
+          promptTokens: number;
+          completionTokens: number;
+          input: string;
+          output: string;
+        }) => ({
+          id: crypto.randomUUID(),
+          threadId: newSessionId,
+          createdAt: new Date(),
+          userId: msg.userId,
+          model: msg.model,
+          // We don't need to copy the tokens when duplicating the chat
+          promptTokens: 0,
+          completionTokens: 0,
+          input: msg.input,
+          output: msg.output,
+        })
+      );
 
       const newMessages2 = await prisma.message.createMany({
         data: newMessages,

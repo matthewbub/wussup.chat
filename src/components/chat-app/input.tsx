@@ -2,22 +2,13 @@
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
-import { Send, Sparkles, Bot, Zap, Star, Cpu } from "lucide-react";
+import { Send, Zap } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select";
 import { AVAILABLE_MODELS, AiModel } from "@/constants/models";
 import { UpgradeToProModal } from "@/components/UpgradeToProModal";
-import { SubscriptionStatus } from "@/lib/subscription/subscription-facade";
 import { cn } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
-
-// Provider icon mapping
-const PROVIDER_ICONS: Record<string, { icon: React.ElementType; color: string }> = {
-  openai: { icon: Sparkles, color: "bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400" },
-  anthropic: { icon: Bot, color: "bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400" },
-  google: { icon: Cpu, color: "bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400" },
-  xai: { icon: Zap, color: "bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400" },
-  default: { icon: Star, color: "bg-slate-100 text-slate-600 dark:bg-slate-900/30 dark:text-slate-400" },
-};
+import { useChatStore } from "@/store/chat-store";
 
 export const ChatAppInput = ({
   currentInput,
@@ -26,7 +17,6 @@ export const ChatAppInput = ({
   onSubmit,
   selectedModel,
   onModelChange,
-  userSubscriptionInfo,
 }: {
   currentInput: string;
   setInput: (input: string) => void;
@@ -34,10 +24,11 @@ export const ChatAppInput = ({
   onSubmit: (e: React.FormEvent) => void;
   selectedModel: { id: string; provider: string };
   onModelChange: (model: { id: string; provider: string }) => void;
-  userSubscriptionInfo: SubscriptionStatus | null;
 }) => {
   const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
-  const USER_SUBSCRIPTION_TIER = userSubscriptionInfo?.planName || "free";
+  const { isSubscribed } = useChatStore();
+  const USER_SUBSCRIPTION_TIER = isSubscribed ? "pro" : "free";
+
   return (
     <form onSubmit={onSubmit} className="px-4 pt-4 flex flex-col absolute bottom-0 w-full">
       <div className="self-end">
@@ -57,14 +48,9 @@ export const ChatAppInput = ({
               const selectedModelData = AVAILABLE_MODELS.find(
                 (m) => m.provider === selectedModel.provider && m.id === selectedModel.id
               );
-              const providerData = PROVIDER_ICONS[selectedModel.provider] || PROVIDER_ICONS.default;
-              const ProviderIcon = providerData.icon;
 
               return (
                 <div className="flex items-center gap-2">
-                  <div className={`rounded-md p-1 ${providerData.color}`}>
-                    <ProviderIcon className="h-4 w-4" />
-                  </div>
                   <div className="truncate">{selectedModelData?.displayName || selectedModel.id}</div>
                 </div>
               );
@@ -85,8 +71,6 @@ export const ChatAppInput = ({
             )}
             {AVAILABLE_MODELS.map((model: AiModel) => {
               // Get provider icon data, fallback to default if not found
-              const providerData = PROVIDER_ICONS[model.provider] || PROVIDER_ICONS.default;
-              const ProviderIcon = providerData.icon;
               const capitalized = model.provider.charAt(0).toUpperCase() + model.provider.slice(1);
 
               return (
@@ -101,20 +85,12 @@ export const ChatAppInput = ({
                       !model.free && USER_SUBSCRIPTION_TIER === "free" ? "opacity-50" : ""
                     }`}
                   >
-                    <div className={`rounded-md p-1 ${providerData.color}`}>
-                      <ProviderIcon className="h-4 w-4" />
-                    </div>
                     <div className="flex flex-col">
                       <div className="flex items-center gap-1">
                         <span>{model.displayName || model.id}</span>
                         {model.free && USER_SUBSCRIPTION_TIER === "free" && (
                           <span className="bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 text-xs px-1.5 py-0.5 rounded-full font-medium">
                             Free
-                          </span>
-                        )}
-                        {!model.free && USER_SUBSCRIPTION_TIER === "free" && (
-                          <span className="bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400 text-xs px-1.5 py-0.5 rounded-full font-medium">
-                            Premium
                           </span>
                         )}
                       </div>

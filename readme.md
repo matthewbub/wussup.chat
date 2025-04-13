@@ -2,8 +2,6 @@
 
 A unified AI chatbot assistant
 
-<img src="./public/ABWussupDemo.gif" width="500px" />
-
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
@@ -103,28 +101,4 @@ More
 v6
 
 - App rewrite (no vibe coding)
-
-TODO
-
-- [s] Update Sidebar Menu Options to actually work
-- [ ] Migrate Chat to Redis per spec + Fix Broken Sidebar
-- [ ] Update FAQ / Fix Light Mode
-- [ ] Launch again
-
-## FAQ
-
-### What counts as 1 message?
-
-We treat 1 message as you're input plus the AI's output. We also don't count messages that fail or that get stopped.
-
-### How many messages do i get in the pro plan?
-
-1,500 messages on the Pro plan.
-
-### Can I bring my own API keys?
-
-You can use your own API keys for unlimited messages, and test experimental functionality while on the Pro plan.
-
-### Are my API keys secure?
-
-Yes we use end to end encryption to securely manage your sensitive data.
+- Replace Supabase with Prisma

@@ -4,6 +4,7 @@ import { create } from "zustand";
 export type NewMessage = {
   content: string;
   role: "user" | "assistant";
+  id: string;
 };
 
 export type ChatSession = {
@@ -52,6 +53,8 @@ type ChatStore = {
     sessionId: string,
     data: { name: string; created_at: string; updated_at: string; pinned: boolean }
   ) => void;
+  isSubscribed: boolean;
+  setInitialPageData: (data: { isSubscribed: boolean; messages: NewMessage[]; sessionId: string }) => void;
 };
 
 const firstFreeModel = openAiModels.find((model) => model.free);
@@ -310,4 +313,12 @@ export const useChatStore = create<ChatStore>((set) => ({
 
   setMobileSidebarOpen: (isOpen) => set({ isMobileSidebarOpen: isOpen }),
   setIsLoadingChatHistory: (isLoading: boolean) => set({ isLoadingChatHistory: isLoading }),
+  setInitialPageData: (data) =>
+    set({
+      isSubscribed: data.isSubscribed,
+      messages: data.messages,
+      sessionId: data.sessionId,
+      isLoadingChatHistory: false,
+    }),
+  isSubscribed: false,
 }));

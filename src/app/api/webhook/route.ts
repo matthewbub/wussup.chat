@@ -11,7 +11,6 @@ import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import * as Sentry from "@sentry/nextjs";
-import { handleSubscriptionError } from "@/lib/subscription/subscription-helpers";
 import { clerkClient } from "@clerk/nextjs/server";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
@@ -66,7 +65,7 @@ export async function POST(req: Request) {
     console.log(`[${event.type}] ${result?.message}`);
     return NextResponse.json({ received: true, success: result?.success }, { status: 200 });
   } catch (error) {
-    handleSubscriptionError(error, `webhook-${event.type}`);
+    console.error(error);
     return NextResponse.json({ error: "Error processing webhook event" }, { status: 500 });
   }
 }

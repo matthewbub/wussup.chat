@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 
 export const SessionWrapper = ({
   existingData,
+  isSubscribed,
   children,
 }: {
   existingData: {
@@ -15,13 +16,18 @@ export const SessionWrapper = ({
     updated_at: string;
     chat_history: { role: string; content: string }[];
   }[];
+  isSubscribed: {
+    isSubscribed: boolean;
+    currentPeriodEnd: Date | null;
+    currentPeriodStart: Date | null;
+  };
   children: React.ReactNode;
 }) => {
   // get url query params
   const searchParams = useSearchParams();
   const sessionIdFromUrl = searchParams.get("session");
 
-  const { updateSessionTitle, setSessionId, setMessages, setChatSessions, setIsLoadingChatHistory } = useChatStore();
+  const { setChatSessions, setInitialPageData } = useChatStore();
 
   // Initialize chat sessions in the store
   useEffect(() => {
@@ -30,10 +36,11 @@ export const SessionWrapper = ({
     // did we already fetch this chat history?
     const session = existingData.find((session) => session.id === sessionIdFromUrl);
     if (session) {
-      setMessages(session.chat_history as NewMessage[]);
-      updateSessionTitle(session.id, session.name);
-      setSessionId(sessionIdFromUrl || "");
-      setIsLoadingChatHistory(false);
+      setInitialPageData({
+        isSubscribed: isSubscribed?.isSubscribed,
+        messages: session?.chat_history as NewMessage[],
+        sessionId: sessionIdFromUrl || "",
+      });
     }
   }, [existingData]);
 
