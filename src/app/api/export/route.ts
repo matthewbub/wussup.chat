@@ -41,20 +41,33 @@ export async function POST(req: Request) {
     });
 
     // Format threads with their messages
-    const formattedThreads = threads.map((thread) => ({
-      id: thread.id,
-      name: thread.name,
-      created_at: thread.createdAt.toISOString(),
-      updated_at: thread.updatedAt.toISOString(),
-      pinned: thread.pinned,
-      chat_history: messages
-        .filter((message) => message.threadId === thread.id)
-        .reduce((acc, message) => {
-          acc.push({ role: "user", content: message.input });
-          acc.push({ role: "assistant", content: message.output });
+    const formattedThreads = threads.map((thread) => {
+      const threadMessages = messages.filter((message) => message.threadId === thread.id);
+
+      return {
+        id: thread.id,
+        name: thread.name,
+        created_at: thread.createdAt.toISOString(),
+        updated_at: thread.updatedAt.toISOString(),
+        pinned: thread.pinned,
+        chat_history: threadMessages.reduce((acc, message) => {
+          // Include the model information with each message
+          acc.push({
+            role: "user",
+            content: message.input,
+            model: message.model || "unknown",
+          });
+
+          acc.push({
+            role: "assistant",
+            content: message.output,
+            model: message.model || "unknown",
+          });
+
           return acc;
-        }, [] as { role: string; content: string }[]),
-    }));
+        }, [] as { role: string; content: string; model: string }[]),
+      };
+    });
 
     return NextResponse.json({ data: formattedThreads });
   } catch (error) {
