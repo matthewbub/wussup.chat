@@ -8,7 +8,7 @@ import { type ChatSession, useChatStore } from "@/store/chat-store";
 import { Check, Copy, Edit, MoreHorizontal, Pin, PlusIcon, Trash, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { appName } from "@/constants/version";
+import { appConfig } from "@/constants/app-config";
 import { useState, useEffect, useRef } from "react";
 import {
   DropdownMenu,
@@ -248,7 +248,7 @@ export const ChatAppSidebar = ({ sessionId }: { sessionId: string }) => {
         <div className="flex-none px-4 py-2 border-b border-primary/5">
           <div className="flex items-center justify-between">
             <Link href="/" className="font-mono font-bold dark:text-white hover:opacity-80 transition-opacity">
-              {appName}
+              {appConfig.name}
             </Link>
           </div>
         </div>

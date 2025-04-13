@@ -1,4 +1,4 @@
-import { version } from "@/constants/version";
+import { appConfig } from "@/constants/app-config";
 
 export default function Footer() {
   return (
@@ -6,7 +6,7 @@ export default function Footer() {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between">
           <div className="text-sm">
-            © {new Date().getFullYear()} Wussup Chat. All rights reserved. v{version}
+            © {new Date().getFullYear()} {appConfig.name}. All rights reserved. v{appConfig.version}
           </div>
         </div>
       </div>

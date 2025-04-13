@@ -1,7 +1,7 @@
 "use client";
 
 import Footer from "@/components/general-footer";
-import { appName } from "@/constants/version";
+import { appConfig } from "@/constants/app-config";
 import { SignIn } from "@clerk/nextjs";
 import { dark } from "@clerk/themes";
 import Link from "next/link";
@@ -13,7 +13,7 @@ export default function Page() {
     <div className="flex flex-col h-screen">
       <div className="container mx-auto p-4">
         <Link href="/" className="text-xl font-bold text-primary hover:opacity-80 transition-opacity">
-          {appName}
+          {appConfig.name}
         </Link>
       </div>
       <div className="flex-1 flex justify-center items-center">
