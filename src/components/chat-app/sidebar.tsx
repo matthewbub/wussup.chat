@@ -20,7 +20,7 @@ import {
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/Tooltip";
 
-export const ChatAppSidebarV2 = ({ existingData, sessionId }: { existingData: ChatSession[]; sessionId: string }) => {
+export const ChatAppSidebar = ({ sessionId }: { sessionId: string }) => {
   const router = useRouter();
   const containerRef = useRef<HTMLDivElement>(null);
   const scrollzoneRef = useRef<HTMLDivElement>(null);
@@ -244,13 +244,10 @@ export const ChatAppSidebarV2 = ({ existingData, sessionId }: { existingData: Ch
 
   return (
     <TooltipProvider>
-      <div className="flex flex-col absolute inset-0">
-        <div className="flex-none p-6 border-b border-primary/5">
+      <div className="flex flex-col absolute inset-0 bg-sidebar">
+        <div className="flex-none px-4 py-2 border-b border-primary/5">
           <div className="flex items-center justify-between">
-            <Link
-              href="/"
-              className="font-title text-2xl font-bold dark:text-white hover:opacity-80 transition-opacity"
-            >
+            <Link href="/" className="font-mono font-bold dark:text-white hover:opacity-80 transition-opacity">
               {appName}
             </Link>
           </div>
@@ -266,27 +263,29 @@ export const ChatAppSidebarV2 = ({ existingData, sessionId }: { existingData: Ch
             New Chat
           </Button>
 
-          <div className="flex justify-end px-1">
-            {isSelectionMode ? (
-              <Button
-                variant="link"
-                size="sm"
-                onClick={toggleSelectionMode}
-                className="text-xs h-6 p-0 text-primary font-medium"
-              >
-                Exit selection
-              </Button>
-            ) : (
-              <Button
-                variant="link"
-                size="sm"
-                onClick={toggleSelectionMode}
-                className="text-xs h-6 p-0 text-muted-foreground hover:text-foreground"
-              >
-                Bulk select
-              </Button>
-            )}
-          </div>
+          {chatSessions.length > 0 && (
+            <div className="flex justify-end px-1">
+              {isSelectionMode ? (
+                <Button
+                  variant="link"
+                  size="sm"
+                  onClick={toggleSelectionMode}
+                  className="text-xs h-6 p-0 text-primary font-medium"
+                >
+                  Exit selection
+                </Button>
+              ) : (
+                <Button
+                  variant="link"
+                  size="sm"
+                  onClick={toggleSelectionMode}
+                  className="text-xs h-6 p-0 text-muted-foreground hover:text-foreground"
+                >
+                  Bulk select
+                </Button>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="flex-1 overflow-hidden flex flex-col px-4">
@@ -325,7 +324,7 @@ export const ChatAppSidebarV2 = ({ existingData, sessionId }: { existingData: Ch
 
         <div className="flex-none p-4 border-t border-primary/5">
           <div className="text-xs text-muted-foreground">
-            {existingData.length} conversation{existingData.length !== 1 ? "s" : ""}
+            {chatSessions.length} conversation{chatSessions.length !== 1 ? "s" : ""}
           </div>
         </div>
 

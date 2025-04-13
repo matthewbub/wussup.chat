@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { useChatStore } from "@/store/chat-store";
 import { Menu, X } from "lucide-react";
-import { ChatAppSidebarV2 } from "@/components/chat-app/sidebar";
+import { ChatAppSidebar } from "@/components/chat-app/sidebar";
 import { useEffect } from "react";
 
 export function ChatAppMobileSidebarV2({ sessionId }: { sessionId: string }) {
@@ -61,7 +61,7 @@ export function ChatAppMobileSidebarV2({ sessionId }: { sessionId: string }) {
             <X className="h-5 w-5" />
           </Button>
         </div>
-        <ChatAppSidebarV2 existingData={chatSessions} sessionId={sessionId} />
+        <ChatAppSidebar existingData={chatSessions} sessionId={sessionId} />
       </div>
     </>
   );

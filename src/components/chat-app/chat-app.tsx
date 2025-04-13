@@ -2,7 +2,7 @@
 
 import { ChatAppInput } from "@/components/chat-app/input";
 import { ChatAppMessages } from "@/components/chat-app/messages";
-import { ChatAppSidebarV2 } from "@/components/chat-app/sidebar";
+import { ChatAppSidebar } from "@/components/chat-app/sidebar";
 import { ChatAppMobileSidebarV2 } from "@/components/chat-app/mobile-sidebar";
 import { useChatStore } from "@/store/chat-store";
 import * as Sentry from "@sentry/nextjs";
@@ -143,7 +143,7 @@ const ChatApp = () => {
       {/* Desktop Sidebar */}
       <div className="hidden md:block relative w-72">
         <div className="absolute inset-0 border-r border-border">
-          <ChatAppSidebarV2 existingData={chatSessions} sessionId={sessionId} />
+          <ChatAppSidebar sessionId={sessionId} />
         </div>
       </div>
 

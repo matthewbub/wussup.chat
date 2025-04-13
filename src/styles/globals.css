@@ -152,7 +152,7 @@
 
     --radius: 0.5rem;
 
-    --sidebar-background: 60 5% 96%;
+    --sidebar-background: 60 5% 92%;
     --sidebar-foreground: 222 47% 11%;
     --sidebar-primary: 222 89% 42%;
     --sidebar-primary-foreground: 210 40% 98%;
@@ -164,11 +164,11 @@
     --grid-size: 16px;
   }
   .dark {
-    --background: 240 10% 3.9%;
+    --background: 240 10% 8%;
 
     --foreground: 0 0% 98%;
 
-    --card: 240 10% 3.9%;
+    --card: 240 10% 8%;
 
     --card-foreground: 0 0% 98%;
 
@@ -203,7 +203,7 @@
     --chart-4: 280 80% 65%;
     --chart-5: 340 85% 60%;
 
-    --sidebar-background: 222 47% 11%;
+    --sidebar-background: 230 15% 12%;
     --sidebar-foreground: 210 40% 98%;
     --sidebar-primary: 217 91% 60%;
     --sidebar-primary-foreground: 0 0% 100%;
