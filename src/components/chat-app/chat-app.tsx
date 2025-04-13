@@ -7,7 +7,7 @@ import { ChatAppMobileSidebarV2 } from "@/components/chat-app/mobile-sidebar";
 import { useChatStore } from "@/store/chat-store";
 import * as Sentry from "@sentry/nextjs";
 import { fetchAiMessage, processStreamingResponse } from "@/lib/utils";
-import { IconSidebar } from "@/components/IconSidebar";
+import { IconSidebar } from "@/components/sidebar";
 import { Loader2 } from "lucide-react";
 
 const ChatApp = () => {

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Send, Zap } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select";
 import { AVAILABLE_MODELS, AiModel } from "@/constants/models";
-import { UpgradeToProModal } from "@/components/UpgradeToProModal";
+import { UpgradeToProModal } from "@/components/upgrade-to-pro";
 import { cn } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
 import { useChatStore } from "@/store/chat-store";

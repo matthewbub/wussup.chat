@@ -1,5 +1,5 @@
 import SubscriptionSettings from "./_SubscriptionPage";
-import Footer from "@/components/Footer";
+import Footer from "@/components/general-footer";
 import { StaticSidebar } from "@/components/sidebar";
 import { auth } from "@clerk/nextjs/server";
 import { isUserSubscribed } from "@/lib/server-utils";

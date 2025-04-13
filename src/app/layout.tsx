@@ -5,7 +5,6 @@ import "../styles/globals.css";
 import "katex/dist/katex.min.css";
 import { Toaster } from "@/components/ui/toaster";
 import { PostHogProvider } from "./providers";
-// import { ReactScan } from "@/components/ReactScan";
 import { ClerkProvider } from "@clerk/nextjs";
 import { ThemeProvider } from "./theme-provider";
 
@@ -37,11 +36,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="h-full">
-      <head>
-        {/* <script src="https://unpkg.com/react-scan/dist/auto.global.js" /> */}
-        <script defer data-domain="wussup.chat" src="https://plausible.io/js/script.js"></script>
-      </head>
-      {/* <ReactScan /> */}
       <body className={`${geistSans.variable} ${geistMono.variable} ${title.variable} antialiased h-full`}>
         <ClerkProvider>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
