@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
 import * as Sentry from "@sentry/nextjs";
 import { auth } from "@clerk/nextjs/server";
-import { prisma } from "@/lib/prisma";
 
 export async function POST(req: Request) {
   const { userId } = await auth();

@@ -74,7 +74,7 @@ export async function fetchAiMessage({
   formData.append("messageHistory", JSON.stringify(messages));
   formData.append("session_id", sessionId);
 
-  return fetch("/api/v3/ai", {
+  return fetch("/api/messages/ai", {
     method: "POST",
     body: formData,
   });

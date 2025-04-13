@@ -142,7 +142,7 @@ export const useChatStore = create<ChatStore>((set) => ({
     }));
 
     try {
-      const data = await fetch("/api/v3/threads", {
+      const data = await fetch("/api/threads", {
         method: "POST",
         body: JSON.stringify({ threadId: sessionId, name: newTitle }),
       });
@@ -177,7 +177,7 @@ export const useChatStore = create<ChatStore>((set) => ({
     });
 
     try {
-      const data = await fetch("/api/v3/threads", {
+      const data = await fetch("/api/threads", {
         method: "DELETE",
         body: JSON.stringify({ threadIdArray: [sessionId] }),
       });
@@ -203,7 +203,7 @@ export const useChatStore = create<ChatStore>((set) => ({
     });
 
     try {
-      const data = await fetch("/api/v3/threads", {
+      const data = await fetch("/api/threads", {
         method: "DELETE",
         body: JSON.stringify({ threadIdArray: sessionIds }),
       });
@@ -228,7 +228,7 @@ export const useChatStore = create<ChatStore>((set) => ({
 
     try {
       console.log("setting pin status", pinStatus);
-      const data = await fetch("/api/v3/threads", {
+      const data = await fetch("/api/threads", {
         method: "POST",
         body: JSON.stringify({ threadId: sessionId, pin: pinStatus }),
       });
@@ -264,7 +264,7 @@ export const useChatStore = create<ChatStore>((set) => ({
     });
 
     try {
-      const data = await fetch("/api/v3/chat/duplicate", {
+      const data = await fetch("/api/threads/duplicate", {
         method: "POST",
         body: JSON.stringify({ sessionId, newSessionId }),
       });

@@ -54,7 +54,7 @@ const ChatApp = () => {
       const isFirstMessage = (messages && messages.length === 0) || messages === null;
       // Only proceed with title and message generation if quota check passes
       if (isFirstMessage) {
-        const response = await fetch("/api/v3/threads", {
+        const response = await fetch("/api/threads", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -101,7 +101,7 @@ const ChatApp = () => {
         // Handle metadata (usage info) when stream completes
         (usage: { promptTokens: number; completionTokens: number }) => {
           const fetchInfo = async () => {
-            const res = await fetch("/api/v3/info", {
+            const res = await fetch("/api/chat/messages", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
