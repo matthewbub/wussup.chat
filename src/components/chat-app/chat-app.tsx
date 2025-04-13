@@ -23,7 +23,6 @@ const ChatApp = () => {
     setLoading,
     updateSessionTitle,
     setModel,
-    chatSessions,
     isLoadingChatHistory,
   } = useChatStore();
 
@@ -101,7 +100,7 @@ const ChatApp = () => {
         // Handle metadata (usage info) when stream completes
         (usage: { promptTokens: number; completionTokens: number }) => {
           const fetchInfo = async () => {
-            const res = await fetch("/api/chat/messages", {
+            const res = await fetch("/api/messages", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
@@ -116,8 +115,7 @@ const ChatApp = () => {
                 },
               }),
             });
-            const data = await res.json();
-            console.log("data", data);
+            await res.json();
           };
           fetchInfo();
         }
