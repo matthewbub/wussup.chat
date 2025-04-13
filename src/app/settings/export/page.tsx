@@ -1,17 +1,27 @@
-import SubscriptionSettings from "./_SubscriptionPage";
+import ExportSettings from "@/app/settings/export/_export";
+import { AuthOverlay } from "@/components/auth-overlay";
 import Footer from "@/components/general-footer";
 import { StaticSidebar } from "@/components/sidebar";
+import { prisma } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
-import { isUserSubscribed } from "@/lib/server-utils";
-import Link from "next/link";
-import { AuthOverlay } from "@/components/auth-overlay";
 
 export default async function SettingsPage() {
   const { userId } = await auth();
 
-  const { isSubscribed, currentPeriodEnd, currentPeriodStart, cancelAtPeriodEnd } = await isUserSubscribed(
-    userId as string
-  );
+  // get all threads & associated messages for the user
+  const threads = await prisma.thread.findMany({
+    where: {
+      userId: userId as string,
+    },
+    orderBy: {
+      updatedAt: "desc",
+    },
+    include: {
+      Message: true,
+    },
+  });
+
+  console.log(threads);
 
   if (!userId) {
     return (
@@ -22,7 +32,10 @@ export default async function SettingsPage() {
               <StaticSidebar />
             </div>
           </div>
-          <div className="flex-1 w-full overflow-auto">{/* <Footer /> */}</div>
+          <div className="flex-1 w-full overflow-auto">
+            <ExportSettings />
+            <Footer />
+          </div>
         </div>
       </AuthOverlay>
     );
@@ -37,18 +50,7 @@ export default async function SettingsPage() {
       </div>
       <div className="flex-1 w-full overflow-auto">
         <div className="mx-auto p-6 w-full flex flex-col space-y-8">
-          <SubscriptionSettings
-            isSubscribed={isSubscribed}
-            currentPeriodEnd={currentPeriodEnd}
-            currentPeriodStart={currentPeriodStart}
-            cancelAtPeriodEnd={cancelAtPeriodEnd || false}
-          />
-
-          <h2 className="text-2xl font-bold">Additional Settings and Services</h2>
-
-          <Link href="/settings/export" className="p-8 border border-border rounded-lg">
-            Export Chat History
-          </Link>
+          <ExportSettings threads={threads} />
         </div>
         <Footer />
       </div>

@@ -11,6 +11,10 @@ export interface AiModel {
   free: boolean;
   inputs?: string[];
   outputs?: string[];
+  contextWindow?: number;
+  description?: string;
+  inputPrice?: string;
+  outputPrice?: string;
 }
 
 export const openAiModels: AiModel[] = [
@@ -103,44 +107,34 @@ export const anthropicModels: AiModel[] = [
 
 export const xaiModels: AiModel[] = [
   {
-    displayName: "Grok 2",
+    displayName: "Grok 3",
     provider: "xai",
-    model: "grok-2-1212",
+    model: "grok-3-beta",
     inputs: ["text"],
     outputs: ["text"],
-    id: "grok-2",
+    id: "grok-3-beta",
+    free: false,
+    forchatuse: true,
+    contextWindow: 131072,
+    description:
+      "Our flagship model that excels at enterprise tasks like data extraction, programming, and text summarization.",
+    inputPrice: "$3.00",
+    outputPrice: "$15.00",
+  },
+  {
+    displayName: "Grok 3 Mini",
+    provider: "xai",
+    model: "grok-3-mini-beta",
+    inputs: ["text"],
+    outputs: ["text"],
+    id: "grok-3-mini-beta",
     free: true,
     forchatuse: true,
-  },
-  {
-    displayName: "Grok 2 Vision",
-    provider: "xai",
-    model: "grok-2-vision-1212",
-    inputs: ["text", "images"],
-    outputs: ["text"],
-    id: "grok-2-vision",
-    free: false,
-    forchatuse: false,
-  },
-  {
-    displayName: "Grok 2 Beta",
-    provider: "xai",
-    model: "grok-beta",
-    inputs: ["text"],
-    outputs: ["text"],
-    id: "grok-beta",
-    free: false,
-    forchatuse: false,
-  },
-  {
-    displayName: "Grok 2 Vision Beta",
-    provider: "xai",
-    model: "grok-vision-beta",
-    inputs: ["text", "images"],
-    outputs: ["text"],
-    id: "grok-vision-beta",
-    free: false,
-    forchatuse: false,
+    contextWindow: 131072,
+    description:
+      "A lightweight model that thinks before responding. Excels at quantitative tasks that involve math and reasoning.",
+    inputPrice: "$0.30",
+    outputPrice: "$0.50",
   },
 ];
 

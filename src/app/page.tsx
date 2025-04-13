@@ -1,9 +1,9 @@
 import ChatApp from "@/components/chat-app/chat-app";
 import { auth, clerkClient } from "@clerk/nextjs/server";
-import { SignIn } from "@clerk/nextjs";
 import { prisma } from "@/lib/prisma";
 import { isUserSubscribed } from "@/lib/server-utils";
 import { SessionWrapper } from "@/components/chat-app/session-wrapper";
+import { AuthOverlay } from "@/components/auth-overlay";
 
 export default async function Home({ searchParams }: { searchParams: Promise<{ session?: string }> }) {
   const session = (await searchParams).session;
@@ -11,13 +11,9 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
 
   if (!userId) {
     return (
-      <>
-        <div className="fixed inset-0 bg-black/50 z-40" />
-        <div className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50">
-          <SignIn />
-        </div>
+      <AuthOverlay>
         <ChatApp />
-      </>
+      </AuthOverlay>
     );
   }
 

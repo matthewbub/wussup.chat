@@ -83,7 +83,7 @@ export const StaticSidebar = () => {
           </SignUpButton>
         </SignedOut>
         <SignedIn>
-          <div className="flex items-center rounded-md p-2 bg-muted/30">
+          <div className="flex items-center rounded-md px-2">
             <UserButton
               appearance={{
                 baseTheme: theme === "dark" ? dark : undefined,
@@ -101,7 +101,9 @@ export const StaticSidebar = () => {
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <p className="text-sm text-foreground/80 truncate">{user?.emailAddresses[0]?.emailAddress}</p>
+                    <p className="text-sm text-stone-700 dark:text-stone-300 truncate">
+                      {user?.emailAddresses[0]?.emailAddress}
+                    </p>
                   </TooltipTrigger>
                   <TooltipContent side="top">{user?.emailAddresses[0]?.emailAddress}</TooltipContent>
                 </Tooltip>
