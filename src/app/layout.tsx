@@ -25,7 +25,7 @@ const title = Pacifico({
 });
 
 export const metadata: Metadata = {
-  title: "Wussup Chat",
+  title: "ZCauldron",
   description: "Unified AI assistant",
 };
 

@@ -86,7 +86,7 @@ export default function ImportSettings() {
         <CardHeader>
           <CardTitle>Import Chat History</CardTitle>
           <CardDescription>
-            Upload a JSON file containing your chat history. The file should be in the format exported by Wussup.
+            Upload a JSON file containing your chat history. The file should be in the format exported by ZCauldron.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -103,7 +103,7 @@ export default function ImportSettings() {
           )}
 
           <p className="text-sm text-gray-500 mb-4">
-            To import your chat history, upload a JSON file previously exported from Wussup.
+            To import your chat history, upload a JSON file previously exported from ZCauldron.
           </p>
 
           <input type="file" ref={fileInputRef} onChange={handleFileChange} accept=".json" className="hidden" />

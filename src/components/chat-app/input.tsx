@@ -56,10 +56,10 @@ export const ChatAppInput = ({
               );
             })()}
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="max-h-[400px] overflow-y-auto">
             {USER_SUBSCRIPTION_TIER === "free" && (
               <div
-                className="px-2 py-3 border-b cursor-pointer hover:bg-accent rounded group"
+                className="px-2 py-3 border-b cursor-pointer hover:bg-accent rounded group sticky top-0 bg-background"
                 onClick={() => setIsUpgradeModalOpen(true)}
               >
                 <div className="flex items-center gap-2 text-sm">

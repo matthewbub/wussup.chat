@@ -1,4 +1,4 @@
-# Wussup Chat
+# ZCauldron
 
 A unified AI chatbot assistant
 
@@ -43,9 +43,9 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 
 ## Release notes (developer)
 
-**Production** is currently v6, and can be accessed via https://github.com/matthewbub/wussup.chat/tree/release/v6. Changes to this branch go straight to production.
+**Production** is currently v6, and can be accessed via https://github.com/matthewbub/zcauldron.com/tree/release/v6. Changes to this branch go straight to production.
 
-**Beta** is in `main` and is where new changes are going in. It's okay to break the build here, the end user won't be effected. This branch can be accessed via https://next.wussup.chat
+**Beta** is in `main` and is where new changes are going in. It's okay to break the build here, the end user won't be effected. This branch can be accessed via https://next.zcauldron.com
 
 If you make a change to the production branch, you'll need to bring beta up-to-date so the both branches remain in sync. Here's an example:
 
