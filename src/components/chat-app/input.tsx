@@ -56,17 +56,19 @@ export const ChatAppInput = ({
               );
             })()}
           </SelectTrigger>
-          <SelectContent className="max-h-[400px] overflow-y-auto">
+          <SelectContent className="max-h-[400px] overflow-y-auto pt-0">
             {USER_SUBSCRIPTION_TIER === "free" && (
               <div
-                className="px-2 py-3 border-b cursor-pointer hover:bg-accent rounded group sticky top-0 bg-background"
+                className="px-2 py-3 border-b cursor-pointer hover:bg-teal-500/40 rounded group sticky top-0 bg-background z-10"
                 onClick={() => setIsUpgradeModalOpen(true)}
               >
                 <div className="flex items-center gap-2 text-sm">
                   <Zap className="h-4 w-4 text-blue-500 group-hover:text-yellow-500 transition-colors" />
                   <span>Upgrade to Pro for all models</span>
                 </div>
-                <div className="mt-1 text-xs text-muted-foreground">Get access to all models for $5/month</div>
+                <div className="mt-1 text-xs text-muted-foreground group-hover:text-white">
+                  Get access to all models for $5/month
+                </div>
               </div>
             )}
             {AVAILABLE_MODELS.map((model: AiModel) => {

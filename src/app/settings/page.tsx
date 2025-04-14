@@ -47,10 +47,16 @@ export default async function SettingsPage() {
           <h2 className="text-2xl font-bold">Additional Settings and Services</h2>
 
           <div className="grid grid-cols-2 gap-4">
-            <Link href="/settings/export" className="p-8 border border-border rounded-lg">
+            <Link
+              href="/settings/export"
+              className="p-8 border border-border rounded-lg hover:bg-accent cursor-pointer"
+            >
               Export Chat History
             </Link>
-            <Link href="/settings/import" className="p-8 border border-border rounded-lg">
+            <Link
+              href="/settings/import"
+              className="p-8 border border-border rounded-lg hover:bg-accent cursor-pointer"
+            >
               Import Chat History
             </Link>
           </div>
