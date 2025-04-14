@@ -13,7 +13,7 @@ const navItemsSecondary: NavItem[] = [
 ];
 
 export const appConfig = {
-  name: "Wussup Chat",
+  name: "ZCauldron",
   version: "6",
   plans: {
     free: {

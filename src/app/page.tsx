@@ -55,7 +55,11 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
 
     const isSubscribed = await isUserSubscribed(userId).catch((error) => {
       Sentry.captureException(error);
-      return false;
+      return {
+        isSubscribed: false,
+        currentPeriodEnd: null,
+        currentPeriodStart: null,
+      };
     });
 
     const formattedThreads = threads?.map(
