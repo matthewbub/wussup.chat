@@ -43,8 +43,6 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 
 ## Release notes (developer)
 
-The current production release can be viewed at https://wussup.chat/version
-
 **Production** is currently v6, and can be accessed via https://github.com/matthewbub/wussup.chat/tree/release/v6. Changes to this branch go straight to production.
 
 **Beta** is in `main` and is where new changes are going in. It's okay to break the build here, the end user won't be effected. This branch can be accessed via https://next.wussup.chat
@@ -102,3 +100,14 @@ v6
 
 - App rewrite (no vibe coding)
 - Replace Supabase with Prisma
+
+whats the math I would use to calculate the cost of each message sent in my AI Chat application?
+
+Message: { inputTokens: 123, outputTokens: 456 }
+
+Rules:
+
+PER MILLION TOKENS
+Model: gpt-4.5-preview
+Input: $75.00
+Output: $150.00
