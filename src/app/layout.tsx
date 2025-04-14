@@ -35,9 +35,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="h-full">
-      <body className={`${geistSans.variable} ${geistMono.variable} ${title.variable} antialiased h-full`}>
-        <ClerkProvider>
+    <ClerkProvider>
+      <html lang="en" className="h-full">
+        <body className={`${geistSans.variable} ${geistMono.variable} ${title.variable} antialiased h-full`}>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <PostHogProvider>
               <div className="h-full">
@@ -46,8 +46,8 @@ export default function RootLayout({
               </div>
             </PostHogProvider>
           </ThemeProvider>
-        </ClerkProvider>
-      </body>
-    </html>
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }
