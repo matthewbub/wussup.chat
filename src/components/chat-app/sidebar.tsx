@@ -290,7 +290,7 @@ export const ChatAppSidebar = ({ sessionId }: { sessionId: string }) => {
 
         <div className="flex-1 overflow-hidden flex flex-col px-4">
           {isSelectionMode && (
-            <div className="flex-none bg-background pt-2 pb-2 border-b border-primary/5 mb-3">
+            <div className="flex-none pt-2 pb-2 border-b border-primary/5 mb-3">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium">
                   {selectedChats.length > 0 ? `${selectedChats.length} selected` : "Select conversations"}
