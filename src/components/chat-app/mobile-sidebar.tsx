@@ -6,8 +6,8 @@ import { Menu, X } from "lucide-react";
 import { ChatAppSidebar } from "@/components/chat-app/sidebar";
 import { useEffect } from "react";
 
-export function ChatAppMobileSidebarV2({ sessionId }: { sessionId: string }) {
-  const { chatSessions, isMobileSidebarOpen, setMobileSidebarOpen, selectedChats, clearChatSelection } = useChatStore();
+export function ChatAppMobileSidebar({ sessionId }: { sessionId: string }) {
+  const { isMobileSidebarOpen, setMobileSidebarOpen, selectedChats, clearChatSelection } = useChatStore();
 
   // Close mobile sidebar when route changes
   useEffect(() => {
@@ -61,7 +61,7 @@ export function ChatAppMobileSidebarV2({ sessionId }: { sessionId: string }) {
             <X className="h-5 w-5" />
           </Button>
         </div>
-        <ChatAppSidebar existingData={chatSessions} sessionId={sessionId} />
+        <ChatAppSidebar sessionId={sessionId} />
       </div>
     </>
   );
