@@ -1,28 +1,14 @@
 import ImportSettings from "@/app/settings/import/_import";
 import Footer from "@/components/general-footer";
 import { StaticSidebar } from "@/components/sidebar";
-import { AuthOverlay } from "@/components/auth-overlay";
 import { auth } from "@clerk/nextjs/server";
+import { redirect } from "next/navigation";
 
 export default async function ImportPage() {
   const { userId } = await auth();
 
   if (!userId) {
-    return (
-      <AuthOverlay>
-        <div className="flex h-full">
-          <div className="hidden md:block w-72 sticky top-0">
-            <div className="inset-0 border-r border-border">
-              <StaticSidebar />
-            </div>
-          </div>
-          <div className="flex-1 w-full overflow-auto">
-            <ImportSettings />
-            <Footer />
-          </div>
-        </div>
-      </AuthOverlay>
-    );
+    redirect("/sign-in");
   }
 
   return (

@@ -3,8 +3,8 @@ import { auth, clerkClient } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
 import { isUserSubscribed } from "@/lib/server-utils";
 import { SessionWrapper } from "@/components/chat-app/session-wrapper";
-import { AuthOverlay } from "@/components/auth-overlay";
 import * as Sentry from "@sentry/nextjs";
+import { redirect } from "next/navigation";
 
 export default async function Home({ searchParams }: { searchParams: Promise<{ session?: string }> }) {
   try {
@@ -12,11 +12,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
     const { userId } = await auth();
 
     if (!userId) {
-      return (
-        <AuthOverlay>
-          <ChatApp />
-        </AuthOverlay>
-      );
+      redirect("/sign-in");
     }
 
     // Query for threads and the current threads messages, if applicable

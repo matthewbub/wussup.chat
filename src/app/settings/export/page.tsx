@@ -1,12 +1,16 @@
 import ExportSettings from "@/app/settings/export/_export";
-import { AuthOverlay } from "@/components/auth-overlay";
 import Footer from "@/components/general-footer";
 import { StaticSidebar } from "@/components/sidebar";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
+import { redirect } from "next/navigation";
 
 export default async function SettingsPage() {
   const { userId } = await auth();
+
+  if (!userId) {
+    redirect("/sign-in");
+  }
 
   // get all threads & associated messages for the user
   const threads = await prisma.thread.findMany({
@@ -21,23 +25,19 @@ export default async function SettingsPage() {
     },
   });
 
-  console.log(threads);
-
   if (!userId) {
     return (
-      <AuthOverlay>
-        <div className="flex h-full">
-          <div className="hidden md:block w-72 sticky top-0">
-            <div className="inset-0 border-r border-border">
-              <StaticSidebar />
-            </div>
-          </div>
-          <div className="flex-1 w-full overflow-auto">
-            <ExportSettings />
-            <Footer />
+      <div className="flex h-full">
+        <div className="hidden md:block w-72 sticky top-0">
+          <div className="inset-0 border-r border-border">
+            <StaticSidebar />
           </div>
         </div>
-      </AuthOverlay>
+        <div className="flex-1 w-full overflow-auto">
+          <ExportSettings />
+          <Footer />
+        </div>
+      </div>
     );
   }
 
