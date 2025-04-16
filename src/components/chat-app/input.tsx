@@ -19,7 +19,7 @@ export const ChatAppInput = ({
   onModelChange,
 }: {
   currentInput: string;
-  setInput: (input: string) => void;
+  setInput: (input: React.ChangeEvent<HTMLTextAreaElement>) => void;
   isLoading: boolean;
   onSubmit: (e: React.FormEvent) => void;
   selectedModel: { id: string; provider: string };
@@ -31,7 +31,21 @@ export const ChatAppInput = ({
 
   return (
     <form onSubmit={onSubmit} className="px-4 pt-4 flex flex-col absolute bottom-0 w-full">
-      <div className="self-end">
+      <div className="self-end flex items-center gap-2">
+        {/* Reasoning Level */}
+        <Select
+        // value={reasoningLevel}
+        // onValueChange={(value) => {
+        //   setReasoningLevel(value);
+        // }}
+        >
+          <SelectTrigger className="w-[220px]"> Reasoning Level </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="low">Low</SelectItem>
+            <SelectItem value="medium">Medium</SelectItem>
+            <SelectItem value="high">High</SelectItem>
+          </SelectContent>
+        </Select>
         <Select
           value={`${selectedModel.provider}/${selectedModel.id}`}
           onValueChange={(value) => {
@@ -114,7 +128,7 @@ export const ChatAppInput = ({
               disabled={isLoading}
               className="flex-1"
               onBlur={(e) => {
-                setInput(e.target.value);
+                setInput(e);
               }}
             />
             <Button type="submit" disabled={isLoading} className="w-fit space-x-1">
@@ -181,6 +195,7 @@ function AutoExpandingTextarea({
 
   return (
     <Textarea
+      name="message"
       ref={ref}
       value={internalValue}
       onChange={handleChange}

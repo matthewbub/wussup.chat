@@ -1,4 +1,4 @@
-import ChatApp from "@/components/chat-app/chat-app";
+import ChatAppV7 from "@/components/chat-app/chat-app-v7";
 import { auth, clerkClient } from "@clerk/nextjs/server";
 import { prisma } from "@/lib/prisma";
 import { isUserSubscribed } from "@/lib/server-utils";
@@ -64,21 +64,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
           ...thread,
           created_at: new Date(thread.createdAt).toISOString(),
           updated_at: new Date(thread.updatedAt).toISOString(),
-          chat_history: thread
-            ? messages
-                ?.filter((message: { threadId: string }) => message.threadId === thread.id)
-                .reduce((acc: { role: string; content: string }[], message: { input: string; output: string }) => {
-                  acc.push({
-                    role: "user",
-                    content: message.input,
-                  });
-                  acc.push({
-                    role: "assistant",
-                    content: message.output,
-                  });
-                  return acc;
-                }, []) || []
-            : [],
+          chat_history: thread ? formatMessages(messages) : [],
         };
       } catch (error) {
         Sentry.captureException(error);
@@ -94,7 +80,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ s
 
   return (
     <SessionWrapper existingData={formattedThreads || []} isSubscribed={isSubscribed}>
-      <ChatApp />
+      <ChatAppV7 initialMessages={formatMessages(messages || [])} />
     </SessionWrapper>
   );
 }
@@ -131,4 +117,30 @@ async function updateUserMetadataIfNeeded(userId: string) {
   } catch (error) {
     Sentry.captureException(error);
   }
+}
+
+function formatMessages(
+  messages: { id: string; input: string; output: string }[]
+): { id: string; role: "user" | "assistant"; content: string }[] {
+  return (
+    messages?.reduce(
+      (
+        acc: { id: string; role: "user" | "assistant"; content: string }[],
+        message: { id: string; input: string; output: string }
+      ) => {
+        acc.push({
+          id: message.id + "-user",
+          role: "user",
+          content: message.input,
+        });
+        acc.push({
+          id: message.id + "-assistant",
+          role: "assistant",
+          content: message.output,
+        });
+        return acc;
+      },
+      []
+    ) || []
+  );
 }

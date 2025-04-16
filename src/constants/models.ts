@@ -2,18 +2,40 @@ export const providers = ["openai", "xai", "google", "anthropic"] as const;
 export const InputType = ["text", "images", "audio", "video"] as const;
 
 export interface AiModel {
+  // provider of the model
   provider: (typeof providers)[number];
-  model: string;
-  forchatuse: boolean;
+
+  // do we want to show this model in the free/pro plans? or is this byok only?
+  byokOnly: boolean;
+
+  // displayed to the user
   displayName?: string;
+
+  // does the model support reasoning?
   reasoning?: boolean;
+
+  // 1:1 mapping of the model id
   id: string;
+
+  // this is for the free tier
   free: boolean;
+
+  // inputs supported by the model
   inputs?: string[];
+
+  // outputs supported by the model
   outputs?: string[];
+
+  // context window of the model
   contextWindow?: number;
+
+  // description of the model
   description?: string;
+
+  // input price of the model per million tokens
   inputPrice?: string;
+
+  // output price of the model per million tokens
   outputPrice?: string;
 }
 
@@ -21,8 +43,7 @@ export const openAiModels: AiModel[] = [
   {
     displayName: "GPT-4o",
     provider: "openai",
-    model: "gpt-4o",
-    forchatuse: true,
+    byokOnly: false,
     inputs: ["text", "images"],
     outputs: ["text"],
     id: "gpt-4o",
@@ -31,20 +52,18 @@ export const openAiModels: AiModel[] = [
   {
     displayName: "GPT-4o Mini",
     provider: "openai",
-    model: "gpt-4o-mini",
     inputs: ["text", "images"],
     outputs: ["text"],
-    forchatuse: true,
+    byokOnly: false,
     id: "gpt-4o-mini",
     free: true,
   },
   {
     displayName: "o1",
     provider: "openai",
-    model: "o1",
     inputs: ["text", "images"],
     outputs: ["text"],
-    forchatuse: true,
+    byokOnly: false,
     id: "o1",
     free: false,
     reasoning: true,
@@ -52,10 +71,9 @@ export const openAiModels: AiModel[] = [
   {
     displayName: "o3-mini",
     provider: "openai",
-    model: "o3-mini",
     inputs: ["text"],
     outputs: ["text"],
-    forchatuse: true,
+    byokOnly: false,
     id: "o3-mini",
     free: false,
     reasoning: true,
@@ -63,11 +81,10 @@ export const openAiModels: AiModel[] = [
   {
     displayName: "GPT-4.5",
     provider: "openai",
-    model: "gpt-4.5-preview",
     inputs: ["text", "images"],
     outputs: ["text"],
     id: "gpt-4.5-preview",
-    forchatuse: false,
+    byokOnly: true,
     free: false,
   },
 ];
@@ -76,32 +93,29 @@ export const anthropicModels: AiModel[] = [
   {
     displayName: "Claude 3.7 Sonnet",
     provider: "anthropic",
-    model: "claude-3-7-sonnet-20250219",
     inputs: ["text", "images"],
     outputs: ["text"],
     id: "claude-3-7-sonnet",
     free: false,
-    forchatuse: true,
+    byokOnly: false,
   },
   {
     displayName: "Claude 3.5 Sonnet",
     provider: "anthropic",
-    model: "claude-3-5-sonnet-20241022",
     inputs: ["text", "images"],
     outputs: ["text"],
     id: "claude-3-5-sonnet",
     free: false,
-    forchatuse: true,
+    byokOnly: false,
   },
   {
     displayName: "Claude 3.5 Haiku",
     provider: "anthropic",
-    model: "claude-3-5-haiku-20241022",
     inputs: ["text", "images"],
     outputs: ["text"],
     id: "claude-3-5-haiku",
     free: false,
-    forchatuse: false,
+    byokOnly: true,
   },
 ];
 
@@ -109,12 +123,11 @@ export const xaiModels: AiModel[] = [
   {
     displayName: "Grok 3",
     provider: "xai",
-    model: "grok-3-beta",
     inputs: ["text"],
     outputs: ["text"],
     id: "grok-3-beta",
     free: false,
-    forchatuse: true,
+    byokOnly: false,
     contextWindow: 131072,
     description:
       "Our flagship model that excels at enterprise tasks like data extraction, programming, and text summarization.",
@@ -124,12 +137,11 @@ export const xaiModels: AiModel[] = [
   {
     displayName: "Grok 3 Mini",
     provider: "xai",
-    model: "grok-3-mini-beta",
     inputs: ["text"],
     outputs: ["text"],
     id: "grok-3-mini-beta",
     free: true,
-    forchatuse: true,
+    byokOnly: false,
     contextWindow: 131072,
     description:
       "A lightweight model that thinks before responding. Excels at quantitative tasks that involve math and reasoning.",
@@ -142,33 +154,30 @@ export const geminiModels: AiModel[] = [
   {
     displayName: "Gemini 2.5 Pro",
     provider: "google",
-    model: "gemini-2.5-pro-exp-03-25",
     id: "gemini-2.5-pro-exp-03-25",
     free: false,
-    forchatuse: true,
+    byokOnly: false,
   },
   {
     displayName: "Gemini 2.0 Flash",
     provider: "google",
-    model: "gemini-2.0-flash",
     inputs: ["audio", "images", "videos", "text"],
     outputs: ["text", "images (coming soon)", "audio (coming soon)"],
     id: "gemini-2.0-flash",
     free: true,
-    forchatuse: true,
+    byokOnly: false,
   },
   {
     displayName: "Gemini 2.0 Flash Lite",
     provider: "google",
-    model: "gemini-2.0-flash-lite",
     inputs: ["audio", "images", "videos", "text"],
     outputs: ["text"],
     id: "gemini-2.0-flash-lite",
     free: false,
-    forchatuse: false,
+    byokOnly: false,
   },
 ];
 
 export const AVAILABLE_MODELS: AiModel[] = [...openAiModels, ...anthropicModels, ...xaiModels, ...geminiModels].filter(
-  (model) => model.forchatuse
+  (model) => model.byokOnly === false
 );
