@@ -10,7 +10,8 @@ interface MessagePart {
   type:
     | "response.in_progress"
     | "response.reasoning_summary_text.delta"
-    | "response.output_text.delta";
+    | "response.output_text.delta"
+    | "app.image.delta";
   content: string;
   sequences?: ChunkSequence[];
 }
@@ -21,13 +22,51 @@ export default function Home() {
   const messagesRef = useRef<MessagePart[]>([]);
   const [prompt, setPrompt] = useState("");
 
-  const [metaOpts, setMetaOpts] = useState<null | "thinking" | "webSearch">(
-    "thinking"
-  );
+  const [metaOpts, setMetaOpts] = useState<
+    null | "thinking" | "webSearch" | "image"
+  >(null);
+  const [loading, setLoading] = useState(false);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const generateImage = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Generate a unique URL parameter to prevent caching
+      const timestamp = new Date().getTime();
+      const response = await fetch(`/api/openai/image?t=${timestamp}`, {
+        method: "POST",
+        body: JSON.stringify({ prompt }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to generate image");
+      }
+
+      const imageBlob = await response.blob();
+      const url = URL.createObjectURL(imageBlob);
+
+      // set the image as the last message
+      setMessages([...messages, { type: "app.image.delta", content: url }]);
+      // setImageUrl(url);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An error occurred");
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleClick = async () => {
     messagesRef.current = [];
     setMessages([]);
+
+    if (metaOpts === "image") {
+      await generateImage();
+      return;
+    }
 
     const response = await fetch(`/api/${model}`, {
       method: "POST",
@@ -180,6 +219,14 @@ export default function Home() {
             >
               Thinking
             </button>
+            <button
+              className={`px-3 py-1 rounded ${
+                metaOpts === "image" ? "bg-blue-600 text-white" : "bg-gray-200"
+              }`}
+              onClick={() => setMetaOpts("image")}
+            >
+              Image
+            </button>
           </div>
         </div>
       </div>
@@ -205,7 +252,11 @@ function Messages({ messages }: { messages: MessagePart[] }) {
             <span className="text-xs bg-gray-100 text-gray-600 font-mono px-2 py-1 rounded w-fit">
               {message.type}
             </span>
-            {message.content && (
+            {message.content && message.type === "app.image.delta" ? (
+              <div className="w-full h-64 relative">
+                <img src={message.content} alt="Generated Image" />
+              </div>
+            ) : (
               <div className="text-foreground whitespace-pre-wrap">
                 {message.content}
               </div>
