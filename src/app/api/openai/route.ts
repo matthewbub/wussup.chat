@@ -3,12 +3,14 @@ import OpenAI from "openai";
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { THINKING } from "../anthropic/route";
+import { ApiChunk } from "@/app/types";
 
-interface ChunkSequence {
+interface ApiChunkSequence {
   type: string;
   count: number;
   content: string;
 }
+
 export const REASONING = "response.reasoning_summary_text.delta";
 export const OUTPUT = "response.output_text.delta";
 export const IN_PROGRESS = "response.in_progress";
@@ -77,7 +79,7 @@ export async function POST(req: Request) {
   // Create a readable stream
   const stream = new ReadableStream({
     async start(controller) {
-      const sequences: ChunkSequence[] = [];
+      const sequences: ApiChunkSequence[] = [];
       let currentType: string | null = null;
       let currentCount = 0;
       let currentContent = "";
@@ -97,14 +99,10 @@ export async function POST(req: Request) {
         }
       };
 
-      // Type assertion for proper iteration
-      for await (const chunk of response as unknown as AsyncIterable<{
-        type: string;
-        delta?: string;
-      }>) {
+      for await (const chunk of response as unknown as AsyncIterable<ApiChunk>) {
         updateSequence(chunk.type);
 
-        const delta = chunk?.delta ?? ""; // Ensure delta is not null/undefined
+        const delta = chunk?.delta ?? "";
         if (delta) {
           currentContent += delta;
           currentCount++; // Increment count if you plan to use it
@@ -119,6 +117,7 @@ export async function POST(req: Request) {
                 type: currentType,
                 count: currentCount,
                 content: currentContent,
+                part: chunk?.part ?? null,
               },
             ],
           })}\n\n`

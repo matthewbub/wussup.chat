@@ -1,19 +1,20 @@
 "use client";
+import { Annotation } from "@/app/types";
 import { useState, useRef } from "react";
-
-interface ChunkSequence {
-  type: string;
-  count: number;
-}
 
 interface MessagePart {
   type:
     | "response.in_progress"
     | "response.reasoning_summary_text.delta"
     | "response.output_text.delta"
-    | "app.image.delta";
+    | "app.image.delta"
+    | "response.content_part.done";
   content: string;
-  sequences?: ChunkSequence[];
+  part?: {
+    annotations?: Annotation[];
+    type?: string;
+    text?: string;
+  };
 }
 
 export default function Home() {
@@ -103,6 +104,7 @@ export default function Home() {
 
             const currentSequence = data.sequences[data.sequences.length - 1];
             const currentType = currentSequence.type as MessagePart["type"];
+            const currentPart = currentSequence.part as MessagePart["part"];
             const currentContentDelta = currentSequence.content || "";
 
             // --- Refined Logic Applied Directly to messagesRef.current ---
@@ -124,6 +126,7 @@ export default function Home() {
               currentAccumulated.push({
                 type: currentType,
                 content: currentContentDelta,
+                part: currentPart,
               });
               changed = true;
             }
@@ -237,6 +240,55 @@ export default function Home() {
 }
 
 function Messages({ messages }: { messages: MessagePart[] }) {
+  const determineMessageType = (message: MessagePart) => {
+    switch (message.type) {
+      case "app.image.delta":
+        return (
+          <div className="w-full h-64 relative">
+            <img src={message.content} alt="Generated Image" />
+          </div>
+        );
+      case "response.content_part.done":
+        const annotations = message.part?.annotations || [];
+
+        const annotationsWithOutDuplicates = annotations.filter(
+          (annotation, index, self) =>
+            index === self.findIndex((t) => t.url === annotation.url)
+        );
+
+        return (
+          <div className="text-foreground whitespace-pre-wrap">
+            {message.content}
+
+            {annotationsWithOutDuplicates.map((annotation, index) => (
+              <div key={annotation.url}>
+                <span className="text-xs bg-gray-100 text-gray-600 font-mono px-2 py-1 rounded w-fit">
+                  {"message.part?.annotations[" + index + "].type:"}
+                  {annotation.type}
+
+                  <br />
+                  {"message.part?.annotations[" + index + "].title:"}
+                </span>
+                <a
+                  href={annotation.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {annotation.title}
+                </a>
+              </div>
+            ))}
+          </div>
+        );
+      default:
+        return (
+          <div className="text-foreground whitespace-pre-wrap">
+            {message.content}
+          </div>
+        );
+    }
+  };
+
   return (
     <div className="w-full space-y-4 p-4 rounded-lg border max-h-[500px] overflow-y-auto">
       {messages.length === 0 ? (
@@ -252,15 +304,7 @@ function Messages({ messages }: { messages: MessagePart[] }) {
             <span className="text-xs bg-gray-100 text-gray-600 font-mono px-2 py-1 rounded w-fit">
               {message.type}
             </span>
-            {message.content && message.type === "app.image.delta" ? (
-              <div className="w-full h-64 relative">
-                <img src={message.content} alt="Generated Image" />
-              </div>
-            ) : (
-              <div className="text-foreground whitespace-pre-wrap">
-                {message.content}
-              </div>
-            )}
+            {determineMessageType(message)}
           </div>
         ))
       )}

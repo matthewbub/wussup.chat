@@ -18,7 +18,7 @@ export async function POST() {
       // response_format: "b64_json",
     });
 
-    const image_base64 = result.data[0].b64_json;
+    const image_base64 = result.data?.[0]?.b64_json;
 
     if (!image_base64) {
       return NextResponse.json(
