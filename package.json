@@ -13,6 +13,7 @@
     "@clerk/nextjs": "^6.17.0",
     "@clerk/themes": "^2.2.35",
     "@radix-ui/react-slot": "^1.2.0",
+    "@vercel/blob": "^1.0.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.503.0",

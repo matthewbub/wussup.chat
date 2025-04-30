@@ -1,6 +1,7 @@
 "use client";
 import { useState, useRef } from "react";
 import { MessagePart } from "@/app/types";
+import { Button } from "@/components/ui/button";
 
 export default function Home() {
   const [model, setModel] = useState<"openai" | "anthropic">("openai");
@@ -31,11 +32,13 @@ export default function Home() {
         throw new Error("Failed to generate image");
       }
 
-      const imageBlob = await response.blob();
-      const url = URL.createObjectURL(imageBlob);
+      const imageResponse = await response.json();
 
       // set the image as the last message
-      setMessages([...messages, { type: "app.image.delta", content: url }]);
+      setMessages([
+        ...messages,
+        { type: "app.image.delta", content: imageResponse.url },
+      ]);
       // setImageUrl(url);
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
@@ -146,77 +149,56 @@ export default function Home() {
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
           />
-          <button
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
-            onClick={handleClick}
-          >
-            Ask AI
-          </button>
+          <Button onClick={handleClick}>Ask AI</Button>
         </div>
 
         <div className="flex flex-wrap gap-3 mb-4">
-          <div className="flex items-center border rounded-lg p-1 bg-gray-50">
-            <button
-              className={`px-3 py-1 rounded ${
-                model === "openai" ? "bg-blue-600 text-white" : "bg-gray-200"
-              }`}
+          <div className="flex items-center border rounded-lg p-1 bg-background space-x-2">
+            <Button
+              variant={model === "openai" ? "default" : "outline"}
               onClick={() => setModel("openai")}
             >
               OpenAI
-            </button>
-            <button
-              className={`px-3 py-1 rounded ${
-                model === "anthropic" ? "bg-blue-600 text-white" : "bg-gray-200"
-              }`}
+            </Button>
+            <Button
+              variant={model === "anthropic" ? "default" : "outline"}
               onClick={() => setModel("anthropic")}
             >
               Anthropic
-            </button>
+            </Button>
           </div>
 
-          <div className="flex items-center border rounded-lg p-1 bg-gray-50">
-            <button
-              className={`px-3 py-1 rounded ${
-                metaOpts === null ? "bg-blue-600 text-white" : "bg-gray-200"
-              }`}
+          <div className="flex items-center border rounded-lg p-1 bg-background space-x-2">
+            <Button
+              variant={metaOpts === null ? "default" : "outline"}
               onClick={() => {
                 setMetaOpts(null);
               }}
             >
               None
-            </button>
-            <button
-              className={`px-3 py-1 rounded ${
-                metaOpts === "webSearch"
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-200"
-              }`}
+            </Button>
+            <Button
+              variant={metaOpts === "webSearch" ? "default" : "outline"}
               onClick={() => {
                 setMetaOpts("webSearch");
               }}
             >
               Web Search
-            </button>
-            <button
-              className={`px-3 py-1 rounded ${
-                metaOpts === "thinking"
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-200"
-              }`}
+            </Button>
+            <Button
+              variant={metaOpts === "thinking" ? "default" : "outline"}
               onClick={() => {
                 setMetaOpts("thinking");
               }}
             >
               Thinking
-            </button>
-            <button
-              className={`px-3 py-1 rounded ${
-                metaOpts === "image" ? "bg-blue-600 text-white" : "bg-gray-200"
-              }`}
+            </Button>
+            <Button
+              variant={metaOpts === "image" ? "default" : "outline"}
               onClick={() => setMetaOpts("image")}
             >
               Image
-            </button>
+            </Button>
           </div>
         </div>
       </div>

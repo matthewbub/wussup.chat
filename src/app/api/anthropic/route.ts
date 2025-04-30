@@ -1,9 +1,16 @@
 import { messageBuilder } from "@/lib/server-utils";
 import { Anthropic } from "@anthropic-ai/sdk";
+import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
   try {
+    const { userId } = await auth();
+
+    if (!userId) {
+      return new NextResponse("Unauthorized", { status: 401 });
+    }
+
     const anthropic = new Anthropic();
 
     const body = await request.json();
