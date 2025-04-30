@@ -162,6 +162,7 @@ export default function Home() {
             </Button>
             <Button
               variant={model === "anthropic" ? "default" : "outline"}
+              disabled={metaOpts === "image"}
               onClick={() => setModel("anthropic")}
             >
               Anthropic
@@ -195,7 +196,11 @@ export default function Home() {
             </Button>
             <Button
               variant={metaOpts === "image" ? "default" : "outline"}
-              onClick={() => setMetaOpts("image")}
+              onClick={() => {
+                // force openai for image generation
+                setModel("openai");
+                setMetaOpts("image");
+              }}
             >
               Image
             </Button>
