@@ -2,13 +2,10 @@ import { messageBuilder } from "@/lib/server-utils";
 import { Anthropic } from "@anthropic-ai/sdk";
 import { NextResponse } from "next/server";
 
-const anthropic = new Anthropic();
-
-export const THINKING = "thinking";
-export const CONTENT = "content";
-
 export async function POST(request: Request) {
   try {
+    const anthropic = new Anthropic();
+
     const body = await request.json();
 
     const prompt = body.prompt;
@@ -24,7 +21,7 @@ export async function POST(request: Request) {
       stream: true,
     } as Anthropic.MessageCreateParamsStreaming;
 
-    if (metaOpts === THINKING) {
+    if (metaOpts === "thinking") {
       config.thinking = {
         type: "enabled",
         budget_tokens: 1600,
@@ -41,6 +38,8 @@ export async function POST(request: Request) {
         let currentContent = "";
 
         const updateSequence = (type: string) => {
+          // if the type has changed, push what we had collected into the sequences array
+          // and prepare to collect the next type
           if (currentType && currentType !== type) {
             sequences.push({
               type: currentType,
@@ -48,6 +47,7 @@ export async function POST(request: Request) {
             });
             currentContent = "";
           }
+
           currentType = type;
         };
 
@@ -56,7 +56,9 @@ export async function POST(request: Request) {
           delta?: { thinking?: string; text?: string };
         }>) {
           updateSequence(chunk.type);
-          console.log("[chunk]", chunk);
+          // continuously add to the current content until the type changes
+          // this means we don't have to be additive on the client side
+          // we can just replace the content with the new chunk
           currentContent += chunk?.delta?.thinking || chunk?.delta?.text || "";
 
           controller.enqueue(

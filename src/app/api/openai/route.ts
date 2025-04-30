@@ -2,21 +2,14 @@
 import OpenAI from "openai";
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import { THINKING } from "../anthropic/route";
 import { ApiChunk } from "@/app/types";
 import { messageBuilder } from "@/lib/server-utils";
 
 interface ApiChunkSequence {
   type: string;
-  count: number;
   content: string;
 }
 
-export const REASONING = "response.reasoning_summary_text.delta";
-export const OUTPUT = "response.output_text.delta";
-export const IN_PROGRESS = "response.in_progress";
-
-// Define our own interface for the OpenAI response config
 interface OpenAIConfig {
   model: string;
   stream: boolean;
@@ -61,20 +54,19 @@ export async function POST(req: Request) {
     user: userId,
   };
 
-  if (metaOpts === THINKING) {
+  if (metaOpts === "thinking") {
     opConfig.model = thinkingmodel;
     opConfig.reasoning = {
       effort: "medium",
-      summary: "auto", // Enable reasoning summaries
+      summary: "auto",
     };
   }
-  // cant call both
+  // cant call both thinking and webSearch
   else if (metaOpts === "webSearch") {
     opConfig.model = webmodel;
     opConfig.tools = [{ type: "web_search_preview" }];
   }
 
-  // Use a more specific type assertion
   const response = await openai.responses.create(
     // @ts-expect-error The OpenAI SDK types don't match our usage
     opConfig
@@ -85,20 +77,19 @@ export async function POST(req: Request) {
     async start(controller) {
       const sequences: ApiChunkSequence[] = [];
       let currentType: string | null = null;
-      let currentCount = 0;
       let currentContent = "";
 
       const updateSequence = (type: string) => {
-        if (currentType && currentCount > 0) {
+        // if the type has changed, push what we had collected into the sequences array
+        // and prepare to collect the next type
+        if (currentType) {
           sequences.push({
             type: currentType,
-            count: currentCount,
             content: currentContent,
           });
         }
         if (currentType !== type) {
           currentType = type;
-          currentCount = 0;
           currentContent = "";
         }
       };
@@ -108,8 +99,10 @@ export async function POST(req: Request) {
 
         const delta = chunk?.delta ?? "";
         if (delta) {
+          // continuously add to the current content until the type changes
+          // this means we don't have to be additive on the client side
+          // we can just replace the content with the new chunk
           currentContent += delta;
-          currentCount++; // Increment count if you plan to use it
         }
 
         controller.enqueue(
@@ -119,7 +112,6 @@ export async function POST(req: Request) {
               ...sequences,
               {
                 type: currentType,
-                count: currentCount,
                 content: currentContent,
                 part: chunk?.part ?? null,
               },

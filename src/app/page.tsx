@@ -1,23 +1,6 @@
 "use client";
-import { Annotation } from "@/app/types";
 import { useState, useRef } from "react";
-
-export interface MessagePart {
-  type:
-    | "response.in_progress"
-    | "response.reasoning_summary_text.delta"
-    | "response.output_text.delta"
-    | "app.image.delta" // open ai completion response
-    | "response.content_part.done"
-    | "content_block_delta" // anthropic completion response
-    | "user";
-  content: string;
-  part?: {
-    annotations?: Annotation[];
-    type?: string;
-    text?: string;
-  };
-}
+import { MessagePart } from "@/app/types";
 
 export default function Home() {
   const [model, setModel] = useState<"openai" | "anthropic">("openai");
@@ -29,7 +12,6 @@ export default function Home() {
     null | "thinking" | "webSearch" | "image"
   >(null);
   const [loading, setLoading] = useState(false);
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const generateImage = async () => {
@@ -64,8 +46,10 @@ export default function Home() {
   };
 
   const handleClick = async () => {
-    // messagesRef.current = [];
-    setMessages([...messages, { type: "user", content: prompt }]);
+    // preserve the user message
+    const updatedMessages = [...messages, { type: "user", content: prompt }];
+    setMessages(updatedMessages as MessagePart[]);
+    messagesRef.current = updatedMessages as MessagePart[];
 
     if (metaOpts === "image") {
       await generateImage();
