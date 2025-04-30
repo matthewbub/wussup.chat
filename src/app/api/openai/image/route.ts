@@ -1,21 +1,33 @@
 import OpenAI from "openai";
 import { NextResponse } from "next/server";
+import { messageBuilder } from "@/lib/server-utils";
 
-export const runtime = "edge"; // Optional: use edge runtime for better performance
+export const runtime = "edge";
 
-export async function POST() {
+export async function POST(request: Request) {
   try {
+    const body = await request.json();
+    const bodyPrompt = body.prompt;
+    const messages = body.messages;
+
+    const messagesForConfig = messageBuilder(messages);
+
     const openai = new OpenAI();
 
-    const prompt = `
+    const prompt =
+      bodyPrompt ||
+      `
     Generate an image for my brand/ AI Chatbot website: Wussup.Chat.
     The image should be a logo for the website, I was thinking of some mickey mouse style gloves with a peace sign.
     `;
 
     const result = await openai.images.generate({
       model: "gpt-image-1",
-      prompt,
-      // response_format: "b64_json",
+      prompt:
+        "Heres the prompt: " +
+        prompt +
+        "\n\n Heres the message history for context: " +
+        JSON.stringify(messagesForConfig),
     });
 
     const image_base64 = result.data?.[0]?.b64_json;

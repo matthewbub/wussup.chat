@@ -1,3 +1,4 @@
+import { messageBuilder } from "@/lib/server-utils";
 import { Anthropic } from "@anthropic-ai/sdk";
 import { NextResponse } from "next/server";
 
@@ -12,11 +13,14 @@ export async function POST(request: Request) {
 
     const prompt = body.prompt;
     const metaOpts = body.metaOpts;
+    const messages = body.messages;
+
+    const messagesForConfig = messageBuilder(messages);
 
     const config = {
       model: "claude-3-7-sonnet-20250219",
       max_tokens: 2000,
-      messages: [{ role: "user", content: prompt }],
+      messages: [...messagesForConfig, { role: "user", content: prompt }],
       stream: true,
     } as Anthropic.MessageCreateParamsStreaming;
 

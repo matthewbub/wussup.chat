@@ -2,13 +2,15 @@
 import { Annotation } from "@/app/types";
 import { useState, useRef } from "react";
 
-interface MessagePart {
+export interface MessagePart {
   type:
     | "response.in_progress"
     | "response.reasoning_summary_text.delta"
     | "response.output_text.delta"
-    | "app.image.delta"
-    | "response.content_part.done";
+    | "app.image.delta" // open ai completion response
+    | "response.content_part.done"
+    | "content_block_delta" // anthropic completion response
+    | "user";
   content: string;
   part?: {
     annotations?: Annotation[];
@@ -34,12 +36,13 @@ export default function Home() {
     try {
       setLoading(true);
       setError(null);
+      setMessages([...messages, { type: "user", content: prompt }]);
 
       // Generate a unique URL parameter to prevent caching
       const timestamp = new Date().getTime();
       const response = await fetch(`/api/openai/image?t=${timestamp}`, {
         method: "POST",
-        body: JSON.stringify({ prompt }),
+        body: JSON.stringify({ prompt, messages }),
       });
 
       if (!response.ok) {
@@ -61,8 +64,8 @@ export default function Home() {
   };
 
   const handleClick = async () => {
-    messagesRef.current = [];
-    setMessages([]);
+    // messagesRef.current = [];
+    setMessages([...messages, { type: "user", content: prompt }]);
 
     if (metaOpts === "image") {
       await generateImage();
@@ -71,7 +74,7 @@ export default function Home() {
 
     const response = await fetch(`/api/${model}`, {
       method: "POST",
-      body: JSON.stringify({ prompt, metaOpts }),
+      body: JSON.stringify({ prompt, metaOpts, messages }),
     });
 
     const reader = response.body?.getReader();

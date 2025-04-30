@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { THINKING } from "../anthropic/route";
 import { ApiChunk } from "@/app/types";
+import { messageBuilder } from "@/lib/server-utils";
 
 interface ApiChunkSequence {
   type: string;
@@ -44,6 +45,9 @@ export async function POST(req: Request) {
   const body = await req.json();
   const prompt = body.prompt;
   const metaOpts = body.metaOpts;
+  const messages = body.messages;
+
+  const messagesForConfig = messageBuilder(messages);
 
   const webmodel = "gpt-4.1";
   const thinkingmodel = "o4-mini";
@@ -52,7 +56,7 @@ export async function POST(req: Request) {
   const opConfig: OpenAIConfig = {
     model: thinkingmodel,
     stream: true,
-    input: [{ role: "user", content: prompt.trim() }],
+    input: [...messagesForConfig, { role: "user", content: prompt.trim() }],
     // https://platform.openai.com/docs/guides/safety-best-practices#end-user-ids
     user: userId,
   };
