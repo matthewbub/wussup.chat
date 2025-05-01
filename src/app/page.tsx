@@ -9,8 +9,7 @@ export default function Home() {
   const [messages, setMessages] = useState<MessagePart[]>([]);
   const messagesRef = useRef<MessagePart[]>([]);
 
-  // Replace the prompt state with React Hook Form
-  const { register, handleSubmit, watch } = useForm({
+  const { register, handleSubmit } = useForm({
     defaultValues: {
       prompt: "",
     },
@@ -26,13 +25,20 @@ export default function Home() {
     try {
       setLoading(true);
       setError(null);
-      setMessages([...messages, { type: "user", content: prompt }]);
+
+      // Create the user message
+      const userMessage = { type: "user", content: prompt };
+      const updatedMessages = [...messages, userMessage];
+
+      // Update both state and ref with the user message
+      setMessages(updatedMessages as MessagePart[]);
+      messagesRef.current = updatedMessages as MessagePart[];
 
       // Generate a unique URL parameter to prevent caching
       const timestamp = new Date().getTime();
       const response = await fetch(`/api/openai/image?t=${timestamp}`, {
         method: "POST",
-        body: JSON.stringify({ prompt, messages }),
+        body: JSON.stringify({ prompt, messages: updatedMessages }), // Use updated messages
       });
 
       if (!response.ok) {
@@ -41,12 +47,13 @@ export default function Home() {
 
       const imageResponse = await response.json();
 
-      // set the image as the last message
-      setMessages([
-        ...messages,
+      // Add the image response
+      const finalMessages = [
+        ...updatedMessages,
         { type: "app.image.delta", content: imageResponse.url },
-      ]);
-      // setImageUrl(url);
+      ];
+      setMessages(finalMessages as MessagePart[]);
+      messagesRef.current = finalMessages as MessagePart[];
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
       console.error(err);
@@ -55,8 +62,12 @@ export default function Home() {
     }
   };
 
-  // Modify the handleClick to work with React Hook Form
   const onSubmit = async (data: { prompt: string }) => {
+    if (metaOpts === "image") {
+      await generateImage(data.prompt);
+      return;
+    }
+
     // preserve the user message
     const updatedMessages = [
       ...messages,
@@ -64,11 +75,6 @@ export default function Home() {
     ];
     setMessages(updatedMessages as MessagePart[]);
     messagesRef.current = updatedMessages as MessagePart[];
-
-    if (metaOpts === "image") {
-      await generateImage(data.prompt);
-      return;
-    }
 
     const response = await fetch(`/api/${model}`, {
       method: "POST",

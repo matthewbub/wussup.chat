@@ -94,10 +94,27 @@ export interface MessagePart {
     | OpenAIMessageTypeWithThinking
     | OpenAiMessageTypeWithImage
     | AnthropicMessageTypeBasic;
-  content: string;
+  content: string | [TextContentBlock, ImageContentBlock];
   part?: {
     annotations?: Annotation[];
     type?: string;
     text?: string;
   };
 }
+
+export type TextContentBlock = {
+  type: "input_text";
+  text: string;
+};
+
+export type ImageContentBlock = {
+  type: "input_image";
+  image_url: string;
+};
+
+export type UserOrAssistant = "user" | "assistant";
+
+export type OpenAiMessagePart = {
+  role: UserOrAssistant;
+  content: string | [TextContentBlock, ImageContentBlock];
+};
