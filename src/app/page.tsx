@@ -2,12 +2,19 @@
 import { useState, useRef } from "react";
 import { MessagePart } from "@/app/types";
 import { Button } from "@/components/ui/button";
+import { useForm } from "react-hook-form";
 
 export default function Home() {
   const [model, setModel] = useState<"openai" | "anthropic">("openai");
   const [messages, setMessages] = useState<MessagePart[]>([]);
   const messagesRef = useRef<MessagePart[]>([]);
-  const [prompt, setPrompt] = useState("");
+
+  // Replace the prompt state with React Hook Form
+  const { register, handleSubmit, watch } = useForm({
+    defaultValues: {
+      prompt: "",
+    },
+  });
 
   const [metaOpts, setMetaOpts] = useState<
     null | "thinking" | "webSearch" | "image"
@@ -15,7 +22,7 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const generateImage = async () => {
+  const generateImage = async (prompt: string) => {
     try {
       setLoading(true);
       setError(null);
@@ -48,20 +55,24 @@ export default function Home() {
     }
   };
 
-  const handleClick = async () => {
+  // Modify the handleClick to work with React Hook Form
+  const onSubmit = async (data: { prompt: string }) => {
     // preserve the user message
-    const updatedMessages = [...messages, { type: "user", content: prompt }];
+    const updatedMessages = [
+      ...messages,
+      { type: "user", content: data.prompt },
+    ];
     setMessages(updatedMessages as MessagePart[]);
     messagesRef.current = updatedMessages as MessagePart[];
 
     if (metaOpts === "image") {
-      await generateImage();
+      await generateImage(data.prompt);
       return;
     }
 
     const response = await fetch(`/api/${model}`, {
       method: "POST",
-      body: JSON.stringify({ prompt, metaOpts, messages }),
+      body: JSON.stringify({ prompt: data.prompt, metaOpts, messages }),
     });
 
     const reader = response.body?.getReader();
@@ -141,26 +152,32 @@ export default function Home() {
       <h1 className="text-3xl font-bold mb-6">AI Reasoning Demo</h1>
 
       <div className="w-full mb-6">
-        <div className="flex flex-col md:flex-row gap-3 mb-4">
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="flex flex-col md:flex-row gap-3 mb-4"
+        >
           <input
+            {...register("prompt")}
             type="text"
             placeholder="Enter your question here..."
             className="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            value={prompt}
-            onChange={(e) => setPrompt(e.target.value)}
           />
-          <Button onClick={handleClick}>Ask AI</Button>
-        </div>
+          <Button type="submit" disabled={loading}>
+            Ask AI
+          </Button>
+        </form>
 
         <div className="flex flex-wrap gap-3 mb-4">
           <div className="flex items-center border rounded-lg p-1 bg-background space-x-2">
             <Button
+              type="button"
               variant={model === "openai" ? "default" : "outline"}
               onClick={() => setModel("openai")}
             >
               OpenAI
             </Button>
             <Button
+              type="button"
               variant={model === "anthropic" ? "default" : "outline"}
               disabled={metaOpts === "image"}
               onClick={() => setModel("anthropic")}
