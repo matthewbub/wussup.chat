@@ -1,6 +1,6 @@
 import OpenAI from "openai";
 import { NextResponse } from "next/server";
-import { messageBuilder } from "@/lib/server-utils";
+import { messageBuilder, unpackAttachments } from "@/lib/server-utils";
 import { put } from "@vercel/blob";
 import { auth } from "@clerk/nextjs/server";
 
@@ -14,16 +14,21 @@ export async function POST(request: Request) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 
-    const body = await request.json();
-    const bodyPrompt = body.prompt;
-    const messages = body.messages;
+    const formData = await request.formData();
+    const incomingPrompt = formData.get("prompt");
+    const messages = formData.get("messages");
+    const attachments = unpackAttachments(formData);
 
-    const messagesForConfig = messageBuilder(messages);
+    console.log("[attachments]", attachments);
+    console.log("[messages]", messages);
+    console.log("[incomingPrompt]", incomingPrompt);
+
+    const messagesForConfig = messageBuilder(JSON.parse(messages as string));
 
     const openai = new OpenAI();
 
     const prompt =
-      bodyPrompt ||
+      incomingPrompt ||
       `
     Generate an image for my brand/ AI Chatbot website: Wussup.Chat.
     The image should be a logo for the website, I was thinking of some mickey mouse style gloves with a peace sign.

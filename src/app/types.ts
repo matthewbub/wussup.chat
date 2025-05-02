@@ -6,6 +6,16 @@ export interface Annotation {
   url: string;
 }
 
+export interface ApiChunkSequence {
+  type: string;
+  content: string;
+  part?: {
+    annotations?: Annotation[];
+    type?: string;
+    text?: string;
+  };
+}
+
 export interface ChunkSequence {
   type: string;
   count: number;
@@ -118,3 +128,17 @@ export type OpenAiMessagePart = {
   role: UserOrAssistant;
   content: string | [TextContentBlock, ImageContentBlock];
 };
+
+export interface OpenAIConfig {
+  model: string;
+  stream: boolean;
+  input: OpenAiMessagePart[];
+  user: string;
+  reasoning?: {
+    effort: string;
+    summary: string;
+  };
+  tools?: Array<{
+    type: string;
+  }>;
+}

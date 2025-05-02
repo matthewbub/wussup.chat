@@ -1,13 +1,15 @@
 "use client";
 import { useState, useRef } from "react";
+import { useForm } from "react-hook-form";
 import { MessagePart } from "@/app/types";
 import { Button } from "@/components/ui/button";
-import { useForm } from "react-hook-form";
+import Attachments from "@/components/Attachments";
 
 export default function Home() {
   const [model, setModel] = useState<"openai" | "anthropic">("openai");
   const [messages, setMessages] = useState<MessagePart[]>([]);
   const messagesRef = useRef<MessagePart[]>([]);
+  const [attachments, setAttachments] = useState<File[]>([]);
 
   const { register, handleSubmit } = useForm({
     defaultValues: {
@@ -34,11 +36,47 @@ export default function Home() {
       setMessages(updatedMessages as MessagePart[]);
       messagesRef.current = updatedMessages as MessagePart[];
 
+      const newForm = new FormData();
+      newForm.append("prompt", prompt);
+      if (updatedMessages.length > 0) {
+        newForm.append("messages", JSON.stringify(updatedMessages));
+      }
+      if (attachments[0]) {
+        newForm.append("attachment_one", attachments[0]);
+      }
+      if (attachments[1]) {
+        newForm.append("attachment_two", attachments[1]);
+      }
+      if (attachments[2]) {
+        newForm.append("attachment_three", attachments[2]);
+      }
+      if (attachments[3]) {
+        newForm.append("attachment_four", attachments[3]);
+      }
+      if (attachments[4]) {
+        newForm.append("attachment_five", attachments[4]);
+      }
+      if (attachments[5]) {
+        newForm.append("attachment_six", attachments[5]);
+      }
+      if (attachments[6]) {
+        newForm.append("attachment_seven", attachments[6]);
+      }
+      if (attachments[7]) {
+        newForm.append("attachment_eight", attachments[7]);
+      }
+      if (attachments[8]) {
+        newForm.append("attachment_nine", attachments[8]);
+      }
+      if (attachments[9]) {
+        newForm.append("attachment_ten", attachments[9]);
+      }
+
       // Generate a unique URL parameter to prevent caching
       const timestamp = new Date().getTime();
       const response = await fetch(`/api/openai/image?t=${timestamp}`, {
         method: "POST",
-        body: JSON.stringify({ prompt, messages: updatedMessages }), // Use updated messages
+        body: newForm,
       });
 
       if (!response.ok) {
@@ -52,8 +90,8 @@ export default function Home() {
         ...updatedMessages,
         { type: "app.image.delta", content: imageResponse.url },
       ];
-      setMessages(finalMessages as MessagePart[]);
       messagesRef.current = finalMessages as MessagePart[];
+      setMessages(finalMessages as MessagePart[]);
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
       console.error(err);
@@ -73,12 +111,49 @@ export default function Home() {
       ...messages,
       { type: "user", content: data.prompt },
     ];
-    setMessages(updatedMessages as MessagePart[]);
     messagesRef.current = updatedMessages as MessagePart[];
+    setMessages(updatedMessages as MessagePart[]);
+
+    const newForm = new FormData();
+    newForm.append("prompt", data.prompt);
+    newForm.append("metaOpts", JSON.stringify(metaOpts));
+    if (updatedMessages.length > 0) {
+      newForm.append("messages", JSON.stringify(updatedMessages));
+    }
+    if (attachments[0]) {
+      newForm.append("attachment_one", attachments[0]);
+    }
+    if (attachments[1]) {
+      newForm.append("attachment_two", attachments[1]);
+    }
+    if (attachments[2]) {
+      newForm.append("attachment_three", attachments[2]);
+    }
+    if (attachments[3]) {
+      newForm.append("attachment_four", attachments[3]);
+    }
+    if (attachments[4]) {
+      newForm.append("attachment_five", attachments[4]);
+    }
+    if (attachments[5]) {
+      newForm.append("attachment_six", attachments[5]);
+    }
+    if (attachments[6]) {
+      newForm.append("attachment_seven", attachments[6]);
+    }
+    if (attachments[7]) {
+      newForm.append("attachment_eight", attachments[7]);
+    }
+    if (attachments[8]) {
+      newForm.append("attachment_nine", attachments[8]);
+    }
+    if (attachments[9]) {
+      newForm.append("attachment_ten", attachments[9]);
+    }
 
     const response = await fetch(`/api/${model}`, {
       method: "POST",
-      body: JSON.stringify({ prompt: data.prompt, metaOpts, messages }),
+      body: newForm,
     });
 
     const reader = response.body?.getReader();
@@ -158,20 +233,23 @@ export default function Home() {
       <h1 className="text-3xl font-bold mb-6">AI Reasoning Demo</h1>
 
       <div className="w-full mb-6">
-        <form
-          onSubmit={handleSubmit(onSubmit)}
-          className="flex flex-col md:flex-row gap-3 mb-4"
-        >
-          <input
-            {...register("prompt")}
-            type="text"
-            placeholder="Enter your question here..."
-            className="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <Button type="submit" disabled={loading}>
-            Ask AI
-          </Button>
-        </form>
+        <div className="flex items-center gap-3 mb-4 w-full">
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="flex flex-col md:flex-row md:items-center gap-3 mb-4 w-full"
+          >
+            <input
+              {...register("prompt")}
+              type="text"
+              placeholder="Enter your question here..."
+              className="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
+            />
+            <Attachments multiple={true} onFileSelect={setAttachments} />
+            <Button type="submit" disabled={loading}>
+              Ask AI
+            </Button>
+          </form>
+        </div>
 
         <div className="flex flex-wrap gap-3 mb-4">
           <div className="flex items-center border rounded-lg p-1 bg-background space-x-2">
@@ -242,7 +320,7 @@ function Messages({ messages }: { messages: MessagePart[] }) {
       case "app.image.delta":
         return (
           <div className="w-full h-64 relative">
-            <img src={message.content} alt="Generated Image" />
+            <img src={message.content as string} alt="Generated Image" />
           </div>
         );
       case "response.content_part.done":
@@ -255,7 +333,7 @@ function Messages({ messages }: { messages: MessagePart[] }) {
 
         return (
           <div className="text-foreground whitespace-pre-wrap">
-            {message.content}
+            {message.content as string}
 
             {annotationsWithOutDuplicates.map((annotation, index) => (
               <div key={annotation.url}>
@@ -280,7 +358,7 @@ function Messages({ messages }: { messages: MessagePart[] }) {
       default:
         return (
           <div className="text-foreground whitespace-pre-wrap">
-            {message.content}
+            {message.content as string}
           </div>
         );
     }
