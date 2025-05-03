@@ -124,9 +124,25 @@ export type ImageContentBlock = {
 
 export type UserOrAssistant = "user" | "assistant";
 
+export type OpenAiMessageContentAsAttachments = [
+  TextContentBlock,
+
+  // srry
+  ImageContentBlock, // 1
+  ImageContentBlock?, // 2
+  ImageContentBlock?, // 3
+  ImageContentBlock?, // 4
+  ImageContentBlock?, // 5
+  ImageContentBlock?, // 6
+  ImageContentBlock?, // 7
+  ImageContentBlock?, // 8
+  ImageContentBlock?, // 9
+  ImageContentBlock? // 10
+];
+
 export type OpenAiMessagePart = {
   role: UserOrAssistant;
-  content: string | [TextContentBlock, ImageContentBlock];
+  content: string | OpenAiMessageContentAsAttachments;
 };
 
 export interface OpenAIConfig {

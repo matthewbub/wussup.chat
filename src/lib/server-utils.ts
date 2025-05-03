@@ -3,6 +3,7 @@ import {
   ApiChunkSequence,
   MessagePart,
   OpenAIConfig,
+  OpenAiMessageContentAsAttachments,
   OpenAiMessagePart,
 } from "@/app/types";
 import { appConfig } from "@/constants/app-config";
@@ -17,11 +18,9 @@ export const messageBuilder = (messages: MessagePart[]) => {
       case "app.image.delta":
         parts.push(formatImageIntoMessagePart(part));
         break;
+
       case "user":
-        parts.push({
-          role: "user",
-          content: part.content,
-        });
+        parts.push(formatUserMessageIntoMessagePart(part));
         break;
 
       // anthropic
@@ -39,6 +38,15 @@ export const messageBuilder = (messages: MessagePart[]) => {
   }
 
   return parts;
+};
+
+const formatUserMessageIntoMessagePart = (
+  part: MessagePart
+): OpenAiMessagePart => {
+  return {
+    role: "user",
+    content: part.content,
+  };
 };
 
 const formatImageIntoMessagePart = (part: MessagePart): OpenAiMessagePart => {
@@ -64,49 +72,38 @@ export class Unpacker {
   public metaOpts: string;
   private messagesAsJson: string;
   public messages: OpenAiMessagePart[];
-  public attachments: {
-    attachmentOne: File | null;
-    attachmentTwo: File | null;
-    attachmentThree: File | null;
-    attachmentFour: File | null;
-    attachmentFive: File | null;
-    attachmentSix: File | null;
-    attachmentSeven: File | null;
-    attachmentEight: File | null;
-    attachmentNine: File | null;
-    attachmentTen: File | null;
-  };
-
+  public attachments: { name: string; content: string }[];
   constructor(formData: FormData) {
     this.formData = formData;
     this.prompt = "";
     this.metaOpts = "";
     this.messagesAsJson = "";
     this.messages = [];
-    this.attachments = {
-      attachmentOne: null,
-      attachmentTwo: null,
-      attachmentThree: null,
-      attachmentFour: null,
-      attachmentFive: null,
-      attachmentSix: null,
-      attachmentSeven: null,
-      attachmentEight: null,
-      attachmentNine: null,
-      attachmentTen: null,
-    };
+    this.attachments = [];
   }
 
-  unpack() {
+  async unpack() {
     this.prompt = this.formData.get("prompt") as string;
     this.metaOpts = this.formData.get("metaOpts") as string;
     this.messagesAsJson = this.formData.get("messages") as string;
-    console.log("this.messagesAsJson", this.messagesAsJson);
+
+    // this has to be done before unpacking messages
+    // because we need this data to potentially mutate the last user message
+    await this.unpackAttachments();
+
+    this.unpackMessages();
     return this;
   }
 
-  unpackAttachments() {
-    this.attachments = unpackAttachments(this.formData);
+  get() {
+    return {
+      messages: this.messages,
+      metaOpts: this.metaOpts,
+    };
+  }
+
+  async unpackAttachments() {
+    this.attachments = await unpackAttachments(this.formData);
     return this;
   }
 
@@ -115,7 +112,24 @@ export class Unpacker {
       this.messages = messageBuilder(
         JSON.parse(this.messagesAsJson) as MessagePart[]
       );
-      console.log("this.messages", this.messages);
+
+      // if there are attachments, replace the last user message with the attachments
+      if (this.attachments.length > 0) {
+        this.messages[this.messages.length - 1] = {
+          role: "user",
+          content: [
+            {
+              type: "input_text",
+              // take the last user message and treat it as the "prompt" for the attachments
+              text: this.messages[this.messages.length - 1].content as string,
+            },
+            ...this.attachments.map((attachment) => ({
+              type: "input_image" as const,
+              image_url: attachment.content,
+            })),
+          ] as OpenAiMessageContentAsAttachments,
+        };
+      }
     } catch (error) {
       console.error(error);
       throw new Error("Failed to unpack messages");
@@ -124,10 +138,20 @@ export class Unpacker {
   }
 }
 
-export class OpenAiUnpacker extends Unpacker {
+export class OpenAiStreamer {
   public config: OpenAIConfig;
-  constructor(formData: FormData) {
-    super(formData);
+  public messages: OpenAiMessagePart[];
+  public metaOpts: string;
+
+  constructor({
+    messages,
+    metaOpts,
+  }: {
+    messages: OpenAiMessagePart[];
+    metaOpts: string;
+  }) {
+    this.messages = messages;
+    this.metaOpts = metaOpts;
     this.config = {
       model: "",
       stream: true,
@@ -139,7 +163,7 @@ export class OpenAiUnpacker extends Unpacker {
   readyOpenAiConfig(userId: string) {
     this.config = buildOpenAiConfig(
       this.messages,
-      this.prompt,
+      "TODO REMOVE ME",
       this.metaOpts,
       userId
     );
@@ -191,7 +215,10 @@ export const unpackFormData = (formData: FormData) => {
 
   let messages: OpenAiMessagePart[] = [];
   if (messagesAsJson) {
-    messages = messageBuilder(JSON.parse(messagesAsJson) as MessagePart[]);
+    messages = messageBuilder(
+      JSON.parse(messagesAsJson) as MessagePart[],
+      attachments
+    );
   }
 
   return {
@@ -202,49 +229,50 @@ export const unpackFormData = (formData: FormData) => {
   };
 };
 
-export const unpackAttachments = (
+export const unpackAttachments = async (
   formData: FormData
-): {
-  attachmentOne: File | null;
-  attachmentTwo: File | null;
-  attachmentThree: File | null;
-  attachmentFour: File | null;
-  attachmentFive: File | null;
-  attachmentSix: File | null;
-  attachmentSeven: File | null;
-  attachmentEight: File | null;
-  attachmentNine: File | null;
-  attachmentTen: File | null;
-} => {
-  // i wish this was pretty but it was a pain so here we are
-  const attachmentOne = formData.get("attachment_one") as File | null;
-  const attachmentTwo = formData.get("attachment_two") as File | null;
-  const attachmentThree = formData.get("attachment_three") as File | null;
-  const attachmentFour = formData.get("attachment_four") as File | null;
-  const attachmentFive = formData.get("attachment_five") as File | null;
-  const attachmentSix = formData.get("attachment_six") as File | null;
-  const attachmentSeven = formData.get("attachment_seven") as File | null;
-  const attachmentEight = formData.get("attachment_eight") as File | null;
-  const attachmentNine = formData.get("attachment_nine") as File | null;
-  const attachmentTen = formData.get("attachment_ten") as File | null;
+): Promise<{ name: string; content: string }[]> => {
+  const attachments = [
+    formData.get("attachment_one") as File | null,
+    formData.get("attachment_two") as File | null,
+    formData.get("attachment_three") as File | null,
+    formData.get("attachment_four") as File | null,
+    formData.get("attachment_five") as File | null,
+    formData.get("attachment_six") as File | null,
+    formData.get("attachment_seven") as File | null,
+    formData.get("attachment_eight") as File | null,
+    formData.get("attachment_nine") as File | null,
+    formData.get("attachment_ten") as File | null,
+  ].filter((attachment) => attachment !== null);
 
-  return {
-    attachmentOne,
-    attachmentTwo,
-    attachmentThree,
-    attachmentFour,
-    attachmentFive,
-    attachmentSix,
-    attachmentSeven,
-    attachmentEight,
-    attachmentNine,
-    attachmentTen,
-  };
+  const base64Attachments = await Promise.all(
+    attachments.map(async (attachment) => {
+      const arrayBuffer = await attachment.arrayBuffer();
+      const base64 = arrayBufferToBase64(arrayBuffer);
+      return {
+        name: attachment.name,
+        content: `data:${attachment.type};base64,${base64}`,
+      };
+    })
+  );
+
+  return base64Attachments;
 };
 
-export const startOpenAiStream = async (
-  response: AsyncIterable<ApiChunk>,
-  controller: ReadableStreamDefaultController<string>
+// https://stackoverflow.com/questions/9267899/how-can-i-convert-an-arraybuffer-to-a-base64-encoded-string
+function arrayBufferToBase64(buffer: ArrayBuffer): string {
+  let binary = "";
+  const bytes = new Uint8Array(buffer);
+  const len = bytes.byteLength;
+  for (let i = 0; i < len; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary);
+}
+
+export const streamOpenAiResponse = async (
+  controller: ReadableStreamDefaultController<string>,
+  response: AsyncIterable<ApiChunk>
 ) => {
   const sequences: ApiChunkSequence[] = [];
   let currentType: string | null = null;

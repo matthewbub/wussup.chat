@@ -15,8 +15,8 @@ export async function POST(request: Request) {
     const unpacker = new AnthropicUnpacker(formData);
     const streamer = await unpacker
       .unpack()
-      .unpackAttachments()
       .unpackMessages()
+      .unpackAttachments()
       .readyAnthropicConfig()
       .createAnthropicResponse();
 

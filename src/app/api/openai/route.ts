@@ -2,7 +2,11 @@
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { ApiChunk } from "@/app/types";
-import { OpenAiUnpacker, startOpenAiStream } from "@/lib/server-utils";
+import {
+  OpenAiStreamer,
+  streamOpenAiResponse,
+  Unpacker,
+} from "@/lib/server-utils";
 import { streamHeaders } from "@/constants/app-config";
 
 export async function POST(request: Request) {
@@ -12,19 +16,23 @@ export async function POST(request: Request) {
   }
 
   const formData = await request.formData();
-  const unpacker = new OpenAiUnpacker(formData);
-  const streamer = await unpacker
-    .unpack()
-    .unpackAttachments()
-    .unpackMessages()
+  const unpacker = new Unpacker(formData);
+
+  // unpack the form data
+  const config = await unpacker.unpack();
+  const openAiStreamer = new OpenAiStreamer(config.get());
+
+  // ready the openai config
+  const streamer = await openAiStreamer
     .readyOpenAiConfig(userId)
     .createOpenAiResponse();
 
+  // stream the openai response
   const stream = new ReadableStream({
     start: (controller) => {
-      startOpenAiStream(
-        streamer as unknown as AsyncIterable<ApiChunk>,
-        controller
+      streamOpenAiResponse(
+        controller,
+        streamer as unknown as AsyncIterable<ApiChunk>
       );
     },
   });
