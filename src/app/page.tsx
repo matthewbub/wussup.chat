@@ -4,9 +4,9 @@ import { useForm } from "react-hook-form";
 import { MessagePart } from "@/app/types";
 import { Button } from "@/components/ui/button";
 import Attachments from "@/components/Attachments";
+import { Input } from "@/components/ui/input";
 
 export default function Home() {
-  const [model, setModel] = useState<"openai" | "anthropic">("openai");
   const [messages, setMessages] = useState<MessagePart[]>([]);
   const messagesRef = useRef<MessagePart[]>([]);
   const [attachments, setAttachments] = useState<File[]>([]);
@@ -151,7 +151,7 @@ export default function Home() {
       newForm.append("attachment_ten", attachments[9]);
     }
 
-    const response = await fetch(`/api/${model}`, {
+    const response = await fetch(`/api/openai`, {
       method: "POST",
       body: newForm,
     });
@@ -238,7 +238,7 @@ export default function Home() {
             onSubmit={handleSubmit(onSubmit)}
             className="flex flex-col md:flex-row md:items-center gap-3 mb-4 w-full"
           >
-            <input
+            <Input
               {...register("prompt")}
               type="text"
               placeholder="Enter your question here..."
@@ -252,24 +252,6 @@ export default function Home() {
         </div>
 
         <div className="flex flex-wrap gap-3 mb-4">
-          <div className="flex items-center border rounded-lg p-1 bg-background space-x-2">
-            <Button
-              type="button"
-              variant={model === "openai" ? "default" : "outline"}
-              onClick={() => setModel("openai")}
-            >
-              OpenAI
-            </Button>
-            <Button
-              type="button"
-              variant={model === "anthropic" ? "default" : "outline"}
-              disabled={metaOpts === "image"}
-              onClick={() => setModel("anthropic")}
-            >
-              Anthropic
-            </Button>
-          </div>
-
           <div className="flex items-center border rounded-lg p-1 bg-background space-x-2">
             <Button
               variant={metaOpts === null ? "default" : "outline"}
@@ -298,8 +280,6 @@ export default function Home() {
             <Button
               variant={metaOpts === "image" ? "default" : "outline"}
               onClick={() => {
-                // force openai for image generation
-                setModel("openai");
                 setMetaOpts("image");
               }}
             >

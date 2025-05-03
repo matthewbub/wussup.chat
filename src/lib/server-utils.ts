@@ -7,7 +7,6 @@ import {
   OpenAiMessagePart,
 } from "@/app/types";
 import { appConfig } from "@/constants/app-config";
-import Anthropic from "@anthropic-ai/sdk";
 import OpenAI from "openai";
 
 export const messageBuilder = (messages: MessagePart[]) => {
@@ -23,9 +22,6 @@ export const messageBuilder = (messages: MessagePart[]) => {
         parts.push(formatUserMessageIntoMessagePart(part));
         break;
 
-      // anthropic
-      case "content_block_delta":
-      // open ai
       case "response.output_text.delta":
         parts.push({
           role: "assistant",
@@ -84,8 +80,10 @@ export class Unpacker {
 
   async unpack() {
     this.prompt = this.formData.get("prompt") as string;
-    this.metaOpts = this.formData.get("metaOpts") as string;
+    this.metaOpts = JSON.parse(this.formData.get("metaOpts") as string);
     this.messagesAsJson = this.formData.get("messages") as string;
+
+    console.log("this.metaOpts", this.metaOpts);
 
     // this has to be done before unpacking messages
     // because we need this data to potentially mutate the last user message
@@ -95,14 +93,14 @@ export class Unpacker {
     return this;
   }
 
-  get() {
+  public get() {
     return {
       messages: this.messages,
       metaOpts: this.metaOpts,
     };
   }
 
-  async unpackAttachments() {
+  private async unpackAttachments() {
     this.attachments = await unpackAttachments(this.formData);
     return this;
   }
@@ -173,36 +171,13 @@ export class OpenAiStreamer {
   async createOpenAiResponse(
     apiKey: string | undefined = process.env.OPENAI_API_KEY
   ) {
+    console.log("this.config", this.config);
     const openai = new OpenAI({
       apiKey: apiKey,
     });
 
     // @ts-expect-error The OpenAI SDK types don't match our usage
     const response = await openai.responses.create(this.config);
-    return response;
-  }
-}
-
-export class AnthropicUnpacker extends Unpacker {
-  public config: Anthropic.MessageCreateParamsStreaming;
-  constructor(formData: FormData) {
-    super(formData);
-    this.config = {
-      model: "",
-      stream: true,
-      messages: [],
-      max_tokens: 2000,
-    };
-  }
-
-  readyAnthropicConfig() {
-    this.config = buildAnthropicConfig(this.messages, this.metaOpts);
-    return this;
-  }
-
-  async createAnthropicResponse() {
-    const anthropic = new Anthropic();
-    const response = await anthropic.messages.create(this.config);
     return response;
   }
 }
@@ -215,10 +190,7 @@ export const unpackFormData = (formData: FormData) => {
 
   let messages: OpenAiMessagePart[] = [];
   if (messagesAsJson) {
-    messages = messageBuilder(
-      JSON.parse(messagesAsJson) as MessagePart[],
-      attachments
-    );
+    messages = messageBuilder(JSON.parse(messagesAsJson) as MessagePart[]);
   }
 
   return {
@@ -349,73 +321,4 @@ export const buildOpenAiConfig = (
   }
 
   return opConfig;
-};
-
-export const buildAnthropicConfig = (
-  messages: OpenAiMessagePart[],
-  metaOpts: string
-) => {
-  const config = {
-    model: "claude-3-7-sonnet-20250219",
-    max_tokens: 2000,
-    messages: messages,
-    stream: true,
-  } as Anthropic.MessageCreateParamsStreaming;
-
-  if (metaOpts === "thinking") {
-    config.thinking = {
-      type: "enabled",
-      budget_tokens: 1600,
-    };
-  }
-
-  return config;
-};
-
-export const startAnthropicStream = async (
-  response: AsyncIterable<ApiChunk>,
-  controller: ReadableStreamDefaultController<string>
-) => {
-  const sequences: { type: string; content: string }[] = [];
-  let currentType: string | null = null;
-  let currentContent = "";
-
-  const updateSequence = (type: string) => {
-    // if the type has changed, push what we had collected into the sequences array
-    // and prepare to collect the next type
-    if (currentType && currentType !== type) {
-      sequences.push({
-        type: currentType,
-        content: currentContent,
-      });
-      currentContent = "";
-    }
-
-    currentType = type;
-  };
-
-  for await (const chunk of response as unknown as AsyncIterable<{
-    type: string;
-    delta?: { thinking?: string; text?: string };
-  }>) {
-    updateSequence(chunk.type);
-    // continuously add to the current content until the type changes
-    // this means we don't have to be additive on the client side
-    // we can just replace the content with the new chunk
-    currentContent += chunk?.delta?.thinking || chunk?.delta?.text || "";
-
-    controller.enqueue(
-      `data: ${JSON.stringify({
-        type: chunk.type,
-        sequences: [
-          ...sequences,
-          {
-            type: currentType,
-            content: currentContent,
-          },
-        ],
-      })}\n\n`
-    );
-  }
-  controller.close();
 };

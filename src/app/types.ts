@@ -87,24 +87,14 @@ type OpenAIMessageTypeWithThinking =
 // it is not part of the openai api
 type OpenAiMessageTypeWithImage = "app.image.delta";
 
-// i think this is all there is for anthropic
-type AnthropicMessageTypeBasic =
-  | "message_start"
-  | "content_block_start"
-  | "content_block_delta"
-  | "content_block_stop"
-  | "message_delta"
-  | "message_stop";
-
 export interface MessagePart {
   type:
     | "user"
     | OpenAIMessageTypeBasic
     | OpenAIMessageTypeWithWebSearch
     | OpenAIMessageTypeWithThinking
-    | OpenAiMessageTypeWithImage
-    | AnthropicMessageTypeBasic;
-  content: string | [TextContentBlock, ImageContentBlock];
+    | OpenAiMessageTypeWithImage;
+  content: string | OpenAiMessageContentAsAttachments;
   part?: {
     annotations?: Annotation[];
     type?: string;
