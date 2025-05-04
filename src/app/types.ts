@@ -90,6 +90,7 @@ type OpenAiMessageTypeWithImage = "app.image.delta";
 export interface MessagePart {
   type:
     | "user"
+    | "user.with_attachments"
     | OpenAIMessageTypeBasic
     | OpenAIMessageTypeWithWebSearch
     | OpenAIMessageTypeWithThinking
@@ -112,7 +113,7 @@ export type ImageContentBlock = {
   image_url: string;
 };
 
-export type UserOrAssistant = "user" | "assistant";
+export type UserOrAssistant = "user" | "assistant" | "user.with_attachments";
 
 export type OpenAiMessageContentAsAttachments = [
   TextContentBlock,

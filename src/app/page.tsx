@@ -4,24 +4,29 @@ import { useForm } from "react-hook-form";
 import { MessagePart } from "@/app/types";
 import { Button } from "@/components/ui/button";
 import Attachments from "@/components/Attachments";
-import { Input } from "@/components/ui/input";
+import { AutoExpandingTextarea } from "@/components/ui/textarea";
 
 export default function Home() {
   const [messages, setMessages] = useState<MessagePart[]>([]);
   const messagesRef = useRef<MessagePart[]>([]);
   const [attachments, setAttachments] = useState<File[]>([]);
+  const [prompt, setPrompt] = useState("");
 
-  const { register, handleSubmit } = useForm({
-    defaultValues: {
-      prompt: "",
-    },
-  });
+  // const { register, handleSubmit } = useForm({
+  //   defaultValues: {
+  //     prompt: "",
+  //   },
+  // });
 
   const [metaOpts, setMetaOpts] = useState<
     null | "thinking" | "webSearch" | "image"
   >(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const handlePromptChange = (ev: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setPrompt(ev.target.value);
+  };
 
   const generateImage = async (prompt: string) => {
     try {
@@ -100,22 +105,31 @@ export default function Home() {
     }
   };
 
-  const onSubmit = async (data: { prompt: string }) => {
+  const handleSubmit = async (ev?: React.FormEvent<HTMLFormElement>) => {
+    if (ev) {
+      ev.preventDefault();
+    }
+
     if (metaOpts === "image") {
-      await generateImage(data.prompt);
+      await generateImage(prompt);
       return;
     }
 
     // preserve the user message
-    const updatedMessages = [
-      ...messages,
-      { type: "user", content: data.prompt },
-    ];
+    let updatedMessages = messages;
+    if (attachments.length > 0) {
+      updatedMessages = [
+        ...messages,
+        { type: "user.with_attachments", content: prompt },
+      ];
+    } else {
+      updatedMessages = [...messages, { type: "user", content: prompt }];
+    }
     messagesRef.current = updatedMessages as MessagePart[];
     setMessages(updatedMessages as MessagePart[]);
 
     const newForm = new FormData();
-    newForm.append("prompt", data.prompt);
+    newForm.append("prompt", prompt);
     newForm.append("metaOpts", JSON.stringify(metaOpts));
     if (updatedMessages.length > 0) {
       newForm.append("messages", JSON.stringify(updatedMessages));
@@ -151,10 +165,18 @@ export default function Home() {
       newForm.append("attachment_ten", attachments[9]);
     }
 
+    if (attachments.length >= 10) {
+      alert("You can only upload up to 10 attachments at a time.");
+      return;
+    }
+
     const response = await fetch(`/api/openai`, {
       method: "POST",
       body: newForm,
     });
+
+    // reset attachments & form data
+    setAttachments([]);
 
     const reader = response.body?.getReader();
     if (!reader) return;
@@ -229,29 +251,40 @@ export default function Home() {
   };
 
   return (
-    <div className="h-full flex flex-col items-center justify-center p-8 max-w-2xl mx-auto">
-      <h1 className="text-3xl font-bold mb-6">AI Reasoning Demo</h1>
+    <div className="h-full flex flex-col items-center p-8 max-w-2xl mx-auto">
+      <div className="flex-1 w-full">
+        <Messages messages={messages} />
+      </div>
 
-      <div className="w-full mb-6">
+      <div className="w-full mb-6 mt-auto sticky bottom-0 bg-background">
         <div className="flex items-center gap-3 mb-4 w-full">
           <form
-            onSubmit={handleSubmit(onSubmit)}
-            className="flex flex-col md:flex-row md:items-center gap-3 mb-4 w-full"
+            onSubmit={(ev) => handleSubmit(ev)}
+            className="flex flex-col md:flex-row items-end gap-3 mb-4 w-full"
           >
-            <Input
-              {...register("prompt")}
-              type="text"
+            <AutoExpandingTextarea
+              value={prompt}
+              onChange={handlePromptChange}
               placeholder="Enter your question here..."
               className="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
+              onKeyDown={(ev) => {
+                if (ev.key === "Enter" && !ev.shiftKey) {
+                  ev.preventDefault();
+                  handleSubmit();
+                }
+              }}
             />
-            <Attachments multiple={true} onFileSelect={setAttachments} />
-            <Button type="submit" disabled={loading}>
-              Ask AI
-            </Button>
+
+            <div className="flex items-center gap-3">
+              <Attachments multiple={true} onFileSelect={setAttachments} />
+              <Button type="submit" disabled={loading}>
+                Ask AI
+              </Button>
+            </div>
           </form>
         </div>
 
-        <div className="flex flex-wrap gap-3 mb-4">
+        {/* <div className="flex flex-wrap gap-3 mb-4">
           <div className="flex items-center border rounded-lg p-1 bg-background space-x-2">
             <Button
               variant={metaOpts === null ? "default" : "outline"}
@@ -286,10 +319,8 @@ export default function Home() {
               Image
             </Button>
           </div>
-        </div>
+        </div> */}
       </div>
-
-      <Messages messages={messages} />
     </div>
   );
 }
@@ -300,7 +331,11 @@ function Messages({ messages }: { messages: MessagePart[] }) {
       case "app.image.delta":
         return (
           <div className="w-full h-64 relative">
-            <img src={message.content as string} alt="Generated Image" />
+            <img
+              src={message.content as string}
+              alt="Generated Image"
+              className="w-[300px]"
+            />
           </div>
         );
       case "response.content_part.done":
@@ -336,6 +371,17 @@ function Messages({ messages }: { messages: MessagePart[] }) {
           </div>
         );
       default:
+        if (message.content.length <= 0) {
+          return null;
+        }
+
+        if (Array.isArray(message.content)) {
+          return (
+            <div className="text-foreground whitespace-pre-wrap">
+              {JSON.stringify(message.content) as string}
+            </div>
+          );
+        }
         return (
           <div className="text-foreground whitespace-pre-wrap">
             {message.content as string}
@@ -345,7 +391,7 @@ function Messages({ messages }: { messages: MessagePart[] }) {
   };
 
   return (
-    <div className="w-full space-y-4 p-4 rounded-lg border max-h-[500px] overflow-y-auto">
+    <div className="w-full space-y-4 mt-20">
       {messages.length === 0 ? (
         <div className="text-center text-gray-500 py-8">
           Ask a question to see AI responses here
@@ -356,7 +402,7 @@ function Messages({ messages }: { messages: MessagePart[] }) {
             key={index}
             className="flex flex-col gap-2 border rounded-lg p-3"
           >
-            <span className="text-xs bg-gray-100 text-gray-600 font-mono px-2 py-1 rounded w-fit">
+            <span className="text-[10px] text-gray-600 font-mono rounded w-fit">
               {message.type}
             </span>
             {determineMessageType(message)}

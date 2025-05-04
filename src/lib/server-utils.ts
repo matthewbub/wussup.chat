@@ -9,6 +9,8 @@ import {
 import { appConfig } from "@/constants/app-config";
 import OpenAI from "openai";
 
+// this is a helper function to build the messages array for the openai api
+// from the client to the server (NOT vice versa)
 export const messageBuilder = (messages: MessagePart[]) => {
   const parts: OpenAiMessagePart[] = [];
 
@@ -19,6 +21,7 @@ export const messageBuilder = (messages: MessagePart[]) => {
         break;
 
       case "user":
+      case "user.with_attachments":
         parts.push(formatUserMessageIntoMessagePart(part));
         break;
 
@@ -37,7 +40,7 @@ export const messageBuilder = (messages: MessagePart[]) => {
 };
 
 const formatUserMessageIntoMessagePart = (
-  part: MessagePart
+  part: MessagePart,
 ): OpenAiMessagePart => {
   return {
     role: "user",
@@ -69,6 +72,7 @@ export class Unpacker {
   private messagesAsJson: string;
   public messages: OpenAiMessagePart[];
   public attachments: { name: string; content: string }[];
+
   constructor(formData: FormData) {
     this.formData = formData;
     this.prompt = "";
@@ -78,12 +82,10 @@ export class Unpacker {
     this.attachments = [];
   }
 
-  async unpack() {
+  public async unpack() {
     this.prompt = this.formData.get("prompt") as string;
     this.metaOpts = JSON.parse(this.formData.get("metaOpts") as string);
-    this.messagesAsJson = this.formData.get("messages") as string;
-
-    console.log("this.metaOpts", this.metaOpts);
+    this.messagesAsJson = JSON.parse(this.formData.get("messages") as string);
 
     // this has to be done before unpacking messages
     // because we need this data to potentially mutate the last user message
@@ -105,10 +107,10 @@ export class Unpacker {
     return this;
   }
 
-  unpackMessages() {
+  private unpackMessages() {
     try {
       this.messages = messageBuilder(
-        JSON.parse(this.messagesAsJson) as MessagePart[]
+        this.messagesAsJson as unknown as MessagePart[],
       );
 
       // if there are attachments, replace the last user message with the attachments
@@ -163,13 +165,13 @@ export class OpenAiStreamer {
       this.messages,
       "TODO REMOVE ME",
       this.metaOpts,
-      userId
+      userId,
     );
     return this;
   }
 
   async createOpenAiResponse(
-    apiKey: string | undefined = process.env.OPENAI_API_KEY
+    apiKey: string | undefined = process.env.OPENAI_API_KEY,
   ) {
     console.log("this.config", this.config);
     const openai = new OpenAI({
@@ -202,7 +204,7 @@ export const unpackFormData = (formData: FormData) => {
 };
 
 export const unpackAttachments = async (
-  formData: FormData
+  formData: FormData,
 ): Promise<{ name: string; content: string }[]> => {
   const attachments = [
     formData.get("attachment_one") as File | null,
@@ -225,7 +227,7 @@ export const unpackAttachments = async (
         name: attachment.name,
         content: `data:${attachment.type};base64,${base64}`,
       };
-    })
+    }),
   );
 
   return base64Attachments;
@@ -244,7 +246,7 @@ function arrayBufferToBase64(buffer: ArrayBuffer): string {
 
 export const streamOpenAiResponse = async (
   controller: ReadableStreamDefaultController<string>,
-  response: AsyncIterable<ApiChunk>
+  response: AsyncIterable<ApiChunk>,
 ) => {
   const sequences: ApiChunkSequence[] = [];
   let currentType: string | null = null;
@@ -287,7 +289,7 @@ export const streamOpenAiResponse = async (
             part: chunk?.part ?? null,
           },
         ],
-      })}\n\n`
+      })}\n\n`,
     );
   }
   controller.close();
@@ -297,7 +299,7 @@ export const buildOpenAiConfig = (
   messages: OpenAiMessagePart[],
   prompt: string,
   metaOpts: string,
-  userId: string
+  userId: string,
 ) => {
   const opConfig: OpenAIConfig = {
     model: appConfig.openai.thinkingModel,
