@@ -5,8 +5,8 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { appConfig } from "@/constants/app-config";
 import { ThemeProvider } from "@/app/theme-provider";
 import "./globals.css";
-import Header from "@/components/header";
-import Footer from "@/components/footer";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/sidebar";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -35,14 +35,26 @@ export default function RootLayout({
           className={`${geistSans.variable} ${geistMono.variable} antialiased h-full`}
         >
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-            <div className="h-full">
-              {/* <Header /> */}
-              {children}
-              {/* <Footer /> */}
-            </div>
+            <SidebarProviderWrapper>
+              <div className="h-full">
+                {/* <Header /> */}
+                {children}
+                {/* <Footer /> */}
+              </div>
+            </SidebarProviderWrapper>
           </ThemeProvider>
         </body>
       </html>
     </ClerkProvider>
+  );
+}
+
+function SidebarProviderWrapper({ children }: { children: React.ReactNode }) {
+  return (
+    <SidebarProvider className="h-full relative" defaultOpen={false}>
+      <AppSidebar />
+      <SidebarTrigger className="mt-4 ml-4 sticky top-0" />
+      <div className="h-full w-full">{children}</div>
+    </SidebarProvider>
   );
 }

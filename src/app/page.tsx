@@ -267,12 +267,12 @@ export default function Home() {
   };
 
   return (
-    <div className="h-full flex flex-col items-center mt-8 max-w-2xl mx-auto">
+    <div className="h-full flex flex-col items-center pt-8 max-w-2xl mx-auto">
       <div className="flex-1 w-full">
         <Messages messages={messages} />
       </div>
 
-      <div className="w-full mt-auto sticky bottom-0 bg-background mb-4">
+      <div className="w-full mt-auto sticky bottom-0 bg-background pb-4">
         <div className="flex flex-col w-full">
           <form
             onSubmit={(ev) => handleSubmit(ev)}
@@ -307,7 +307,7 @@ export default function Home() {
             </div>
           </form>
           <div>
-            <span className="text-xs text-gray-500">
+            <span className="text-xs text-stone-500">
               AI is known to make mistakes and hallucination information. Use
               with discretion.
             </span>
@@ -401,7 +401,7 @@ function Messages({ messages }: { messages: MessagePart[] }) {
 
             {annotationsWithOutDuplicates.map((annotation, index) => (
               <div key={annotation.url}>
-                <span className="text-xs bg-gray-100 text-gray-600 font-mono px-2 py-1 rounded w-fit">
+                <span className="text-xs bg-stone-100 text-stone-600 font-mono px-2 py-1 rounded w-fit">
                   {"message.part?.annotations[" + index + "].type:"}
                   {annotation.type}
 
@@ -442,13 +442,13 @@ function Messages({ messages }: { messages: MessagePart[] }) {
   return (
     <div className="w-full space-y-4 mb-4">
       {messages.length === 0 ? (
-        <div className="text-center text-gray-500 py-8">
+        <div className="text-center text-stone-500 py-8">
           Ask a question to see AI responses here
         </div>
       ) : (
         messages.map((message, index) => (
           <div key={index} className="flex flex-col gap-2 border p-3">
-            <span className="text-[10px] text-gray-600 font-mono rounded w-fit">
+            <span className="text-[10px] text-stone-600 font-mono rounded w-fit">
               {message.type}
             </span>
             {determineMessageType(message)}
