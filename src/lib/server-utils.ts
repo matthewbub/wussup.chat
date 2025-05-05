@@ -40,8 +40,9 @@ export const messageBuilder = (messages: MessagePart[]) => {
 };
 
 const formatUserMessageIntoMessagePart = (
-  part: MessagePart,
+  part: MessagePart
 ): OpenAiMessagePart => {
+  console.log("message part content", part.content);
   return {
     role: "user",
     content: part.content,
@@ -110,7 +111,7 @@ export class Unpacker {
   private unpackMessages() {
     try {
       this.messages = messageBuilder(
-        this.messagesAsJson as unknown as MessagePart[],
+        this.messagesAsJson as unknown as MessagePart[]
       );
 
       // if there are attachments, replace the last user message with the attachments
@@ -165,13 +166,13 @@ export class OpenAiStreamer {
       this.messages,
       "TODO REMOVE ME",
       this.metaOpts,
-      userId,
+      userId
     );
     return this;
   }
 
   async createOpenAiResponse(
-    apiKey: string | undefined = process.env.OPENAI_API_KEY,
+    apiKey: string | undefined = process.env.OPENAI_API_KEY
   ) {
     console.log("this.config", this.config);
     const openai = new OpenAI({
@@ -204,7 +205,7 @@ export const unpackFormData = (formData: FormData) => {
 };
 
 export const unpackAttachments = async (
-  formData: FormData,
+  formData: FormData
 ): Promise<{ name: string; content: string }[]> => {
   const attachments = [
     formData.get("attachment_one") as File | null,
@@ -227,7 +228,7 @@ export const unpackAttachments = async (
         name: attachment.name,
         content: `data:${attachment.type};base64,${base64}`,
       };
-    }),
+    })
   );
 
   return base64Attachments;
@@ -246,7 +247,7 @@ function arrayBufferToBase64(buffer: ArrayBuffer): string {
 
 export const streamOpenAiResponse = async (
   controller: ReadableStreamDefaultController<string>,
-  response: AsyncIterable<ApiChunk>,
+  response: AsyncIterable<ApiChunk>
 ) => {
   const sequences: ApiChunkSequence[] = [];
   let currentType: string | null = null;
@@ -289,7 +290,7 @@ export const streamOpenAiResponse = async (
             part: chunk?.part ?? null,
           },
         ],
-      })}\n\n`,
+      })}\n\n`
     );
   }
   controller.close();
@@ -299,7 +300,7 @@ export const buildOpenAiConfig = (
   messages: OpenAiMessagePart[],
   prompt: string,
   metaOpts: string,
-  userId: string,
+  userId: string
 ) => {
   const opConfig: OpenAIConfig = {
     model: appConfig.openai.thinkingModel,

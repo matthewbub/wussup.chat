@@ -1,22 +1,17 @@
 "use client";
 import { useState, useRef } from "react";
-import { useForm } from "react-hook-form";
 import { MessagePart } from "@/app/types";
 import { Button } from "@/components/ui/button";
 import Attachments from "@/components/Attachments";
 import { AutoExpandingTextarea } from "@/components/ui/textarea";
+import { File as FileIcon } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 export default function Home() {
   const [messages, setMessages] = useState<MessagePart[]>([]);
   const messagesRef = useRef<MessagePart[]>([]);
   const [attachments, setAttachments] = useState<File[]>([]);
   const [prompt, setPrompt] = useState("");
-
-  // const { register, handleSubmit } = useForm({
-  //   defaultValues: {
-  //     prompt: "",
-  //   },
-  // });
 
   const [metaOpts, setMetaOpts] = useState<
     null | "thinking" | "webSearch" | "image"
@@ -105,6 +100,27 @@ export default function Home() {
     }
   };
 
+  /**
+   *
+   * There's a bug in this code that i'm struggling to resolve in a fashionable way.
+   * When I send a chat with attachments, the content gets sent to the server as "user.with_attachments"
+   * and it all works fine. the data shape is something like: {type: "user.with_attachments", content: [ {type: "input_text", text: "prompt"}, {type: "input_image", image_url: "attachment_one_base64"}]}
+   *
+   * Thats just how it gets piped to the server, we actually destructure and reformat it like this on the server,
+   * whereas on the client it was several seperate pieces of state:
+   *```
+   * const [attachments, setAttachments] = useState<File[]>([]);
+   * const [messages, setMessages] = useState<MessagePart[]>([]);
+   * const [prompt, setPrompt] = useState("");
+   *```
+   *
+   * when it comes back from the server, its now just {type: "user", content: "prompt"}
+   *
+   * this is a problem because we're loosing the context on the next message
+   * or it could be by design.... but its a bad design
+   *
+   *
+   */
   const handleSubmit = async (ev?: React.FormEvent<HTMLFormElement>) => {
     if (ev) {
       ev.preventDefault();
@@ -251,16 +267,16 @@ export default function Home() {
   };
 
   return (
-    <div className="h-full flex flex-col items-center p-8 max-w-2xl mx-auto">
+    <div className="h-full flex flex-col items-center mt-8 max-w-2xl mx-auto">
       <div className="flex-1 w-full">
         <Messages messages={messages} />
       </div>
 
-      <div className="w-full mb-6 mt-auto sticky bottom-0 bg-background">
-        <div className="flex items-center gap-3 mb-4 w-full">
+      <div className="w-full mt-auto sticky bottom-0 bg-background mb-4">
+        <div className="flex flex-col w-full">
           <form
             onSubmit={(ev) => handleSubmit(ev)}
-            className="flex flex-col md:flex-row items-end gap-3 mb-4 w-full"
+            className="flex flex-col md:flex-row items-end gap-3 w-full"
           >
             <AutoExpandingTextarea
               value={prompt}
@@ -275,13 +291,27 @@ export default function Home() {
               }}
             />
 
-            <div className="flex items-center gap-3">
-              <Attachments multiple={true} onFileSelect={setAttachments} />
-              <Button type="submit" disabled={loading}>
-                Ask AI
-              </Button>
+            <div className="flex flex-col gap-2">
+              {attachments.length > 0 && (
+                <Badge variant="outline">
+                  {attachments.length} attachments
+                </Badge>
+              )}
+
+              <div className="flex items-center gap-3">
+                <Attachments multiple={true} onFileSelect={setAttachments} />
+                <Button type="submit" disabled={loading}>
+                  Ask AI
+                </Button>
+              </div>
             </div>
           </form>
+          <div>
+            <span className="text-xs text-gray-500">
+              AI is known to make mistakes and hallucination information. Use
+              with discretion.
+            </span>
+          </div>
         </div>
 
         {/* <div className="flex flex-wrap gap-3 mb-4">
@@ -328,6 +358,25 @@ export default function Home() {
 function Messages({ messages }: { messages: MessagePart[] }) {
   const determineMessageType = (message: MessagePart) => {
     switch (message.type) {
+      case "user":
+        return (
+          <div className="w-full flex items-end justify-end">
+            {/* 75% is roughly the input (textarae) size we provide to the user in the interface */}
+            <div className="max-w-[75%] p-2 bg-accent/40 rounded-md">
+              {message.content as string}
+            </div>
+          </div>
+        );
+      case "user.with_attachments":
+        return (
+          <div className="w-full flex items-end justify-end relative">
+            {/* 75% is roughly the input (textarae) size we provide to the user in the interface */}
+            <div className="max-w-[75%] p-2 bg-accent/40 rounded-md">
+              {message.content as string}
+            </div>
+            <FileIcon className="h-4 w-4 absolute -bottom-2 -right-2 stroke-teal-600" />
+          </div>
+        );
       case "app.image.delta":
         return (
           <div className="w-full h-64 relative">
@@ -391,17 +440,14 @@ function Messages({ messages }: { messages: MessagePart[] }) {
   };
 
   return (
-    <div className="w-full space-y-4 mt-20">
+    <div className="w-full space-y-4 mb-4">
       {messages.length === 0 ? (
         <div className="text-center text-gray-500 py-8">
           Ask a question to see AI responses here
         </div>
       ) : (
         messages.map((message, index) => (
-          <div
-            key={index}
-            className="flex flex-col gap-2 border rounded-lg p-3"
-          >
+          <div key={index} className="flex flex-col gap-2 border p-3">
             <span className="text-[10px] text-gray-600 font-mono rounded w-fit">
               {message.type}
             </span>
