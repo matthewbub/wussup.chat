@@ -302,43 +302,6 @@ export default function Home() {
             </span>
           </div>
         </div>
-
-        {/* <div className="flex flex-wrap gap-3 mb-4">
-          <div className="flex items-center border rounded-lg p-1 bg-background space-x-2">
-            <Button
-              variant={metaOpts === null ? "default" : "outline"}
-              onClick={() => {
-                setMetaOpts(null);
-              }}
-            >
-              None
-            </Button>
-            <Button
-              variant={metaOpts === "webSearch" ? "default" : "outline"}
-              onClick={() => {
-                setMetaOpts("webSearch");
-              }}
-            >
-              Web Search
-            </Button>
-            <Button
-              variant={metaOpts === "thinking" ? "default" : "outline"}
-              onClick={() => {
-                setMetaOpts("thinking");
-              }}
-            >
-              Thinking
-            </Button>
-            <Button
-              variant={metaOpts === "image" ? "default" : "outline"}
-              onClick={() => {
-                setMetaOpts("image");
-              }}
-            >
-              Image
-            </Button>
-          </div>
-        </div> */}
       </div>
     </div>
   );

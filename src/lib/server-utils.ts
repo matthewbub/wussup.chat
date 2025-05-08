@@ -5,8 +5,10 @@ import {
   OpenAIConfig,
   OpenAiMessageContentAsAttachments,
   OpenAiMessagePart,
+  OpenAiImageResponse,
 } from "@/app/types";
 import { appConfig } from "@/constants/app-config";
+import { put } from "@vercel/blob";
 import OpenAI from "openai";
 import { Tool } from "openai/resources/responses/responses.mjs";
 
@@ -78,7 +80,7 @@ export class Unpacker {
   constructor(formData: FormData) {
     this.formData = formData;
     this.prompt = "";
-    this.metaOpts = "";
+    this.metaOpts = ""; // todo remove me
     this.messagesAsJson = "";
     this.messages = [];
     this.attachments = [];
@@ -145,7 +147,7 @@ export class OpenAiStreamer {
   public messages: OpenAiMessagePart[];
   public metaOpts: string;
   public prompt: string;
-
+  public modelType: string;
   constructor({
     messages,
     metaOpts,
@@ -164,19 +166,28 @@ export class OpenAiStreamer {
       input: [],
       user: "",
     };
+    this.modelType = "";
   }
 
   async readyOpenAiConfig(userId: string) {
+    // call openai to get desired model
+    this.modelType = await determineModel(this.prompt);
+
     this.config = await buildOpenAiConfig(
       this.messages,
       this.prompt,
       this.metaOpts,
-      userId
+      userId,
+      this.modelType
     );
     return this;
   }
 
-  async createOpenAiResponse(
+  getModelType() {
+    return this.modelType;
+  }
+
+  async createOpenAiStreamResponse(
     apiKey: string | undefined = process.env.OPENAI_API_KEY
   ) {
     console.log("this.config", this.config);
@@ -187,6 +198,48 @@ export class OpenAiStreamer {
     // @ts-expect-error The OpenAI SDK types don't match our usage
     const response = await openai.responses.create(this.config);
     return response;
+  }
+
+  async createOpenAiImageResponse(
+    apiKey: string | undefined = process.env.OPENAI_API_KEY,
+    userId: string,
+    prompt: string
+  ): Promise<OpenAiImageResponse> {
+    // console.log("this.config", this.config);
+    const openai = new OpenAI({
+      apiKey: apiKey,
+    });
+
+    const result = await openai.images.generate({
+      model: appConfig.openai.imageModel,
+      prompt:
+        "Heres the prompt: " +
+        prompt +
+        "\n\n Heres the message history for context: " +
+        JSON.stringify(this.messages),
+    });
+
+    const image_base64 = result.data?.[0]?.b64_json;
+    if (!image_base64) {
+      throw new Error("Failed to generate image");
+    }
+
+    // Convert base64 to Buffer
+    const image_bytes = Buffer.from(image_base64, "base64");
+
+    // Generate a unique filename
+    const timestamp = Date.now();
+    const uniqueFilename = `generated-images/${userId}/${timestamp}.png`;
+
+    // Upload to Vercel Blob
+    const blob = await put(uniqueFilename, image_bytes, { access: "public" });
+
+    return {
+      url: blob.url,
+      downloadUrl: blob.downloadUrl,
+      pathname: blob.pathname,
+      contentType: blob.contentType,
+    };
   }
 }
 
@@ -301,15 +354,65 @@ export const streamOpenAiResponse = async (
   controller.close();
 };
 
+// simulate a stream for th eimage response
+// this is so we can dynamiclly choose the thinking|websearch|image models
+//  from the server side
+export const mockStreamOpenAiResponse = async (
+  controller: ReadableStreamDefaultController<string>,
+  response: AsyncIterable<ApiChunk> & OpenAiImageResponse
+) => {
+  // First, send a "created" event
+  controller.enqueue(
+    `data: ${JSON.stringify({
+      type: "response.created",
+      sequences: [],
+    })}\n\n`
+  );
+
+  // Send an "in_progress" event
+  controller.enqueue(
+    `data: ${JSON.stringify({
+      type: "response.in_progress",
+      sequences: [],
+    })}\n\n`
+  );
+
+  // Send the image URL as a delta
+  controller.enqueue(
+    `data: ${JSON.stringify({
+      type: "app.image.delta",
+      sequences: [
+        {
+          type: "app.image.delta",
+          content: {
+            contentType: response.contentType,
+            image_url: response.url,
+            downloadUrl: response.downloadUrl,
+            pathname: response.pathname,
+          },
+        },
+      ],
+    })}\n\n`
+  );
+
+  // Send completion event
+  controller.enqueue(
+    `data: ${JSON.stringify({
+      type: "response.completed",
+      sequences: [],
+    })}\n\n`
+  );
+
+  controller.close();
+};
+
 export const buildOpenAiConfig = async (
   messages: OpenAiMessagePart[],
   prompt: string,
   metaOpts: string,
-  userId: string
+  userId: string,
+  modelType: string
 ) => {
-  // call openai to get desired model
-  const modelType = await determineModel(prompt);
-
   const opConfig: OpenAIConfig = {
     model: appConfig.openai.thinkingModel,
     stream: true as const,

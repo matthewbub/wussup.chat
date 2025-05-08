@@ -149,3 +149,10 @@ export interface OpenAIConfig {
     type: string;
   }>;
 }
+
+export interface OpenAiImageResponse {
+  url: string;
+  downloadUrl: string;
+  pathname: string;
+  contentType: string;
+}

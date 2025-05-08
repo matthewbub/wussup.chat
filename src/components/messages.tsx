@@ -40,7 +40,7 @@ export function Messages({ messages }: { messages: MessagePart[] }) {
         return (
           <div className="w-full h-64 relative">
             <img
-              src={message.content as string}
+              src={message.content.image_url}
               alt="Generated Image"
               className="w-[300px]"
             />
