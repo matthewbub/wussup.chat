@@ -13,10 +13,6 @@ export default function Home() {
   const messagesRef = useRef<MessagePart[]>([]);
   const [attachments, setAttachments] = useState<File[]>([]);
   const [prompt, setPrompt] = useState("");
-
-  const [metaOpts, setMetaOpts] = useState<
-    null | "thinking" | "webSearch" | "image"
-  >(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -27,14 +23,10 @@ export default function Home() {
   const buildFormData = (
     prompt: string,
     messages: MessagePart[],
-    attachments: File[],
-    metaOpts?: string | null
+    attachments: File[]
   ) => {
     const form = new FormData();
     form.append("prompt", prompt);
-    if (metaOpts) {
-      form.append("metaOpts", JSON.stringify(metaOpts));
-    }
     if (messages.length > 0) {
       form.append("messages", JSON.stringify(messages));
     }
@@ -47,54 +39,6 @@ export default function Home() {
     });
 
     return form;
-  };
-
-  const generateImage = async (prompt: string) => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      // Create the user message
-      const userMessage = { type: "user", content: prompt };
-      const updatedMessages = [...messages, userMessage];
-
-      // Update both state and ref with the user message
-      setMessages(updatedMessages as MessagePart[]);
-      messagesRef.current = updatedMessages as MessagePart[];
-
-      const newForm = buildFormData(
-        prompt,
-        updatedMessages as MessagePart[],
-        attachments,
-        metaOpts
-      );
-
-      // Generate a unique URL parameter to prevent caching
-      const timestamp = new Date().getTime();
-      const response = await fetch(`/api/openai/image?t=${timestamp}`, {
-        method: "POST",
-        body: newForm,
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to generate image");
-      }
-
-      const imageResponse = await response.json();
-
-      // Add the image response
-      const finalMessages = [
-        ...updatedMessages,
-        { type: "app.image.delta", content: imageResponse.url },
-      ];
-      messagesRef.current = finalMessages as MessagePart[];
-      setMessages(finalMessages as MessagePart[]);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred");
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
   };
 
   /**
@@ -123,11 +67,6 @@ export default function Home() {
       ev.preventDefault();
     }
 
-    if (metaOpts === "image") {
-      await generateImage(prompt);
-      return;
-    }
-
     // preserve the user message
     let updatedMessages = messages;
     if (attachments.length > 0) {
@@ -141,12 +80,7 @@ export default function Home() {
     messagesRef.current = updatedMessages as MessagePart[];
     setMessages(updatedMessages as MessagePart[]);
 
-    const newForm = buildFormData(
-      prompt,
-      updatedMessages,
-      attachments,
-      metaOpts
-    );
+    const newForm = buildFormData(prompt, updatedMessages, attachments);
 
     if (attachments.length >= 10) {
       alert("You can only upload up to 10 attachments at a time.");
