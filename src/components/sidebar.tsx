@@ -54,14 +54,16 @@ export function AppSidebar() {
     <Sidebar>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Wussup</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-stone-300 font-black">
+            Wussup
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
                     <Link href={item.url}>
-                      <span>{item.title}</span>
+                      <span className="text-stone-300/80">{item.title}</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -80,7 +82,7 @@ export function AppSidebar() {
                 <SidebarMenuButton asChild>
                   <Link href="/images">
                     <ImageIcon className="w-4 h-4" />
-                    <span>Images</span>
+                    <span className="text-stone-300/80">Images</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -89,7 +91,7 @@ export function AppSidebar() {
                 <SidebarMenuButton asChild>
                   <Link href="/account">
                     <User className="w-4 h-4" />
-                    <span>Account</span>
+                    <span className="text-stone-300/80">Account</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>

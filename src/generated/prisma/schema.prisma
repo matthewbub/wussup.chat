@@ -1,0 +1,17 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model ChatHistory {
+  id        String   @id @default(uuid())
+  userId    String
+  chatName  String   @default("Untitled Chat")
+  history   String
+  updatedAt DateTime @updatedAt
+}

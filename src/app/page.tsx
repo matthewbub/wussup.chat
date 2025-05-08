@@ -271,6 +271,20 @@ export default function Home() {
         setMessages([...messagesRef.current]);
       }
     } // End while true (stream reading loop)
+
+    // Store the chat history
+    await storeChatHistory();
+  };
+
+  const storeChatHistory = async () => {
+    const response = await fetch("/api/store", {
+      method: "POST",
+      body: JSON.stringify({ history: messagesRef.current }),
+    });
+
+    if (!response.ok) {
+      console.error("Failed to store chat history");
+    }
   };
 
   return (
@@ -477,7 +491,7 @@ function Messages({ messages }: { messages: MessagePart[] }) {
           <h1 className="text-2xl font-black bg-gradient-to-r from-stone-700/50 to-stone-700/80 inline-block text-transparent bg-clip-text">
             Wussup Chat
           </h1>
-          <p className="text-stone-300">
+          <p className="text-stone-300/80">
             Ask a question to see AI responses here.
           </p>
           <p className="text-sm text-stone-500 mt-4 text-right w-full inline-block">
