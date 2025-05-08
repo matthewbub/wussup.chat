@@ -1,18 +1,12 @@
 "use client";
-import { useState, useRef, Fragment } from "react";
+import { useState, useRef } from "react";
 import { MessagePart } from "@/app/types";
-import { Button, OutlineButton } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import Attachments from "@/components/Attachments";
 import { AutoExpandingTextarea } from "@/components/ui/textarea";
-import {
-  Brain,
-  File as FileIcon,
-  GlobeIcon,
-  ImageIcon,
-  PlusIcon,
-} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { Messages } from "@/components/messages";
 
 export default function Home() {
   const [messages, setMessages] = useState<MessagePart[]>([]);
@@ -30,6 +24,31 @@ export default function Home() {
     setPrompt(ev.target.value);
   };
 
+  const buildFormData = (
+    prompt: string,
+    messages: MessagePart[],
+    attachments: File[],
+    metaOpts?: string | null
+  ) => {
+    const form = new FormData();
+    form.append("prompt", prompt);
+    if (metaOpts) {
+      form.append("metaOpts", JSON.stringify(metaOpts));
+    }
+    if (messages.length > 0) {
+      form.append("messages", JSON.stringify(messages));
+    }
+
+    // Add attachments
+    attachments.forEach((file, index) => {
+      if (index < 10) {
+        form.append(`attachment_${index + 1}`, file);
+      }
+    });
+
+    return form;
+  };
+
   const generateImage = async (prompt: string) => {
     try {
       setLoading(true);
@@ -43,41 +62,12 @@ export default function Home() {
       setMessages(updatedMessages as MessagePart[]);
       messagesRef.current = updatedMessages as MessagePart[];
 
-      const newForm = new FormData();
-      newForm.append("prompt", prompt);
-      if (updatedMessages.length > 0) {
-        newForm.append("messages", JSON.stringify(updatedMessages));
-      }
-      if (attachments[0]) {
-        newForm.append("attachment_one", attachments[0]);
-      }
-      if (attachments[1]) {
-        newForm.append("attachment_two", attachments[1]);
-      }
-      if (attachments[2]) {
-        newForm.append("attachment_three", attachments[2]);
-      }
-      if (attachments[3]) {
-        newForm.append("attachment_four", attachments[3]);
-      }
-      if (attachments[4]) {
-        newForm.append("attachment_five", attachments[4]);
-      }
-      if (attachments[5]) {
-        newForm.append("attachment_six", attachments[5]);
-      }
-      if (attachments[6]) {
-        newForm.append("attachment_seven", attachments[6]);
-      }
-      if (attachments[7]) {
-        newForm.append("attachment_eight", attachments[7]);
-      }
-      if (attachments[8]) {
-        newForm.append("attachment_nine", attachments[8]);
-      }
-      if (attachments[9]) {
-        newForm.append("attachment_ten", attachments[9]);
-      }
+      const newForm = buildFormData(
+        prompt,
+        updatedMessages as MessagePart[],
+        attachments,
+        metaOpts
+      );
 
       // Generate a unique URL parameter to prevent caching
       const timestamp = new Date().getTime();
@@ -151,42 +141,12 @@ export default function Home() {
     messagesRef.current = updatedMessages as MessagePart[];
     setMessages(updatedMessages as MessagePart[]);
 
-    const newForm = new FormData();
-    newForm.append("prompt", prompt);
-    newForm.append("metaOpts", JSON.stringify(metaOpts));
-    if (updatedMessages.length > 0) {
-      newForm.append("messages", JSON.stringify(updatedMessages));
-    }
-    if (attachments[0]) {
-      newForm.append("attachment_one", attachments[0]);
-    }
-    if (attachments[1]) {
-      newForm.append("attachment_two", attachments[1]);
-    }
-    if (attachments[2]) {
-      newForm.append("attachment_three", attachments[2]);
-    }
-    if (attachments[3]) {
-      newForm.append("attachment_four", attachments[3]);
-    }
-    if (attachments[4]) {
-      newForm.append("attachment_five", attachments[4]);
-    }
-    if (attachments[5]) {
-      newForm.append("attachment_six", attachments[5]);
-    }
-    if (attachments[6]) {
-      newForm.append("attachment_seven", attachments[6]);
-    }
-    if (attachments[7]) {
-      newForm.append("attachment_eight", attachments[7]);
-    }
-    if (attachments[8]) {
-      newForm.append("attachment_nine", attachments[8]);
-    }
-    if (attachments[9]) {
-      newForm.append("attachment_ten", attachments[9]);
-    }
+    const newForm = buildFormData(
+      prompt,
+      updatedMessages,
+      attachments,
+      metaOpts
+    );
 
     if (attachments.length >= 10) {
       alert("You can only upload up to 10 attachments at a time.");
@@ -380,167 +340,6 @@ export default function Home() {
           </div>
         </div> */}
       </div>
-    </div>
-  );
-}
-const MESSAGE_TYPES = [
-  "user",
-  "user.with_attachments",
-  "app.image.delta",
-  "response.content_part.done",
-  "response.output_text.delta",
-] as const;
-
-type MessageTypes = (typeof MESSAGE_TYPES)[number];
-
-function Messages({ messages }: { messages: MessagePart[] }) {
-  const determineMessageType = (message: MessagePart) => {
-    switch (message.type as MessageTypes) {
-      case "user":
-        return (
-          <div className="w-full flex items-end justify-end">
-            {/* 75% is roughly the input (textarae) size we provide to the user in the interface */}
-            <div className="max-w-[75%] py-2 px-4 bg-accent/70 rounded-md">
-              {message.content as string}
-            </div>
-          </div>
-        );
-      case "user.with_attachments":
-        return (
-          <div className="w-full flex items-end justify-end relative">
-            {/* 75% is roughly the input (textarae) size we provide to the user in the interface */}
-            <div className="max-w-[75%] py-2 px-4 bg-accent/70 rounded-md">
-              {message.content as string}
-            </div>
-            <FileIcon className="h-4 w-4 absolute -bottom-2 -right-2 stroke-teal-600" />
-          </div>
-        );
-      case "app.image.delta":
-        return (
-          <div className="w-full h-64 relative">
-            <img
-              src={message.content as string}
-              alt="Generated Image"
-              className="w-[300px]"
-            />
-          </div>
-        );
-      case "response.content_part.done":
-        const annotations = message.part?.annotations || [];
-
-        const annotationsWithOutDuplicates = annotations.filter(
-          (annotation, index, self) =>
-            index === self.findIndex((t) => t.url === annotation.url)
-        );
-
-        if (!annotationsWithOutDuplicates.length) {
-          return null;
-        }
-
-        return (
-          <div className="text-foreground whitespace-pre-wrap">
-            {message.content as string}
-
-            {annotationsWithOutDuplicates.map((annotation, index) => (
-              <div key={annotation.url}>
-                <span className="text-xs bg-stone-100 text-stone-600 font-mono px-2 py-1 rounded w-fit">
-                  {"message.part?.annotations[" + index + "].type:"}
-                  {annotation.type}
-
-                  <br />
-                  {"message.part?.annotations[" + index + "].title:"}
-                </span>
-                <a
-                  href={annotation.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  {annotation.title}
-                </a>
-              </div>
-            ))}
-          </div>
-        );
-
-      case "response.output_text.delta":
-        if (message.content.length <= 0) {
-          return null;
-        }
-
-        if (Array.isArray(message.content)) {
-          return (
-            <div className="text-foreground whitespace-pre-wrap">
-              {JSON.stringify(message.content) as string}
-            </div>
-          );
-        }
-        return (
-          <div className="text-foreground whitespace-pre-wrap">
-            {message.content as string}
-          </div>
-        );
-      default:
-        return null;
-    }
-  };
-
-  return (
-    <div className="w-full space-y-4 mb-4">
-      {messages.length === 0 ? (
-        <div className="text-left py-8 max-w-2xl mx-auto">
-          <h1 className="text-2xl font-black bg-gradient-to-r from-stone-700/50 to-stone-700/80 inline-block text-transparent bg-clip-text">
-            Wussup Chat
-          </h1>
-          <p className="text-stone-300/80">
-            Ask a question to see AI responses here.
-          </p>
-          <p className="text-sm text-stone-500 mt-4 text-right w-full inline-block">
-            (Auto) Features
-          </p>
-          <ul className="flex flex-col text-left divide-y divide-stone-200 dark:divide-stone-800 ">
-            <li>
-              <span className="flex items-center gap-2 py-2">
-                <ImageIcon className="w-4 h-4 text-fuchsia-500" />
-                <span className="text-sm text-stone-500">
-                  Generate images from text and image prompts
-                </span>
-              </span>
-            </li>
-            <li>
-              <span className="flex items-center gap-2 py-2">
-                <GlobeIcon className="w-4 h-4 text-blue-500" />
-                <span className="text-sm text-stone-500">
-                  Search the web for relevant information with citeable sources
-                </span>
-              </span>
-            </li>
-            <li>
-              <span className="flex items-center gap-2 py-2">
-                <Brain className="w-4 h-4 text-green-500" />
-                <span className="text-sm text-stone-500">
-                  Think and reason about the question before responding
-                </span>
-              </span>
-            </li>
-          </ul>
-
-          <div className="flex items-center gap-2 mt-4">
-            <OutlineButton>
-              <PlusIcon className="w-4 h-4" />
-              Add API Key
-            </OutlineButton>
-          </div>
-        </div>
-      ) : (
-        messages.map((message, index) => {
-          if (MESSAGE_TYPES.includes(message.type as MessageTypes)) {
-            return (
-              <Fragment key={index}>{determineMessageType(message)}</Fragment>
-            );
-          }
-          return null;
-        })
-      )}
     </div>
   );
 }

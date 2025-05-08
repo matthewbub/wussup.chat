@@ -19,13 +19,12 @@ export async function POST(request: Request) {
   const unpacker = new Unpacker(formData);
 
   // unpack the form data
-  const config = await unpacker.unpack();
-  const openAiStreamer = new OpenAiStreamer(config.get());
+  const unpackedConfig = await unpacker.unpack();
+  const openAiStreamer = new OpenAiStreamer(unpackedConfig);
 
   // ready the openai config
-  const streamer = await openAiStreamer
-    .readyOpenAiConfig(userId)
-    .createOpenAiResponse();
+  const openAiConfig = await openAiStreamer.readyOpenAiConfig(userId);
+  const streamer = await openAiConfig.createOpenAiResponse();
 
   // stream the openai response
   const stream = new ReadableStream({

@@ -8,6 +8,7 @@ import {
 } from "@/app/types";
 import { appConfig } from "@/constants/app-config";
 import OpenAI from "openai";
+import { Tool } from "openai/resources/responses/responses.mjs";
 
 // this is a helper function to build the messages array for the openai api
 // from the client to the server (NOT vice versa)
@@ -143,14 +144,18 @@ export class OpenAiStreamer {
   public config: OpenAIConfig;
   public messages: OpenAiMessagePart[];
   public metaOpts: string;
+  public prompt: string;
 
   constructor({
     messages,
     metaOpts,
+    prompt,
   }: {
     messages: OpenAiMessagePart[];
     metaOpts: string;
+    prompt: string;
   }) {
+    this.prompt = prompt;
     this.messages = messages;
     this.metaOpts = metaOpts;
     this.config = {
@@ -161,10 +166,10 @@ export class OpenAiStreamer {
     };
   }
 
-  readyOpenAiConfig(userId: string) {
-    this.config = buildOpenAiConfig(
+  async readyOpenAiConfig(userId: string) {
+    this.config = await buildOpenAiConfig(
       this.messages,
-      "TODO REMOVE ME",
+      this.prompt,
       this.metaOpts,
       userId
     );
@@ -208,16 +213,16 @@ export const unpackAttachments = async (
   formData: FormData
 ): Promise<{ name: string; content: string }[]> => {
   const attachments = [
-    formData.get("attachment_one") as File | null,
-    formData.get("attachment_two") as File | null,
-    formData.get("attachment_three") as File | null,
-    formData.get("attachment_four") as File | null,
-    formData.get("attachment_five") as File | null,
-    formData.get("attachment_six") as File | null,
-    formData.get("attachment_seven") as File | null,
-    formData.get("attachment_eight") as File | null,
-    formData.get("attachment_nine") as File | null,
-    formData.get("attachment_ten") as File | null,
+    formData.get("attachment_1") as File | null,
+    formData.get("attachment_2") as File | null,
+    formData.get("attachment_3") as File | null,
+    formData.get("attachment_4") as File | null,
+    formData.get("attachment_5") as File | null,
+    formData.get("attachment_6") as File | null,
+    formData.get("attachment_7") as File | null,
+    formData.get("attachment_8") as File | null,
+    formData.get("attachment_9") as File | null,
+    formData.get("attachment_10") as File | null,
   ].filter((attachment) => attachment !== null);
 
   const base64Attachments = await Promise.all(
@@ -296,12 +301,15 @@ export const streamOpenAiResponse = async (
   controller.close();
 };
 
-export const buildOpenAiConfig = (
+export const buildOpenAiConfig = async (
   messages: OpenAiMessagePart[],
   prompt: string,
   metaOpts: string,
   userId: string
 ) => {
+  // call openai to get desired model
+  const modelType = await determineModel(prompt);
+
   const opConfig: OpenAIConfig = {
     model: appConfig.openai.thinkingModel,
     stream: true as const,
@@ -310,7 +318,7 @@ export const buildOpenAiConfig = (
     user: userId,
   };
 
-  if (metaOpts === "thinking") {
+  if (modelType === "thinking") {
     opConfig.model = appConfig.openai.thinkingModel;
     opConfig.reasoning = {
       effort: "medium",
@@ -318,10 +326,61 @@ export const buildOpenAiConfig = (
     };
   }
 
-  if (metaOpts === "webSearch") {
+  if (modelType === "webSearch") {
     opConfig.model = appConfig.openai.webModel;
     opConfig.tools = [{ type: "web_search_preview" }];
   }
 
   return opConfig;
+};
+
+const determineModel = async (prompt: string) => {
+  const openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+  });
+
+  const tools: Tool[] = [
+    {
+      type: "function",
+      name: "determine_model_type",
+      description:
+        "Determine which type of model would be most appropriate for the user's input",
+      parameters: {
+        type: "object",
+        properties: {
+          model: {
+            type: "string",
+            enum: ["regular", "thinking", "webSearch", "image"],
+            description: "The type of model that should be used",
+          },
+        },
+        required: ["model"],
+        additionalProperties: false,
+      },
+      strict: true,
+    },
+  ];
+
+  const response = await openai.responses.create({
+    model: "gpt-4.1",
+    input: [
+      {
+        role: "assistant",
+        content:
+          "Take the user prompt and determine which model would be most appropriate for the user's input using the determine_model_type function",
+      },
+      { role: "user", content: prompt },
+    ],
+    tools,
+  });
+
+  try {
+    // this feels hacky as fuck but it works
+    // wrapping in  atry/catch because that json parse is spooky
+    // @ts-expect-error The OpenAI SDK types don't match our usage
+    return JSON.parse(response?.output[0]?.arguments)?.model;
+  } catch (error) {
+    console.error(error);
+    return "regular";
+  }
 };
