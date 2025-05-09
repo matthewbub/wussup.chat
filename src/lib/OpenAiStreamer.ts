@@ -208,7 +208,14 @@ export class OpenAiStreamer {
 
     const response = await openai.responses.create({
       model: this.config.model,
-      input: this.config.input as ResponseInput,
+      input: [
+        {
+          role: "system",
+          content:
+            "You are a helpful assistant that responds with Markdown formatted text when appropriate.",
+        },
+        ...(this.config.input as ResponseInput),
+      ],
       stream: this.config.stream,
       user: this.config.user,
       tools: this.config.tools,
