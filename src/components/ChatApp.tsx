@@ -1,5 +1,5 @@
 "use client";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { MessagePart } from "@/app/types";
 import { Button } from "@/components/ui/button";
 import Attachments from "@/components/Attachments";
@@ -7,19 +7,8 @@ import { AutoExpandingTextarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { Messages } from "@/components/messages";
-import { ChatHistory } from "@/generated/prisma";
 
-export default function ChatApp({
-  id,
-  selectedChatHistory,
-  chatHistories,
-}: {
-  id: string;
-  selectedChatHistory: ChatHistory;
-  chatHistories: ChatHistory[];
-}) {
-  console.log("id", id);
-  console.log("selectedChatHistory", selectedChatHistory);
+export default function ChatApp() {
   const [messages, setMessages] = useState<MessagePart[]>([]);
   const messagesRef = useRef<MessagePart[]>([]);
   const [attachments, setAttachments] = useState<File[]>([]);

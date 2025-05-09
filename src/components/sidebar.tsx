@@ -1,12 +1,5 @@
-import {
-  Calendar,
-  Home,
-  Image as ImageIcon,
-  Inbox,
-  Search,
-  Settings,
-  User,
-} from "lucide-react";
+"use client";
+import { Image as ImageIcon, User } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -20,36 +13,11 @@ import {
 } from "@/components/ui/sidebar";
 import Link from "next/link";
 import { Separator } from "@/components/ui/separator";
-// Menu items.
-const items = [
-  {
-    title: "Some really long title that should wrap",
-    url: "#",
-    icon: Home,
-  },
-  {
-    title: "When to use JavaScript for a button",
-    url: "#",
-    icon: Inbox,
-  },
-  {
-    title: "When to use JavaScript for a button",
-    url: "#",
-    icon: Calendar,
-  },
-  {
-    title: "When to use JavaScript for a button",
-    url: "#",
-    icon: Search,
-  },
-  {
-    title: "When to use JavaScript for a button",
-    url: "#",
-    icon: Settings,
-  },
-];
+import { useChatStore } from "@/app/chat/Lifecycle";
 
 export function AppSidebar() {
+  const store = useChatStore();
+
   return (
     <Sidebar>
       <SidebarContent>
@@ -59,11 +27,11 @@ export function AppSidebar() {
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {items.map((item) => (
-                <SidebarMenuItem key={item.title}>
+              {store.chatHistories.map((item) => (
+                <SidebarMenuItem key={item.id}>
                   <SidebarMenuButton asChild>
-                    <Link href={item.url}>
-                      <span className="text-stone-300/80">{item.title}</span>
+                    <Link href={"/chat/" + item.id}>
+                      <span className="text-stone-300/80">{item.chatName}</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
