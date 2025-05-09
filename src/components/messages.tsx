@@ -38,7 +38,7 @@ export function Messages({ messages }: { messages: MessagePart[] }) {
         );
       case "app.image.delta":
         return (
-          <div className="w-full h-64 relative">
+          <div className="w-full h-64 relative mb-4">
             <img
               src={message.content.image_url}
               alt="Generated Image"
@@ -59,7 +59,7 @@ export function Messages({ messages }: { messages: MessagePart[] }) {
         }
 
         return (
-          <div className="text-foreground whitespace-pre-wrap">
+          <div className="text-foreground whitespace-pre-wrap mb-4">
             {message.content as string}
 
             {annotationsWithOutDuplicates.map((annotation, index) => (

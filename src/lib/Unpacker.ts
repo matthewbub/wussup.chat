@@ -16,9 +16,6 @@ export class Unpacker {
   /** The main prompt text from the form data */
   public prompt: string;
 
-  /** Additional metadata options from the form data */
-  public metaOpts: string;
-
   /** Raw JSON string of messages from the form data */
   private messagesAsJson: string;
 
@@ -35,7 +32,6 @@ export class Unpacker {
   constructor(formData: FormData) {
     this.formData = formData;
     this.prompt = "";
-    this.metaOpts = ""; // todo remove me
     this.messagesAsJson = "";
     this.messages = [];
     this.attachments = [];
@@ -48,7 +44,6 @@ export class Unpacker {
    */
   public async unpack() {
     this.prompt = this.formData.get("prompt") as string;
-    this.metaOpts = JSON.parse(this.formData.get("metaOpts") as string);
     this.messagesAsJson = JSON.parse(this.formData.get("messages") as string);
 
     // this has to be done before unpacking messages
@@ -66,7 +61,6 @@ export class Unpacker {
   public get() {
     return {
       messages: this.messages,
-      metaOpts: this.metaOpts,
     };
   }
 
