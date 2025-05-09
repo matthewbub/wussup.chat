@@ -38,7 +38,7 @@ export function Messages({ messages }: { messages: MessagePart[] }) {
         );
       case "app.image.delta":
         return (
-          <div className="w-full h-64 relative mb-4">
+          <div className="w-full relative mb-4">
             <img
               src={message.content.image_url}
               alt="Generated Image"

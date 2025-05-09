@@ -6,7 +6,7 @@ import {
 import { appConfig } from "@/constants/app-config";
 import { put } from "@vercel/blob";
 import OpenAI from "openai";
-import { Tool } from "openai/resources/responses/responses.mjs";
+import { ResponseInput, Tool } from "openai/resources/responses/responses.mjs";
 import { FileLike } from "openai/uploads.mjs";
 import { z } from "zod";
 import { zodTextFormat } from "openai/helpers/zod";
@@ -143,7 +143,7 @@ export class OpenAiStreamer {
     });
 
     try {
-      this.modelType = response.output_parsed.model;
+      this.modelType = response.output_parsed?.model || "regular";
     } catch (error) {
       console.error("Error parsing model type:", error);
       this.modelType = "regular";
@@ -206,8 +206,13 @@ export class OpenAiStreamer {
       apiKey: apiKey,
     });
 
-    // @ts-expect-error The OpenAI SDK types don't match our usage
-    const response = await openai.responses.create(this.config);
+    const response = await openai.responses.create({
+      model: this.config.model,
+      input: this.config.input as ResponseInput,
+      stream: this.config.stream,
+      user: this.config.user,
+      tools: this.config.tools,
+    });
     return response;
   }
 
