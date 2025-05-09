@@ -1,3 +1,6 @@
+import { Tool } from "openai/resources/responses/responses.mjs";
+import { FileLike } from "openai/uploads.mjs";
+
 export interface Annotation {
   type: string;
   end_index: number;
@@ -141,13 +144,12 @@ export interface OpenAIConfig {
   stream: boolean;
   input: OpenAiMessagePart[];
   user: string;
+  images?: { name: string; content: FileLike }[];
   reasoning?: {
     effort: string;
     summary: string;
   };
-  tools?: Array<{
-    type: string;
-  }>;
+  tools?: Tool[];
 }
 
 export interface OpenAiImageResponse {

@@ -4,6 +4,8 @@ import {
   OpenAiMessagePart,
 } from "@/app/types";
 import { MessageBuilder } from "./MessageBuilder";
+import { toFile } from "openai";
+import { FileLike } from "openai/uploads.mjs";
 
 /**
  * A utility class for unpacking and processing form data containing messages and attachments.
@@ -25,6 +27,9 @@ export class Unpacker {
   /** Processed attachments with base64 encoded content */
   public attachments: { name: string; content: string }[];
 
+  /** Processed images as files */
+  public images: { name: string; content: FileLike }[];
+
   /**
    * Creates a new Unpacker instance.
    * @param formData - The FormData object containing the message data and attachments
@@ -35,6 +40,7 @@ export class Unpacker {
     this.messagesAsJson = "";
     this.messages = [];
     this.attachments = [];
+    this.images = [];
   }
 
   /**
@@ -48,7 +54,7 @@ export class Unpacker {
 
     // this has to be done before unpacking messages
     // because we need this data to potentially mutate the last user message
-    await this.unpackAttachments();
+    await Promise.all([this.unpackAttachments(), this.unpackImagesToFiles()]);
 
     this.unpackMessages();
     return this;
@@ -96,6 +102,49 @@ export class Unpacker {
 
     this.attachments = base64Attachments;
 
+    return this;
+  }
+
+  /**
+   * Processes and converts attachments from the form data into base64 encoded strings.
+   * @private
+   * @returns {Promise<Unpacker>} The current Unpacker instance for method chaining
+   */
+  private async unpackImagesToFiles() {
+    const attachments = [
+      this.formData.get("attachment_1") as File | null,
+      this.formData.get("attachment_2") as File | null,
+      this.formData.get("attachment_3") as File | null,
+      this.formData.get("attachment_4") as File | null,
+      this.formData.get("attachment_5") as File | null,
+      this.formData.get("attachment_6") as File | null,
+      this.formData.get("attachment_7") as File | null,
+      this.formData.get("attachment_8") as File | null,
+      this.formData.get("attachment_9") as File | null,
+      this.formData.get("attachment_10") as File | null,
+    ].filter((attachment) => attachment !== null);
+
+    // Filter valid image files
+    const validAttachments = attachments.filter((attachment) => {
+      const validTypes = ["image/png", "image/webp", "image/jpeg"];
+      const maxSize = 25 * 1024 * 1024; // 25MB in bytes
+      return validTypes.includes(attachment.type) && attachment.size <= maxSize;
+    });
+
+    const images = await Promise.all(
+      validAttachments.map(async (file) => {
+        const arrayBuffer = await file.arrayBuffer();
+        return await toFile(new Blob([arrayBuffer]), file.name, {
+          type: file.type,
+        });
+      })
+    );
+    this.images = images.map((image, index) => ({
+      name: validAttachments[index].name,
+      content: image,
+    }));
+
+    console.log("this.images have been unpacked", this.images);
     return this;
   }
 

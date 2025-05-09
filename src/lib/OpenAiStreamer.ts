@@ -7,6 +7,7 @@ import { appConfig } from "@/constants/app-config";
 import { put } from "@vercel/blob";
 import OpenAI from "openai";
 import { Tool } from "openai/resources/responses/responses.mjs";
+import { FileLike } from "openai/uploads.mjs";
 
 /**
  * A utility class for handling OpenAI API configurations and responses.
@@ -36,10 +37,13 @@ export class OpenAiStreamer {
   constructor({
     messages,
     prompt,
+    images,
   }: {
     messages: OpenAiMessagePart[];
     prompt: string;
+    images: { name: string; content: FileLike }[];
   }) {
+    console.log("images in OpenAiStreamer constructor", images);
     this.prompt = prompt;
     this.messages = messages;
 
@@ -48,6 +52,7 @@ export class OpenAiStreamer {
       stream: true,
       input: [],
       user: "",
+      images: images,
     };
     this.modelType = "";
   }
@@ -123,6 +128,7 @@ export class OpenAiStreamer {
       input: this.messages,
       // https://platform.openai.com/docs/guides/safety-best-practices#end-user-ids
       user: userId,
+      images: this.config.images,
     };
 
     if (this.modelType === "thinking") {
@@ -181,19 +187,25 @@ export class OpenAiStreamer {
     userId: string,
     prompt: string
   ): Promise<OpenAiImageResponse> {
-    // console.log("this.config", this.config);
     const openai = new OpenAI({
       apiKey: apiKey,
     });
 
-    const result = await openai.images.generate({
-      model: appConfig.openai.imageModel,
-      prompt:
-        "Heres the prompt: " +
-        prompt +
-        "\n\n Heres the message history for context: " +
-        JSON.stringify(this.messages),
-    });
+    let result;
+    console.log("Images in config:", this.config.images);
+
+    if (this.config.images && this.config.images.length > 0) {
+      result = await openai.images.edit({
+        model: appConfig.openai.imageModel,
+        image: this.config.images.map((img) => img.content),
+        prompt,
+      });
+    } else {
+      result = await openai.images.generate({
+        model: appConfig.openai.imageModel,
+        prompt,
+      });
+    }
 
     const image_base64 = result.data?.[0]?.b64_json;
     if (!image_base64) {

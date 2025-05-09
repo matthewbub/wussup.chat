@@ -18,7 +18,12 @@ export async function POST(request: Request) {
   const unpackedConfig = await unpacker.unpack();
 
   // ready the openai config
-  const openAiStreamer = new OpenAiStreamer(unpackedConfig);
+  const openAiStreamer = new OpenAiStreamer({
+    messages: unpackedConfig.messages,
+    prompt: unpackedConfig.prompt,
+    images: unpackedConfig.images,
+  });
+
   await openAiStreamer.determineModelType();
   const openAiConfig = await openAiStreamer.readyOpenAiConfig(userId);
 
