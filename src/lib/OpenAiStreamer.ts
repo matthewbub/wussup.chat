@@ -8,6 +8,8 @@ import { put } from "@vercel/blob";
 import OpenAI from "openai";
 import { Tool } from "openai/resources/responses/responses.mjs";
 import { FileLike } from "openai/uploads.mjs";
+import { z } from "zod";
+import { zodTextFormat } from "openai/helpers/zod";
 
 /**
  * A utility class for handling OpenAI API configurations and responses.
@@ -58,6 +60,7 @@ export class OpenAiStreamer {
   }
 
   /**
+   * @deprecated switching to structured outputs but leaving this here for now
    * Determines the most appropriate model type based on the user's prompt.
    * Uses GPT-4 to analyze the prompt and select between regular, thinking, webSearch, or image models.
    * @returns {Promise<OpenAiStreamer>} The current instance for method chaining
@@ -109,6 +112,40 @@ export class OpenAiStreamer {
       this.modelType = JSON.parse(response?.output[0]?.arguments)?.model;
     } catch (error) {
       console.error(error);
+      this.modelType = "regular";
+    }
+
+    return this;
+  }
+
+  public async determineModelTypeWithStructuredOutput() {
+    const openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
+
+    const ModelTypeSchema = z.object({
+      model: z.enum(["regular", "thinking", "webSearch", "image"]),
+    });
+
+    const response = await openai.responses.parse({
+      model: "gpt-4.1",
+      input: [
+        {
+          role: "system",
+          content:
+            "Determine which type of model would be most appropriate for the user's input. Consider the context and requirements of the prompt.",
+        },
+        { role: "user", content: this.prompt },
+      ],
+      text: {
+        format: zodTextFormat(ModelTypeSchema, "model_type"),
+      },
+    });
+
+    try {
+      this.modelType = response.output_parsed.model;
+    } catch (error) {
+      console.error("Error parsing model type:", error);
       this.modelType = "regular";
     }
 

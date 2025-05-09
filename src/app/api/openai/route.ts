@@ -24,7 +24,7 @@ export async function POST(request: Request) {
     images: unpackedConfig.images,
   });
 
-  await openAiStreamer.determineModelType();
+  await openAiStreamer.determineModelTypeWithStructuredOutput();
   const openAiConfig = await openAiStreamer.readyOpenAiConfig(userId);
 
   let streamer;
