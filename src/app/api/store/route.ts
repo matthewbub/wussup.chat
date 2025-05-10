@@ -1,6 +1,9 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import OpenAI from "openai";
+import { appConfig } from "@/constants/app-config";
+import { MessagePart } from "@/app/types";
 
 export async function POST(request: NextRequest) {
   const { userId } = await auth();
@@ -8,56 +11,81 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { history } = await request.json();
+  const { chatId, history } = await request.json();
 
+  const chatExists = await prisma.chatHistory.findUnique({
+    where: { id: chatId, userId },
+  });
+
+  if (chatExists) {
+    const updatedChatHistory = await prisma.chatHistory.update({
+      where: { id: chatId, userId },
+      data: {
+        history: JSON.stringify(history),
+        updatedAt: new Date(),
+      },
+    });
+
+    return NextResponse.json(updatedChatHistory);
+  }
+
+  // For new chats, generate a title based on the first message
+  let chatName = "Untitled Chat";
+
+  if (history.length > 0) {
+    const firstUserMessage = history.find(
+      (msg: MessagePart) =>
+        msg.type === "user" || msg.type === "user.with_attachments"
+    );
+
+    if (firstUserMessage) {
+      const generateNameFromContent = firstUserMessage.content;
+
+      try {
+        const openai = new OpenAI({
+          apiKey: process.env.OPENAI_API_KEY,
+        });
+
+        const response = await openai.chat.completions.create({
+          model: appConfig.openai.chatTitle,
+          messages: [
+            {
+              role: "system",
+              content: [
+                "You are a helpful assistant that generates a concise title for a chat session.",
+                "The only context you have at this point is the user's first message.",
+                "Please generate a concise title using up to 6 words.",
+                "Text only, no special characters.",
+              ].join("\n"),
+            },
+            {
+              role: "user",
+              content: generateNameFromContent,
+            },
+          ],
+          max_tokens: 20,
+        });
+
+        const title = response.choices[0]?.message?.content?.trim();
+        if (title) {
+          chatName = title;
+        }
+      } catch (error) {
+        console.error("Error generating chat title:", error);
+      }
+    }
+  }
+
+  // Create new chat history with generated title
   const chatHistory = await prisma.chatHistory.create({
     data: {
+      id: chatId,
       userId,
-      chatName: "Untitled Chat",
+      chatName,
       history: JSON.stringify(history),
       updatedAt: new Date(),
     },
   });
 
   return NextResponse.json(chatHistory);
-}
-
-export async function GET(request: NextRequest) {
-  const { userId } = await auth();
-  if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const searchParams = request.nextUrl.searchParams;
-  const id = searchParams.get("id");
-
-  const queries = {
-    chatHistories: prisma.chatHistory.findMany({
-      where: { userId },
-      select: { id: true, chatName: true },
-      orderBy: { updatedAt: "desc" },
-    }),
-  };
-
-  let selectedChatHistoryQuery;
-  if (id) {
-    selectedChatHistoryQuery = prisma.chatHistory.findFirst({
-      where: { userId, id },
-    });
-  } else {
-    selectedChatHistoryQuery = Promise.resolve(null);
-  }
-
-  const { chatHistories, selectedChatHistory } = await Promise.all([
-    queries.chatHistories,
-    selectedChatHistoryQuery,
-  ]).then(([chatHistories, selectedChatHistory]) => ({
-    chatHistories,
-    selectedChatHistory,
-  }));
-
-  return NextResponse.json({
-    chatHistories,
-    selectedChatHistory,
-  });
 }

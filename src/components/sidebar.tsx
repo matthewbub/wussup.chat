@@ -22,7 +22,7 @@ export function AppSidebar() {
     <Sidebar>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel className="text-stone-300 font-black">
+          <SidebarGroupLabel className="text-stone-300 font-black sticky top-2 bg-sidebar z-10">
             Wussup
           </SidebarGroupLabel>
           <SidebarGroupContent>

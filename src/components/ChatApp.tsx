@@ -7,14 +7,27 @@ import { AutoExpandingTextarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { Messages } from "@/components/messages";
+import { useChatStore } from "@/app/chat/Lifecycle";
+import { useParams } from "next/navigation";
 
 export default function ChatApp() {
+  const { id } = useParams();
+  const { selectedChatHistory } = useChatStore();
   const [messages, setMessages] = useState<MessagePart[]>([]);
   const messagesRef = useRef<MessagePart[]>([]);
   const [attachments, setAttachments] = useState<File[]>([]);
   const [prompt, setPrompt] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    // console.log(selectedChatHistory);
+    setMessages(
+      JSON.parse(
+        selectedChatHistory?.history || "[]"
+      ) as unknown as MessagePart[]
+    );
+  }, [selectedChatHistory]);
 
   const handlePromptChange = (ev: React.ChangeEvent<HTMLTextAreaElement>) => {
     setPrompt(ev.target.value);
@@ -173,7 +186,10 @@ export default function ChatApp() {
   const storeChatHistory = async () => {
     const response = await fetch("/api/store", {
       method: "POST",
-      body: JSON.stringify({ history: messagesRef.current }),
+      body: JSON.stringify({
+        history: messagesRef.current,
+        chatId: id,
+      }),
     });
 
     if (!response.ok) {
