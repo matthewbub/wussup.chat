@@ -1,6 +1,6 @@
 "use client";
-import { Fragment } from "react";
-import { MessagePart } from "@/app/types";
+import { Fragment, CSSProperties } from "react";
+import { MessagePart, OpenAiMessageContentAsAttachments } from "@/app/types";
 import { File as FileIcon } from "lucide-react";
 import { EmptyMessages } from "./empty-messags";
 import Markdown from "react-markdown";
@@ -39,6 +39,7 @@ function MarkdownContent({ content }: { content: string }) {
             console.log(match);
             return match ? (
               <SyntaxHighlighter
+                // @ts-expect-error - this is a valid type
                 style={oneDark}
                 language={match[1]}
                 PreTag="div"
@@ -87,7 +88,8 @@ export function Messages({ messages }: { messages: MessagePart[] }) {
         return (
           <div className="w-full relative mb-4">
             <img
-              src={message.content.image_url}
+              // @ts-expect-error - this is a valid type
+              src={message?.content?.image_url}
               alt="Generated Image"
               className="w-[300px]"
             />

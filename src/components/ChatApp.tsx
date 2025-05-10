@@ -21,7 +21,6 @@ export default function ChatApp() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // console.log(selectedChatHistory);
     setMessages(
       JSON.parse(
         selectedChatHistory?.history || "[]"
