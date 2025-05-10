@@ -6,6 +6,8 @@ export const appConfig = {
     // this is gonna be more dynamic but for now this is fine
     webModel: "gpt-4.1",
     thinkingModel: "o4-mini",
+    imageModel: "gpt-image-1",
+    chatTitle: "gpt-4.1",
   },
 };
 

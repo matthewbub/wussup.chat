@@ -1,13 +1,11 @@
-// https://platform.openai.com/docs/api-reference/responses-streaming/response
 import { NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
-import { ApiChunk } from "@/app/types";
-import {
-  OpenAiStreamer,
-  streamOpenAiResponse,
-  Unpacker,
-} from "@/lib/server-utils";
+import { ApiChunk, OpenAiImageResponse } from "@/app/types";
+import { OpenAiStreamer } from "@/lib/OpenAiStreamer";
+import { streamOpenAiResponse } from "@/lib/streamOpenAiResponse";
+import { mockStreamOpenAiResponse } from "@/lib/mockStreamOpenAiResponse";
 import { streamHeaders } from "@/constants/app-config";
+import { Unpacker } from "@/lib/Unpacker";
 
 export async function POST(request: Request) {
   const { userId } = await auth();
@@ -17,23 +15,45 @@ export async function POST(request: Request) {
 
   const formData = await request.formData();
   const unpacker = new Unpacker(formData);
-
-  // unpack the form data
-  const config = await unpacker.unpack();
-  const openAiStreamer = new OpenAiStreamer(config.get());
+  const unpackedConfig = await unpacker.unpack();
 
   // ready the openai config
-  const streamer = await openAiStreamer
-    .readyOpenAiConfig(userId)
-    .createOpenAiResponse();
+  const openAiStreamer = new OpenAiStreamer({
+    messages: unpackedConfig.messages,
+    prompt: unpackedConfig.prompt,
+    images: unpackedConfig.images,
+  });
+
+  await openAiStreamer.determineModelTypeWithStructuredOutput();
+  const openAiConfig = await openAiStreamer.readyOpenAiConfig(userId);
+
+  let streamer;
+  if (openAiConfig.modelType === "image") {
+    streamer = await openAiConfig.createOpenAiImageResponse(
+      undefined,
+      userId,
+      unpackedConfig.prompt
+    );
+  } else {
+    streamer = await openAiConfig.createOpenAiStreamResponse();
+  }
 
   // stream the openai response
   const stream = new ReadableStream({
     start: (controller) => {
-      streamOpenAiResponse(
-        controller,
-        streamer as unknown as AsyncIterable<ApiChunk>
-      );
+      if (openAiConfig.modelType === "image") {
+        // images dont stream so we mock it
+        mockStreamOpenAiResponse(
+          controller,
+          streamer as unknown as AsyncIterable<ApiChunk> & OpenAiImageResponse
+        );
+      } else {
+        // https://platform.openai.com/docs/api-reference/responses-streaming/response
+        streamOpenAiResponse(
+          controller,
+          streamer as unknown as AsyncIterable<ApiChunk>
+        );
+      }
     },
   });
 

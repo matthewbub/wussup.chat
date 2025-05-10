@@ -1,0 +1,45 @@
+# https://www.mermaidchart.com/
+
+sequenceDiagram
+    participant Client
+    participant Route as POST /api/openai
+    participant Auth as Clerk Auth
+    participant Unpacker
+    participant OpenAiStreamer
+    participant OpenAI
+    participant Stream as Response Stream
+
+    Client->>Route: POST Request with FormData
+    Route->>Auth: Check Authentication
+    Auth-->>Route: Return userId
+    
+    alt No userId
+        Route-->>Client: 401 Unauthorized
+    else Has userId
+        Route->>Unpacker: Create Unpacker(formData)
+        Unpacker->>Unpacker: Process FormData
+        Unpacker->>Unpacker: Unpack Attachments
+        Unpacker->>Unpacker: Unpack Images to Files
+        Unpacker->>Unpacker: Unpack Messages (mutate last user message if attachments)
+        Unpacker-->>Route: Return unpackedConfig (messages, prompt, images)
+
+        Route->>OpenAiStreamer: Create Streamer(unpackedConfig)
+        OpenAiStreamer->>OpenAiStreamer: determineModelTypeWithStructuredOutput()
+        OpenAiStreamer->>OpenAiStreamer: readyOpenAiConfig(userId) (includes images if present)
+
+        alt Model Type is "image"
+            alt Images present
+                OpenAiStreamer->>OpenAI: images.edit (image editing)
+            else No images
+                OpenAiStreamer->>OpenAI: images.generate (image generation)
+            end
+            OpenAI-->>OpenAiStreamer: Return Image Response
+            OpenAiStreamer->>Stream: Mock Stream Response
+        else Other Model Types
+            OpenAiStreamer->>OpenAI: responses.create (streaming)
+            OpenAI-->>OpenAiStreamer: Return Stream
+            OpenAiStreamer->>Stream: Stream Real Response
+        end
+
+        Stream-->>Client: Stream Response
+    end

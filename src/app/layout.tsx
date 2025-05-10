@@ -53,7 +53,7 @@ function SidebarProviderWrapper({ children }: { children: React.ReactNode }) {
   return (
     <SidebarProvider className="h-full relative" defaultOpen={false}>
       <AppSidebar />
-      <SidebarTrigger className="mt-4 ml-4 sticky top-0" />
+      <SidebarTrigger className="mt-4 ml-4 sticky top-0 text-stone-300/80" />
       <div className="h-full w-full">{children}</div>
     </SidebarProvider>
   );
