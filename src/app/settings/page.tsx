@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@clerk/nextjs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 type ApiKey = {
   id: string;
@@ -18,7 +19,6 @@ export default function SettingsPage() {
   const [apiKeys, setApiKeys] = useState<ApiKey[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingKeys, setIsLoadingKeys] = useState(true);
-  const [message, setMessage] = useState({ type: "", text: "" });
 
   useEffect(() => {
     // Fetch user's API keys when component mounts
@@ -36,6 +36,7 @@ export default function SettingsPage() {
         setApiKeys(data.apiKeys);
       } catch (error) {
         console.error("Error fetching API keys:", error);
+        toast.error("Failed to fetch API keys");
       } finally {
         setIsLoadingKeys(false);
       }
@@ -48,12 +49,11 @@ export default function SettingsPage() {
     e.preventDefault();
 
     if (!apiKey.trim()) {
-      setMessage({ type: "error", text: "API key is required" });
+      toast.error("API key is required");
       return;
     }
 
     setIsLoading(true);
-    setMessage({ type: "", text: "" });
 
     try {
       const response = await fetch("/api/settings/apikey", {
@@ -73,21 +73,19 @@ export default function SettingsPage() {
         throw new Error(data.error || "Failed to save API key");
       }
 
-      setMessage({ type: "success", text: "API key saved successfully" });
+      toast.success("API key saved successfully");
+
       setApiKey("");
 
       // Refresh the API keys list
-      const keysResponse = await fetch("/api/settings/apikeys");
+      const keysResponse = await fetch("/api/settings/apikey");
       if (keysResponse.ok) {
         const keysData = await keysResponse.json();
         setApiKeys(keysData.apiKeys);
       }
     } catch (error) {
       console.error("Error saving API key:", error);
-      setMessage({
-        type: "error",
-        text: error instanceof Error ? error.message : "An error occurred",
-      });
+      toast.error("Failed to save API key");
     } finally {
       setIsLoading(false);
     }
@@ -109,20 +107,18 @@ export default function SettingsPage() {
         throw new Error(data.error || "Failed to delete API key");
       }
 
+      setApiKeys([]);
       // Refresh the API keys list
-      const keysResponse = await fetch("/api/settings/apikeys");
+      const keysResponse = await fetch("/api/settings/apikey");
       if (keysResponse.ok) {
         const keysData = await keysResponse.json();
         setApiKeys(keysData.apiKeys);
       }
 
-      setMessage({ type: "success", text: "API key deleted successfully" });
+      toast.success("API key deleted successfully");
     } catch (error) {
       console.error("Error deleting API key:", error);
-      setMessage({
-        type: "error",
-        text: error instanceof Error ? error.message : "An error occurred",
-      });
+      toast.error("Failed to delete API key");
     } finally {
       setIsLoading(false);
     }
@@ -206,20 +202,6 @@ export default function SettingsPage() {
               autoComplete="off"
             />
           </div>
-
-          {message.text && (
-            <div
-              className={`p-3 rounded ${
-                message.type === "error"
-                  ? "bg-red-100 text-red-800"
-                  : message.type === "success"
-                  ? "bg-green-100 text-green-800"
-                  : ""
-              }`}
-            >
-              {message.text}
-            </div>
-          )}
 
           <Button type="submit" disabled={isLoading} className="w-full">
             {isLoading ? "Saving..." : "Save API Key"}
