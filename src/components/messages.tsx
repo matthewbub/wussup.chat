@@ -1,22 +1,17 @@
 "use client";
-import { Fragment, CSSProperties } from "react";
-import { MessagePart, OpenAiMessageContentAsAttachments } from "@/app/types";
-import { File as FileIcon } from "lucide-react";
+import { Fragment, JSX, useState, useEffect } from "react";
+import { MessagePart } from "@/app/types";
+import { File as FileIcon, Loader2, CheckCircle } from "lucide-react";
 import { EmptyMessages } from "./empty-messags";
 import Markdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { cn } from "@/lib/utils";
+import { MESSAGE_TYPES, STATUS_TYPES } from "@/constants/stream";
 
-const MESSAGE_TYPES = [
-  "user",
-  "user.with_attachments",
-  "app.image.delta",
-  "response.content_part.done",
-  "response.output_text.delta",
-] as const;
-
-type MessageTypes = (typeof MESSAGE_TYPES)[number];
+export type ResponseState = "Idle" | "Loading" | "Streaming" | "Complete";
+export type MessageTypes = (typeof MESSAGE_TYPES)[number];
+export type StatusTypes = (typeof STATUS_TYPES)[number];
 
 function MarkdownContent({ content }: { content: string }) {
   return (
@@ -29,14 +24,13 @@ function MarkdownContent({ content }: { content: string }) {
         // Inline code styling
         "prose-code:text-sm prose-code:bg-muted prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:font-mono",
         // Code block styling
-        "prose-pre:bg-accent/70 prose-pre:text-sm prose-pre:font-mono prose-pre:rounded-md prose-pre:border prose-pre:border-border prose-pre:p-0"
+        "prose-pre:bg-accent/70 prose-pre:text-sm prose-pre:font-mono prose-pre:rounded-md prose-pre:border prose-pre:border-border prose-pre:p-0",
       )}
     >
       <Markdown
         components={{
           code({ className, children, ...props }) {
             const match = /language-(\w+)/.exec(className || "");
-            console.log(match);
             return match ? (
               <SyntaxHighlighter
                 // @ts-expect-error - this is a valid type
@@ -62,7 +56,95 @@ function MarkdownContent({ content }: { content: string }) {
   );
 }
 
-export function Messages({ messages }: { messages: MessagePart[] }) {
+// Status Indicator Component
+function StatusIndicator({ state }: { state: ResponseState }) {
+  if (state === "Idle") return null;
+
+  return (
+    <div className="flex items-center gap-2 transition-opacity duration-300 opacity-70 hover:opacity-100">
+      {state === "Loading" && (
+        <>
+          <Loader2 className="h-4 w-4 animate-spin text-blue-500" />
+          <span className="text-xs text-muted-foreground font-medium">
+            Thinking...
+          </span>
+        </>
+      )}
+      {state === "Streaming" && (
+        <>
+          <div className="relative h-3 w-3">
+            <div className="absolute h-full w-full rounded-full bg-green-500 animate-ping opacity-30"></div>
+            <div className="absolute h-full w-full rounded-full bg-green-500"></div>
+          </div>
+          <span className="text-xs text-muted-foreground font-medium">
+            Responding...
+          </span>
+        </>
+      )}
+      {state === "Complete" && (
+        <>
+          <CheckCircle className="h-4 w-4 text-green-500" />
+          <span className="text-xs text-muted-foreground font-medium">
+            Complete
+          </span>
+        </>
+      )}
+    </div>
+  );
+}
+
+export function Messages({
+  messages,
+}: {
+  messages: MessagePart[];
+}): JSX.Element | null {
+  // Add state for response stage
+  const [responseState, setResponseState] = useState<ResponseState>("Idle");
+  // Add fade effect for status indicator
+  const [indicatorVisible, setIndicatorVisible] = useState(false);
+
+  // Monitor messages for state changes
+  useEffect(() => {
+    if (messages && messages.length === 0) {
+      setResponseState("Idle");
+      return;
+    }
+
+    // Check for the latest message type to determine state
+    const latestMessages = [...messages].reverse();
+
+    for (const message of latestMessages) {
+      if (message.type === "response.in_progress") {
+        setResponseState("Loading");
+        return;
+      }
+
+      if (
+        message.type === "response.output_item.added" ||
+        message.type === "response.content_part.added"
+      ) {
+        setResponseState("Streaming");
+        return;
+      }
+
+      if (message.type === "response.completed") {
+        setResponseState("Complete");
+        // Set a timer to hide the "Complete" indicator after 3 seconds
+        setTimeout(() => {
+          setIndicatorVisible(false);
+        }, 3000);
+        return;
+      }
+    }
+  }, [messages]);
+
+  // Show indicator when state changes and hide "Complete" after a delay
+  useEffect(() => {
+    if (responseState !== "Idle") {
+      setIndicatorVisible(true);
+    }
+  }, [responseState]);
+
   const determineMessageType = (message: MessagePart) => {
     switch (message.type as MessageTypes) {
       case "user":
@@ -100,7 +182,7 @@ export function Messages({ messages }: { messages: MessagePart[] }) {
 
         const annotationsWithOutDuplicates = annotations.filter(
           (annotation, index, self) =>
-            index === self.findIndex((t) => t.url === annotation.url)
+            index === self.findIndex((t) => t.url === annotation.url),
         );
 
         if (!annotationsWithOutDuplicates.length) {
@@ -157,19 +239,36 @@ export function Messages({ messages }: { messages: MessagePart[] }) {
   };
 
   return (
-    <div className="w-full space-y-4 mb-4">
-      {messages.length === 0 ? (
-        <EmptyMessages />
-      ) : (
-        messages.map((message, index) => {
-          if (MESSAGE_TYPES.includes(message.type as MessageTypes)) {
-            return (
-              <Fragment key={index}>{determineMessageType(message)}</Fragment>
-            );
-          }
-          return null;
-        })
-      )}
+    <div className="w-full">
+      {/* Messages */}
+      <div className="w-full space-y-4 mb-4">
+        {messages && messages.length === 0 ? (
+          <EmptyMessages />
+        ) : (
+          messages &&
+          messages.map((message, index) => {
+            if (MESSAGE_TYPES.includes(message.type as MessageTypes)) {
+              return (
+                <Fragment key={index}>{determineMessageType(message)}</Fragment>
+              );
+            }
+            return null;
+            // return <pre key={index}>{JSON.stringify(message, null, 2)}</pre>;
+          })
+        )}
+      </div>
+      {/* Status indicator */}
+      <div
+        className={cn(
+          "transition-all duration-300 mb-2",
+          indicatorVisible
+            ? "opacity-100 transform translate-y-0"
+            : "opacity-0 transform -translate-y-2",
+          responseState !== "Idle" ? "h-6" : "h-0",
+        )}
+      >
+        <StatusIndicator state={responseState} />
+      </div>
     </div>
   );
 }

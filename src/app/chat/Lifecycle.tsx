@@ -9,7 +9,13 @@ interface ChatStore {
 }
 
 export const useChatStore = create<ChatStore>(() => ({
-  selectedChatHistory: null,
+  selectedChatHistory: {
+    id: "",
+    userId: "",
+    chatName: "",
+    history: "",
+    updatedAt: new Date(),
+  },
   chatHistories: [],
 }));
 

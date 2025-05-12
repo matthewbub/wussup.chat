@@ -21,11 +21,7 @@ export default function ChatApp() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    setMessages(
-      JSON.parse(
-        selectedChatHistory?.history || "[]"
-      ) as unknown as MessagePart[]
-    );
+    setMessages(selectedChatHistory?.history as unknown as MessagePart[]);
   }, [selectedChatHistory]);
 
   const handlePromptChange = (ev: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -35,7 +31,7 @@ export default function ChatApp() {
   const buildFormData = (
     prompt: string,
     messages: MessagePart[],
-    attachments: File[]
+    attachments: File[],
   ) => {
     const form = new FormData();
     form.append("prompt", prompt);
@@ -200,7 +196,7 @@ export default function ChatApp() {
     <div className="h-full flex flex-col items-center pt-8 max-w-2xl mx-auto">
       <div
         className={cn("flex-1 w-full pr-10 md:pr-0", {
-          "flex justify-center items-center": messages.length === 0,
+          "flex justify-center items-center": messages && messages.length === 0,
         })}
       >
         <Messages messages={messages} />

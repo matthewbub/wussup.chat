@@ -1,7 +1,7 @@
 export const appConfig = {
-  name: "App name",
+  name: "Wussup Chat",
   version: "1",
-  description: "App description",
+  description: "Wussup Chat",
   openai: {
     // this is gonna be more dynamic but for now this is fine
     webModel: "gpt-4.1",
