@@ -45,7 +45,6 @@ export class OpenAiStreamer {
     prompt: string;
     images: { name: string; content: FileLike }[];
   }) {
-    console.log("images in OpenAiStreamer constructor", images);
     this.prompt = prompt;
     this.messages = messages;
 
@@ -199,9 +198,8 @@ export class OpenAiStreamer {
    * @returns {Promise<any>} The streaming response from OpenAI
    */
   public async createOpenAiStreamResponse(
-    apiKey: string | undefined = process.env.OPENAI_API_KEY
+    apiKey: string | undefined = process.env.OPENAI_API_KEY,
   ) {
-    console.log("this.config", this.config);
     const openai = new OpenAI({
       apiKey: apiKey,
     });
@@ -234,14 +232,13 @@ export class OpenAiStreamer {
   public async createOpenAiImageResponse(
     apiKey: string | undefined = process.env.OPENAI_API_KEY,
     userId: string,
-    prompt: string
+    prompt: string,
   ): Promise<OpenAiImageResponse> {
     const openai = new OpenAI({
       apiKey: apiKey,
     });
 
     let result;
-    console.log("Images in config:", this.config.images);
 
     if (this.config.images && this.config.images.length > 0) {
       result = await openai.images.edit({
