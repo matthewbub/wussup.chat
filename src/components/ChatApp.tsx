@@ -78,6 +78,9 @@ export default function ChatApp() {
     if (loading) {
       return;
     }
+
+    // Store the prompt before clearing it
+    const currentPrompt = prompt;
     setPrompt("");
     setLoading(true);
 
@@ -86,15 +89,15 @@ export default function ChatApp() {
     if (attachments.length > 0) {
       updatedMessages = [
         ...messages,
-        { type: "user.with_attachments", content: prompt },
+        { type: "user.with_attachments", content: currentPrompt },
       ];
     } else {
-      updatedMessages = [...messages, { type: "user", content: prompt }];
+      updatedMessages = [...messages, { type: "user", content: currentPrompt }];
     }
     messagesRef.current = updatedMessages as MessagePart[];
     setMessages(updatedMessages as MessagePart[]);
 
-    const newForm = buildFormData(prompt, updatedMessages, attachments);
+    const newForm = buildFormData(currentPrompt, updatedMessages, attachments);
 
     if (attachments.length >= 10) {
       alert("You can only upload up to 10 attachments at a time.");

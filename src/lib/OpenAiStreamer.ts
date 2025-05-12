@@ -198,11 +198,13 @@ export class OpenAiStreamer {
    * @returns {Promise<any>} The streaming response from OpenAI
    */
   public async createOpenAiStreamResponse(
-    apiKey: string | undefined = process.env.OPENAI_API_KEY,
+    apiKey: string | undefined = process.env.OPENAI_API_KEY
   ) {
     const openai = new OpenAI({
       apiKey: apiKey,
     });
+
+    // console.log("this.config", this.config.input[1].content);
 
     const response = await openai.responses.create({
       model: this.config.model,
@@ -232,7 +234,7 @@ export class OpenAiStreamer {
   public async createOpenAiImageResponse(
     apiKey: string | undefined = process.env.OPENAI_API_KEY,
     userId: string,
-    prompt: string,
+    prompt: string
   ): Promise<OpenAiImageResponse> {
     const openai = new OpenAI({
       apiKey: apiKey,
