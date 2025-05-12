@@ -24,7 +24,7 @@ function MarkdownContent({ content }: { content: string }) {
         // Inline code styling
         "prose-code:text-sm prose-code:bg-muted prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:font-mono",
         // Code block styling
-        "prose-pre:bg-accent/70 prose-pre:text-sm prose-pre:font-mono prose-pre:rounded-md prose-pre:border prose-pre:border-border prose-pre:p-0",
+        "prose-pre:bg-accent/70 prose-pre:text-sm prose-pre:font-mono prose-pre:rounded-md prose-pre:border prose-pre:border-border prose-pre:p-0"
       )}
     >
       <Markdown
@@ -182,7 +182,7 @@ export function Messages({
 
         const annotationsWithOutDuplicates = annotations.filter(
           (annotation, index, self) =>
-            index === self.findIndex((t) => t.url === annotation.url),
+            index === self.findIndex((t) => t.url === annotation.url)
         );
 
         if (!annotationsWithOutDuplicates.length) {
@@ -241,7 +241,7 @@ export function Messages({
   return (
     <div className="w-full">
       {/* Messages */}
-      <div className="w-full space-y-4 mb-4">
+      <div className="w-full space-y-4 mb-4 max-h-[calc(100vh-140px)] overflow-y-scroll">
         {messages && messages.length === 0 ? (
           <EmptyMessages />
         ) : (
@@ -264,7 +264,7 @@ export function Messages({
           indicatorVisible
             ? "opacity-100 transform translate-y-0"
             : "opacity-0 transform -translate-y-2",
-          responseState !== "Idle" ? "h-6" : "h-0",
+          responseState !== "Idle" ? "h-6" : "h-0"
         )}
       >
         <StatusIndicator state={responseState} />

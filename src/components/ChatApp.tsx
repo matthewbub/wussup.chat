@@ -31,7 +31,7 @@ export default function ChatApp() {
   const buildFormData = (
     prompt: string,
     messages: MessagePart[],
-    attachments: File[],
+    attachments: File[]
   ) => {
     const form = new FormData();
     form.append("prompt", prompt);
@@ -74,6 +74,12 @@ export default function ChatApp() {
     if (ev) {
       ev.preventDefault();
     }
+
+    if (loading) {
+      return;
+    }
+    setPrompt("");
+    setLoading(true);
 
     // preserve the user message
     let updatedMessages = messages;
@@ -176,6 +182,8 @@ export default function ChatApp() {
 
     // Store the chat history
     await storeChatHistory();
+
+    setLoading(false);
   };
 
   const storeChatHistory = async () => {
@@ -229,7 +237,11 @@ export default function ChatApp() {
               )}
 
               <div className="flex items-center gap-3">
-                <Attachments multiple={true} onFileSelect={setAttachments} />
+                <Attachments
+                  multiple={true}
+                  onFileSelect={setAttachments}
+                  disabled={loading}
+                />
                 <Button
                   type="submit"
                   disabled={loading}

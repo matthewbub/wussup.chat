@@ -18,11 +18,13 @@ import { cn } from "@/lib/utils";
 interface AttachmentsProps {
   onFileSelect?: (files: File[]) => void;
   multiple?: boolean;
+  disabled?: boolean;
 }
 
 export default function Attachments({
   onFileSelect,
   multiple = false,
+  disabled = false,
 }: AttachmentsProps) {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -62,6 +64,7 @@ export default function Attachments({
           onClick={handlePaperclipClick}
           type="button"
           active={selectedFiles.length > 0}
+          disabled={disabled}
         >
           <Paperclip className="w-4 h-4 cursor-pointer" />
         </AttachmentButton>
