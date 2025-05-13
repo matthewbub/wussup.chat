@@ -1,4 +1,4 @@
-# M6 Boilerplate
+# Wussup Chat
 
 Welcome to my boilerplate. This document will help you get started with the tech stack.
 
@@ -10,22 +10,21 @@ Welcome to my boilerplate. This document will help you get started with the tech
 - Shadcn
 - Clerk
 - Prisma
-- React-Hook-Forms
 
 # Installation
 
-Follow these steps to get started with m6-boilerplate:
+Follow these steps to get started with wussup chat:
 
 ## Clone the repository
 
 ```bash
-git clone https://github.com/matthewbub/m6-boilerplate.git my-project
+git clone https://github.com/matthewbub/wussup.chat.git wussup.chat
 ```
 
 ## Navigate to the project directory
 
 ```bash
-cd my-project
+cd wussup.chat
 ```
 
 ## Install dependencies
@@ -36,27 +35,18 @@ With npm:
 npm install
 ```
 
-With yarn:
-
-```bash
-yarn
-```
-
-With pnpm:
-
-```bash
-pnpm install
-```
-
 ## Set up environment variables
 
 Create a `.env.local` file in the root of your project and add the following variables:
 
 ```env
+OPENAI_API_KEY=
+
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=
 CLERK_SECRET_KEY=
 
-# Leave these as-is
+
+# dont change these
 NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
 NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL=/
 NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL=/
@@ -65,23 +55,13 @@ NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL=/
 NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL=/
 ```
 
-Also an `.env` file (Sorry, Prisma is picky - it's easier this way imo)
+Also an `.env` file
 
 ```env
 DATABASE_URL=
 ```
 
 ## Configure the prisma.schema
-
-...
-
-Then run
-
-```bash
-npx prisma migrate dev --name init
-```
-
-Then run
 
 ```bash
 npx prisma generate
@@ -93,18 +73,6 @@ With npm:
 
 ```bash
 npm run dev
-```
-
-With yarn:
-
-```bash
-yarn dev
-```
-
-With pnpm:
-
-```bash
-pnpm dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) in your browser to see the result.
