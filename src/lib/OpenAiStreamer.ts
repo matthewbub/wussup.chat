@@ -10,6 +10,8 @@ import { ResponseInput, Tool } from "openai/resources/responses/responses.mjs";
 import { FileLike } from "openai/uploads.mjs";
 import { z } from "zod";
 import { zodTextFormat } from "openai/helpers/zod";
+import { auth } from "@clerk/nextjs/server";
+import { prisma } from "./prisma";
 
 /**
  * A utility class for handling OpenAI API configurations and responses.
@@ -29,6 +31,9 @@ export class OpenAiStreamer {
 
   /** The determined type of model to be used (regular, thinking, webSearch, or image) */
   public modelType: string;
+
+  /** The OpenAI API key to be used for the request */
+  private apiKey: string;
 
   /**
    * Creates a new OpenAiStreamer instance.
@@ -56,6 +61,17 @@ export class OpenAiStreamer {
       images: images,
     };
     this.modelType = "";
+    this.apiKey = "";
+  }
+
+  public async setApiKey(userId: string) {
+    const apiKey = await prisma.apiKeys.findFirst({
+      where: {
+        userId,
+      },
+    });
+
+    this.apiKey = apiKey?.apiKey || "";
   }
 
   /**
@@ -66,7 +82,7 @@ export class OpenAiStreamer {
    */
   public async determineModelType() {
     const openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
+      apiKey: this.apiKey,
     });
 
     const tools: Tool[] = [
@@ -119,7 +135,7 @@ export class OpenAiStreamer {
 
   public async determineModelTypeWithStructuredOutput() {
     const openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
+      apiKey: this.apiKey,
     });
 
     const ModelTypeSchema = z.object({
@@ -198,7 +214,7 @@ export class OpenAiStreamer {
    * @returns {Promise<any>} The streaming response from OpenAI
    */
   public async createOpenAiStreamResponse(
-    apiKey: string | undefined = process.env.OPENAI_API_KEY
+    apiKey: string | undefined = this.apiKey
   ) {
     const openai = new OpenAI({
       apiKey: apiKey,
@@ -232,7 +248,7 @@ export class OpenAiStreamer {
    * @throws {Error} If image generation fails
    */
   public async createOpenAiImageResponse(
-    apiKey: string | undefined = process.env.OPENAI_API_KEY,
+    apiKey: string | undefined = this.apiKey,
     userId: string,
     prompt: string
   ): Promise<OpenAiImageResponse> {

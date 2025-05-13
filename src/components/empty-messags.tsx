@@ -1,5 +1,6 @@
-import { OutlineButton } from "@/components/ui/button";
+import Link from "next/link";
 import { Brain, GlobeIcon, ImageIcon, PlusIcon } from "lucide-react";
+import { OutlineButton } from "@/components/ui/button";
 
 export function EmptyMessages() {
   return (
@@ -41,10 +42,20 @@ export function EmptyMessages() {
       </ul>
 
       <div className="flex items-center gap-2 mt-4">
-        <OutlineButton>
-          <PlusIcon className="w-4 h-4" />
-          Add API Key
-        </OutlineButton>
+        <Link href="/settings">
+          <OutlineButton>
+            <PlusIcon className="w-4 h-4" />
+            Add OpenAI API Key
+          </OutlineButton>
+        </Link>
+
+        <Link
+          href="https://platform.openai.com/api-keys"
+          target="_blank"
+          className="text-sm text-indigo-500 dark:text-indigo-400 hover:text-indigo-600 hover:underline"
+        >
+          Where do I get an OpenAI API Key?
+        </Link>
       </div>
     </div>
   );

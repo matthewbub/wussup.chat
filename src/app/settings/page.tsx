@@ -203,7 +203,7 @@ export default function SettingsPage() {
             />
           </div>
 
-          <Button type="submit" disabled={isLoading} className="w-full">
+          <Button type="submit" disabled={isLoading} className="w-fit">
             {isLoading ? "Saving..." : "Save API Key"}
           </Button>
         </form>

@@ -27,7 +27,9 @@ export function AppSidebar() {
       <SidebarContent>
         <SidebarGroup className="pt-0">
           <SidebarGroupLabel className="text-stone-300 font-black sticky top-0 h-[60px] bg-background z-10 flex justify-between">
-            <span className="text-stone-300 font-black">Wussup</span>
+            <Link href="/" className="text-stone-300 font-black">
+              Wussup
+            </Link>
             <Button
               variant="ghost"
               size="icon"

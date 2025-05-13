@@ -24,7 +24,13 @@ export async function POST(request: Request) {
     images: unpackedConfig.images,
   });
 
+  // set api key for request
+  await openAiStreamer.setApiKey(userId);
+
+  // determine the model type
   await openAiStreamer.determineModelTypeWithStructuredOutput();
+
+  // ready the openai config
   const openAiConfig = await openAiStreamer.readyOpenAiConfig(userId);
 
   let streamer;
