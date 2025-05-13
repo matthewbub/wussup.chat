@@ -13,9 +13,15 @@ export async function POST(request: NextRequest) {
 
   const { chatId, history } = await request.json();
 
-  const chatExists = await prisma.chatHistory.findUnique({
-    where: { id: chatId, userId },
-  });
+  const [chatExists, apiKeyInfo] = await Promise.all([
+    prisma.chatHistory.findUnique({
+      where: { id: chatId, userId },
+    }),
+    // this is a good candidate for a cache
+    prisma.apiKeys.findFirst({
+      where: { userId },
+    }),
+  ]);
 
   if (chatExists) {
     const updatedChatHistory = await prisma.chatHistory.update({
@@ -43,7 +49,7 @@ export async function POST(request: NextRequest) {
 
       try {
         const openai = new OpenAI({
-          apiKey: process.env.OPENAI_API_KEY,
+          apiKey: apiKeyInfo?.apiKey,
         });
 
         const response = await openai.chat.completions.create({

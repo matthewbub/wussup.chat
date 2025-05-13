@@ -128,6 +128,15 @@ exports.Prisma.ChatHistoryScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.ApiKeysScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  apiKey: 'apiKey',
+  provider: 'provider',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -140,7 +149,8 @@ exports.Prisma.QueryMode = {
 
 
 exports.Prisma.ModelName = {
-  ChatHistory: 'ChatHistory'
+  ChatHistory: 'ChatHistory',
+  ApiKeys: 'ApiKeys'
 };
 
 /**

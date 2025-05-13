@@ -97,7 +97,7 @@ export class Unpacker {
           name: attachment.name,
           content: `data:${attachment.type};base64,${base64}`,
         };
-      })
+      }),
     );
 
     this.attachments = base64Attachments;
@@ -137,14 +137,13 @@ export class Unpacker {
         return await toFile(new Blob([arrayBuffer]), file.name, {
           type: file.type,
         });
-      })
+      }),
     );
     this.images = images.map((image, index) => ({
       name: validAttachments[index].name,
       content: image,
     }));
 
-    console.log("this.images have been unpacked", this.images);
     return this;
   }
 
@@ -159,7 +158,7 @@ export class Unpacker {
     try {
       const messageBuilder = new MessageBuilder();
       this.messages = messageBuilder.build(
-        this.messagesAsJson as unknown as MessagePart[]
+        this.messagesAsJson as unknown as MessagePart[],
       );
 
       // if there are attachments, replace the last user message with the attachments

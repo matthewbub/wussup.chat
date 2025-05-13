@@ -1,22 +1,27 @@
 "use client";
-import { Fragment, CSSProperties } from "react";
-import { MessagePart, OpenAiMessageContentAsAttachments } from "@/app/types";
-import { File as FileIcon } from "lucide-react";
+import { Fragment, JSX, useState, useEffect } from "react";
+import { MessagePart } from "@/app/types";
+import {
+  File as FileIcon,
+  Loader2,
+  CheckCircle,
+  ExternalLink,
+} from "lucide-react";
 import { EmptyMessages } from "./empty-messags";
 import Markdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { cn } from "@/lib/utils";
+import { MESSAGE_TYPES, STATUS_TYPES } from "@/constants/stream";
 
-const MESSAGE_TYPES = [
-  "user",
-  "user.with_attachments",
-  "app.image.delta",
-  "response.content_part.done",
-  "response.output_text.delta",
-] as const;
-
-type MessageTypes = (typeof MESSAGE_TYPES)[number];
+export type ResponseState =
+  | "Idle"
+  | "Loading"
+  | "Streaming"
+  | "Complete"
+  | "WebSearching";
+export type MessageTypes = (typeof MESSAGE_TYPES)[number];
+export type StatusTypes = (typeof STATUS_TYPES)[number];
 
 function MarkdownContent({ content }: { content: string }) {
   return (
@@ -36,7 +41,6 @@ function MarkdownContent({ content }: { content: string }) {
         components={{
           code({ className, children, ...props }) {
             const match = /language-(\w+)/.exec(className || "");
-            console.log(match);
             return match ? (
               <SyntaxHighlighter
                 // @ts-expect-error - this is a valid type
@@ -62,7 +66,111 @@ function MarkdownContent({ content }: { content: string }) {
   );
 }
 
-export function Messages({ messages }: { messages: MessagePart[] }) {
+// Status Indicator Component
+function StatusIndicator({ state }: { state: ResponseState }) {
+  if (state === "Idle") return null;
+
+  return (
+    <div className="flex items-center gap-2 transition-opacity duration-300 opacity-70 hover:opacity-100">
+      {state === "Loading" && (
+        <>
+          <Loader2 className="h-4 w-4 animate-spin text-blue-500" />
+          <span className="text-xs text-muted-foreground font-medium">
+            Thinking...
+          </span>
+        </>
+      )}
+      {state === "WebSearching" && (
+        <>
+          <Loader2 className="h-4 w-4 animate-spin text-amber-500" />
+          <span className="text-xs text-muted-foreground font-medium">
+            Searching the web...
+          </span>
+        </>
+      )}
+      {state === "Streaming" && (
+        <>
+          <div className="relative h-3 w-3">
+            <div className="absolute h-full w-full rounded-full bg-green-500 animate-ping opacity-30"></div>
+            <div className="absolute h-full w-full rounded-full bg-green-500"></div>
+          </div>
+          <span className="text-xs text-muted-foreground font-medium">
+            Responding...
+          </span>
+        </>
+      )}
+      {state === "Complete" && (
+        <>
+          <CheckCircle className="h-4 w-4 text-green-500" />
+          <span className="text-xs text-muted-foreground font-medium">
+            Complete
+          </span>
+        </>
+      )}
+    </div>
+  );
+}
+
+export function Messages({
+  messages,
+}: {
+  messages: MessagePart[];
+}): JSX.Element | null {
+  // Add state for response stage
+  const [responseState, setResponseState] = useState<ResponseState>("Idle");
+  // Add fade effect for status indicator
+  const [indicatorVisible, setIndicatorVisible] = useState(false);
+
+  // Monitor messages for state changes
+  useEffect(() => {
+    if (messages && messages.length === 0) {
+      setResponseState("Idle");
+      return;
+    }
+
+    // Check for the latest message type to determine state
+    const latestMessages = [...messages].reverse();
+
+    for (const message of latestMessages) {
+      if (
+        message.type === "response.web_search_call.in_progress" ||
+        message.type === "response.web_search_call.searching"
+      ) {
+        setResponseState("WebSearching");
+        return;
+      }
+
+      if (message.type === "response.in_progress") {
+        setResponseState("Loading");
+        return;
+      }
+
+      if (
+        message.type === "response.output_item.added" ||
+        message.type === "response.content_part.added"
+      ) {
+        setResponseState("Streaming");
+        return;
+      }
+
+      if (message.type === "response.completed") {
+        setResponseState("Complete");
+        // Set a timer to hide the "Complete" indicator after 3 seconds
+        setTimeout(() => {
+          setIndicatorVisible(false);
+        }, 3000);
+        return;
+      }
+    }
+  }, [messages]);
+
+  // Show indicator when state changes and hide "Complete" after a delay
+  useEffect(() => {
+    if (responseState !== "Idle") {
+      setIndicatorVisible(true);
+    }
+  }, [responseState]);
+
   const determineMessageType = (message: MessagePart) => {
     switch (message.type as MessageTypes) {
       case "user":
@@ -111,24 +219,23 @@ export function Messages({ messages }: { messages: MessagePart[] }) {
           <div className="text-foreground whitespace-pre-wrap mb-4">
             <MarkdownContent content={message.content as string} />
 
-            {annotationsWithOutDuplicates.map((annotation, index) => (
-              <div key={annotation.url}>
-                <span className="text-xs bg-stone-100 text-stone-600 font-mono px-2 py-1 rounded w-fit">
-                  {"message.part?.annotations[" + index + "].type:"}
-                  {annotation.type}
-
-                  <br />
-                  {"message.part?.annotations[" + index + "].title:"}
-                </span>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {annotationsWithOutDuplicates.map((annotation, index) => (
                 <a
+                  key={annotation.url}
                   href={annotation.url}
                   target="_blank"
                   rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 text-sm px-3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-full transition-colors border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 group"
                 >
-                  {annotation.title}
+                  <span className="inline-block w-2 h-2 bg-blue-500 rounded-full"></span>
+                  <span className="truncate max-w-[200px]">
+                    {annotation.title}
+                  </span>
+                  <ExternalLink className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300 transition-colors" />
                 </a>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         );
 
@@ -152,24 +259,42 @@ export function Messages({ messages }: { messages: MessagePart[] }) {
           </div>
         );
       default:
+        // return <pre>{JSON.stringify(message, null, 2)}</pre>;
         return null;
     }
   };
 
   return (
-    <div className="w-full space-y-4 mb-4">
-      {messages.length === 0 ? (
-        <EmptyMessages />
-      ) : (
-        messages.map((message, index) => {
-          if (MESSAGE_TYPES.includes(message.type as MessageTypes)) {
-            return (
-              <Fragment key={index}>{determineMessageType(message)}</Fragment>
-            );
-          }
-          return null;
-        })
-      )}
+    <div className="w-full">
+      {/* Messages */}
+      <div className="w-full space-y-4 mb-4 max-h-[calc(100vh-140px)] overflow-y-scroll">
+        {messages && messages.length === 0 ? (
+          <EmptyMessages />
+        ) : (
+          messages &&
+          messages.map((message, index) => {
+            if (MESSAGE_TYPES.includes(message.type as MessageTypes)) {
+              return (
+                <Fragment key={index}>{determineMessageType(message)}</Fragment>
+              );
+            }
+            return null;
+            // return <pre key={index}>{JSON.stringify(message, null, 2)}</pre>;
+          })
+        )}
+      </div>
+      {/* Status indicator */}
+      <div
+        className={cn(
+          "transition-all duration-300 mb-2 sticky bottom-0 bg-background",
+          indicatorVisible
+            ? "opacity-100 transform translate-y-0"
+            : "opacity-0 transform -translate-y-2",
+          responseState !== "Idle" ? "h-6" : "h-0"
+        )}
+      >
+        <StatusIndicator state={responseState} />
+      </div>
     </div>
   );
 }

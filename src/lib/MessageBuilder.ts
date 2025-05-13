@@ -46,9 +46,8 @@ export class MessageBuilder {
    * @returns {OpenAiMessagePart} The formatted message part
    */
   private formatUserMessageIntoMessagePart = (
-    part: MessagePart
+    part: MessagePart,
   ): OpenAiMessagePart => {
-    console.log("message part content", part.content);
     return {
       role: "user",
       content: part.content,
@@ -62,7 +61,7 @@ export class MessageBuilder {
    * @returns {OpenAiMessagePart} The formatted message part containing the image
    */
   private formatImageIntoMessagePart = (
-    part: MessagePart
+    part: MessagePart,
   ): OpenAiMessagePart => {
     return {
       role: "user",

@@ -15,3 +15,12 @@ model ChatHistory {
   history  String
   updatedAt DateTime @updatedAt
 }
+
+model ApiKeys {
+  id       String   @id @default(uuid())
+  userId   String
+  apiKey   String
+  provider String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

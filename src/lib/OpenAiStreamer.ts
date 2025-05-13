@@ -2,6 +2,7 @@ import {
   OpenAIConfig,
   OpenAiMessagePart,
   OpenAiImageResponse,
+  OpenAiMessageContentAsAttachments,
 } from "@/app/types";
 import { appConfig } from "@/constants/app-config";
 import { put } from "@vercel/blob";
@@ -10,6 +11,8 @@ import { ResponseInput, Tool } from "openai/resources/responses/responses.mjs";
 import { FileLike } from "openai/uploads.mjs";
 import { z } from "zod";
 import { zodTextFormat } from "openai/helpers/zod";
+import { auth } from "@clerk/nextjs/server";
+import { prisma } from "./prisma";
 
 /**
  * A utility class for handling OpenAI API configurations and responses.
@@ -30,6 +33,9 @@ export class OpenAiStreamer {
   /** The determined type of model to be used (regular, thinking, webSearch, or image) */
   public modelType: string;
 
+  /** The OpenAI API key to be used for the request */
+  private apiKey: string;
+
   /**
    * Creates a new OpenAiStreamer instance.
    * @param {Object} options - Configuration options for the streamer
@@ -45,7 +51,6 @@ export class OpenAiStreamer {
     prompt: string;
     images: { name: string; content: FileLike }[];
   }) {
-    console.log("images in OpenAiStreamer constructor", images);
     this.prompt = prompt;
     this.messages = messages;
 
@@ -57,6 +62,17 @@ export class OpenAiStreamer {
       images: images,
     };
     this.modelType = "";
+    this.apiKey = "";
+  }
+
+  public async setApiKey(userId: string) {
+    const apiKey = await prisma.apiKeys.findFirst({
+      where: {
+        userId,
+      },
+    });
+
+    this.apiKey = apiKey?.apiKey || "";
   }
 
   /**
@@ -67,7 +83,7 @@ export class OpenAiStreamer {
    */
   public async determineModelType() {
     const openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
+      apiKey: this.apiKey,
     });
 
     const tools: Tool[] = [
@@ -120,7 +136,7 @@ export class OpenAiStreamer {
 
   public async determineModelTypeWithStructuredOutput() {
     const openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
+      apiKey: this.apiKey,
     });
 
     const ModelTypeSchema = z.object({
@@ -133,7 +149,7 @@ export class OpenAiStreamer {
         {
           role: "system",
           content:
-            "Determine which type of model would be most appropriate for the user's input. Consider the context and requirements of the prompt.",
+            "Determine which type of model would be most appropriate for the user's input. Consider the context and requirements of the prompt. Be generous with Thinking, Web Search, and Image models. Only use a regular model if you are sure that the prompt is not best suited for a Thinking, Web Search, or Image model.",
         },
         { role: "user", content: this.prompt },
       ],
@@ -194,17 +210,71 @@ export class OpenAiStreamer {
   }
 
   /**
+   * Hacks the image response into the user's prompt.
+   * @returns {Promise<OpenAiMessagePart[]>} The updated messages with the image response
+   *
+   * this is how the createOpenAiImageResponse function returns the image response
+   * but openai expects images to be in the user's prompts (not in the system prompt)
+   *
+   *  [
+   *    { type: 'input_text', text: 'AI Generated Image:' },
+   *    {
+   *      type: 'input_image',
+   *      image_url: {
+   *        contentType: 'image/png',
+   *        image_url: 'https://',
+   *        downloadUrl: 'https://',
+   *        pathname: 'https://'
+   *      }
+   *    }
+   *  ]
+   */
+  private hackImageResponsesIntoUserPrompt() {
+    this.config.input = this.config.input.map((message) => {
+      if (Array.isArray(message.content)) {
+        // Create a properly typed version of the content array
+        const fixedContent = message.content.map((item) => {
+          if (
+            item &&
+            item.type === "input_image" &&
+            typeof item.image_url === "object"
+          ) {
+            // If image_url is an object, extract the actual URL string
+            return {
+              type: "input_image" as const,
+              image_url:
+                (item.image_url as any).url ||
+                (item.image_url as any).image_url,
+            };
+          }
+          return item;
+        });
+
+        // Use type assertion to match the expected OpenAiMessageContentAsAttachments type
+        return {
+          ...message,
+          content: fixedContent as unknown as OpenAiMessageContentAsAttachments,
+        };
+      }
+      return message;
+    }) as OpenAiMessagePart[];
+
+    return this.config.input;
+  }
+
+  /**
    * Creates a streaming response from the OpenAI API.
    * @param {string} [apiKey] - Optional API key to use for the request. Defaults to environment variable.
    * @returns {Promise<any>} The streaming response from OpenAI
    */
   public async createOpenAiStreamResponse(
-    apiKey: string | undefined = process.env.OPENAI_API_KEY
+    apiKey: string | undefined = this.apiKey
   ) {
-    console.log("this.config", this.config);
     const openai = new OpenAI({
       apiKey: apiKey,
     });
+
+    this.hackImageResponsesIntoUserPrompt();
 
     const response = await openai.responses.create({
       model: this.config.model,
@@ -232,7 +302,7 @@ export class OpenAiStreamer {
    * @throws {Error} If image generation fails
    */
   public async createOpenAiImageResponse(
-    apiKey: string | undefined = process.env.OPENAI_API_KEY,
+    apiKey: string | undefined = this.apiKey,
     userId: string,
     prompt: string
   ): Promise<OpenAiImageResponse> {
@@ -241,7 +311,6 @@ export class OpenAiStreamer {
     });
 
     let result;
-    console.log("Images in config:", this.config.images);
 
     if (this.config.images && this.config.images.length > 0) {
       result = await openai.images.edit({

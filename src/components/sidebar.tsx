@@ -1,5 +1,5 @@
 "use client";
-import { Image as ImageIcon, User } from "lucide-react";
+import { Image as ImageIcon, Plus, User } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -14,23 +14,42 @@ import {
 import Link from "next/link";
 import { Separator } from "@/components/ui/separator";
 import { useChatStore } from "@/app/chat/Lifecycle";
+import { Button } from "./ui/button";
+import { useRouter } from "next/navigation";
+import { cn } from "@/lib/utils";
 
 export function AppSidebar() {
   const store = useChatStore();
+  const router = useRouter();
 
   return (
     <Sidebar>
       <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-stone-300 font-black sticky top-2 bg-sidebar z-10">
-            Wussup
+        <SidebarGroup className="pt-0">
+          <SidebarGroupLabel className="text-stone-300 font-black sticky top-0 h-[60px] bg-background z-10 flex justify-between">
+            <Link href="/" className="text-stone-300 font-black">
+              Wussup
+            </Link>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => router.push("/chat/" + crypto.randomUUID())}
+            >
+              <Plus className="w-4 h-4" />
+            </Button>
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {store.chatHistories.map((item) => (
                 <SidebarMenuItem key={item.id}>
                   <SidebarMenuButton asChild>
-                    <Link href={"/chat/" + item.id}>
+                    <Link
+                      href={"/chat/" + item.id}
+                      className={cn({
+                        "bg-sidebar":
+                          store?.selectedChatHistory?.id === item.id,
+                      })}
+                    >
                       <span className="text-stone-300/80">{item.chatName}</span>
                     </Link>
                   </SidebarMenuButton>
