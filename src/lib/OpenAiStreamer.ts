@@ -148,7 +148,7 @@ export class OpenAiStreamer {
         {
           role: "system",
           content:
-            "Determine which type of model would be most appropriate for the user's input. Consider the context and requirements of the prompt.",
+            "Determine which type of model would be most appropriate for the user's input. Consider the context and requirements of the prompt. Be generous with Thinking, Web Search, and Image models. Only use a regular model if you are sure that the prompt is not best suited for a Thinking, Web Search, or Image model.",
         },
         { role: "user", content: this.prompt },
       ],
