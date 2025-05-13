@@ -1,8 +1,11 @@
+"use client";
+import { useChatStore } from "@/app/chat/Lifecycle";
 import Link from "next/link";
 import { Brain, GlobeIcon, ImageIcon, PlusIcon } from "lucide-react";
 import { OutlineButton } from "@/components/ui/button";
 
 export function EmptyMessages() {
+  const { apiKey } = useChatStore();
   return (
     <div className="text-left py-8 max-w-2xl mx-auto">
       <h1 className="text-2xl font-black bg-gradient-to-r from-stone-700/50 to-stone-700/80 inline-block text-transparent bg-clip-text">
@@ -41,22 +44,24 @@ export function EmptyMessages() {
         </li>
       </ul>
 
-      <div className="flex items-center gap-2 mt-4">
-        <Link href="/settings">
-          <OutlineButton>
-            <PlusIcon className="w-4 h-4" />
-            Add OpenAI API Key
-          </OutlineButton>
-        </Link>
+      {!apiKey && (
+        <div className="flex items-center gap-2 mt-4">
+          <Link href="/settings">
+            <OutlineButton>
+              <PlusIcon className="w-4 h-4" />
+              Add OpenAI API Key
+            </OutlineButton>
+          </Link>
 
-        <Link
-          href="https://platform.openai.com/api-keys"
-          target="_blank"
-          className="text-sm text-indigo-500 dark:text-indigo-400 hover:text-indigo-600 hover:underline"
-        >
-          Where do I get an OpenAI API Key?
-        </Link>
-      </div>
+          <Link
+            href="https://platform.openai.com/api-keys"
+            target="_blank"
+            className="text-sm text-indigo-500 dark:text-indigo-400 hover:text-indigo-600 hover:underline"
+          >
+            Get an OpenAI API Key
+          </Link>
+        </div>
+      )}
     </div>
   );
 }

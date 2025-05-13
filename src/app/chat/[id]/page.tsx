@@ -4,6 +4,8 @@ import { getChatHistories, removeStatusMessages } from "@/lib/chatHistory";
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import ChatLifecycle from "../Lifecycle";
+import { prisma } from "@/lib/prisma";
+
 export default async function ChatPage({
   params,
 }: {
@@ -16,9 +18,16 @@ export default async function ChatPage({
 
   const { id } = await params;
   const data = await getChatHistories(userId, id);
-  const unpackedMessages = await removeStatusMessages(
-    data?.selectedChatHistory?.history as string,
-  );
+
+  const [unpackedMessages, apiKey] = await Promise.all([
+    removeStatusMessages(data?.selectedChatHistory?.history as string),
+    prisma.apiKeys.findFirst({
+      where: {
+        userId,
+      },
+    }),
+  ]);
+
   return (
     <ChatLifecycle
       selectedChatHistory={{
@@ -26,6 +35,7 @@ export default async function ChatPage({
         history: unpackedMessages,
       }}
       chatHistories={data?.chatHistories as ChatHistory[]}
+      apiKey={apiKey?.apiKey ? true : false}
     >
       <ChatApp />
     </ChatLifecycle>
