@@ -16,7 +16,7 @@ interface ChatHistoryResponse {
 
 export async function getChatHistories(
   userId: string,
-  selectedId?: string,
+  selectedId?: string
 ): Promise<ChatHistoryResponse> {
   const chatHistories = await prisma.chatHistory.findMany({
     where: { userId },
@@ -39,8 +39,11 @@ export async function getChatHistories(
 
 export async function unpackHistory(history: string) {
   try {
-    const messages = JSON.parse(history);
-    return messages;
+    if (history) {
+      const messages = JSON.parse(history);
+      return messages;
+    }
+    return [];
   } catch (error) {
     console.error(error);
     return [];
@@ -51,6 +54,6 @@ export async function removeStatusMessages(history: string) {
 
   return unpackedMessages.filter(
     (message: MessagePart) =>
-      !STATUS_TYPES.includes(message.type as StatusTypes),
+      !STATUS_TYPES.includes(message.type as StatusTypes)
   );
 }

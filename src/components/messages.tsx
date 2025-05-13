@@ -259,7 +259,8 @@ export function Messages({
           </div>
         );
       default:
-        return <pre>{JSON.stringify(message, null, 2)}</pre>;
+        // return <pre>{JSON.stringify(message, null, 2)}</pre>;
+        return null;
     }
   };
 
@@ -277,15 +278,15 @@ export function Messages({
                 <Fragment key={index}>{determineMessageType(message)}</Fragment>
               );
             }
-            // return null;
-            return <pre key={index}>{JSON.stringify(message, null, 2)}</pre>;
+            return null;
+            // return <pre key={index}>{JSON.stringify(message, null, 2)}</pre>;
           })
         )}
       </div>
       {/* Status indicator */}
       <div
         className={cn(
-          "transition-all duration-300 mb-2",
+          "transition-all duration-300 mb-2 sticky bottom-0 bg-background",
           indicatorVisible
             ? "opacity-100 transform translate-y-0"
             : "opacity-0 transform -translate-y-2",
