@@ -2,6 +2,7 @@ import {
   OpenAIConfig,
   OpenAiMessagePart,
   OpenAiImageResponse,
+  OpenAiMessageContentAsAttachments,
 } from "@/app/types";
 import { appConfig } from "@/constants/app-config";
 import { put } from "@vercel/blob";
@@ -209,6 +210,59 @@ export class OpenAiStreamer {
   }
 
   /**
+   * Hacks the image response into the user's prompt.
+   * @returns {Promise<OpenAiMessagePart[]>} The updated messages with the image response
+   *
+   * this is how the createOpenAiImageResponse function returns the image response
+   * but openai expects images to be in the user's prompts (not in the system prompt)
+   *
+   *  [
+   *    { type: 'input_text', text: 'AI Generated Image:' },
+   *    {
+   *      type: 'input_image',
+   *      image_url: {
+   *        contentType: 'image/png',
+   *        image_url: 'https://',
+   *        downloadUrl: 'https://',
+   *        pathname: 'https://'
+   *      }
+   *    }
+   *  ]
+   */
+  private hackImageResponsesIntoUserPrompt() {
+    this.config.input = this.config.input.map((message) => {
+      if (Array.isArray(message.content)) {
+        // Create a properly typed version of the content array
+        const fixedContent = message.content.map((item) => {
+          if (
+            item &&
+            item.type === "input_image" &&
+            typeof item.image_url === "object"
+          ) {
+            // If image_url is an object, extract the actual URL string
+            return {
+              type: "input_image" as const,
+              image_url:
+                (item.image_url as any).url ||
+                (item.image_url as any).image_url,
+            };
+          }
+          return item;
+        });
+
+        // Use type assertion to match the expected OpenAiMessageContentAsAttachments type
+        return {
+          ...message,
+          content: fixedContent as unknown as OpenAiMessageContentAsAttachments,
+        };
+      }
+      return message;
+    }) as OpenAiMessagePart[];
+
+    return this.config.input;
+  }
+
+  /**
    * Creates a streaming response from the OpenAI API.
    * @param {string} [apiKey] - Optional API key to use for the request. Defaults to environment variable.
    * @returns {Promise<any>} The streaming response from OpenAI
@@ -220,7 +274,7 @@ export class OpenAiStreamer {
       apiKey: apiKey,
     });
 
-    // console.log("this.config", this.config.input[1].content);
+    this.hackImageResponsesIntoUserPrompt();
 
     const response = await openai.responses.create({
       model: this.config.model,
