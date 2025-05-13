@@ -1,7 +1,12 @@
 "use client";
 import { Fragment, JSX, useState, useEffect } from "react";
 import { MessagePart } from "@/app/types";
-import { File as FileIcon, Loader2, CheckCircle } from "lucide-react";
+import {
+  File as FileIcon,
+  Loader2,
+  CheckCircle,
+  ExternalLink,
+} from "lucide-react";
 import { EmptyMessages } from "./empty-messags";
 import Markdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
@@ -9,7 +14,12 @@ import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { cn } from "@/lib/utils";
 import { MESSAGE_TYPES, STATUS_TYPES } from "@/constants/stream";
 
-export type ResponseState = "Idle" | "Loading" | "Streaming" | "Complete";
+export type ResponseState =
+  | "Idle"
+  | "Loading"
+  | "Streaming"
+  | "Complete"
+  | "WebSearching";
 export type MessageTypes = (typeof MESSAGE_TYPES)[number];
 export type StatusTypes = (typeof STATUS_TYPES)[number];
 
@@ -70,6 +80,14 @@ function StatusIndicator({ state }: { state: ResponseState }) {
           </span>
         </>
       )}
+      {state === "WebSearching" && (
+        <>
+          <Loader2 className="h-4 w-4 animate-spin text-amber-500" />
+          <span className="text-xs text-muted-foreground font-medium">
+            Searching the web...
+          </span>
+        </>
+      )}
       {state === "Streaming" && (
         <>
           <div className="relative h-3 w-3">
@@ -114,6 +132,14 @@ export function Messages({
     const latestMessages = [...messages].reverse();
 
     for (const message of latestMessages) {
+      if (
+        message.type === "response.web_search_call.in_progress" ||
+        message.type === "response.web_search_call.searching"
+      ) {
+        setResponseState("WebSearching");
+        return;
+      }
+
       if (message.type === "response.in_progress") {
         setResponseState("Loading");
         return;
@@ -193,24 +219,23 @@ export function Messages({
           <div className="text-foreground whitespace-pre-wrap mb-4">
             <MarkdownContent content={message.content as string} />
 
-            {annotationsWithOutDuplicates.map((annotation, index) => (
-              <div key={annotation.url}>
-                <span className="text-xs bg-stone-100 text-stone-600 font-mono px-2 py-1 rounded w-fit">
-                  {"message.part?.annotations[" + index + "].type:"}
-                  {annotation.type}
-
-                  <br />
-                  {"message.part?.annotations[" + index + "].title:"}
-                </span>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {annotationsWithOutDuplicates.map((annotation, index) => (
                 <a
+                  key={annotation.url}
                   href={annotation.url}
                   target="_blank"
                   rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 text-sm px-3 py-1.5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 rounded-full transition-colors border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 group"
                 >
-                  {annotation.title}
+                  <span className="inline-block w-2 h-2 bg-blue-500 rounded-full"></span>
+                  <span className="truncate max-w-[200px]">
+                    {annotation.title}
+                  </span>
+                  <ExternalLink className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-300 transition-colors" />
                 </a>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         );
 
@@ -234,7 +259,7 @@ export function Messages({
           </div>
         );
       default:
-        return null;
+        return <pre>{JSON.stringify(message, null, 2)}</pre>;
     }
   };
 
@@ -252,8 +277,8 @@ export function Messages({
                 <Fragment key={index}>{determineMessageType(message)}</Fragment>
               );
             }
-            return null;
-            // return <pre key={index}>{JSON.stringify(message, null, 2)}</pre>;
+            // return null;
+            return <pre key={index}>{JSON.stringify(message, null, 2)}</pre>;
           })
         )}
       </div>

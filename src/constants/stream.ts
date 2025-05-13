@@ -12,4 +12,7 @@ export const STATUS_TYPES = [
   "response.output_item.added",
   "response.content_part.added",
   "response.completed",
+  "response.web_search_call.in_progress",
+  "response.web_search_call.searching",
+  "response.web_search_call.completed",
 ];
