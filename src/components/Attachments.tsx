@@ -13,7 +13,6 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
-import { cn } from "@/lib/utils";
 
 interface AttachmentsProps {
   onFileSelect?: (files: File[]) => void;

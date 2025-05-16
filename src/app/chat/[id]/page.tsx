@@ -5,28 +5,41 @@ import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import ChatLifecycle from "../Lifecycle";
 import { prisma } from "@/lib/prisma";
+import { checkMessageLimits } from "@/lib/messageLimits";
+import { appConfig } from "@/constants/app-config";
 
 export default async function ChatPage({
   params,
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const { userId } = await auth();
+  const { userId, has } = await auth();
   if (!userId) {
     redirect("/sign-in");
   }
+  const hasPaidPlan = has({ feature: appConfig.plans.pro });
 
   const { id } = await params;
   const data = await getChatHistories(userId, id);
 
-  const [unpackedMessages, apiKey] = await Promise.all([
+  const [unpackedMessages, apiKey, userStats] = await Promise.all([
     removeStatusMessages(data?.selectedChatHistory?.history as string),
     prisma.apiKeys.findFirst({
       where: {
         userId,
       },
     }),
+    prisma.stats.findUnique({
+      where: {
+        userId,
+      },
+    }),
   ]);
+
+  const { isOverLimit } = checkMessageLimits(
+    userStats?.dailyMessageCount,
+    hasPaidPlan
+  );
 
   return (
     <ChatLifecycle
@@ -36,6 +49,11 @@ export default async function ChatPage({
       }}
       chatHistories={data?.chatHistories as ChatHistory[]}
       apiKey={apiKey?.apiKey ? true : false}
+      isOverLimit={isOverLimit}
+      messageStats={{
+        dailyCount: userStats?.dailyMessageCount || 0,
+        hasPaidPlan,
+      }}
     >
       <ChatApp />
     </ChatLifecycle>

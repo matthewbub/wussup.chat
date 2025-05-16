@@ -1,0 +1,13 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+When a user lands on the chat page [page.tsx](mdc:src/app/chat/[id]/page.tsx), we need to do a query to see how many messages the user has sent. 
+
+Conditions:
+A. If they fall within the limits set by the [app-config.ts](mdc:src/constants/app-config.ts) then we can allow them to chat.
+
+B. If they are outside of the limits we should throw an alert in the browser.
+
+C. If they don't have a return value from the count query, then they can chat

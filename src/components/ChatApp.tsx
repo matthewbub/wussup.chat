@@ -9,16 +9,17 @@ import { cn } from "@/lib/utils";
 import { Messages } from "@/components/messages";
 import { useChatStore } from "@/app/chat/Lifecycle";
 import { useParams } from "next/navigation";
+import { useMessageLimits } from "@/hooks/useMessageLimits";
 
 export default function ChatApp() {
   const { id } = useParams();
   const { selectedChatHistory } = useChatStore();
+  const { isOverLimit, shouldBlockAction } = useMessageLimits();
   const [messages, setMessages] = useState<MessagePart[]>([]);
   const messagesRef = useRef<MessagePart[]>([]);
   const [attachments, setAttachments] = useState<File[]>([]);
   const [prompt, setPrompt] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     setMessages(selectedChatHistory?.history as unknown as MessagePart[]);
@@ -75,7 +76,7 @@ export default function ChatApp() {
       ev.preventDefault();
     }
 
-    if (loading) {
+    if (loading || shouldBlockAction()) {
       return;
     }
 
@@ -230,6 +231,7 @@ export default function ChatApp() {
                   handleSubmit();
                 }
               }}
+              disabled={isOverLimit}
             />
 
             <div className="flex flex-col gap-2">
@@ -243,14 +245,14 @@ export default function ChatApp() {
                 <Attachments
                   multiple={true}
                   onFileSelect={setAttachments}
-                  disabled={loading}
+                  disabled={loading || isOverLimit}
                 />
                 <Button
                   type="submit"
-                  disabled={loading}
+                  disabled={loading || isOverLimit}
                   className="cursor-pointer"
                 >
-                  Ask
+                  {loading ? "Loading..." : "Send"}
                 </Button>
               </div>
             </div>

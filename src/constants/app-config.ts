@@ -9,6 +9,14 @@ export const appConfig = {
     imageModel: "gpt-image-1",
     chatTitle: "gpt-4.1",
   },
+  rules: {
+    maxDailyMessagesOnFreePlan: 10,
+    maxDailyMessagesOnProPlan: 500,
+    lifetimeMessageCount: 0,
+  },
+  plans: {
+    pro: "pro",
+  },
 };
 
 export const streamHeaders = {

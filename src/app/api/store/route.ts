@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
 
   const { chatId, history } = await request.json();
 
-  const [chatExists, apiKeyInfo] = await Promise.all([
+  const [chatExists, apiKeyInfo, userStats] = await Promise.all([
     prisma.chatHistory.findUnique({
       where: { id: chatId, userId },
     }),
@@ -22,6 +22,26 @@ export async function POST(request: NextRequest) {
       where: { userId },
     }),
   ]);
+
+  await prisma.stats.upsert({
+    where: {
+      userId,
+    },
+    update: {
+      lifetimeMessageCount: {
+        increment: 1,
+      },
+      dailyMessageCount: {
+        increment: 1,
+      },
+    },
+    create: {
+      userId,
+      lifetimeMessageCount: 1,
+      dailyMessageCount: 1,
+      resetDate: new Date(),
+    },
+  });
 
   if (chatExists) {
     const updatedChatHistory = await prisma.chatHistory.update({

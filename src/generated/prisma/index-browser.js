@@ -137,6 +137,14 @@ exports.Prisma.ApiKeysScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.StatsScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  lifetimeMessageCount: 'lifetimeMessageCount',
+  dailyMessageCount: 'dailyMessageCount',
+  resetDate: 'resetDate'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -150,7 +158,8 @@ exports.Prisma.QueryMode = {
 
 exports.Prisma.ModelName = {
   ChatHistory: 'ChatHistory',
-  ApiKeys: 'ApiKeys'
+  ApiKeys: 'ApiKeys',
+  Stats: 'Stats'
 };
 
 /**
