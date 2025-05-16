@@ -1,5 +1,5 @@
 "use client";
-import { ThemeToggle } from "@/app/theme-toggle";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { appConfig } from "@/constants/app-config";
 import { SignInButton } from "@clerk/nextjs";
 import { SignedOut } from "@clerk/nextjs";

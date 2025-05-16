@@ -7,7 +7,7 @@ import {
   CheckCircle,
   ExternalLink,
 } from "lucide-react";
-import { EmptyMessages } from "./empty-messags";
+import { EmptyMessage } from "./EmptyMessage";
 import Markdown from "react-markdown";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
@@ -269,7 +269,7 @@ export function Messages({
       {/* Messages */}
       <div className="w-full space-y-4 mb-4 max-h-[calc(100vh-140px)] overflow-y-scroll">
         {messages && messages.length === 0 ? (
-          <EmptyMessages />
+          <EmptyMessage />
         ) : (
           messages &&
           messages.map((message, index) => {

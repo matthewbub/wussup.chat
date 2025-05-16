@@ -4,14 +4,12 @@ import Link from "next/link";
 import { Brain, GlobeIcon, ImageIcon, PlusIcon } from "lucide-react";
 import { OutlineButton } from "@/components/ui/button";
 
-export function EmptyMessages() {
+export function EmptyMessage() {
   const { apiKey } = useChatStore();
   return (
     <div className="text-left py-8 max-w-2xl mx-auto">
-      <h1 className="text-2xl font-black bg-gradient-to-r from-stone-700/50 to-stone-700/80 inline-block text-transparent bg-clip-text">
-        Wussup Chat
-      </h1>
-      <p className="text-stone-300/80">
+      <h1 className="text-2xl font-black dark:text-stone-100">Wussup Chat</h1>
+      <p className="text-muted-foreground">
         Ask a question to see AI responses here.
       </p>
       <p className="text-sm text-stone-500 mt-4 text-right w-full inline-block">

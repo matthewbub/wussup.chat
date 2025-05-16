@@ -206,7 +206,7 @@ export default function ChatApp() {
   return (
     <div className="h-full flex flex-col items-center pt-8 max-w-2xl mx-auto">
       <div
-        className={cn("flex-1 w-full pr-10 md:pr-0", {
+        className={cn("flex-1 w-full pr-10 md:pr-0 mr-2", {
           "flex justify-center items-center": messages && messages.length === 0,
         })}
       >
