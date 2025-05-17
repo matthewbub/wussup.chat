@@ -6,11 +6,43 @@ import { streamOpenAiResponse } from "@/lib/streamOpenAiResponse";
 import { mockStreamOpenAiResponse } from "@/lib/mockStreamOpenAiResponse";
 import { streamHeaders } from "@/constants/app-config";
 import { Unpacker } from "@/lib/Unpacker";
+import { checkMessageLimits } from "@/lib/messageLimits";
+import { appConfig } from "@/constants/app-config";
+import { prisma } from "@/lib/prisma";
 
 export async function POST(request: Request) {
-  const { userId } = await auth();
+  const { userId, has } = await auth();
   if (!userId) {
     return new NextResponse("Unauthorized", { status: 401 });
+  }
+
+  const hasPaidPlan = has({ feature: appConfig.plans.pro });
+
+  // Get user stats and API key info
+  const [userStats, userApiKey] = await Promise.all([
+    prisma.stats.findUnique({
+      where: { userId },
+    }),
+    prisma.apiKeys.findFirst({
+      where: { userId },
+    }),
+  ]);
+
+  const { isOverLimit } = checkMessageLimits(
+    userStats?.dailyMessageCount,
+    userStats?.monthlyMessageCount,
+    hasPaidPlan
+  );
+
+  // If user is over limit and has no API key, return error
+  if (isOverLimit && !userApiKey?.apiKey) {
+    return new NextResponse(
+      JSON.stringify({
+        error:
+          "Message limit exceeded. Please add an API key to continue using the service.",
+      }),
+      { status: 403 }
+    );
   }
 
   const formData = await request.formData();
@@ -24,8 +56,8 @@ export async function POST(request: Request) {
     images: unpackedConfig.images,
   });
 
-  // set api key for request
-  await openAiStreamer.setApiKey(userId);
+  // set api key for request - pass isOverLimit to determine which key to use
+  await openAiStreamer.setApiKey(userId, isOverLimit);
 
   // determine the model type
   await openAiStreamer.determineModelTypeWithStructuredOutput();

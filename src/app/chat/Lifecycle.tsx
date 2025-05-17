@@ -3,10 +3,19 @@ import { useEffect } from "react";
 import { create } from "zustand";
 import { ChatHistory } from "@/generated/prisma";
 
+interface MessageStats {
+  dailyCount: number;
+  monthlyCount: number;
+  hasPaidPlan: boolean;
+}
+
 interface ChatStore {
   selectedChatHistory: ChatHistory | null;
   chatHistories: ChatHistory[];
   apiKey: boolean;
+  isOverLimit: boolean;
+  isDisabled: boolean;
+  messageStats: MessageStats;
 }
 
 export const useChatStore = create<ChatStore>(() => ({
@@ -19,17 +28,30 @@ export const useChatStore = create<ChatStore>(() => ({
   },
   chatHistories: [],
   apiKey: false,
+  isOverLimit: false,
+  isDisabled: false,
+  messageStats: {
+    dailyCount: 0,
+    monthlyCount: 0,
+    hasPaidPlan: false,
+  },
 }));
 
 export default function ChatLifecycle({
   selectedChatHistory,
   chatHistories,
   apiKey,
+  isOverLimit,
+  isDisabled,
+  messageStats,
   children,
 }: {
   selectedChatHistory: ChatHistory;
   chatHistories: ChatHistory[];
   apiKey: boolean;
+  isOverLimit: boolean;
+  isDisabled: boolean;
+  messageStats: MessageStats;
   children: React.ReactNode;
 }) {
   useEffect(() => {
@@ -37,8 +59,18 @@ export default function ChatLifecycle({
       selectedChatHistory,
       chatHistories,
       apiKey,
+      isOverLimit,
+      isDisabled,
+      messageStats,
     });
-  }, [selectedChatHistory, chatHistories, apiKey]);
+  }, [
+    selectedChatHistory,
+    chatHistories,
+    apiKey,
+    isOverLimit,
+    isDisabled,
+    messageStats,
+  ]);
 
   return children;
 }

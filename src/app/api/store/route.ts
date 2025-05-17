@@ -23,6 +23,30 @@ export async function POST(request: NextRequest) {
     }),
   ]);
 
+  await prisma.stats.upsert({
+    where: {
+      userId,
+    },
+    update: {
+      lifetimeMessageCount: {
+        increment: 1,
+      },
+      dailyMessageCount: {
+        increment: 1,
+      },
+      monthlyMessageCount: {
+        increment: 1,
+      },
+    },
+    create: {
+      userId,
+      lifetimeMessageCount: 1,
+      dailyMessageCount: 1,
+      monthlyMessageCount: 1,
+      resetDate: new Date(),
+    },
+  });
+
   if (chatExists) {
     const updatedChatHistory = await prisma.chatHistory.update({
       where: { id: chatId, userId },

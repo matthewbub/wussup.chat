@@ -65,14 +65,19 @@ export class OpenAiStreamer {
     this.apiKey = "";
   }
 
-  public async setApiKey(userId: string) {
-    const apiKey = await prisma.apiKeys.findFirst({
-      where: {
-        userId,
-      },
-    });
-
-    this.apiKey = apiKey?.apiKey || "";
+  public async setApiKey(userId: string, isOverLimit: boolean) {
+    // If user is over limit, we'll use their API key
+    if (isOverLimit) {
+      const userApiKey = await prisma.apiKeys.findFirst({
+        where: {
+          userId,
+        },
+      });
+      this.apiKey = userApiKey?.apiKey || "";
+    } else {
+      // If user is not over limit, use our API key
+      this.apiKey = process.env.OPENAI_KEY || "";
+    }
   }
 
   /**

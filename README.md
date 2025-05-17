@@ -1,7 +1,5 @@
 # Wussup Chat
 
-Welcome to my boilerplate. This document will help you get started with the tech stack.
-
 ## Tech Stack
 
 - Next.js (App Router)
@@ -76,3 +74,7 @@ npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) in your browser to see the result.
+
+## TODO
+
+- [ ] Count messages sent

@@ -17,6 +17,7 @@ import { useChatStore } from "@/app/chat/Lifecycle";
 import { Button } from "./ui/button";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { ThemeToggle } from "./ThemeToggle";
 
 export function AppSidebar() {
   const store = useChatStore();
@@ -26,8 +27,8 @@ export function AppSidebar() {
     <Sidebar>
       <SidebarContent>
         <SidebarGroup className="pt-0">
-          <SidebarGroupLabel className="text-stone-300 font-black sticky top-0 h-[60px] bg-background z-10 flex justify-between">
-            <Link href="/" className="text-stone-300 font-black">
+          <SidebarGroupLabel className="text-muted-foreground font-black sticky top-0 h-[60px] bg-background z-10 flex justify-between">
+            <Link href="/" className="text-muted-foreground font-black">
               Wussup
             </Link>
             <Button
@@ -50,7 +51,9 @@ export function AppSidebar() {
                           store?.selectedChatHistory?.id === item.id,
                       })}
                     >
-                      <span className="text-stone-300/80">{item.chatName}</span>
+                      <span className="text-muted-foreground">
+                        {item.chatName}
+                      </span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -69,7 +72,7 @@ export function AppSidebar() {
                 <SidebarMenuButton asChild>
                   <Link href="/images">
                     <ImageIcon className="w-4 h-4" />
-                    <span className="text-stone-300/80">Images</span>
+                    <span className="text-muted-foreground">Images</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -78,8 +81,14 @@ export function AppSidebar() {
                 <SidebarMenuButton asChild>
                   <Link href="/account">
                     <User className="w-4 h-4" />
-                    <span className="text-stone-300/80">Account</span>
+                    <span className="text-muted-foreground">Account</span>
                   </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild className="w-full">
+                  <ThemeToggle withLabel />
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
