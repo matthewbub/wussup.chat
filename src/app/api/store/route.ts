@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
 
   const { chatId, history } = await request.json();
 
-  const [chatExists, apiKeyInfo, userStats] = await Promise.all([
+  const [chatExists, apiKeyInfo] = await Promise.all([
     prisma.chatHistory.findUnique({
       where: { id: chatId, userId },
     }),
