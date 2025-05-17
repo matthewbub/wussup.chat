@@ -8,9 +8,7 @@ import { streamHeaders } from "@/constants/app-config";
 import { Unpacker } from "@/lib/Unpacker";
 import { checkMessageLimits } from "@/lib/messageLimits";
 import { appConfig } from "@/constants/app-config";
-import { PrismaClient } from "@prisma/client";
-
-const prisma = new PrismaClient();
+import { prisma } from "@/lib/prisma";
 
 export async function POST(request: Request) {
   const { userId, has } = await auth();
