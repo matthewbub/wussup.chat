@@ -267,7 +267,7 @@ export function Messages({
   return (
     <div className="w-full">
       {/* Messages */}
-      <div className="w-full space-y-4 mb-4 max-h-[calc(100vh-140px)] overflow-y-scroll">
+      <div className="w-full space-y-4 mb-4 max-h-[calc(100vh-140px)] overflow-y-scroll pr-6">
         {messages && messages.length === 0 ? (
           <EmptyMessage />
         ) : (

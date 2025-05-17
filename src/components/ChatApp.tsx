@@ -1,7 +1,7 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
 import { MessagePart } from "@/app/types";
-import { Button } from "@/components/ui/button";
+import { Button, OutlineButton } from "@/components/ui/button";
 import Attachments from "@/components/Attachments";
 import { AutoExpandingTextarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
@@ -10,10 +10,11 @@ import { Messages } from "@/components/messages";
 import { useChatStore } from "@/app/chat/Lifecycle";
 import { useParams } from "next/navigation";
 import { useMessageLimits } from "@/hooks/useMessageLimits";
+import Link from "next/link";
 
 export default function ChatApp() {
   const { id } = useParams();
-  const { selectedChatHistory } = useChatStore();
+  const { selectedChatHistory, isDisabled } = useChatStore();
   const { isOverLimit, shouldBlockAction } = useMessageLimits();
   const [messages, setMessages] = useState<MessagePart[]>([]);
   const messagesRef = useRef<MessagePart[]>([]);
@@ -206,6 +207,18 @@ export default function ChatApp() {
 
   return (
     <div className="h-full flex flex-col items-center pt-8 max-w-2xl mx-auto">
+      {isDisabled && (
+        <div className="w-full mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+          <p className="text-red-700">
+            You have exceeded your message limit. Please add an API key in
+            settings to continue using the service.
+          </p>
+          <Link href="/settings">
+            <OutlineButton>Go to Settings</OutlineButton>
+          </Link>
+        </div>
+      )}
+
       <div
         className={cn("flex-1 w-full pr-10 md:pr-0 mr-2", {
           "flex justify-center items-center": messages && messages.length === 0,
@@ -231,7 +244,7 @@ export default function ChatApp() {
                   handleSubmit();
                 }
               }}
-              disabled={isOverLimit}
+              disabled={isDisabled || isOverLimit}
             />
 
             <div className="flex flex-col gap-2">
@@ -245,11 +258,11 @@ export default function ChatApp() {
                 <Attachments
                   multiple={true}
                   onFileSelect={setAttachments}
-                  disabled={loading || isOverLimit}
+                  disabled={loading || isDisabled || isOverLimit}
                 />
                 <Button
                   type="submit"
-                  disabled={loading || isOverLimit}
+                  disabled={loading || isDisabled || isOverLimit}
                   className="cursor-pointer"
                 >
                   {loading ? "Loading..." : "Send"}

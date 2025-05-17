@@ -10,8 +10,9 @@ export const appConfig = {
     chatTitle: "gpt-4.1",
   },
   rules: {
-    maxDailyMessagesOnFreePlan: 10,
+    maxDailyMessagesOnFreePlan: 5,
     maxDailyMessagesOnProPlan: 500,
+    maxMonthlyMessagesOnProPlan: 500,
     lifetimeMessageCount: 0,
   },
   plans: {

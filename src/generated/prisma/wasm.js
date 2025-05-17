@@ -142,6 +142,7 @@ exports.Prisma.StatsScalarFieldEnum = {
   userId: 'userId',
   lifetimeMessageCount: 'lifetimeMessageCount',
   dailyMessageCount: 'dailyMessageCount',
+  monthlyMessageCount: 'monthlyMessageCount',
   resetDate: 'resetDate'
 };
 

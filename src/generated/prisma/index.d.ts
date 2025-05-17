@@ -3069,11 +3069,13 @@ export namespace Prisma {
   export type StatsAvgAggregateOutputType = {
     lifetimeMessageCount: number | null
     dailyMessageCount: number | null
+    monthlyMessageCount: number | null
   }
 
   export type StatsSumAggregateOutputType = {
     lifetimeMessageCount: number | null
     dailyMessageCount: number | null
+    monthlyMessageCount: number | null
   }
 
   export type StatsMinAggregateOutputType = {
@@ -3081,6 +3083,7 @@ export namespace Prisma {
     userId: string | null
     lifetimeMessageCount: number | null
     dailyMessageCount: number | null
+    monthlyMessageCount: number | null
     resetDate: Date | null
   }
 
@@ -3089,6 +3092,7 @@ export namespace Prisma {
     userId: string | null
     lifetimeMessageCount: number | null
     dailyMessageCount: number | null
+    monthlyMessageCount: number | null
     resetDate: Date | null
   }
 
@@ -3097,6 +3101,7 @@ export namespace Prisma {
     userId: number
     lifetimeMessageCount: number
     dailyMessageCount: number
+    monthlyMessageCount: number
     resetDate: number
     _all: number
   }
@@ -3105,11 +3110,13 @@ export namespace Prisma {
   export type StatsAvgAggregateInputType = {
     lifetimeMessageCount?: true
     dailyMessageCount?: true
+    monthlyMessageCount?: true
   }
 
   export type StatsSumAggregateInputType = {
     lifetimeMessageCount?: true
     dailyMessageCount?: true
+    monthlyMessageCount?: true
   }
 
   export type StatsMinAggregateInputType = {
@@ -3117,6 +3124,7 @@ export namespace Prisma {
     userId?: true
     lifetimeMessageCount?: true
     dailyMessageCount?: true
+    monthlyMessageCount?: true
     resetDate?: true
   }
 
@@ -3125,6 +3133,7 @@ export namespace Prisma {
     userId?: true
     lifetimeMessageCount?: true
     dailyMessageCount?: true
+    monthlyMessageCount?: true
     resetDate?: true
   }
 
@@ -3133,6 +3142,7 @@ export namespace Prisma {
     userId?: true
     lifetimeMessageCount?: true
     dailyMessageCount?: true
+    monthlyMessageCount?: true
     resetDate?: true
     _all?: true
   }
@@ -3228,6 +3238,7 @@ export namespace Prisma {
     userId: string
     lifetimeMessageCount: number
     dailyMessageCount: number
+    monthlyMessageCount: number
     resetDate: Date
     _count: StatsCountAggregateOutputType | null
     _avg: StatsAvgAggregateOutputType | null
@@ -3255,6 +3266,7 @@ export namespace Prisma {
     userId?: boolean
     lifetimeMessageCount?: boolean
     dailyMessageCount?: boolean
+    monthlyMessageCount?: boolean
     resetDate?: boolean
   }, ExtArgs["result"]["stats"]>
 
@@ -3263,6 +3275,7 @@ export namespace Prisma {
     userId?: boolean
     lifetimeMessageCount?: boolean
     dailyMessageCount?: boolean
+    monthlyMessageCount?: boolean
     resetDate?: boolean
   }, ExtArgs["result"]["stats"]>
 
@@ -3271,6 +3284,7 @@ export namespace Prisma {
     userId?: boolean
     lifetimeMessageCount?: boolean
     dailyMessageCount?: boolean
+    monthlyMessageCount?: boolean
     resetDate?: boolean
   }, ExtArgs["result"]["stats"]>
 
@@ -3279,10 +3293,11 @@ export namespace Prisma {
     userId?: boolean
     lifetimeMessageCount?: boolean
     dailyMessageCount?: boolean
+    monthlyMessageCount?: boolean
     resetDate?: boolean
   }
 
-  export type StatsOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "lifetimeMessageCount" | "dailyMessageCount" | "resetDate", ExtArgs["result"]["stats"]>
+  export type StatsOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "lifetimeMessageCount" | "dailyMessageCount" | "monthlyMessageCount" | "resetDate", ExtArgs["result"]["stats"]>
 
   export type $StatsPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Stats"
@@ -3292,6 +3307,7 @@ export namespace Prisma {
       userId: string
       lifetimeMessageCount: number
       dailyMessageCount: number
+      monthlyMessageCount: number
       resetDate: Date
     }, ExtArgs["result"]["stats"]>
     composites: {}
@@ -3720,6 +3736,7 @@ export namespace Prisma {
     readonly userId: FieldRef<"Stats", 'String'>
     readonly lifetimeMessageCount: FieldRef<"Stats", 'Int'>
     readonly dailyMessageCount: FieldRef<"Stats", 'Int'>
+    readonly monthlyMessageCount: FieldRef<"Stats", 'Int'>
     readonly resetDate: FieldRef<"Stats", 'DateTime'>
   }
     
@@ -4129,6 +4146,7 @@ export namespace Prisma {
     userId: 'userId',
     lifetimeMessageCount: 'lifetimeMessageCount',
     dailyMessageCount: 'dailyMessageCount',
+    monthlyMessageCount: 'monthlyMessageCount',
     resetDate: 'resetDate'
   };
 
@@ -4332,6 +4350,7 @@ export namespace Prisma {
     userId?: StringFilter<"Stats"> | string
     lifetimeMessageCount?: IntFilter<"Stats"> | number
     dailyMessageCount?: IntFilter<"Stats"> | number
+    monthlyMessageCount?: IntFilter<"Stats"> | number
     resetDate?: DateTimeFilter<"Stats"> | Date | string
   }
 
@@ -4340,6 +4359,7 @@ export namespace Prisma {
     userId?: SortOrder
     lifetimeMessageCount?: SortOrder
     dailyMessageCount?: SortOrder
+    monthlyMessageCount?: SortOrder
     resetDate?: SortOrder
   }
 
@@ -4351,6 +4371,7 @@ export namespace Prisma {
     NOT?: StatsWhereInput | StatsWhereInput[]
     lifetimeMessageCount?: IntFilter<"Stats"> | number
     dailyMessageCount?: IntFilter<"Stats"> | number
+    monthlyMessageCount?: IntFilter<"Stats"> | number
     resetDate?: DateTimeFilter<"Stats"> | Date | string
   }, "id" | "userId">
 
@@ -4359,6 +4380,7 @@ export namespace Prisma {
     userId?: SortOrder
     lifetimeMessageCount?: SortOrder
     dailyMessageCount?: SortOrder
+    monthlyMessageCount?: SortOrder
     resetDate?: SortOrder
     _count?: StatsCountOrderByAggregateInput
     _avg?: StatsAvgOrderByAggregateInput
@@ -4375,6 +4397,7 @@ export namespace Prisma {
     userId?: StringWithAggregatesFilter<"Stats"> | string
     lifetimeMessageCount?: IntWithAggregatesFilter<"Stats"> | number
     dailyMessageCount?: IntWithAggregatesFilter<"Stats"> | number
+    monthlyMessageCount?: IntWithAggregatesFilter<"Stats"> | number
     resetDate?: DateTimeWithAggregatesFilter<"Stats"> | Date | string
   }
 
@@ -4502,6 +4525,7 @@ export namespace Prisma {
     userId: string
     lifetimeMessageCount?: number
     dailyMessageCount?: number
+    monthlyMessageCount?: number
     resetDate?: Date | string
   }
 
@@ -4510,6 +4534,7 @@ export namespace Prisma {
     userId: string
     lifetimeMessageCount?: number
     dailyMessageCount?: number
+    monthlyMessageCount?: number
     resetDate?: Date | string
   }
 
@@ -4518,6 +4543,7 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     lifetimeMessageCount?: IntFieldUpdateOperationsInput | number
     dailyMessageCount?: IntFieldUpdateOperationsInput | number
+    monthlyMessageCount?: IntFieldUpdateOperationsInput | number
     resetDate?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -4526,6 +4552,7 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     lifetimeMessageCount?: IntFieldUpdateOperationsInput | number
     dailyMessageCount?: IntFieldUpdateOperationsInput | number
+    monthlyMessageCount?: IntFieldUpdateOperationsInput | number
     resetDate?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -4534,6 +4561,7 @@ export namespace Prisma {
     userId: string
     lifetimeMessageCount?: number
     dailyMessageCount?: number
+    monthlyMessageCount?: number
     resetDate?: Date | string
   }
 
@@ -4542,6 +4570,7 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     lifetimeMessageCount?: IntFieldUpdateOperationsInput | number
     dailyMessageCount?: IntFieldUpdateOperationsInput | number
+    monthlyMessageCount?: IntFieldUpdateOperationsInput | number
     resetDate?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -4550,6 +4579,7 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     lifetimeMessageCount?: IntFieldUpdateOperationsInput | number
     dailyMessageCount?: IntFieldUpdateOperationsInput | number
+    monthlyMessageCount?: IntFieldUpdateOperationsInput | number
     resetDate?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -4678,12 +4708,14 @@ export namespace Prisma {
     userId?: SortOrder
     lifetimeMessageCount?: SortOrder
     dailyMessageCount?: SortOrder
+    monthlyMessageCount?: SortOrder
     resetDate?: SortOrder
   }
 
   export type StatsAvgOrderByAggregateInput = {
     lifetimeMessageCount?: SortOrder
     dailyMessageCount?: SortOrder
+    monthlyMessageCount?: SortOrder
   }
 
   export type StatsMaxOrderByAggregateInput = {
@@ -4691,6 +4723,7 @@ export namespace Prisma {
     userId?: SortOrder
     lifetimeMessageCount?: SortOrder
     dailyMessageCount?: SortOrder
+    monthlyMessageCount?: SortOrder
     resetDate?: SortOrder
   }
 
@@ -4699,12 +4732,14 @@ export namespace Prisma {
     userId?: SortOrder
     lifetimeMessageCount?: SortOrder
     dailyMessageCount?: SortOrder
+    monthlyMessageCount?: SortOrder
     resetDate?: SortOrder
   }
 
   export type StatsSumOrderByAggregateInput = {
     lifetimeMessageCount?: SortOrder
     dailyMessageCount?: SortOrder
+    monthlyMessageCount?: SortOrder
   }
 
   export type IntWithAggregatesFilter<$PrismaModel = never> = {
