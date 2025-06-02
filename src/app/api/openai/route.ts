@@ -28,14 +28,13 @@ export async function POST(request: Request) {
     }),
   ]);
 
-  const { isOverLimit } = checkMessageLimits(
+  const { isOverDailyLimit } = checkMessageLimits(
     userStats?.dailyMessageCount,
-    userStats?.monthlyMessageCount,
     hasPaidPlan
   );
 
   // If user is over limit and has no API key, return error
-  if (isOverLimit && !userApiKey?.apiKey) {
+  if (isOverDailyLimit && !userApiKey?.apiKey) {
     return new NextResponse(
       JSON.stringify({
         error:
@@ -57,7 +56,7 @@ export async function POST(request: Request) {
   });
 
   // set api key for request - pass isOverLimit to determine which key to use
-  await openAiStreamer.setApiKey(userId, isOverLimit);
+  await openAiStreamer.setApiKey(userId, isOverDailyLimit);
 
   // determine the model type
   await openAiStreamer.determineModelTypeWithStructuredOutput();

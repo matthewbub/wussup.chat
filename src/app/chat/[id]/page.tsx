@@ -35,15 +35,15 @@ export default async function ChatPage({
       },
     }),
   ]);
+  // console.log("userStats", userStats);
 
-  const { isOverLimit } = checkMessageLimits(
+  const { isOverDailyLimit } = checkMessageLimits(
     userStats?.dailyMessageCount,
-    userStats?.monthlyMessageCount,
     hasPaidPlan
   );
-
+  // console.log("isOverLimit", isOverLimit);
   // Check if user is over limit and has no API key
-  const isDisabled = isOverLimit && !apiKey?.apiKey;
+  const isDisabled = isOverDailyLimit && !apiKey?.apiKey;
 
   return (
     <ChatLifecycle
@@ -53,11 +53,10 @@ export default async function ChatPage({
       }}
       chatHistories={data?.chatHistories as ChatHistory[]}
       apiKey={apiKey?.apiKey ? true : false}
-      isOverLimit={isOverLimit}
+      isOverLimit={isOverDailyLimit}
       isDisabled={isDisabled}
       messageStats={{
         dailyCount: userStats?.dailyMessageCount || 0,
-        monthlyCount: userStats?.monthlyMessageCount || 0,
         hasPaidPlan,
       }}
     >

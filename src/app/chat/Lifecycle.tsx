@@ -5,7 +5,6 @@ import { ChatHistory } from "@/generated/prisma";
 
 interface MessageStats {
   dailyCount: number;
-  monthlyCount: number;
   hasPaidPlan: boolean;
 }
 

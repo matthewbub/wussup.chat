@@ -30,6 +30,5 @@ model Stats {
   userId   String @unique
   lifetimeMessageCount Int @default(0)
   dailyMessageCount Int @default(0)
-  monthlyMessageCount Int @default(0)
-  resetDate DateTime @default(now())
+  dailyResetDate DateTime @default(now())
 }

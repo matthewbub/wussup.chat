@@ -34,16 +34,12 @@ export async function POST(request: NextRequest) {
       dailyMessageCount: {
         increment: 1,
       },
-      monthlyMessageCount: {
-        increment: 1,
-      },
     },
     create: {
       userId,
       lifetimeMessageCount: 1,
       dailyMessageCount: 1,
-      monthlyMessageCount: 1,
-      resetDate: new Date(),
+      dailyResetDate: new Date(),
     },
   });
 
