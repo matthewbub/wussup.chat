@@ -15,15 +15,7 @@ export function useMessageLimits() {
   // Show notification when user exceeds their message limit
   useEffect(() => {
     if (isOverLimit) {
-      const { limitType, currentLimitValue, planType } = checkMessageLimits(
-        messageStats.dailyCount,
-        messageStats.monthlyCount,
-        messageStats.hasPaidPlan
-      );
-
-      toast.error(
-        `You've reached your ${limitType} message limit (${currentLimitValue}) for the ${planType} plan.`
-      );
+      toast.error("You've reached your message limit.");
     }
   }, [isOverLimit, messageStats]);
 
@@ -35,15 +27,7 @@ export function useMessageLimits() {
    */
   const shouldBlockAction = () => {
     if (isOverLimit) {
-      const { limitType, currentLimitValue, planType } = checkMessageLimits(
-        messageStats.dailyCount,
-        messageStats.monthlyCount,
-        messageStats.hasPaidPlan
-      );
-
-      toast.error(
-        `You've reached your ${limitType} message limit (${currentLimitValue}) for the ${planType} plan.`
-      );
+      toast.error("You've reached your message limit.");
       return true;
     }
     return false;
@@ -53,7 +37,6 @@ export function useMessageLimits() {
     isOverLimit,
     shouldBlockAction,
     currentDailyCount: messageStats.dailyCount,
-    currentMonthlyCount: messageStats.monthlyCount,
     hasPaidPlan: messageStats.hasPaidPlan,
   };
 }
