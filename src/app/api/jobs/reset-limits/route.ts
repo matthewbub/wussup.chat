@@ -12,5 +12,11 @@ export const GET = async () => {
       where: { id: stat.id },
       data: { dailyMessageCount: 0, dailyResetDate: new Date() },
     });
+    await prisma.logs.create({
+      data: {
+        userId: stat.userId,
+        message: "[JOB] Daily message count reset",
+      },
+    });
   }
 };

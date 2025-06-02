@@ -32,3 +32,10 @@ model Stats {
   dailyMessageCount Int @default(0)
   dailyResetDate DateTime @default(now())
 }
+
+model Logs {
+  id String @id @default(uuid())
+  userId String
+  message String
+  createdAt DateTime @default(now())
+}
