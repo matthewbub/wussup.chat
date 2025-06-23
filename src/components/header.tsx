@@ -33,6 +33,9 @@ export default function Header() {
             </SignInButton>
           </SignedOut>
           <SignedIn>
+            <Link href="/chat">
+              <Button variant="ghost">Chat</Button>
+            </Link>
             <UserButton
               appearance={{
                 baseTheme: theme === "dark" ? dark : undefined,

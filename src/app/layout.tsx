@@ -5,8 +5,6 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { appConfig } from "@/constants/app-config";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import "./globals.css";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
-import { AppSidebar } from "@/components/sidebar";
 import { Toaster } from "@/components/ui/sonner";
 import { Analytics } from "@vercel/analytics/next";
 
@@ -42,13 +40,11 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            <SidebarProviderWrapper>
-              <div className="h-full">
-                {/* <Header /> */}
-                {children}
-                {/* <Footer /> */}
-              </div>
-            </SidebarProviderWrapper>
+            <div className="h-full">
+              {/* <Header /> */}
+              {children}
+              {/* <Footer /> */}
+            </div>
           </ThemeProvider>
           <Toaster />
           <Analytics />
@@ -58,12 +54,4 @@ export default function RootLayout({
   );
 }
 
-function SidebarProviderWrapper({ children }: { children: React.ReactNode }) {
-  return (
-    <SidebarProvider className="h-full relative" defaultOpen={false}>
-      <AppSidebar />
-      <SidebarTrigger className="mt-4 ml-4 sticky top-0 text-muted-foreground" />
-      <div className="h-full w-full">{children}</div>
-    </SidebarProvider>
-  );
-}
+

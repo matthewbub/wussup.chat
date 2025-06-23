@@ -19,10 +19,10 @@ export function ThemeToggle({ withLabel }: { withLabel?: boolean }) {
       size={withLabel ? "default" : "icon"}
       onClick={() => setTheme(theme === "light" ? "dark" : "light")}
       className={cn(
-        "flex items-center w-full text-muted-foreground",
+        "flex items-center text-muted-foreground",
         // "hover:bg-primary/10 hover:text-primary transition-colors",
         // "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-        withLabel ? "justify-start" : "justify-center"
+        withLabel ? "justify-start w-full" : "justify-center"
       )}
     >
       <Sun className="h-4 w-4 dark:hidden" />
