@@ -1,41 +1,12 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ThemeToggle } from "@/components/ThemeToggle";
-import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
+import { Header } from "@/components/HeadersAreCool";
 
 export default async function HomePage() {
-  
-  // If user is already signed in, redirect to chat
-  //if (userId) {
-  //  return redirect("/chat/" + crypto.randomUUID());
-  //}
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
-      {/* Header */}
-      <header className="container mx-auto px-4 py-6 flex justify-between items-center">
-        <div className="text-2xl font-bold text-gray-900 dark:text-white">Wussup Chat</div>
-        <div className="flex gap-4 items-center">
-          <ThemeToggle />
-          <SignedOut>
-            <Link href="/sign-in">
-              <Button variant="outline">Sign In</Button>
-            </Link>
-            <Link href="/sign-up">
-              <Button>Get Started</Button>
-            </Link>
-          </SignedOut>
-          <SignedIn>
-            <Link href="/chat">
-              <Button variant="outline">Chat</Button>
-            </Link>
-            <UserButton />
-          </SignedIn>
-        </div>
-      </header>
-
-      {/* Hero Section */}
+      <Header />
       <section className="container mx-auto px-4 py-20 text-center">
         <div className="max-w-4xl mx-auto">
           <Badge className="mb-6 bg-blue-100 text-blue-800 hover:bg-blue-100 dark:bg-blue-900 dark:text-blue-200 dark:hover:bg-blue-900">
