@@ -16,7 +16,7 @@ const eslintConfig = [
       "@next/next/no-img-element": "off",
     },
     // exclude the generated prisma types
-    ignorePatterns: ["./src/generated/**/*", "./prisma/**/*"],
+    ignores: ["./src/generated/**/*", "./prisma/**/*"],
   },
 ];
 
