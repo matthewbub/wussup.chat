@@ -51,7 +51,7 @@ export async function POST(request: Request) {
   });
 
   // determine the model type
-  await openAiStreamer.determineModelTypeWithStructuredOutput();
+  await openAiStreamer.routeRequest();
 
   // ready the openai config
   const openAiConfig = await openAiStreamer.readyOpenAiConfig(userId);

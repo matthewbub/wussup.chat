@@ -11,6 +11,8 @@ import { ResponseInput, Tool } from "openai/resources/responses/responses.mjs";
 import { FileLike } from "openai/uploads.mjs";
 import { z } from "zod";
 import { zodTextFormat } from "openai/helpers/zod";
+import { openai } from "@ai-sdk/openai";
+import { generateObject } from "ai";
 
 /**
  * A utility class for handling OpenAI API configurations and responses.
@@ -116,6 +118,10 @@ export class OpenAiStreamer {
     return this;
   }
 
+  /*
+   * @deprecated use routeRequest instead
+   * Determine the model type with structured output.
+   */
   public async determineModelTypeWithStructuredOutput() {
     const openai = new OpenAI();
 
@@ -146,6 +152,29 @@ export class OpenAiStreamer {
     }
 
     return this;
+  }
+
+  // https://v5.ai-sdk.dev/docs/foundations/agents#routing
+  public async routeRequest() {
+    const model = openai("gpt-4.1-nano");
+
+    if (!this.prompt) {
+      throw new Error("Query is required");
+    }
+
+    // First step: Classify the query type
+    const { object: classification } = await generateObject({
+      model,
+      schema: z.object({
+        model: z.enum(["regular", "thinking", "webSearch", "image"]),
+      }),
+      prompt: `Classify this query:
+      ${this.prompt}
+
+      Determine which type of model would be most appropriate for the user's input. Consider the context and requirements of the prompt. Be generous with Thinking, Web Search, and Image models. Only use a regular model if you are sure that the prompt is not best suited for a Thinking, Web Search, or Image model.`,
+    });
+
+    return classification;
   }
 
   /**
