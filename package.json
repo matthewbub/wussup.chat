@@ -11,6 +11,8 @@
     "postinstall": "prisma generate"
   },
   "dependencies": {
+    "@ai-sdk/openai": "2.0.0-beta.12",
+    "@ai-sdk/react": "2.0.0-beta.28",
     "@anthropic-ai/sdk": "^0.40.0",
     "@clerk/nextjs": "^6.19.2",
     "@clerk/themes": "^2.2.43",
@@ -25,6 +27,7 @@
     "@tailwindcss/typography": "^0.5.16",
     "@vercel/analytics": "^1.5.0",
     "@vercel/blob": "^1.0.0",
+    "ai": "5.0.0-beta.28",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.503.0",
