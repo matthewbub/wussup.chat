@@ -77,8 +77,15 @@ Open [http://localhost:3000](http://localhost:3000) in your browser to see the r
 
 ## TODO
 
-- [ ] improve initial ux
-  - [ ] rm landing page
-  - [ ] fix login screen it sucks
+- [x] improve initial ux
+  - [x] rm landing page
+  - [x] fix login screen it sucks
   - [x] clarify pricing. it says 5 in some places and 9 in others
 - [ ] rewrite chat api in v5 ai sdk (use routing pattern)
+    - [ ] Routing pattern should use vercel sdk w gemmei or somethign cheap
+- [ ] fix the login redirect - it doesn't work
+- [ ] figure out whats going on with the header components (we dont even haave a fuckin header)
+
+## Changelog
+
+- Initial release

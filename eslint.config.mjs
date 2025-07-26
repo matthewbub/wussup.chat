@@ -12,11 +12,13 @@ const compat = new FlatCompat({
 const eslintConfig = [
   ...compat.extends("next/core-web-vitals", "next/typescript"),
   {
+    ignores: ["src/generated/**", "prisma/**", "**/generated/**", "**/.prisma/**", "**/prisma/client/**"],
+  },
+  {
     rules: {
       "@next/next/no-img-element": "off",
+      "@typescript-eslint/no-explicit-any": "off",
     },
-    // exclude the generated prisma types
-    ignores: ["./src/generated/**/*", "./prisma/**/*"],
   },
 ];
 

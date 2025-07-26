@@ -11,8 +11,6 @@ import { ResponseInput, Tool } from "openai/resources/responses/responses.mjs";
 import { FileLike } from "openai/uploads.mjs";
 import { z } from "zod";
 import { zodTextFormat } from "openai/helpers/zod";
-import { auth } from "@clerk/nextjs/server";
-import { prisma } from "./prisma";
 
 /**
  * A utility class for handling OpenAI API configurations and responses.
@@ -32,9 +30,6 @@ export class OpenAiStreamer {
 
   /** The determined type of model to be used (regular, thinking, webSearch, or image) */
   public modelType: string;
-
-  /** The OpenAI API key to be used for the request */
-  private apiKey: string;
 
   /**
    * Creates a new OpenAiStreamer instance.
@@ -62,28 +57,6 @@ export class OpenAiStreamer {
       images: images,
     };
     this.modelType = "";
-    this.apiKey = "";
-  }
-
-  public async setApiKey(userId: string, isOverLimit: boolean) {
-    // If user is over limit, we'll use their API key
-    const userApiKey = await prisma.apiKeys.findFirst({
-      where: {
-        userId,
-      },
-    });
-
-    // if user is over limit and has an API key, use their API key
-    if (isOverLimit && userApiKey?.apiKey) {
-      this.apiKey = userApiKey.apiKey;
-    } else if (userApiKey?.apiKey) {
-      this.apiKey = userApiKey.apiKey;
-    } else if (!isOverLimit) {
-      // If user is not over limit, use our API key
-      this.apiKey = process.env.OPENAI_KEY as string;
-    } else {
-      this.apiKey = "";
-    }
   }
 
   /**
@@ -93,9 +66,7 @@ export class OpenAiStreamer {
    * @returns {Promise<OpenAiStreamer>} The current instance for method chaining
    */
   public async determineModelType() {
-    const openai = new OpenAI({
-      apiKey: this.apiKey,
-    });
+    const openai = new OpenAI();
 
     const tools: Tool[] = [
       {
@@ -146,9 +117,7 @@ export class OpenAiStreamer {
   }
 
   public async determineModelTypeWithStructuredOutput() {
-    const openai = new OpenAI({
-      apiKey: this.apiKey,
-    });
+    const openai = new OpenAI();
 
     const ModelTypeSchema = z.object({
       model: z.enum(["regular", "thinking", "webSearch", "image"]),
@@ -275,15 +244,10 @@ export class OpenAiStreamer {
 
   /**
    * Creates a streaming response from the OpenAI API.
-   * @param {string} [apiKey] - Optional API key to use for the request. Defaults to environment variable.
    * @returns {Promise<any>} The streaming response from OpenAI
    */
-  public async createOpenAiStreamResponse(
-    apiKey: string | undefined = this.apiKey
-  ) {
-    const openai = new OpenAI({
-      apiKey: apiKey,
-    });
+  public async createOpenAiStreamResponse() {
+    const openai = new OpenAI();
 
     this.hackImageResponsesIntoUserPrompt();
 
@@ -306,20 +270,16 @@ export class OpenAiStreamer {
 
   /**
    * Generates an image using OpenAI's image generation model and uploads it to Vercel Blob storage.
-   * @param {string} [apiKey] - Optional API key to use for the request. Defaults to environment variable.
    * @param {string} userId - The unique identifier for the user
    * @param {string} prompt - The prompt to generate the image from
    * @returns {Promise<OpenAiImageResponse>} Object containing the generated image URLs and metadata
    * @throws {Error} If image generation fails
    */
   public async createOpenAiImageResponse(
-    apiKey: string | undefined = this.apiKey,
     userId: string,
-    prompt: string
+    prompt: string,
   ): Promise<OpenAiImageResponse> {
-    const openai = new OpenAI({
-      apiKey: apiKey,
-    });
+    const openai = new OpenAI();
 
     let result;
 

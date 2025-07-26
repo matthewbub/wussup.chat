@@ -9,33 +9,24 @@ datasource db {
 }
 
 model ChatHistory {
-  id       String   @id @default(uuid())
-  userId   String
-  chatName String @default("Untitled Chat")
-  history  String
-  updatedAt DateTime @updatedAt
-}
-
-model ApiKeys {
-  id       String   @id @default(uuid())
-  userId   String
-  apiKey   String
-  provider String
-  createdAt DateTime @default(now())
+  id        String   @id @default(uuid())
+  userId    String
+  chatName  String   @default("Untitled Chat")
+  history   String
   updatedAt DateTime @updatedAt
 }
 
 model Stats {
-  id       String   @id @default(uuid())
-  userId   String @unique
-  lifetimeMessageCount Int @default(0)
-  dailyMessageCount Int @default(0)
-  dailyResetDate DateTime @default(now())
+  id                   String   @id @default(uuid())
+  userId               String   @unique
+  lifetimeMessageCount Int      @default(0)
+  dailyMessageCount    Int      @default(0)
+  dailyResetDate       DateTime @default(now())
 }
 
 model Logs {
-  id String @id @default(uuid())
-  userId String
-  message String
+  id        String   @id @default(uuid())
+  userId    String
+  message   String
   createdAt DateTime @default(now())
 }

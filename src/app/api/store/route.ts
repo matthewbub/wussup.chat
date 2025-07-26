@@ -13,16 +13,9 @@ export async function POST(request: NextRequest) {
 
   const { chatId, history } = await request.json();
 
-  const [chatExists, apiKeyInfo] = await Promise.all([
-    prisma.chatHistory.findUnique({
-      where: { id: chatId, userId },
-    }),
-    // this is a good candidate for a cache
-    prisma.apiKeys.findFirst({
-      where: { userId },
-    }),
-  ]);
-
+  const chatExists = await prisma.chatHistory.findUnique({
+    where: { id: chatId, userId },
+  });
   await prisma.stats.upsert({
     where: {
       userId,
@@ -61,16 +54,14 @@ export async function POST(request: NextRequest) {
   if (history.length > 0) {
     const firstUserMessage = history.find(
       (msg: MessagePart) =>
-        msg.type === "user" || msg.type === "user.with_attachments"
+        msg.type === "user" || msg.type === "user.with_attachments",
     );
 
     if (firstUserMessage) {
       const generateNameFromContent = firstUserMessage.content;
 
       try {
-        const openai = new OpenAI({
-          apiKey: apiKeyInfo?.apiKey,
-        });
+        const openai = new OpenAI();
 
         const response = await openai.chat.completions.create({
           model: appConfig.openai.chatTitle,

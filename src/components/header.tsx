@@ -6,12 +6,10 @@ import { UserButton } from "@clerk/nextjs";
 import { SignedIn } from "@clerk/nextjs";
 import { dark } from "@clerk/themes";
 import Link from "next/link";
-import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 import { UserIcon } from "lucide-react";
 
 export default function Header() {
-  const { theme } = useTheme();
   return (
     <header className="w-full py-4">
       <div className="container mx-auto px-4 flex items-center justify-between">

@@ -19,28 +19,23 @@ export async function POST(request: Request) {
   const hasPaidPlan = has({ feature: appConfig.plans.pro });
 
   // Get user stats and API key info
-  const [userStats, userApiKey] = await Promise.all([
-    prisma.stats.findUnique({
-      where: { userId },
-    }),
-    prisma.apiKeys.findFirst({
-      where: { userId },
-    }),
-  ]);
+  const userStats = await prisma.stats.findUnique({
+    where: { userId },
+  });
 
   const { isOverDailyLimit } = checkMessageLimits(
     userStats?.dailyMessageCount,
-    hasPaidPlan
+    hasPaidPlan,
   );
 
-  // If user is over limit and has no API key, return error
-  if (isOverDailyLimit && !userApiKey?.apiKey) {
+  // If user is over limit
+  if (isOverDailyLimit) {
     return new NextResponse(
       JSON.stringify({
         error:
           "Message limit exceeded. Please add an API key to continue using the service.",
       }),
-      { status: 403 }
+      { status: 403 },
     );
   }
 
@@ -55,9 +50,6 @@ export async function POST(request: Request) {
     images: unpackedConfig.images,
   });
 
-  // set api key for request - pass isOverLimit to determine which key to use
-  await openAiStreamer.setApiKey(userId, isOverDailyLimit);
-
   // determine the model type
   await openAiStreamer.determineModelTypeWithStructuredOutput();
 
@@ -67,9 +59,8 @@ export async function POST(request: Request) {
   let streamer;
   if (openAiConfig.modelType === "image") {
     streamer = await openAiConfig.createOpenAiImageResponse(
-      undefined,
       userId,
-      unpackedConfig.prompt
+      unpackedConfig.prompt,
     );
   } else {
     streamer = await openAiConfig.createOpenAiStreamResponse();
@@ -82,13 +73,13 @@ export async function POST(request: Request) {
         // images dont stream so we mock it
         mockStreamOpenAiResponse(
           controller,
-          streamer as unknown as AsyncIterable<ApiChunk> & OpenAiImageResponse
+          streamer as unknown as AsyncIterable<ApiChunk> & OpenAiImageResponse,
         );
       } else {
         // https://platform.openai.com/docs/api-reference/responses-streaming/response
         streamOpenAiResponse(
           controller,
-          streamer as unknown as AsyncIterable<ApiChunk>
+          streamer as unknown as AsyncIterable<ApiChunk>,
         );
       }
     },

@@ -1,13 +1,7 @@
 import { list } from "@vercel/blob";
 import { auth } from "@clerk/nextjs/server";
 import { Button } from "@/components/ui/button";
-import {
-  MoreHorizontal,
-  Download,
-  Trash,
-  Pencil,
-  MoreVertical,
-} from "lucide-react";
+import { Download, Trash, Pencil, MoreVertical } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,7 +9,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import Link from "next/link";
-export const runtime = "edge";
 
 export default async function ImagesPage() {
   const { userId } = await auth();
@@ -26,7 +19,6 @@ export default async function ImagesPage() {
 
   const uniqueFolder = `generated-images/${userId}`;
 
-  // Upload to Vercel Blob
   const blobs = await list({
     limit: 1000,
     prefix: uniqueFolder,
@@ -39,8 +31,9 @@ export default async function ImagesPage() {
           Your Generated Images ({blobs.blobs.length})
         </h2>
         <p className="text-muted-foreground text-lg">
-          Images are stored for 30 days. Upgrade to a paid plan to store images
-          indefinitely. (Sorry, storage is expensive)
+          Images are stored for 30 days. Upgrade to a{" "}
+          <Link href="/pricing">paid plan</Link> to store images indefinitely.
+          (Sorry, storage is expensive)
         </p>
 
         <div className="mt-6 grid grid-cols-1 gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-4 xl:gap-x-8">

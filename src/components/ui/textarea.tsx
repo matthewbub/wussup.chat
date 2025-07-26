@@ -52,7 +52,7 @@ function AutoExpandingTextarea({
 
     // resize after state update
     requestAnimationFrame(autoResize);
-  }, [propValue]);
+  }, [propValue, autoResize]);
 
   const handleChange = (ev: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newValue = ev.target.value;

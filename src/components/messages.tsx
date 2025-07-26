@@ -220,7 +220,7 @@ export function Messages({
             <MarkdownContent content={message.content as string} />
 
             <div className="mt-3 flex flex-wrap gap-2">
-              {annotationsWithOutDuplicates.map((annotation, index) => (
+              {annotationsWithOutDuplicates.map((annotation) => (
                 <a
                   key={annotation.url}
                   href={annotation.url}
