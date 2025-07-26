@@ -1,5 +1,4 @@
 "use client";
-import { ThemeToggle } from "@/components/ThemeToggle";
 import { appConfig } from "@/constants/app-config";
 import { SignInButton } from "@clerk/nextjs";
 import { SignedOut } from "@clerk/nextjs";
@@ -24,7 +23,6 @@ export default function Header() {
         </Link>
 
         <div className="flex items-center gap-2">
-          <ThemeToggle />
           <SignedOut>
             <SignInButton mode="modal">
               <Button variant="ghost" size="icon" className="w-10 h-10">
@@ -38,14 +36,14 @@ export default function Header() {
             </Link>
             <UserButton
               appearance={{
-                baseTheme: theme === "dark" ? dark : undefined,
+                baseTheme: dark,
                 elements: {
                   avatarBox: "h-8 w-8",
                 },
               }}
               userProfileProps={{
                 appearance: {
-                  baseTheme: theme === "dark" ? dark : undefined,
+                  baseTheme: dark,
                 },
               }}
             />

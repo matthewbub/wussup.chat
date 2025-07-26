@@ -13,11 +13,10 @@ import {
 } from "@/components/ui/sidebar";
 import Link from "next/link";
 import { Separator } from "@/components/ui/separator";
-import { useChatStore } from "@/app/chat/Lifecycle";
+import { useChatStore } from "@/app/~/Lifecycle";
 import { Button } from "./ui/button";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { ThemeToggle } from "./ThemeToggle";
 
 export function AppSidebar() {
   const store = useChatStore();
@@ -34,7 +33,7 @@ export function AppSidebar() {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => router.push("/chat/" + crypto.randomUUID())}
+              onClick={() => router.push("/~/" + crypto.randomUUID())}
             >
               <Plus className="w-4 h-4" />
             </Button>
@@ -45,7 +44,7 @@ export function AppSidebar() {
                 <SidebarMenuItem key={item.id}>
                   <SidebarMenuButton asChild>
                     <Link
-                      href={"/chat/" + item.id}
+                      href={"/~/" + item.id}
                       className={cn({
                         "bg-sidebar":
                           store?.selectedChatHistory?.id === item.id,
@@ -83,12 +82,6 @@ export function AppSidebar() {
                     <User className="w-4 h-4" />
                     <span className="text-muted-foreground">Account</span>
                   </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild className="w-full">
-                  <ThemeToggle withLabel />
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>

@@ -7,5 +7,5 @@ export default async function ChatPage() {
     redirect("/sign-in");
   }
 
-  return redirect("/chat/" + crypto.randomUUID());
+  return redirect("/~/" + crypto.randomUUID());
 }

@@ -7,7 +7,7 @@ import { AutoExpandingTextarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { Messages } from "@/components/messages";
-import { useChatStore } from "@/app/chat/Lifecycle";
+import { useChatStore } from "@/app/~/Lifecycle";
 import { useParams } from "next/navigation";
 import { useMessageLimits } from "@/hooks/useMessageLimits";
 import Link from "next/link";
@@ -33,7 +33,7 @@ export default function ChatApp() {
   const buildFormData = (
     prompt: string,
     messages: MessagePart[],
-    attachments: File[]
+    attachments: File[],
   ) => {
     const form = new FormData();
     form.append("prompt", prompt);

@@ -11,7 +11,6 @@ interface MessageStats {
 interface ChatStore {
   selectedChatHistory: ChatHistory | null;
   chatHistories: ChatHistory[];
-  apiKey: boolean;
   isOverLimit: boolean;
   isDisabled: boolean;
   messageStats: MessageStats;
@@ -26,7 +25,6 @@ export const useChatStore = create<ChatStore>(() => ({
     updatedAt: new Date(),
   },
   chatHistories: [],
-  apiKey: false,
   isOverLimit: false,
   isDisabled: false,
   messageStats: {
@@ -39,7 +37,6 @@ export const useChatStore = create<ChatStore>(() => ({
 export default function ChatLifecycle({
   selectedChatHistory,
   chatHistories,
-  apiKey,
   isOverLimit,
   isDisabled,
   messageStats,
@@ -47,7 +44,6 @@ export default function ChatLifecycle({
 }: {
   selectedChatHistory: ChatHistory;
   chatHistories: ChatHistory[];
-  apiKey: boolean;
   isOverLimit: boolean;
   isDisabled: boolean;
   messageStats: MessageStats;
@@ -57,7 +53,6 @@ export default function ChatLifecycle({
     useChatStore.setState({
       selectedChatHistory,
       chatHistories,
-      apiKey,
       isOverLimit,
       isDisabled,
       messageStats,
@@ -65,7 +60,6 @@ export default function ChatLifecycle({
   }, [
     selectedChatHistory,
     chatHistories,
-    apiKey,
     isOverLimit,
     isDisabled,
     messageStats,

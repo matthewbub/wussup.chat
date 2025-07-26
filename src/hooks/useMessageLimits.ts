@@ -1,8 +1,7 @@
 "use client";
 import { useEffect } from "react";
 import { toast } from "sonner";
-import { useChatStore } from "@/app/chat/Lifecycle";
-import { checkMessageLimits } from "@/lib/messageLimits";
+import { useChatStore } from "@/app/~/Lifecycle";
 
 /**
  * Hook to handle message limit notifications and status
@@ -10,7 +9,7 @@ import { checkMessageLimits } from "@/lib/messageLimits";
  * @returns Object with limit information and utility functions
  */
 export function useMessageLimits() {
-  const { isOverLimit, apiKey, messageStats } = useChatStore();
+  const { isOverLimit, messageStats } = useChatStore();
 
   // Show notification when user exceeds their message limit
   useEffect(() => {
