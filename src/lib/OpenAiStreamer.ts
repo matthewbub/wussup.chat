@@ -286,7 +286,7 @@ export class OpenAiStreamer {
         {
           role: "system",
           content:
-            "You are a helpful assistant that responds with Markdown formatted text when appropriate.",
+            "You are a helpful assistant that responds with Markdown formatted text.",
         },
         ...(this.config.input as ResponseInput),
       ],
@@ -306,7 +306,7 @@ export class OpenAiStreamer {
    */
   public async createOpenAiImageResponse(
     userId: string,
-    prompt: string,
+    prompt: string
   ): Promise<OpenAiImageResponse> {
     const openai = new OpenAI();
 
