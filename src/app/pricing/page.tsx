@@ -5,11 +5,8 @@ import { Header } from "@/components/HeadersAreCool";
 
 const AccountPage = () => {
   return (
-    <div>
-      <Header />
-      <div className="flex flex-col items-center justify-center mt-10 max-w-2xl mx-auto">
-        <PricingTable appearance={{ baseTheme: dark }} />
-      </div>
+    <div className="flex flex-col items-center justify-center mt-20 max-w-2xl mx-auto">
+      <PricingTable appearance={{ baseTheme: dark }} />
     </div>
   );
 };

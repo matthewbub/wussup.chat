@@ -1,4 +1,62 @@
 import { appConfig } from "@/constants/app-config";
+import { prisma } from "@/lib/prisma";
+
+/**
+ * Checks if a new day has started and resets daily message count if needed
+ *
+ * @param userId - The user's ID
+ * @returns The updated daily message count
+ */
+export async function ensureDailyReset(userId: string): Promise<number> {
+  const userStats = await prisma.stats.findUnique({
+    where: { userId },
+  });
+
+  if (!userStats) {
+    // Create new stats record if it doesn't exist
+    await prisma.stats.create({
+      data: {
+        userId,
+        dailyMessageCount: 0,
+        dailyResetDate: new Date(),
+        lifetimeMessageCount: 0,
+      },
+    });
+    return 0;
+  }
+
+  const today = new Date();
+  const resetDate = userStats.dailyResetDate;
+
+  // Check if it's a new day (comparing date parts only)
+  const isNewDay =
+    today.getFullYear() !== resetDate.getFullYear() ||
+    today.getMonth() !== resetDate.getMonth() ||
+    today.getDate() !== resetDate.getDate();
+
+  if (isNewDay) {
+    // Reset daily count and update reset date
+    await prisma.stats.update({
+      where: { userId },
+      data: {
+        dailyMessageCount: 0,
+        dailyResetDate: new Date(),
+      },
+    });
+
+    // Log the reset
+    await prisma.logs.create({
+      data: {
+        userId,
+        message: "[AUTO] Daily message count reset - new day detected",
+      },
+    });
+
+    return 0;
+  }
+
+  return userStats.dailyMessageCount;
+}
 
 /**
  * Determines if a user has exceeded their message limits

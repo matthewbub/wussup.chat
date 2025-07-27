@@ -4,8 +4,7 @@ import { getChatHistories, removeStatusMessages } from "@/lib/chatHistory";
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import ChatLifecycle from "../Lifecycle";
-import { prisma } from "@/lib/prisma";
-import { checkMessageLimits } from "@/lib/messageLimits";
+import { checkMessageLimits, ensureDailyReset } from "@/lib/messageLimits";
 import { appConfig } from "@/constants/app-config";
 
 export default async function ChatPage({
@@ -22,18 +21,14 @@ export default async function ChatPage({
   const { id } = await params;
   const data = await getChatHistories(userId, id);
 
-  const [unpackedMessages, userStats] = await Promise.all([
+  const [unpackedMessages, dailyMessageCount] = await Promise.all([
     removeStatusMessages(data?.selectedChatHistory?.history as string),
-    prisma.stats.findUnique({
-      where: {
-        userId,
-      },
-    }),
+    ensureDailyReset(userId),
   ]);
 
   const { isOverDailyLimit } = checkMessageLimits(
-    userStats?.dailyMessageCount,
-    hasPaidPlan,
+    dailyMessageCount,
+    hasPaidPlan
   );
 
   // Check if user is over limit
@@ -49,7 +44,7 @@ export default async function ChatPage({
       isOverLimit={isOverDailyLimit}
       isDisabled={isDisabled}
       messageStats={{
-        dailyCount: userStats?.dailyMessageCount || 0,
+        dailyCount: dailyMessageCount,
         hasPaidPlan,
       }}
     >

@@ -1,7 +1,7 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
 import { MessagePart } from "@/app/types";
-import { Button, OutlineButton } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import Attachments from "@/components/Attachments";
 import { AutoExpandingTextarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
@@ -33,7 +33,7 @@ export default function ChatApp() {
   const buildFormData = (
     prompt: string,
     messages: MessagePart[],
-    attachments: File[],
+    attachments: File[]
   ) => {
     const form = new FormData();
     form.append("prompt", prompt);
@@ -208,14 +208,20 @@ export default function ChatApp() {
   return (
     <div className="h-full flex flex-col items-center pt-8 max-w-2xl mx-auto">
       {isDisabled && (
-        <div className="w-full mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-          <p className="text-red-700">
-            You have exceeded your message limit. Please add an API key in
-            settings to continue using the service.
+        <div className="w-full mb-4 p-4 bg-red-800/70 border border-red-700 rounded-lg">
+          <p className="text-white text-sm">
+            You have exceeded your message limit. Please upgrade your plan to
+            continue using the service or wait until the next day.
           </p>
-          <Link href="/settings">
-            <OutlineButton>Go to Settings</OutlineButton>
-          </Link>
+
+          <div className="flex justify-end items-center px-4">
+            <Link
+              href="/pricing"
+              className="text-white hover:underline text-sm"
+            >
+              Go to Pricing
+            </Link>
+          </div>
         </div>
       )}
 
