@@ -11,8 +11,6 @@ import { ResponseInput, Tool } from "openai/resources/responses/responses.mjs";
 import { FileLike } from "openai/uploads.mjs";
 import { z } from "zod";
 import { zodTextFormat } from "openai/helpers/zod";
-import { auth } from "@clerk/nextjs/server";
-import { prisma } from "./prisma";
 
 /**
  * A utility class for handling OpenAI API configurations and responses.
@@ -62,28 +60,7 @@ export class OpenAiStreamer {
       images: images,
     };
     this.modelType = "";
-    this.apiKey = "";
-  }
-
-  public async setApiKey(userId: string, isOverLimit: boolean) {
-    // If user is over limit, we'll use their API key
-    const userApiKey = await prisma.apiKeys.findFirst({
-      where: {
-        userId,
-      },
-    });
-
-    // if user is over limit and has an API key, use their API key
-    if (isOverLimit && userApiKey?.apiKey) {
-      this.apiKey = userApiKey.apiKey;
-    } else if (userApiKey?.apiKey) {
-      this.apiKey = userApiKey.apiKey;
-    } else if (!isOverLimit) {
-      // If user is not over limit, use our API key
-      this.apiKey = process.env.OPENAI_KEY as string;
-    } else {
-      this.apiKey = "";
-    }
+    this.apiKey = process.env.OPENAI_API_KEY || "";
   }
 
   /**

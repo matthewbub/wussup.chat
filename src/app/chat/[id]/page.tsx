@@ -22,13 +22,8 @@ export default async function ChatPage({
   const { id } = await params;
   const data = await getChatHistories(userId, id);
 
-  const [unpackedMessages, apiKey, userStats] = await Promise.all([
+  const [unpackedMessages, userStats] = await Promise.all([
     removeStatusMessages(data?.selectedChatHistory?.history as string),
-    prisma.apiKeys.findFirst({
-      where: {
-        userId,
-      },
-    }),
     prisma.stats.findUnique({
       where: {
         userId,
@@ -42,8 +37,8 @@ export default async function ChatPage({
     hasPaidPlan
   );
   // console.log("isOverLimit", isOverLimit);
-  // Check if user is over limit and has no API key
-  const isDisabled = isOverDailyLimit && !apiKey?.apiKey;
+  // Disable input when over daily limit
+  const isDisabled = isOverDailyLimit;
 
   return (
     <ChatLifecycle
@@ -52,7 +47,6 @@ export default async function ChatPage({
         history: unpackedMessages,
       }}
       chatHistories={data?.chatHistories as ChatHistory[]}
-      apiKey={apiKey?.apiKey ? true : false}
       isOverLimit={isOverDailyLimit}
       isDisabled={isDisabled}
       messageStats={{

@@ -210,11 +210,10 @@ export default function ChatApp() {
       {isDisabled && (
         <div className="w-full mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
           <p className="text-red-700">
-            You have exceeded your message limit. Please add an API key in
-            settings to continue using the service.
+            You have exceeded your daily message limit. Please upgrade to Pro.
           </p>
-          <Link href="/settings">
-            <OutlineButton>Go to Settings</OutlineButton>
+          <Link href="/pricing">
+            <OutlineButton>View Pricing</OutlineButton>
           </Link>
         </div>
       )}
